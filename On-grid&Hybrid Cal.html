@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณ On-grid และ Hybrid Solar Cell</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --warning: #f39c12;
+            --info: #2980b9;
+            --danger: #c0392b;
+            --light: #f8f9fa;
+            --dark: #34495e;
+            --border: #dee2e6;
+            --ongrid-color: #e67e22;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: var(--dark);
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1650px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), #1a252f);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .header h1 { margin: 0 0 10px 0; font-size: 2.1rem; letter-spacing: 0.5px; }
+        .header p { margin: 0; opacity: 0.85; font-size: 1rem; }
+        
+        /* Layout ออกแบบแยก 2 ฝั่งซ้ายขวาอย่างสมบูรณ์แบบบน PC */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 2.3fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .table-responsive {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        td.left-align, th.left-align { text-align: left; }
+        
+        /* สไตล์ช่องกรอกข้อมูลให้พิมพ์ง่ายบน PC คีย์บอร์ด */
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            text-align: center;
+            box-sizing: border-box;
+            transition: all 0.15s ease;
+        }
+        input.val-name {
+            text-align: left;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        input[type="number"] {
+            max-width: 95px;
+            font-weight: 500;
+        }
+        select {
+            max-width: 100%;
+            text-align-last: center;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--info);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15);
+        }
+        
+        .badge-ongrid { background-color: #ffe6cc; color: #d35400; padding: 5px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
+        .badge-day { background-color: #fff3cd; color: #856404; padding: 5px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
+        .badge-night { background-color: #cce5ff; color: #004085; padding: 5px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
+        
+        /* แถบเครื่องมือปุ่มกด */
+        .action-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-start;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary { background-color: var(--secondary); color: white; }
+        .btn-primary:hover { background-color: #219653; transform: translateY(-1px); }
+        .btn-info { background-color: var(--info); color: white; }
+        .btn-info:hover { background-color: #1f6b9a; transform: translateY(-1px); }
+        .btn-warning { background-color: var(--warning); color: white; }
+        .btn-warning:hover { background-color: #e67e22; transform: translateY(-1px); }
+        .btn-danger { background-color: var(--danger); color: white; padding: 6px 12px; font-size: 0.85rem; }
+        .btn-danger:hover { background-color: #a93226; }
+        .btn-outline-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-outline-danger:hover { background-color: var(--danger); color: white; }
+        
+        /* ล็อกส่วนแสดงผลฝั่งขวาให้เลื่อนตามหน้าจอ (Sticky Sidebar) */
+        .right-panel {
+            position: sticky;
+            top: 24px;
+        }
+        .summary-box {
+            background-color: var(--light);
+            border-left: 5px solid #bdc3c7;
+            padding: 14px 16px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+        .summary-box.ongrid-side { border-left-color: var(--ongrid-color); background-color: #fffbf7; }
+        .summary-box.day { border-left-color: #f1c40f; background-color: #fefcf2; }
+        .summary-box.night { border-left-color: #3498db; background-color: #f4f9fd; }
+        .summary-box.total { border-left-color: var(--secondary); background-color: #f4faf6; }
+        
+        .system-recommend {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .system-recommend.ongrid-style { background: #fff6ee; border-left: 6px solid var(--ongrid-color); }
+        .system-recommend.hybrid-style { background: #f3faf5; border-left: 6px solid var(--secondary); }
+
+        .summary-title { font-size: 0.88rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .summary-value { font-size: 1.4rem; font-weight: bold; margin-top: 5px; color: var(--primary); }
+        .summary-subtext { font-size: 0.85rem; color: #95a5a6; margin-top: 4px; }
+        .system-head { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-desktop"></i>On-grid และ Hybrid</h1>
+        <p>เงื่อนไขคำนวณ: PSH = 4.5 ชม. (09.00-15.00 น.) | ประสิทธิภาพระบบ (PR) = 0.75 | แผงโมโน 650W</p>
+    </div>
+
+    <div class="layout-grid">
+        <div class="left-panel">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-table"></i> บันทึกและแก้ไขข้อมูลเครื่องใช้ไฟฟ้า</div>
+                <form id="solarForm">
+                    <div class="action-container">
+                        <button type="button" class="btn btn-warning" onclick="addNewItem()"><i class="fas fa-plus"></i> ➕ เพิ่มรายการเครื่องใช้ไฟฟ้าใหม่</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="inputTable">
+                            <thead>
+                                <tr>
+                                    <th class="left-align" style="width: 32%;">รายการเครื่องใช้ไฟฟ้า</th>
+                                    <th style="width: 14%;">กำลังไฟฟ้า (วัตต์)</th>
+                                    <th style="width: 10%;">จำนวน (เครื่อง)</th>
+                                    <th style="width: 14%; color: var(--ongrid-color);">พีคแดด (ชม.)<br><small>09:00 - 15:00</small></th>
+                                    <th style="width: 14%;">กลางวันช่วง (ชม.)<br><small>06-09 / 15-18</small></th>
+                                    <th style="width: 14%;">กลางคืน (ชม.)<br><small>18:00 - 06:00</small></th>
+                                    <th style="width: 2%;">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applianceBody">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-danger" onclick="clearAllData()"><i class="fas fa-undo"></i> ล้างข้อมูลทั้งหมด</button>
+                        <button type="button" class="btn btn-info" onclick="saveData()"><i class="fas fa-save"></i> บันทึกข้อมูลลงเครื่อง</button>
+                        <button type="button" class="btn btn-primary" onclick="processCalculations()"><i class="fas fa-calculator"></i> ประมวลผลและคำนวณใหม่</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-chart-bar"></i> ตารางแจกแจงปริมาณพลังงานไฟฟ้าตามช่วงเวลา (Wh)</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="left-align" style="width: 32%;">เครื่องใช้ไฟฟ้า</th>
+                                <th style="color: var(--ongrid-color);">ช่วงพีคแดด (09:00 - 15:00)</th>
+                                <th>กลางวันช่วง (06:00 - 18:00)</th>
+                                <th>กลางคืน (18:00 - 06:00)</th>
+                                <th>รวมพลังงาน/วัน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultSheetBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-pie-chart"></i> รวมการใช้ไฟฟ้าต่อวัน</div>
+                
+                <div class="summary-box ongrid-side">
+                    <div class="summary-title">ใช้ไฟช่วงพีคแดด (09.00 - 15.00 น.)</div>
+                    <div class="summary-value" id="lblOnGridUnit" style="color:var(--ongrid-color);">0.00 หน่วย</div>
+                    <div class="summary-subtext" id="lblOnGridWh">0 Wh</div>
+                </div>
+
+                <div class="summary-box day">
+                    <div class="summary-title">ใช้ไฟกลางวันรวม (06.00 - 18.00 น.)</div>
+                    <div class="summary-value" id="lblDayUnit">0.00 หน่วย</div>
+                    <div class="summary-subtext" id="lblDayWh">0 Wh</div>
+                </div>
+
+                <div class="summary-box night">
+                    <div class="summary-title">ใช้ไฟกลางคืนรวม (18.00 - 06.00 น.)</div>
+                    <div class="summary-value" id="lblNightUnit">0.00 หน่วย</div>
+                    <div class="summary-subtext" id="lblNightWh">0 Wh</div>
+                </div>
+
+                <div class="summary-box total">
+                    <div class="summary-title">รวมการใช้ไฟฟ้าสุทธิ / วัน</div>
+                    <div class="summary-value" id="lblTotalUnit" style="color:var(--secondary);">0.00 หน่วย</div>
+                    <div class="summary-subtext" id="lblTotalWh">0 Wh</div>
+                </div>
+
+                <div class="system-recommend ongrid-style">
+                    <div class="system-head" style="color: var(--ongrid-color);"><i class="fas fa-sun"></i> 1. ระบบ ON-GRID ที่เหมาะสม</div>
+                    <div class="summary-subtext">ประหยัดค่าไฟโดยอิงโหลดเฉพาะช่วงมีแดดแรงจัด (09.00-15.00 น.)</div>
+                    <div class="summary-value" id="resOnGridSolar" style="font-size:1.3rem; margin-top:6px;">แผง: 0.00 kWp</div>
+                    <div class="summary-subtext" id="resOnGridPanels" style="color:#d35400; font-weight: 500;">ใช้แผง 650W: - แผง</div>
+                    <div class="summary-value" id="resOnGridInv" style="font-size:1.1rem; margin-top:4px; color:#34495e;">อินเวอร์เตอร์: - kW</div>
+                </div>
+
+                <div class="system-recommend hybrid-style">
+                    <div class="system-head" style="color: var(--secondary);"><i class="fas fa-bolt"></i> 2. ระบบ HYBRID + BATTERY</div>
+                    <div class="summary-subtext">รองรับโหลดทั้งวันทั้งคืน ชาร์จเก็บไฟส่วนเกินลงแบตเตอรี่สำรอง</div>
+                    <div class="summary-value" id="resHybridSolar" style="font-size:1.3rem; margin-top:6px;">แผง: 0.00 kWp</div>
+                    <div class="summary-subtext" id="resHybridPanels" style="color:var(--secondary); font-weight: 500;">ใช้แผง 650W: - แผง</div>
+                    <div class="summary-value" id="resHybridInv" style="font-size:1.1rem; margin-top:4px; color:#34495e;">อินเวอร์เตอร์: - kW</div>
+                    <div class="summary-value" id="resHybridBat" style="font-size:1.1rem; margin-top:4px; color:var(--info);">แบตเตอรี่ลิเธียม: 0.00 kWh</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ข้อมูลเริ่มต้นสำหรับเรียกใช้ครั้งแรกกรณีไม่มีข้อมูลในเบราว์เซอร์
+    const initialAppliances = [
+        { name: 'แอร์ 18,000 BTU', watts: 1000, qty: 1, ogHours: 4, dHours: 2, nHours: 4, isAir: true },
+        { name: 'เครื่องทำน้ำอุ่น', watts: 3500, qty: 1, ogHours: 0, dHours: 0.25, nHours: 0.25, isAir: false },
+        { name: 'ปั๊มน้ำ', watts: 250, qty: 1, ogHours: 0.2, dHours: 0.3, nHours: 0.5, isAir: false },
+        { name: 'พัดลม', watts: 50, qty: 3, ogHours: 4, dHours: 2, nHours: 6, isAir: false },
+        { name: 'ตู้เย็น 2 ประตู', watts: 120, qty: 1, ogHours: 3, dHours: 2, nHours: 5, isAir: false },
+        { name: 'เตารีดผ้า', watts: 2000, qty: 1, ogHours: 0.5, dHours: 0, nHours: 0, isAir: false },
+        { name: 'หม้อหุงข้าว', watts: 700, qty: 1, ogHours: 0, dHours: 0.5, nHours: 0.5, isAir: false }
+    ];
+
+    // ฟังก์ชันสร้างเรนเดอร์แถวอุปกรณ์ในตาราง
+    function renderApplianceRow(item) {
+        const tbody = document.getElementById('applianceBody');
+        const tr = document.createElement('tr');
+
+        let nameHTML = '';
+        if (item.isAir) {
+            nameHTML = `
+                <input type="text" class="val-name" value="${item.name}">
+                <select onchange="changeAirWatts(this, this.value)" style="margin-top: 6px; width: 100%;">
+                    <option value="500" ${item.watts==500?'selected':''}>9,000 BTU (~500W)</option>
+                    <option value="650" ${item.watts==650?'selected':''}>12,000 BTU (~650W)</option>
+                    <option value="850" ${item.watts==850?'selected':''}>15,000 BTU (~850W)</option>
+                    <option value="1000" ${item.watts==1000?'selected':''}>18,000 BTU (~1000W)</option>
+                    <option value="1350" ${item.watts==1350?'selected':''}>24,000 BTU (~1350W)</option>
+                </select>
+            `;
+        } else {
+            nameHTML = `<input type="text" class="val-name" value="${item.name}" placeholder="พิมพ์ระบุชื่ออุปกรณ์ที่นี่...">`;
+        }
+
+        tr.innerHTML = `
+            <td class="left-align">${nameHTML}</td>
+            <td><input type="number" class="val-watts" value="${item.watts}" min="0"></td>
+            <td><input type="number" class="val-qty" value="${item.qty}" min="0"></td>
+            <td><input type="number" class="val-ongridhours" value="${item.ogHours}" step="0.1" min="0" max="6"></td>
+            <td><input type="number" class="val-dhours" value="${item.dHours}" step="0.1" min="0" max="6"></td>
+            <td><input type="number" class="val-nhours" value="${item.nHours}" step="0.1" min="0" max="12"></td>
+            <td><button type="button" class="btn btn-danger" onclick="deleteTargetRow(this)"><i class="fas fa-trash-alt"></i></button></td>
+        `;
+
+        tbody.appendChild(tr);
+    }
+
+    // ฟังก์ชันปุ่มเพิ่มรายการใหม่แบบอิสระ
+    function addNewItem() {
+        const itemLayout = { name: '', watts: 0, qty: 1, ogHours: 0, dHours: 0, nHours: 0, isAir: false };
+        renderApplianceRow(itemLayout);
+        processCalculations();
+    }
+
+    function changeAirWatts(selectElement, val) {
+        const row = selectElement.closest('tr');
+        row.querySelector('.val-watts').value = val;
+        processCalculations();
+    }
+
+    function deleteTargetRow(btn) {
+        btn.closest('tr').remove();
+        processCalculations();
+    }
+
+    // ฟังก์ชันล้างข้อมูลกลับไปเป็นศูนย์ทั้งหมดเพื่อกรอกใหม่
+    function clearAllData() {
+        if(confirm('คุณต้องการเคลียร์แผ่นงานนี้เพื่อเริ่มกรอกข้อมูลใหม่ทั้งหมดใช่หรือไม่?')) {
+            document.getElementById('applianceBody').innerHTML = '';
+            processCalculations();
+        }
+    }
+
+    // แกนคำนวณหลักและการประเมินขนาดระบบ
+    function processCalculations() {
+        const rows = document.querySelectorAll('#applianceBody tr');
+        const sheetBody = document.getElementById('resultSheetBody');
+        sheetBody.innerHTML = ''; 
+
+        let totalOnGridWh = 0;
+        let totalOtherDayWh = 0;
+        let totalNightWh = 0;
+
+        rows.forEach(row => {
+            const nameField = row.querySelector('.val-name');
+            const name = nameField ? nameField.value.trim() : 'อุปกรณ์ไม่ระบุชื่อ';
+            const watts = parseFloat(row.querySelector('.val-watts').value) || 0;
+            const qty = parseFloat(row.querySelector('.val-qty').value) || 0;
+            const ogHours = parseFloat(row.querySelector('.val-ongridhours').value) || 0;
+            const dHours = parseFloat(row.querySelector('.val-dhours').value) || 0;
+            const nHours = parseFloat(row.querySelector('.val-nhours').value) || 0;
+
+            const itemOnGridWh = watts * qty * ogHours;
+            const itemOtherDayWh = watts * qty * dHours;
+            const itemNightWh = watts * qty * nHours;
+            const itemTotalWh = itemOnGridWh + itemOtherDayWh + itemNightWh;
+
+            totalOnGridWh += itemOnGridWh;
+            totalOtherDayWh += itemOtherDayWh;
+            totalNightWh += itemNightWh;
+
+            if (qty > 0 && (ogHours > 0 || dHours > 0 || nHours > 0)) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="left-align"><strong>${name || 'ระบุชื่ออุปกรณ์'}</strong> <small class="text-muted">(${qty} เครื่อง)</small></td>
+                    <td><span class="badge-ongrid">${itemOnGridWh.toLocaleString()} Wh</span></td>
+                    <td><span class="badge-day">${itemOtherDayWh.toLocaleString()} Wh</span></td>
+                    <td><span class="badge-night">${itemNightWh.toLocaleString()} Wh</span></td>
+                    <td><strong>${itemTotalWh.toLocaleString()} Wh</strong></td>
+                `;
+                sheetBody.appendChild(tr);
+            }
+        });
+
+        const totalDayWh = totalOnGridWh + totalOtherDayWh;
+        const totalAllWh = totalDayWh + totalNightWh;
+
+        const ogUnits = totalOnGridWh / 1000;
+        const dayUnits = totalDayWh / 1000;
+        const nightUnits = totalNightWh / 1000;
+        const totalUnits = totalAllWh / 1000;
+
+        document.getElementById('lblOnGridUnit').innerText = ogUnits.toFixed(2) + " หน่วย";
+        document.getElementById('lblOnGridWh').innerText = totalOnGridWh.toLocaleString() + " Wh";
+        document.getElementById('lblDayUnit').innerText = dayUnits.toFixed(2) + " หน่วย";
+        document.getElementById('lblDayWh').innerText = totalDayWh.toLocaleString() + " Wh";
+        document.getElementById('lblNightUnit').innerText = nightUnits.toFixed(2) + " หน่วย";
+        document.getElementById('lblNightWh').innerText = totalNightWh.toLocaleString() + " Wh";
+        document.getElementById('lblTotalUnit').innerText = totalUnits.toFixed(2) + " หน่วย";
+        document.getElementById('lblTotalWh').innerText = totalAllWh.toLocaleString() + " Wh";
+
+        const PSH = 4.5;
+        const PR = 0.75;
+        const panelWatts = 650;
+        const DoD = 0.85;
+
+        // 1. ระบบ ON-GRID 
+        if (ogUnits > 0) {
+            const ogkWp = ogUnits / (PSH * PR);
+            const ogPanels = Math.ceil((ogkWp * 1000) / panelWatts);
+            let ogInv = 5;
+            if (ogkWp > 5) ogInv = 10;
+            if (ogkWp > 10) ogInv = 15;
+            if (ogkWp > 15) ogInv = Math.ceil(ogkWp / 5) * 5;
+
+            document.getElementById('resOnGridSolar').innerText = `แผง: ${ogkWp.toFixed(2)} kWp`;
+            document.getElementById('resOnGridPanels').innerText = `ใช้แผง 650W: ${ogPanels} แผง (รวม ${(ogPanels*panelWatts/1000).toFixed(2)} kWp)`;
+            document.getElementById('resOnGridInv').innerText = `อินเวอร์เตอร์: ${ogInv} kW` + (ogInv >= 10 ? " (3 เฟส)" : " (1 เฟส)");
+        } else {
+            document.getElementById('resOnGridSolar').innerText = "แผง: 0.00 kWp";
+            document.getElementById('resOnGridPanels').innerText = "ใช้แผง 650W: - แผง";
+            document.getElementById('resOnGridInv').innerText = "อินเวอร์เตอร์: - kW";
+        }
+
+        // 2. ระบบ HYBRID
+        if (totalUnits > 0) {
+            const hybridkWp = totalUnits / (PSH * PR);
+            const hybridPanels = Math.ceil((hybridkWp * 1000) / panelWatts);
+            let hybridInv = 5;
+            if (hybridkWp > 5) hybridInv = 10;
+            if (hybridkWp > 10) hybridInv = 15;
+            if (hybridkWp > 15) hybridInv = Math.ceil(hybridkWp / 5) * 5;
+            
+            const reqBattery = nightUnits / DoD;
+
+            document.getElementById('resHybridSolar').innerText = `แผง: ${hybridkWp.toFixed(2)} kWp`;
+            document.getElementById('resHybridPanels').innerText = `ใช้แผง 650W: ${hybridPanels} แผง (รวม ${(hybridPanels*panelWatts/1000).toFixed(2)} kWp)`;
+            document.getElementById('resHybridInv').innerText = `อินเวอร์เตอร์: ${hybridInv} kW` + (hybridInv >= 10 ? " (3 เฟส)" : " (1 เฟส)");
+            document.getElementById('resHybridBat').innerText = `แบตเตอรี่: ${reqBattery.toFixed(2)} kWh (~ ${Math.ceil(reqBattery/5)*5} kWh)`;
+        } else {
+            document.getElementById('resHybridSolar').innerText = "แผง: 0.00 kWp";
+            document.getElementById('resHybridPanels').innerText = "ใช้แผง 650W: - แผง";
+            document.getElementById('resHybridInv').innerText = "อินเวอร์เตอร์: - kW";
+            document.getElementById('resHybridBat').innerText = "แบตเตอรี่: 0.00 kWh";
+            sheetBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6; padding: 20px; font-weight: 500;">ไม่มีข้อมูลเครื่องใช้ไฟฟ้าเปิดทำงานเพื่อแสดงผล Wh</td></tr>`;
+        }
+    }
+
+    // ฟังก์ชันเขียนบันทึกค่าลง LocalStorage บน PC Browser
+    function saveData() {
+        const rows = document.querySelectorAll('#applianceBody tr');
+        const storageArray = [];
+
+        rows.forEach(row => {
+            const nameField = row.querySelector('.val-name');
+            const selectAir = row.querySelector('select');
+            storageArray.push({
+                name: nameField ? nameField.value : '',
+                watts: row.querySelector('.val-watts').value,
+                qty: row.querySelector('.val-qty').value,
+                ogHours: row.querySelector('.val-ongridhours').value,
+                dHours: row.querySelector('.val-dhours').value,
+                nHours: row.querySelector('.val-nhours').value,
+                isAir: selectAir ? true : false
+            });
+        });
+
+        localStorage.setItem('solar_pc_v6_data', JSON.stringify(storageArray));
+        alert('💾 บันทึกโครงสร้างโหลดไฟฟ้าลงบนพีซีเวิร์กสเตชันเครื่องนี้เรียบร้อยแล้ว!');
+    }
+
+    // ฟังก์ชันโหลดข้อมูลเดิมกลับขึ้นมาแสดงผล
+    function loadSavedData() {
+        const stored = localStorage.getItem('solar_pc_v6_data');
+        const tbody = document.getElementById('applianceBody');
+        tbody.innerHTML = ''; 
+
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            parsed.forEach(item => { renderApplianceRow(item); });
+        } else {
+            initialAppliances.forEach(item => { renderApplianceRow(item); });
+        }
+        processCalculations();
+    }
+
+    // ตรวจสอบจับความเคลื่อนไหวเพื่อคำนวณสดทันทีขณะพิมพ์ตัวเลข
+    document.getElementById('solarForm').addEventListener('input', processCalculations);
+    window.onload = loadSavedData;
+</script>
+
+</body>
+</html>

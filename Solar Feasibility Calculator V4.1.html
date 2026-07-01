@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Feasibility Calculator 4.0(Powered by ลุงพี)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #e8f5e9;
+            --secondary: #1565c0;
+            --dark: #37474f;
+            --gray: #cfd8dc;
+            --light: #f8f9fa;
+            --orange: #e65100;
+            --orange-light: #fff3e0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1, h2, h3 { color: var(--primary); margin-top: 0; }
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        .panel {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--gray);
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.95rem; }
+        input[type="number"], input[type="text"], input[type="file"], select {
+            width: 100%; padding: 10px; border: 1px solid var(--gray); border-radius: 4px; box-sizing: border-box; font-size: 1rem;
+        }
+        input:focus { border-color: var(--primary); outline: none; }
+        .checkbox-group { display: flex; gap: 15px; margin-top: 5px; }
+        .checkbox-group label { font-weight: normal; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        
+        .cost-breakdown { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
+        .cost-box { text-align: center; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid var(--gray); }
+        .cost-box span { display: block; font-size: 0.8rem; color: #555; font-weight: bold; margin-bottom: 4px; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 5px; }
+        button {
+            width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;
+        }
+        button:hover { background: #1b5e20; }
+        .btn-secondary { background: var(--secondary); }
+        .btn-secondary:hover { background: #0d47a1; }
+        .btn-orange { background: var(--orange); }
+        .btn-orange:hover { background: #bf360c; }
+        
+        .result-card { background: var(--primary-light); border-left: 6px solid var(--primary); padding: 20px; border-radius: 4px; margin-bottom: 20px; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .metric { background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: all 0.3s ease; }
+        .metric-title { font-size: 0.85rem; color: #666; font-weight: 600; transition: color 0.3s; }
+        .metric-value { font-size: 1.3rem; font-weight: bold; color: var(--primary); margin-top: 5px; transition: color 0.3s; }
+        .metric-value.blue { color: var(--secondary); }
+        .metric-value.orange { color: var(--orange); }
+        
+        .bess-section { border-top: 2px dashed var(--gray); margin-top: 15px; padding-top: 15px; transition: opacity 0.3s; }
+        .bess-title { color: var(--orange); font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; }
+
+        .chart-container { background: white; border: 1px solid var(--gray); padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .chart-summary { text-align: center; margin-top: 15px; font-size: 1rem; color: #333; }
+        .chart-summary span { font-weight: bold; color: var(--primary); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 0.9rem; }
+        th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--gray); }
+        th { background: var(--primary); color: white; text-align: right; }
+        th:first-child, td:first-child { text-align: center; }
+        tr:nth-child(even) { background: var(--light); }
+        .highlight-row { background: #fff9c4 !important; font-weight: bold; }
+
+        .table-explanation { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.95rem; line-height: 1.5;}
+        .table-explanation ul { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; }
+        
+        #reportSection { display: none; margin-top: 40px; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .report-table { width: 100%; margin-top: 10px; }
+        .report-table td { border-bottom: 1px dashed var(--gray); padding: 12px 5px; text-align: left; font-size: 1.05rem; }
+        .report-table td:nth-child(1) { font-weight: 600; color: #444; }
+        .report-table td:nth-child(2) { text-align: right; font-weight: bold; color: var(--primary); font-size: 1.15rem; }
+        
+        .avoid-page-break { page-break-inside: avoid; break-inside: avoid; margin-bottom: 20px; }
+        .report-table tr, #reportCashFlowTable tr { page-break-inside: avoid; break-inside: avoid; }
+
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .container > div:not(#reportSection), .container > h1 { display: none; }
+            #reportSection { display: block !important; box-shadow: none; padding: 0; margin: 0; width: 100%; }
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            @page { margin: 15mm; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Solar Feasibility Calculator (Powered by ลุงพี)</h1>
+    
+    <div class="grid-2">
+        <div class="panel">
+            <h2>1. กำหนดพารามิเตอร์</h2>
+            
+            <div class="form-group">
+                <label>ชื่อโครงการ :</label>
+                <input type="text" id="projectName" placeholder="ตัวอย่าง: โรงงาน ABC เฟส 1">
+            </div>
+            
+            <div class="grid-2" style="gap:15px; margin-bottom:0;">
+                <div class="form-group">
+                    <label>ชื่อลูกค้า :</label>
+                    <input type="text" id="customerName" placeholder="ตัวอย่าง: บจก. เอบีซี กรุ๊ป">
+                </div>
+                <div class="form-group">
+                    <label>โลโก้บริษัท (อัปโหลดรูป) :</label>
+                    <input type="file" id="companyLogo" accept="image/*" style="padding: 7px;">
+                </div>
+            </div>
+
+            <hr style="border: 1px dashed var(--gray); margin: 20px 0;">
+
+            <div class="form-group">
+                <label>ปริมาณไฟฟ้ารวม (หน่วย / เดือน)</label>
+                <input type="number" id="monthlyUnit" value="10000">
+            </div>
+            <div class="form-group">
+                <label>สัดส่วนการใช้ไฟกลางวัน (%)</label>
+                <input type="number" id="daylightRatio" value="70" min="0" max="100">
+            </div>
+            <div class="grid-2" style="gap:15px; margin-bottom:0;">
+                <div class="form-group">
+                    <label>ค่า PSH (ชม./วัน)</label>
+                    <input type="number" id="psh" value="4.5" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>ค่า PR ของระบบ</label>
+                    <input type="number" id="pr" value="0.75" step="0.01">
+                </div>
+            </div>
+            <div class="grid-2" style="gap:15px; margin-bottom:0;">
+                <div class="form-group">
+                    <label>ขนาดแผง (W)</label>
+                    <input type="number" id="panelWatt" value="650">
+                </div>
+                <div class="form-group">
+                    <label>ขนาด Inverter มาตรฐาน (kW)</label>
+                    <input type="number" id="invSize" value="50">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>โครงสร้างต้นทุน EPC ไม่รวมแบตเตอรี่ (บาท / วัตต์)</label>
+                <div class="cost-breakdown">
+                    <div class="cost-box"><span>แผง</span><input type="number" id="cPanel" value="5" min="4" max="6" step="0.1"></div>
+                    <div class="cost-box"><span>Inverter</span><input type="number" id="cInv" value="3" min="3" max="5" step="0.1"></div>
+                    <div class="cost-box"><span title="Balance of System: อุปกรณ์ประกอบระบบอื่น ๆ เช่น โครงสร้าง, สายไฟ, ท่อร้อยสาย, ตู้ไฟ">BOS</span><input type="number" id="cBos" value="8" min="6" max="15" step="0.1"></div>
+                    <div class="cost-box"><span>ค่าแรง</span><input type="number" id="cLabor" value="5" min="3" max="10" step="0.1"></div>
+                    <div class="cost-box"><span>บริหาร</span><input type="number" id="cManage" value="2" min="2" max="10" step="0.1"></div>
+                </div>
+                <small style="display: block; margin-top: 5px; color: #555; font-size: 0.82rem;">
+                    * <strong>BOS (Balance of System)</strong> :อุปกรณ์ประกอบระบบทั้งหมด (ไม่รวมแผงและ Inverter) เช่น โครงสร้างรองรับแผง (Mounting), สายไฟ DC/AC, ท่อร้อยสาย, ตู้ควบคุมไฟฟ้า (MDB/Combiner Box) และระบบสายดิน <br>
+					* <strong>บริหาร</strong> :ค่าเช่าอุปกรณ์ ค่าการตลาด ค่าดำเนินการขออนุญาต ค่า O&M เป็นต้น
+                </small>
+            </div>
+
+            <div class="bess-section">
+                <div class="bess-title">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="hasBattery" checked onchange="toggleBessSection()" style="width: auto;"> 
+                        🔋 ตั้งค่าระบบแบตเตอรี่ (BESS)
+                    </label>
+                </div>
+                <div id="bessInputsWrapper">
+                    <div class="grid-2" style="gap:15px; margin-bottom:0;">
+                        <div class="form-group">
+                            <label>ขนาดความจุแบตเตอรี่ใช้งาน (kWh/Unit)</label>
+                            <input type="number" id="bessUnitSize" value="5" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>จำนวนแบตเตอรี่ (Unit)</label>
+                            <input type="number" id="bessUnits" value="2" step="1">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>ราคาแบตเตอรี่ (บาท / kWh)</label>
+                        <input type="number" id="bessCostPerKwh" value="15000" step="200">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>ช่วงเวลาที่กำหนดให้ดึงแบตเตอรี่มาใช้ (Discharge Time)</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="chkBeforePSH" checked> ก่อนช่วง PSH (00:00 - 09:00 น.)</label>
+                            <label><input type="checkbox" id="chkAfterPSH" checked> หลังช่วง PSH (15:00 - 24:00 น.)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="gap:15px; margin-bottom:0;">
+                <div class="form-group">
+                    <label>Margin EPC (%)</label>
+                    <input type="number" id="margin" value="15" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label>อัตราค่าไฟเฉลี่ย (บาท/หน่วย)</label>
+                    <input type="number" id="tariff" value="4.70" step="0.10">
+                </div>
+            </div>
+            <div class="grid-2" style="gap:15px; margin-bottom:0;">
+                <div class="form-group">
+                    <label>อัตราลด WACC (%)</label>
+                    <input type="number" id="wacc" value="6.5" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>อัตราเสื่อมแผงต่อปี (%)</label>
+                    <input type="number" id="degradation" value="1" step="0.1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>ค่า O&M (บาท/วัตต์/ปี)กรณีมีแบตฯ จะเพิ่มเป็น 1 บาท </label>
+                <input type="number" id="omCostPerWatt" value="0.6" step="0.01">
+            </div>
+
+            <div style="text-align: center; margin-top: 25px;">
+                <label style="font-size: 0.9rem; color:#d32f2f; font-weight: bold;">* ให้ประมวลผล > ตรวจความถูกต้อง > สร้างรายงาน</label>
+            </div>
+            <div class="btn-group">
+                <button onclick="calculateSolarSystem()">ประมวลผล</button>
+                <button class="btn-secondary" onclick="generateReport()">สร้างรายงาน</button>
+            </div>
+        </div>
+
+        <div>
+            <h2>2. ผลลัพธ์การคำนวณ</h2>
+            <div class="result-card" style="background-color: #f1f8e9; border-left-color: #2e7d32;">
+                <div class="result-grid">
+                    <div class="metric">
+                        <div class="metric-title">กำลังการผลิตต้องการ (โหลดกลางวัน+ชาร์จแบต)</div>
+                        <div class="metric-value" id="resKwp">0.00 kWp</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-title">จำนวนแผงที่ติดตั้ง</div>
+                        <div class="metric-value" id="resPanels">0 แผง</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-title">ขนาดกำลังผลิตสูงสุด</div>
+                        <div class="metric-value" id="resActualKwp">0.00 kWp</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-title">จำนวนอินเวอร์เตอร์ (Oversize 120%)</div>
+                        <div class="metric-value" id="resInverters">0 ตัว</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-title">ต้นทุนรวม (ไม่รวมภาษีมูลค่าเพิ่ม 7%)</div>
+                        <div class="metric-value blue" id="resEpcCost">0 บาท</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-title">ต้นทุนรวม (รวมภาษีมูลค่าเพิ่ม 7%)</div>
+                        <div class="metric-value blue" id="resEpcCostVAT">0 บาท</div>
+                    </div>
+                    <div class="metric" style="grid-column: span 2;">
+                        <div class="metric-title">แบตเตอรี่ (ขนาดความจุรวม / จำนวน)</div>
+                        <div class="metric-value" id="resBattery" style="color: #00838f;">0 kWh / 0 Unit</div>
+                    </div>
+                    <div class="metric" style="border-left: 4px solid var(--orange);">
+                        <div class="metric-title" style="color: var(--orange);">ราคาขายก่อนภาษี (ต้นทุนรวมสุทธิ + Margin)</div>
+                        <div class="metric-value orange" id="resSellingPrice">0 บาท</div>
+                    </div>
+                    <div class="metric" style="border-left: 4px solid var(--orange); background: #fff3e0;">
+                        <div class="metric-title" style="color: var(--orange);">ราคาขาย (รวม VAT 7%)</div>
+                        <div class="metric-value orange" id="resSellingPriceVAT">0 บาท</div>
+                    </div>
+                    <div class="metric" id="paybackCard" style="grid-column: span 2; border-left: 4px solid #cfd8dc; background: #f8f9fa;">
+                        <div class="metric-title" id="paybackTitle" style="color: #37474f;">ระยะเวลาคืนทุนระบบ (แบบคิดลด WACC)</div>
+                        <div class="metric-value" id="resPayback" style="color: #37474f; font-size: 1.4rem;">0.00 ปี</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="text-align:center; color:var(--dark);">กำลังการผลิตของระบบและการทำงานของแบตเตอรี่รายวัน</h3>
+                <canvas id="dailyChartCanvas" height="150"></canvas>
+                <div class="chart-summary">
+                    การผลิตรวม: <span id="sumDailyProduce">0.00 kWh/วัน</span><br>
+                    <span id="sumBatteryStatus" style="color:#d32f2f; font-weight:normal;">-</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="text-align:center; color:var(--dark);">ผลผลิตพลังงานรายเดือนใน 1 ปี (Yields)</h3>
+                <canvas id="monthlyChartCanvas" height="150"></canvas>
+                <div class="chart-summary">
+                    การผลิตรวมทั้งปี: <span id="sumAnnualProduce">0.00 kWh/ปี</span><br>
+                    การผลิตเฉลี่ยต่อเดือน: <span id="sumAvgMonthly">0.00 kWh/เดือน</span>
+                </div>
+            </div>
+
+            <h2>3. กระแสเงินสดสะสมระบบ </h2>
+            <div style="overflow-x: auto;">
+                <table id="cashFlowTable">
+                    <thead>
+                        <tr>
+                            <th>ปีที่</th>
+                            <th>พลังงานผลิต (หน่วย)</th>
+                            <th>ประหยัดค่าไฟ (บาท)</th>
+                            <th>ค่า O&M (บาท)</th>
+                            <th>กระแสเงินสด (บาท)</th>
+                            <th>มูลค่าปัจจุบัน DCF</th>
+                            <th>เงินสดสะสมคิดลด (บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="table-explanation" style="background: #e3f2fd; border-left: 5px solid var(--secondary);">
+                <h4 style="margin-top: 0; color: var(--secondary);">💡 คำอธิบายตารางและสรุปผล</h4>
+                <ul>
+                    <li><strong>กระแสเงินสด:</strong> จำนวนเงินที่ประหยัดได้จากค่าไฟ หักลบด้วยค่าบำรุงรักษา (O&M) ในแต่ละปี</li>
+                    <li><strong>มูลค่าปัจจุบัน (DCF):</strong> มูลค่าของเงินกระแสเงินสดในอนาคต ที่ถูกปรับลดลงตามอัตราคิดลด (WACC) เพื่อให้สะท้อนมูลค่าของเงินในปัจจุบัน</li>
+                    <li><strong>เงินสดสะสมคิดลด:</strong> ยอดรวมสะสมของ DCF (ปีที่ตัวเลขเปลี่ยนจากสีแดงเป็นสีเขียว แถบสีเหลือง คือปีที่โครงการถึง <strong>จุดคุ้มทุน</strong>)</li>
+                </ul>
+                <div style="padding-top: 10px; border-top: 1px dashed var(--secondary); font-weight: bold; color: var(--dark); line-height: 1.6;">
+                    ▶ สรุปผลลัพธ์โครงการ: ระยะเวลาคืนทุน <span id="summaryPaybackText" style="color: #d32f2f;">-</span> ปี 
+                    | มูลค่าปัจจุบันสุทธิ (NPV) สิ้นปีที่ 15: <span id="summaryNpvText" style="color: var(--primary);">0</span> บาท<br>
+                    ▶ อัตราผลตอบแทนภายใน (IRR): <span id="summaryIrrText" style="color: var(--orange);">0.00 %</span> 
+                    | ต้นทุนผลิตไฟฟ้าเฉลี่ย (LCOE): <span id="summaryLcoeText" style="color: var(--primary);">0.00 บาท/หน่วย</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="reportSection">
+        
+        <div class="avoid-page-break" id="reportHeader" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h1 style="border-bottom: none; margin-bottom: 5px; text-align: left; padding-bottom: 0;">รายงานวิเคราะห์ระบบ</h1>
+                <h2 id="repProjectName" style="text-align: left; color: var(--secondary); margin-top: 10px; margin-bottom: 5px;">โครงการ : -</h2>
+                <h3 id="repCustomerName" style="text-align: left; color: #555; margin-top: 0;">ลูกค้า : -</h3>
+            </div>
+            <div style="max-width: 200px; text-align: right;">
+                <img id="repLogoImg" src="" style="max-width: 100%; max-height: 90px; display: none; object-fit: contain;">
+            </div>
+        </div>
+        <hr style="border: 2px solid var(--primary); margin-bottom: 30px;">
+        
+        <div class="avoid-page-break">
+            <table class="report-table">
+                <tr><td>ปริมาณไฟฟ้ารวม (หน่วย / เดือน)</td><td id="repMonthlyUnit">-</td></tr>
+                <tr><td>กำลังการผลิตต้องการ (โหลดกลางวัน+ชาร์จแบต(กรณีมีแบต))</td><td id="repKwp">-</td></tr>
+                <tr><td>จำนวนแผงที่ติดตั้ง</td><td id="repPanels">-</td></tr>
+                <tr><td>จำนวนอินเวอร์เตอร์</td><td id="repInverters">-</td></tr>
+                <tr><td>แบตเตอรี่ (ขนาดความจุรวม / จำนวน)</td><td id="repBattery">-</td></tr>
+                <tr><td>ขนาดกำลังผลิตสูงสุด</td><td id="repActualKwp">-</td></tr>
+                <tr><td style="color: var(--orange);">ราคาขายก่อนภาษี</td><td id="repSellingPrice" style="color: var(--orange); font-weight: bold;">-</td></tr>
+                <tr><td style="color: var(--orange); font-size: 1.1rem;">ราคาขาย (รวม VAT 7%)</td><td id="repSellingPriceVAT" style="color: var(--orange); font-size: 1.2rem; font-weight: bold;">-</td></tr>
+                <tr id="repPaybackRow"><td>ระยะเวลาคืนทุน</td><td id="repPayback">-</td></tr>
+            </table>
+        </div>
+
+        <div class="avoid-page-break" style="margin-top: 30px;">
+            <h3 style="text-align:center;">กำลังการผลิตของระบบและการทำงานของแบตเตอรี่รายวัน</h3>
+            <img id="repDailyChartImg" style="width:100%; max-height: 350px; object-fit: contain;">
+            <div class="chart-summary">
+                การผลิตรวม: <span id="repSumDaily">-</span><br>
+                <span id="repSumBatt" style="color:#d32f2f; font-weight:normal;">-</span>
+            </div>
+        </div>
+
+        <div class="avoid-page-break" style="margin-top: 30px;">
+            <h3 style="text-align:center;">ผลผลิตพลังงานรายเดือนใน 1 ปี (Yields)</h3>
+            <img id="repMonthlyChartImg" style="width:100%; max-height: 350px; object-fit: contain;">
+            <div class="chart-summary">
+                การผลิตรวมทั้งปี: <span id="repSumAnnual">-</span><br>
+                การผลิตเฉลี่ยต่อเดือน: <span id="repSumMonth">-</span>
+            </div>
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="avoid-page-break">
+            <h3 style="margin-top: 40px; color: var(--dark);">กระแสเงินสดสะสมระบบ </h3>
+            <div id="repTableContainer"></div>
+        </div>
+
+        <div class="avoid-page-break table-explanation" style="margin-bottom: 40px; background: #fafafa; border: 1px solid var(--gray); border-left: 5px solid var(--secondary);">
+            <h4 style="margin-top: 0; color: var(--dark);">คำอธิบายตารางวิเคราะห์ความคุ้มค่า</h4>
+            <ul>
+                <li><strong>กระแสเงินสด (Cash Flow):</strong> จำนวนเงินที่ประหยัดได้จากค่าไฟ หักลบค่า O&M รายปี</li>
+                <li><strong>มูลค่าปัจจุบัน (DCF):</strong> มูลค่ากระแสเงินสดในอนาคตที่ปรับด้วยอัตราคิดลด (WACC) เพื่อสะท้อนมูลค่าเงินตามเวลา (Time Value of Money)</li>
+                <li><strong>เงินสดสะสมคิดลด (Cumulative DCF):</strong> ยอดรวมของ DCF โดยแถบตารางที่ถูก <strong>ไฮไลต์สีเหลือง</strong> หมายถึงปีที่โครงการเข้าสู่จุดคุ้มทุนทางการเงิน</li>
+            </ul>
+            <div style="padding-top: 10px; border-top: 1px dashed var(--gray); font-size: 1.05rem; line-height: 1.6;">
+                <strong>ข้อสรุปโครงการ:</strong> ระยะเวลาคืนทุน <strong><span id="repSummaryPaybackText" style="color: #d32f2f;">-</span></strong> ปี 
+                | NPV สิ้นปีที่ 15: <strong><span id="repSummaryNpvText" style="color: var(--primary);">0</span></strong> บาท<br>
+                <strong>IRR:</strong> <strong><span id="repSummaryIrrText" style="color: var(--orange);">0.00 %</span></strong>
+                | <strong>LCOE:</strong> <strong><span id="repSummaryLcoeText" style="color: var(--primary);">0.00 บาท/หน่วย</span></strong>
+            </div>
+        </div>
+
+        <div class="avoid-page-break" style="text-align: right; font-weight: bold; font-size: 1.2rem; font-style: italic; color: #555; border-top: 1px solid #ddd; padding-top: 15px;">
+            Powered by ลุงพี
+        </div>
+
+        <div id="printBtnContainer" class="no-print" style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 20px;">
+            <button class="btn-secondary" onclick="printReport()" style="width: auto; padding: 15px 30px; font-size: 1.1rem; border-radius: 30px;">
+                🖨️ พิมพ์รายงาน (Print)
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let dailyChartInstance = null;
+    let monthlyChartInstance = null;
+    let uploadedLogoBase64 = '';
+
+    document.getElementById('companyLogo').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedLogoBase64 = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function toggleBessSection() {
+        const isChecked = document.getElementById('hasBattery').checked;
+        const bessWrapper = document.getElementById('bessInputsWrapper');
+        const omInput = document.getElementById('omCostPerWatt');
+        
+        if (isChecked) {
+            bessWrapper.style.opacity = '1';
+            bessWrapper.style.pointerEvents = 'auto';
+            omInput.value = "1";
+        } else {
+            bessWrapper.style.opacity = '0.4';
+            bessWrapper.style.pointerEvents = 'none';
+            omInput.value = "0.6";
+        }
+    }
+
+    // ฟังก์ชันคำนวณอัตราผลตอบแทนภายใน (IRR) ด้วยวิธี Newton-Raphson
+    function computeIRR(cf) {
+        let guess = 0.1;
+        for (let i = 0; i < 100; i++) {
+            let npv = 0;
+            let dNpv = 0;
+            for (let j = 0; j < cf.length; j++) {
+                npv += cf[j] / Math.pow(1 + guess, j);
+                if (j > 0) dNpv -= j * cf[j] / Math.pow(1 + guess, j + 1);
+            }
+            if (Math.abs(dNpv) < 1e-6) break;
+            let nextGuess = guess - npv / dNpv;
+            if (Math.abs(nextGuess - guess) < 1e-6) return nextGuess;
+            guess = nextGuess;
+        }
+        return guess;
+    }
+
+    function calculateSolarSystem() {
+        const hasBattery = document.getElementById('hasBattery').checked;
+
+        const monthlyUnit = parseFloat(document.getElementById('monthlyUnit').value);
+        const daylightRatio = parseFloat(document.getElementById('daylightRatio').value) / 100;
+        const nightRatio = 1 - daylightRatio;
+        const psh = parseFloat(document.getElementById('psh').value);
+        const pr = parseFloat(document.getElementById('pr').value);
+        const panelWatt = parseFloat(document.getElementById('panelWatt').value);
+        const invSize = parseFloat(document.getElementById('invSize').value);
+        
+        const cPanel = parseFloat(document.getElementById('cPanel').value);
+        const cInv = parseFloat(document.getElementById('cInv').value);
+        const cBos = parseFloat(document.getElementById('cBos').value);
+        const cLabor = parseFloat(document.getElementById('cLabor').value);
+        const cManage = parseFloat(document.getElementById('cManage').value);
+        
+        let bessCapacity = 0;
+        let bessCostPerKwh = 0;
+        let bessUnits = 0;
+
+        if (hasBattery) {
+            let bessUnitSize = parseFloat(document.getElementById('bessUnitSize').value);
+            bessUnits = parseFloat(document.getElementById('bessUnits').value);
+            bessCapacity = bessUnitSize * bessUnits; 
+            bessCostPerKwh = parseFloat(document.getElementById('bessCostPerKwh').value);
+        }
+
+        const allowBeforePSH = document.getElementById('chkBeforePSH').checked;
+        const allowAfterPSH = document.getElementById('chkAfterPSH').checked;
+
+        const margin = parseFloat(document.getElementById('margin').value) / 100;
+        const tariff = parseFloat(document.getElementById('tariff').value);
+        const wacc = parseFloat(document.getElementById('wacc').value) / 100;
+        const degradation = parseFloat(document.getElementById('degradation').value) / 100;
+        const omCostPerWatt = parseFloat(document.getElementById('omCostPerWatt').value);
+
+        const totalDayUnitsPerDay = (monthlyUnit * daylightRatio) / 30;
+        const totalNightUnitsPerDay = (monthlyUnit * nightRatio) / 30;
+        
+        const usableBatteryCapacity = bessCapacity * 0.9;
+        const nightLoadFromBattery = Math.min(totalNightUnitsPerDay, usableBatteryCapacity);
+        
+        const energyToCharge = hasBattery ? (nightLoadFromBattery / 0.9) : 0; 
+        const totalEnergyNeededPerDay = totalDayUnitsPerDay + energyToCharge;
+        
+        const calcKwp = totalEnergyNeededPerDay / (psh * pr);
+        
+        const panelsNeeded = Math.ceil((calcKwp * 1000) / panelWatt);
+        const actualKwp = (panelsNeeded * panelWatt) / 1000;
+        const actualWatt = panelsNeeded * panelWatt;
+
+        const invertersNeeded = Math.ceil(actualKwp / (invSize * 1.20));
+
+        const totalSolarCostPerWatt = cPanel + cInv + cBos + cLabor + cManage;
+        const solarComponentCost = actualWatt * totalSolarCostPerWatt;
+        const bessComponentCost = bessCapacity * bessCostPerKwh;
+        
+        const totalEpcCost = solarComponentCost + bessComponentCost;
+        const totalEpcCostVAT = totalEpcCost * 1.07; 
+        
+        const totalSellingPrice = totalEpcCostVAT * (1 + margin); 
+        const totalSellingPriceVAT = totalSellingPrice * 1.07; 
+
+        document.getElementById('resKwp').innerText = calcKwp.toFixed(2) + " kWp";
+        document.getElementById('resPanels').innerText = panelsNeeded.toLocaleString() + " แผง";
+        document.getElementById('resActualKwp').innerText = actualKwp.toFixed(2) + " kWp";
+        document.getElementById('resInverters').innerText = invertersNeeded + " ตัว (ขนาด " + invSize + " kW)";
+        
+        if (hasBattery) {
+            document.getElementById('resBattery').innerText = bessCapacity.toLocaleString() + " kWh / " + bessUnits + " Unit";
+        } else {
+            document.getElementById('resBattery').innerText = "ไม่มีแบตเตอรี่";
+        }
+        
+        document.getElementById('resEpcCost').innerText = totalEpcCost.toLocaleString(undefined, {maximumFractionDigits:0}) + " บาท";
+        document.getElementById('resEpcCostVAT').innerText = totalEpcCostVAT.toLocaleString(undefined, {maximumFractionDigits:0}) + " บาท";
+        document.getElementById('resSellingPrice').innerText = totalSellingPrice.toLocaleString(undefined, {maximumFractionDigits:0}) + " บาท";
+        document.getElementById('resSellingPriceVAT').innerText = totalSellingPriceVAT.toLocaleString(undefined, {maximumFractionDigits:0}) + " บาท";
+
+        // GRAPHS DATA PREP
+        const avgDailyProductionYear1 = actualKwp * psh * pr;
+        const P_peak = (avgDailyProductionYear1 * Math.PI) / 24; 
+        
+        const labels24 = Array.from({length: 25}, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+        const solarArr = new Array(25).fill(0);
+        const chargeArr = new Array(25).fill(0);
+        const dischargeArr = new Array(25).fill(0);
+        const pshArr = new Array(25).fill(0);
+
+        let SOC = 0;
+        let depletedTime = null;
+
+        for (let step = 6; step <= 30; step++) {
+            let h = step % 24;
+            let solar = (h >= 6 && h <= 18) ? (P_peak * Math.sin(Math.PI * (h - 6) / 12)) : 0;
+            solarArr[h] = solar;
+            
+            let load = (h >= 6 && h < 18) ? (totalDayUnitsPerDay / 12) : (totalNightUnitsPerDay / 12);
+            let surplus = solar - load;
+            
+            if (hasBattery) {
+                if (surplus > 0) {
+                    if (h >= 9 && h <= 15) {
+                        let toCharge = Math.min(surplus, (bessCapacity - SOC) / 0.9);
+                        SOC += toCharge * 0.9;
+                        chargeArr[h] = toCharge;
+                    } else {
+                        chargeArr[h] = 0;
+                    }
+                    dischargeArr[h] = 0;
+                } else {
+                    chargeArr[h] = 0;
+                    let demand = -surplus;
+                    let canDischarge = false;
+                    if (h >= 0 && h < 9 && allowBeforePSH) canDischarge = true;
+                    if (h >= 15 && h <= 24 && allowAfterPSH) canDischarge = true;
+                    
+                    if (canDischarge && SOC > 0) {
+                        let toDischarge = Math.min(demand / 0.9, SOC);
+                        SOC -= toDischarge;
+                        dischargeArr[h] = -toDischarge;
+                    } else {
+                        dischargeArr[h] = 0;
+                        if (canDischarge && SOC <= 0 && depletedTime === null && step > 18) {
+                            depletedTime = h;
+                        }
+                    }
+                }
+            }
+        }
+        solarArr[24] = solarArr[0];
+        chargeArr[24] = chargeArr[0];
+        dischargeArr[24] = dischargeArr[0];
+
+        let maxY = Math.max(...solarArr) * 1.2;
+        if (maxY === 0) maxY = 10;
+        for (let i = 9; i <= 15; i++) pshArr[i] = maxY;
+
+        if (dailyChartInstance) dailyChartInstance.destroy();
+        const ctxDaily = document.getElementById('dailyChartCanvas').getContext('2d');
+        
+        let datasets = [
+            { type: 'bar', label: 'ช่วง PSH', data: pshArr, backgroundColor: 'rgba(255, 165, 0, 0.15)', barPercentage: 1.0, categoryPercentage: 1.0, order: 4 },
+            { type: 'line', label: 'โซล่าร์เซลล์ (kW)', data: solarArr, borderColor: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.1)', fill: true, tension: 0.4, order: 1 }
+        ];
+
+        if (hasBattery) {
+            datasets.push({ type: 'line', label: 'ชาร์จแบต (+)', data: chargeArr, borderColor: '#00b0ff', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, fill: false, order: 2 });
+            datasets.push({ type: 'line', label: 'ใช้แบต (-)', data: dischargeArr, borderColor: '#ff9800', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, fill: false, order: 3 });
+        }
+
+        dailyChartInstance = new Chart(ctxDaily, {
+            type: 'line',
+            data: { labels: labels24, datasets: datasets },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: { y: { beginAtZero: true, suggestedMax: maxY, title: { display: true, text: 'กำลังไฟฟ้า (kW)' } } }
+            }
+        });
+
+        document.getElementById('sumDailyProduce').innerText = avgDailyProductionYear1.toFixed(2) + " kWh/วัน";
+        if (hasBattery) {
+            if (depletedTime !== null) {
+                document.getElementById('sumBatteryStatus').innerText = "ช่วงเวลาใช้แบตเตอรี่: แบตเตอรี่สามารถจ่ายไฟได้ถึงเวลาประมาณ " + depletedTime.toString().padStart(2, '0') + ":00 น.";
+            } else {
+                document.getElementById('sumBatteryStatus').innerText = "ช่วงเวลาใช้แบตเตอรี่: เพียงพอจ่ายโหลดตลอดช่วงเวลาที่กำหนด";
+            }
+        } else {
+            document.getElementById('sumBatteryStatus').innerText = "ไม่มีระบบแบตเตอรี่ (ใช้ไฟจากกริดในช่วงเวลากลางคืน)";
+        }
+
+        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const labelsMonth = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const monthlyData = daysInMonth.map(d => avgDailyProductionYear1 * d);
+        const totalAnnual = monthlyData.reduce((a, b) => a + b, 0);
+
+        if (monthlyChartInstance) monthlyChartInstance.destroy();
+        const ctxMonth = document.getElementById('monthlyChartCanvas').getContext('2d');
+        monthlyChartInstance = new Chart(ctxMonth, {
+            type: 'bar',
+            data: {
+                labels: labelsMonth,
+                datasets: [{ label: 'ผลผลิตพลังงาน (kWh)', data: monthlyData, backgroundColor: '#4caf50' }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'kWh' } } } }
+        });
+
+        document.getElementById('sumAnnualProduce').innerText = totalAnnual.toLocaleString(undefined, {maximumFractionDigits:2}) + " kWh";
+        document.getElementById('sumAvgMonthly').innerText = (totalAnnual/12).toLocaleString(undefined, {maximumFractionDigits:2}) + " kWh";
+
+        // CASH FLOW TABLE CALC (รวมการหาค่า IRR และ LCOE)
+        const tbody = document.querySelector('#cashFlowTable tbody');
+        tbody.innerHTML = ''; 
+        let cumulativeDCF = -totalSellingPriceVAT;
+        let paybackPeriod = null;
+        
+        // เก็บกระแสเงินสดแต่ละปีเพื่อคำนวณ IRR
+        let cashFlowsArray = [-totalSellingPriceVAT]; 
+        
+        // ตัวแปรสำหรับคำนวณ LCOE
+        let totalDiscountedCost = totalSellingPriceVAT;
+        let totalDiscountedEnergy = 0;
+        
+        tbody.innerHTML += `<tr>
+            <td>0</td><td>-</td><td>-</td><td>-</td>
+            <td>-${totalSellingPriceVAT.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+            <td>-${totalSellingPriceVAT.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+            <td style="color:red; font-weight:600;">${cumulativeDCF.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+        </tr>`;
+
+        const annualOmCost = actualWatt * omCostPerWatt;
+        const requiredChargeEnergy = hasBattery ? ((bessCapacity * 0.90) / 0.90) : 0; 
+
+        for (let t = 1; t <= 15; t++) {
+            let degradationFactor = Math.pow(1 - degradation, t - 1);
+            let dailyProductionThisYear = avgDailyProductionYear1 * degradationFactor;
+            
+            let dailyDaySavingUnits = Math.min(dailyProductionThisYear, totalDayUnitsPerDay);
+            let surplusEnergy = Math.max(0, dailyProductionThisYear - dailyDaySavingUnits);
+            
+            let dailyBessChargedUnits = hasBattery ? Math.min(surplusEnergy, requiredChargeEnergy) : 0;
+            let dailyNightSavingUnits = hasBattery ? Math.min(dailyBessChargedUnits * 0.90, totalNightUnitsPerDay) : 0; 
+
+            let totalDailySavingUnits = dailyDaySavingUnits + dailyNightSavingUnits;
+            let currentSavingAnnual = totalDailySavingUnits * 365 * tariff;
+            
+            let netCashFlow = currentSavingAnnual - annualOmCost;
+            let dcf = netCashFlow / Math.pow(1 + wacc, t);
+            
+            let previousCumulative = cumulativeDCF;
+            cumulativeDCF += dcf;
+            
+            // สะสมตัวเลขสำหรับการคำนวณด้านการเงิน
+            cashFlowsArray.push(netCashFlow);
+            totalDiscountedCost += (annualOmCost / Math.pow(1 + wacc, t));
+            totalDiscountedEnergy += ((dailyProductionThisYear * 365) / Math.pow(1 + wacc, t));
+
+            let rowClass = "";
+            if (previousCumulative < 0 && cumulativeDCF >= 0 && paybackPeriod === null) {
+                paybackPeriod = (t - 1) + (Math.abs(previousCumulative) / dcf);
+                rowClass = "highlight-row";
+            }
+
+            tbody.innerHTML += `<tr class="${rowClass}">
+                <td>${t}</td>
+                <td>${(dailyProductionThisYear * 365).toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+                <td>${currentSavingAnnual.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+                <td>${annualOmCost.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+                <td>${netCashFlow.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+                <td>${dcf.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+                <td style="color:${cumulativeDCF >= 0 ? 'green' : 'red'};">${cumulativeDCF.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+            </tr>`;
+        }
+
+        let paybackText = paybackPeriod !== null ? paybackPeriod.toFixed(2) : "เกิน 15";
+        let paybackThreshold = 7;
+        let projectCategory = "ภาคครัวเรือน (Residential)";
+
+        if (hasBattery) {
+            paybackThreshold = 12;
+            projectCategory = "Solar + BESS (แบตเตอรี่)";
+        } else {
+            if (actualKwp >= 30) {
+                paybackThreshold = 7;
+                projectCategory = "ธุรกิจและอุตสาหกรรม (C&I >= 30 kWp)";
+            } else {
+                paybackThreshold = 7;
+                projectCategory = "ภาคครัวเรือน (Residential < 30 kWp)";
+            }
+        }
+
+        const paybackCard = document.getElementById('paybackCard');
+        const paybackTitle = document.getElementById('paybackTitle');
+        const resPayback = document.getElementById('resPayback');
+
+        let isFeasible = (paybackPeriod !== null && paybackPeriod <= paybackThreshold);
+
+        if (isFeasible) {
+            paybackCard.style.background = "#e8f5e9";
+            paybackCard.style.borderLeftColor = "#2e7d32";
+            paybackTitle.style.color = "#1b5e20";
+            resPayback.style.color = "#1b5e20";
+            resPayback.innerHTML = `${paybackText} ปี <div style="font-size:0.8rem; font-weight:normal; margin-top:5px;">(คุ้มทุนในเกณฑ์ ${projectCategory} <= ${paybackThreshold} ปี)</div>`;
+        } else {
+            paybackCard.style.background = "#ffebee";
+            paybackCard.style.borderLeftColor = "#d32f2f";
+            paybackTitle.style.color = "#d32f2f";
+            resPayback.style.color = "#d32f2f";
+            resPayback.innerHTML = `${paybackText} ปี <div style="font-size:0.8rem; font-weight:normal; margin-top:5px;">(เกินเกณฑ์ ${projectCategory} > ${paybackThreshold} ปี)</div>`;
+        }
+
+        window.currentPaybackData = {
+            text: paybackText,
+            isFeasible: isFeasible,
+            threshold: paybackThreshold
+        };
+        
+        // คำนวณหา IRR (คูณ 100 ให้เป็นเปอร์เซ็นต์) และหา LCOE (บาท/หน่วย)
+        let irrValue = computeIRR(cashFlowsArray) * 100;
+        let lcoeValue = totalDiscountedCost / totalDiscountedEnergy;
+
+        document.getElementById('summaryPaybackText').innerText = paybackText;
+        document.getElementById('summaryNpvText').innerText = cumulativeDCF.toLocaleString(undefined, {maximumFractionDigits:0});
+        if (cumulativeDCF < 0) document.getElementById('summaryNpvText').style.color = "#d32f2f";
+        
+        // อัปเดตข้อมูลบนหน้าจอแสดงผลหลัก
+        document.getElementById('summaryIrrText').innerText = (irrValue > -100 && irrValue < 1000) ? irrValue.toFixed(2) + " %" : "N/A";
+        document.getElementById('summaryLcoeText').innerText = lcoeValue.toFixed(2) + " บาท/หน่วย";
+    }
+
+    function generateReport() {
+        calculateSolarSystem();
+
+        const projNameInput = document.getElementById('projectName').value.trim();
+        const custNameInput = document.getElementById('customerName').value.trim();
+        
+        document.getElementById('repProjectName').innerText = "โครงการ : " + (projNameInput !== "" ? projNameInput : "ไม่ระบุชื่อ");
+        document.getElementById('repCustomerName').innerText = "ลูกค้า : " + (custNameInput !== "" ? custNameInput : "-");
+
+        const logoImg = document.getElementById('repLogoImg');
+        if(uploadedLogoBase64 !== '') {
+            logoImg.src = uploadedLogoBase64;
+            logoImg.style.display = 'block';
+        } else {
+            logoImg.style.display = 'none';
+        }
+
+        document.getElementById('repMonthlyUnit').innerText = parseFloat(document.getElementById('monthlyUnit').value).toLocaleString() + " หน่วย";
+        document.getElementById('repKwp').innerText = document.getElementById('resKwp').innerText;
+        document.getElementById('repPanels').innerText = document.getElementById('resPanels').innerText;
+        document.getElementById('repInverters').innerText = document.getElementById('resInverters').innerText;
+        document.getElementById('repBattery').innerText = document.getElementById('resBattery').innerText;
+        document.getElementById('repActualKwp').innerText = document.getElementById('resActualKwp').innerText;
+        
+        document.getElementById('repSellingPrice').innerText = document.getElementById('resSellingPrice').innerText;
+        document.getElementById('repSellingPriceVAT').innerText = document.getElementById('resSellingPriceVAT').innerText;
+        
+        const pbData = window.currentPaybackData;
+        const repPaybackRow = document.getElementById('repPaybackRow');
+        const repPaybackCell = document.getElementById('repPayback');
+        
+        if(pbData.isFeasible) {
+            repPaybackRow.style.background = "rgba(232, 245, 233, 0.7)"; 
+            repPaybackCell.innerHTML = `<span style="color: #1b5e20; font-weight: bold; font-size: 1.15rem;">${pbData.text} ปี</span>`;
+            repPaybackRow.querySelector('td:first-child').style.color = "#1b5e20";
+        } else {
+            repPaybackRow.style.background = "rgba(255, 235, 238, 0.7)"; 
+            repPaybackCell.innerHTML = `<span style="color: #d32f2f; font-weight: bold; font-size: 1.15rem;">${pbData.text} ปี</span>`;
+            repPaybackRow.querySelector('td:first-child').style.color = "#d32f2f";
+        }
+
+        // อัปเดตข้อมูลสรุปของรายงาน (รวม IRR และ LCOE)
+        document.getElementById('repSummaryPaybackText').innerText = document.getElementById('summaryPaybackText').innerText;
+        document.getElementById('repSummaryNpvText').innerText = document.getElementById('summaryNpvText').innerText;
+        document.getElementById('repSummaryNpvText').style.color = document.getElementById('summaryNpvText').style.color;
+        document.getElementById('repSummaryIrrText').innerText = document.getElementById('summaryIrrText').innerText;
+        document.getElementById('repSummaryLcoeText').innerText = document.getElementById('summaryLcoeText').innerText;
+
+        setTimeout(() => {
+            document.getElementById('repDailyChartImg').src = dailyChartInstance.toBase64Image();
+            document.getElementById('repMonthlyChartImg').src = monthlyChartInstance.toBase64Image();
+        }, 300);
+
+        document.getElementById('repSumDaily').innerText = document.getElementById('sumDailyProduce').innerText;
+        document.getElementById('repSumBatt').innerText = document.getElementById('sumBatteryStatus').innerText;
+        document.getElementById('repSumAnnual').innerText = document.getElementById('sumAnnualProduce').innerText;
+        document.getElementById('repSumMonth').innerText = document.getElementById('sumAvgMonthly').innerText;
+
+        const tableContainer = document.getElementById('repTableContainer');
+        tableContainer.innerHTML = ''; 
+        const clonedTable = document.getElementById('cashFlowTable').cloneNode(true);
+        clonedTable.id = "reportCashFlowTable"; 
+        tableContainer.appendChild(clonedTable);
+
+        const reportSection = document.getElementById('reportSection');
+        reportSection.style.display = 'block';
+        reportSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ฟังก์ชันพิเศษสำหรับปรินต์รายงานทะลุข้อจำกัด Iframe ของ Google Sites
+    function printReport() {
+        // ดึงข้อมูลส่วนที่จะปรินต์และ Style ดั้งเดิม
+        const reportContent = document.getElementById('reportSection').innerHTML;
+        const originalStyles = document.querySelector('style').innerHTML;
+
+        // สร้างหน้าต่างใหม่ (Pop-up)
+        const printWindow = window.open('', '_blank', 'width=900,height=800');
+        
+        // ตรวจสอบว่าเบราว์เซอร์บล็อก Pop-up หรือไม่
+        if (!printWindow) {
+            alert("⚠️ ระบบถูกบล็อก Pop-up! กรุณาอนุญาต Pop-up (Allow pop-ups) สำหรับหน้านี้ก่อนพิมพ์รายงานครับ");
+            return;
+        }
+
+        // เขียนเนื้อหาลงในหน้าต่างใหม่
+        printWindow.document.write('<!DOCTYPE html><html lang="th"><head><title>พิมพ์รายงาน - Solar Feasibility</title>');
+        printWindow.document.write('<style>' + originalStyles + '</style>');
+        // บังคับ Style พิเศษสำหรับหน้าปรินต์
+        printWindow.document.write('<style>body { background: white; margin: 0; padding: 20px; } .no-print { display: none !important; } #reportSection { display: block !important; box-shadow: none; margin: 0; padding: 0; }</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<div class="container" style="box-shadow: none; max-width: 100%; padding: 0; margin: 0;">');
+        printWindow.document.write('<div id="reportSection" style="display:block; padding: 0; margin: 0;">');
+        printWindow.document.write(reportContent);
+        printWindow.document.write('</div></div>');
+        printWindow.document.write('</body></html>');
+
+        printWindow.document.close();
+        printWindow.focus();
+
+        // หน่วงเวลาเล็กน้อยให้รูปกราฟโหลดเสร็จก่อนสั่ง Print
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close(); // ปิดหน้าต่างอัตโนมัติเมื่อสั่งปรินต์เสร็จ
+        }, 800);
+    }
+
+    window.onload = function() {
+        toggleBessSection();
+        calculateSolarSystem();
+    };
+</script>
+
+</body>
+</html>

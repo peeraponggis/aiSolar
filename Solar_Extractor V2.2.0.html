@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Solar Extractor & DeviceDB by ลุงพี</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakrapetch:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', 'Chakrapetch', sans-serif; background-color: #f8fafc; color: #334155; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Clean UI Accents */
+        .glass-header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid #e2e8f0; }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .input-clean { background-color: #f8fafc; border: 1px solid #cbd5e1; color: #1e293b; transition: all 0.2s; }
+        .input-clean:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); outline: none; }
+        
+        .schema-btn { border: 1px solid #e2e8f0; background: #ffffff; color: #64748b; }
+        .schema-btn:hover { background: #f1f5f9; }
+        .schema-btn.active { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        
+        .db-type-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .db-type-card:hover { border-color: #93c5fd; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .db-type-card.active { border-color: #3b82f6; background: #eff6ff; ring: 2px solid #bfdbfe; }
+        
+        .error-glow { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #b91c1c !important; }
+        .console-line { font-family: 'Courier New', Courier, monospace; font-size: 11px; }
+    </style>
+</head>
+<body class="min-h-screen custom-scrollbar selection:bg-blue-200">
+
+    <nav class="glass-header sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-xl shadow-md text-white flex items-center justify-center">
+                    <i class="fa-solid fa-layer-group text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">Solar Extractor</h1>
+                    <p class="text-[11px] text-blue-600 font-semibold tracking-wider uppercase">Enterprise Document AI v5.5 by ลุงพี</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+                <div class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-2 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Ready
+                </div>
+                <button onclick="clearSystemDatabase()" class="bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-rose-600 px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-trash-can"></i> Clear DeviceDB
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 space-y-5 card-shadow">
+                <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <div class="bg-blue-100 text-blue-600 p-1.5 rounded-lg"><i class="fa-solid fa-sliders"></i></div>
+                    <h2 class="font-bold text-slate-800">1. Extractor Settings</h2>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Target Schema Profile</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="schemaSelector">
+                        <button onclick="switchSchema('PV_MODULE')" id="btn-PV_MODULE" class="schema-btn active py-2.5 px-2 rounded-xl text-xs transition flex flex-col items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-solar-panel text-lg"></i> PV Module
+                        </button>
+                        <button onclick="switchSchema('INVERTER')" id="btn-INVERTER" class="schema-btn py-2.5 px-2 rounded-xl text-xs transition flex flex-col items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-bolt text-lg"></i> Inverter
+                        </button>
+                        <button onclick="switchSchema('BATTERY_ESS')" id="btn-BATTERY_ESS" class="schema-btn py-2.5 px-2 rounded-xl text-xs transition flex flex-col items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-battery-three-quarters text-lg"></i> Battery ESS
+                        </button>
+                        <button onclick="switchSchema('OPTIMIZER')" id="btn-OPTIMIZER" class="schema-btn py-2.5 px-2 rounded-xl text-xs transition flex flex-col items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-chart-line text-lg"></i> Optimizer
+                        </button>
+                        <button onclick="switchSchema('EV_CHARGER')" id="btn-EV_CHARGER" class="schema-btn py-2.5 px-2 col-span-2 sm:col-span-1 rounded-xl text-xs transition flex flex-col items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-charging-station text-lg"></i> EV Charger
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Manufacturer (Optional)</label>
+                        <input type="text" id="manualBrand" placeholder="e.g. Huawei, LONGi, AndSolar" class="w-full input-clean rounded-lg px-3 py-2 text-sm font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sub-Models (Optional Override)</label>
+                        <input type="text" id="manualModels" placeholder="e.g. 50M1, AMCP500-600T1" class="w-full input-clean rounded-lg px-3 py-2 text-sm font-medium">
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-200 mt-2">
+                        <span class="text-xs font-semibold text-slate-600"><i class="fa-solid fa-layer-group text-blue-500 mr-1"></i> Auto-Propagate Merged Cells</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="propagateCells" checked class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Upload Source (PDF / JPG / PNG / TXT)</label>
+                    <div id="dropzone" class="border-2 border-dashed border-blue-300 hover:border-blue-500 hover:bg-blue-50 bg-slate-50 rounded-xl p-6 text-center transition-all cursor-pointer relative group">
+                        <input type="file" id="fileInput" accept=".pdf, .txt, .jpg, .jpeg, .png, image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <div class="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-cloud-arrow-up text-xl text-blue-500"></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700">Click to Upload or Drag & Drop</p>
+                        <p class="text-[11px] text-slate-500 mt-1 font-medium">Supports Smart OCR for image datasheets</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Raw Text Buffer</label>
+                        <button onclick="document.getElementById('rawTextArea').value=''" class="text-[10px] text-slate-400 hover:text-rose-500 transition"><i class="fa-solid fa-eraser"></i> Clear</button>
+                    </div>
+                    <textarea id="rawTextArea" rows="5" class="w-full input-clean rounded-xl p-3 text-xs font-mono custom-scrollbar leading-relaxed" placeholder="ข้อความที่สกัดได้จากรูปภาพหรือ PDF จะแสดงที่นี่..."></textarea>
+                </div>
+
+                <button onclick="processDatasheetEngine()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 uppercase tracking-wide">
+                    <i class="fa-solid fa-bolt"></i> Run Smart Extraction
+                </button>
+            </div>
+
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col h-[180px] card-shadow">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                        <div class="flex items-center gap-2 text-[11px] font-bold text-slate-500 tracking-wider">
+                            <i class="fa-solid fa-terminal text-slate-400"></i> EXECUTION LOGS
+                        </div>
+                    </div>
+                    <div id="consoleLogs" class="bg-slate-800 rounded-xl p-3 flex-1 overflow-y-auto text-slate-300 custom-scrollbar border border-slate-700 shadow-inner">
+                        <div class="console-line text-emerald-400">// System Ready. V5.5 Core Loaded.</div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 flex-1 flex flex-col min-h-[480px] card-shadow relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-20 -mt-20 z-0 opacity-60"></div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 gap-3 relative z-10">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-teal-100 text-teal-600 p-2 rounded-lg"><i class="fa-solid fa-list-check text-lg"></i></div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">2. Data Validation Sandbox</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">แก้ไขพารามิเตอร์ (<span class="text-rose-500 font-bold">สีแดง</span> คือข้อมูลที่ขาดหาย)</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="modelTabContainer"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 flex-1 pt-4 relative z-10">
+                        <div class="md:col-span-7 bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-y-auto max-h-[420px] custom-scrollbar space-y-4" id="paramEditorForm">
+                            <div class="flex flex-col items-center justify-center h-full text-slate-400 space-y-3 opacity-60 pt-10">
+                                <i class="fa-solid fa-file-signature text-4xl"></i>
+                                <p class="text-xs font-medium">No data extracted yet.</p>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-5 flex flex-col h-full min-h-[350px]">
+                            <div class="flex justify-between items-center bg-slate-800 px-4 py-2.5 rounded-t-xl border border-slate-700 text-[10px] text-slate-300 font-mono font-bold tracking-wider">
+                                <span id="txtFileNameDisplay">Output.txt</span>
+                                <button onclick="copyGeneratedConfig()" class="hover:text-white transition"><i class="fa-regular fa-copy"></i></button>
+                            </div>
+                            <textarea id="configTextOutput" readonly class="w-full flex-1 bg-slate-900 border-x border-b border-slate-800 rounded-b-xl p-3 text-[11px] text-teal-300 font-mono focus:outline-none custom-scrollbar resize-none leading-relaxed shadow-inner"></textarea>
+                            
+                            <div class="mt-4 grid grid-cols-2 gap-3">
+                                <button onclick="downloadCurrentTxtFile()" class="bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="fa-solid fa-download text-slate-400"></i> .TXT
+                                </button>
+                                <button onclick="saveActiveModelToDB()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20">
+                                    <i class="fa-solid fa-database"></i> Save DB
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 mt-6 card-shadow">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 mb-6 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-xl">
+                        <i class="fa-solid fa-server text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800">3. Local Device Inventory (DeviceDB)</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">คลังเก็บพารามิเตอร์ของอุปกรณ์ที่สกัดและบันทึกไว้ในเบราว์เซอร์</p>
+                    </div>
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="dbSearch" oninput="renderDeviceInventoryTable()" placeholder="Search Manufacturer or Model..." class="bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 w-full sm:w-72 transition-all">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                <div onclick="filterDeviceDB('PV_MODULE')" id="card-PV_MODULE" class="db-type-card rounded-xl p-4 cursor-pointer transition-all text-center flex flex-col items-center justify-center group">
+                    <div class="bg-sky-50 text-sky-500 w-10 h-10 rounded-full flex items-center justify-center mb-2 group-hover:bg-sky-100 transition-colors"><i class="fa-solid fa-solar-panel text-lg"></i></div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">PV Modules</h4>
+                    <p class="text-xl font-bold text-slate-800 mt-0.5" id="count-PV_MODULE">0</p>
+                </div>
+                <div onclick="filterDeviceDB('INVERTER')" id="card-INVERTER" class="db-type-card rounded-xl p-4 cursor-pointer transition-all text-center flex flex-col items-center justify-center group">
+                    <div class="bg-emerald-50 text-emerald-500 w-10 h-10 rounded-full flex items-center justify-center mb-2 group-hover:bg-emerald-100 transition-colors"><i class="fa-solid fa-bolt text-lg"></i></div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Inverters</h4>
+                    <p class="text-xl font-bold text-slate-800 mt-0.5" id="count-INVERTER">0</p>
+                </div>
+                <div onclick="filterDeviceDB('BATTERY_ESS')" id="card-BATTERY_ESS" class="db-type-card rounded-xl p-4 cursor-pointer transition-all text-center flex flex-col items-center justify-center group">
+                    <div class="bg-amber-50 text-amber-500 w-10 h-10 rounded-full flex items-center justify-center mb-2 group-hover:bg-amber-100 transition-colors"><i class="fa-solid fa-battery-three-quarters text-lg"></i></div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Battery ESS</h4>
+                    <p class="text-xl font-bold text-slate-800 mt-0.5" id="count-BATTERY_ESS">0</p>
+                </div>
+                <div onclick="filterDeviceDB('OPTIMIZER')" id="card-OPTIMIZER" class="db-type-card rounded-xl p-4 cursor-pointer transition-all text-center flex flex-col items-center justify-center group">
+                    <div class="bg-indigo-50 text-indigo-500 w-10 h-10 rounded-full flex items-center justify-center mb-2 group-hover:bg-indigo-100 transition-colors"><i class="fa-solid fa-chart-line text-lg"></i></div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Optimizers</h4>
+                    <p class="text-xl font-bold text-slate-800 mt-0.5" id="count-OPTIMIZER">0</p>
+                </div>
+                <div onclick="filterDeviceDB('EV_CHARGER')" id="card-EV_CHARGER" class="db-type-card rounded-xl p-4 cursor-pointer transition-all text-center flex flex-col items-center justify-center group col-span-2 lg:col-span-1">
+                    <div class="bg-rose-50 text-rose-500 w-10 h-10 rounded-full flex items-center justify-center mb-2 group-hover:bg-rose-100 transition-colors"><i class="fa-solid fa-charging-station text-lg"></i></div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">EV Chargers</h4>
+                    <p class="text-xl font-bold text-slate-800 mt-0.5" id="count-EV_CHARGER">0</p>
+                </div>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600" id="dbTargetTitle">Showing: All Devices</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar min-h-[200px] bg-white">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-white text-slate-400 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                            <tr>
+                                <th class="p-4">Type</th>
+                                <th class="p-4">Manufacturer</th>
+                                <th class="p-4">Model Name</th>
+                                <th class="p-4">Key Specifications</th>
+                                <th class="p-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-xs text-slate-400 py-8 font-medium">
+        <p>© 2026 Advanced Solar Extractor • Enterprise Core v5.5 by ลุงพี</p>
+    </footer>
+
+    <script>
+        // =========================================================================
+        // 1. STRICT SCHEMA DEFINITIONS
+        // =========================================================================
+        const SCHEMA_FIELDS = {
+            PV_MODULE: {
+                title: "PV_MODULE_STRUCTURE",
+                GENERAL_INFO: ["Manufacturer", "Model_Name", "Cell_Type"],
+                STC_PARAMETERS: ["Pmax_Wp", "Voc_V", "Isc_A", "Vmp_V", "Imp_A", "Module_Efficiency_Pct"],
+                NMOT_PARAMETERS: ["Pmax_NMOT_W", "Voc_NMOT_V", "Isc_NMOT_A", "Vmp_NMOT_V", "Imp_NMOT_A"],
+                TEMPERATURE_COEFFICIENTS: ["Tk_Isc_Pct_Per_C", "Tk_Voc_Pct_Per_C", "Tk_Pmax_Pct_Per_C", "NOCT_Value_C"],
+                MECHANICAL_SPEC: ["Length_mm", "Width_mm", "Thickness_mm", "Weight_kg", "Is_Bifacial", "Bifaciality_Factor"]
+            },
+            INVERTER: {
+                title: "INVERTER_STRUCTURE",
+                GENERAL_INFO: ["Manufacturer", "Model_Name", "Inverter_Type"],
+                DC_INPUT_PARAMETERS: ["Max_DC_Input_Voltage_V", "Start_Input_Voltage_V", "MPPT_Voltage_Min_V", "MPPT_Voltage_Max_V", "Full_Power_MPPT_Min_V", "Max_Input_Current_MPPT_A", "Max_Isc_Current_MPPT_A", "Number_of_MPPTs", "Inputs_per_MPPT"],
+                AC_OUTPUT_GRID_CONNECTED: ["Rated_AC_Output_Power_kW", "Max_AC_Apparent_Power_kVA", "Nominal_AC_Voltage_V", "Phase_Type", "Nominal_Frequency_Hz", "Max_AC_Output_Current_A", "Power_Factor_Range"],
+                EFFICIENCY_LOSS: ["Max_Efficiency_Pct", "Euro_CEC_Efficiency_Pct", "Night_Consumption_W"],
+                HYBRID_DC_BATTERY_INTERFACE: ["Compatible_Battery_Type", "Battery_Voltage_Range_Min_V", "Battery_Voltage_Range_Max_V", "Nominal_Battery_Voltage_V", "Max_Charge_Power_kW", "Max_Discharge_Power_kW", "Max_Charge_Current_A", "Max_Discharge_Current_A", "BMS_Communication_Protocol"],
+                HYBRID_AC_BACKUP_EPS_OUTPUT: ["Backup_Rated_Power_kW", "Backup_Max_Apparent_Power_kVA", "Backup_Peak_Power_Duration_Sec", "Backup_Switchover_Time_ms", "Backup_Nominal_AC_Voltage_V", "Backup_THDV_Pct", "Max_Bypass_Current_A"],
+                HYBRID_ENERGY_MANAGEMENT_CONTROL: ["Max_Battery_to_Load_Efficiency_Pct", "Max_PV_to_Battery_Efficiency_Pct", "Supported_Operation_Modes", "External_Meter_CT_Compatible", "Unbalanced_Load_Support"]
+            },
+            BATTERY_ESS: {
+                title: "BATTERY_ESS_STRUCTURE",
+                GENERAL_INFO: ["Manufacturer", "Model_Name", "Battery_Chemistry"],
+                CAPACITY_VOLTAGE: ["Nominal_Capacity_kWh", "Nominal_Capacity_Ah", "Usable_Capacity_kWh", "Nominal_Voltage_V", "Operating_Voltage_Min_V", "Operating_Voltage_Max_V"],
+                OPERATIONAL_LIMITS: ["Max_Continuous_Charge_Power_kw", "Max_Continuous_Discharge_Power_kw", "C_Rating", "Recommended_DoD_Pct"],
+                EFFICIENCY_LIFECYCLE: ["Round_Trip_Efficiency_Pct", "Expected_Cycle_Life", "Guaranteed_DoD_Condition_Pct"]
+            },
+            OPTIMIZER: {
+                title: "OPTIMIZER_STRUCTURE",
+                GENERAL_INFO: ["Manufacturer", "Model_Name"],
+                INPUT_PARAMETERS: ["Max_Input_Power_W", "Max_Input_Voltage_Voc_V", "MPPT_Operating_Min_V", "MPPT_Operating_Max_V", "Max_Input_Current_Isc_A"],
+                OUTPUT_PARAMETERS: ["Max_Output_Voltage_V", "Max_Output_Current_A"],
+                EFFICIENCY: ["Max_Efficiency_Pct", "Weighted_Efficiency_Pct"]
+            },
+            EV_CHARGER: {
+                title: "EV_CHARGE_STRUCTURE",
+                GENERAL_INFO: ["Manufacturer", "Model_Name", "Charger_Type", "Number_of_Outputs"],
+                ELECTRICAL_SPECIFICATIONS: ["Nominal_Voltage_V", "Phase_Type", "Max_Current_Per_Phase_A", "Max_Output_Power_kW", "Grid_Frequency_Hz"],
+                SMART_SOLAR_INTEGRATION: ["Dynamic_Load_Balancing_Support", "Solar_Eco_Mode_Support", "Min_Current_to_Start_A", "Phase_Switching_Support", "Communication_Protocol", "Meter_Integration_Type"],
+                OPERATIONAL_PROFILE: ["Typical_Charging_Window_Start", "Typical_Charging_Window_End", "Estimated_Daily_Energy_Demand_kWh", "Simultaneous_Use_Factor_Pct"]
+            }
+        };
+
+        // =========================================================================
+        // 2. UPGRADED SEMANTIC FUZZY DICTIONARY (V5.5 - OCR Multi-Brand Ready)
+        // =========================================================================
+        const SEMANTIC_DICTIONARY = {
+            // PV Module
+            Pmax_Wp: [/pmax/i, /maximum power/i, /nominal power/i, /กำลังผลิตสูงสุด/i],
+            Pmax_NMOT_W: [/pmax.*(nmot|noct)/i, /power.*(nmot|noct)/i], 
+            Voc_V: [/voc/i, /open.*circuit.*voltage/i, /แรงดันเปิดวงจร/i],
+            Isc_A: [/isc/i, /short.*circuit.*current/i, /กระแสลัดวงจร/i],
+            Vmp_V: [/vmp/i, /voltage.*maximum.*power/i, /max.*power.*voltage/i, /แรงดันไฟฟ้าสูงสุด/i, /mpp.*voltage/i],
+            Imp_A: [/imp/i, /current.*maximum.*power/i, /max.*power.*current/i, /กระแสไฟฟ้าสูงสุด/i, /mpp.*current/i],
+            Module_Efficiency_Pct: [/efficiency/i, /module.*eff/i, /ประสิทธิภาพ/i],
+            Cell_Type: [/cell.*type/i, /ประเภทเซลล์/i, /ชนิดเซลล์/i, /technology/i],
+            Tk_Pmax_Pct_Per_C: [/tk.*pmax/i, /temp.*coeff.*pmax/i, /coeff.*pmax/i, /gamma/i, /γ/i],
+            Tk_Voc_Pct_Per_C: [/tk.*voc/i, /temp.*coeff.*voc/i, /coeff.*voc/i, /beta/i, /β/i],
+            Tk_Isc_Pct_Per_C: [/tk.*isc/i, /temp.*coeff.*isc/i, /coeff.*isc/i, /alpha/i, /α/i],
+            NOCT_Value_C: [/noct/i, /nmot.*temp/i, /operating.*temp/i],
+            Length_mm: [/length/i, /ความยาว/i, /dimension/i], Width_mm: [/width/i, /ความกว้าง/i], Thickness_mm: [/thickness/i, /ความหนา/i, /height/i],
+            Weight_kg: [/weight/i, /น้ำหนัก/i],
+            
+            // Inverter (Handled Sigen & Huawei specific phrasing)
+            Max_DC_Input_Voltage_V: [/max.*input.*voltage/i, /max.*dc.*input.*voltage/i, /max.*pv.*input.*voltage/i],
+            Start_Input_Voltage_V: [/start.*up.*voltage/i, /start.*voltage/i],
+            MPPT_Voltage_Min_V: [/mppt.*operating.*voltage.*range/i, /mppt.*voltage.*range/i, /mpp.*voltage.*range/i],
+            MPPT_Voltage_Max_V: [/mppt.*operating.*voltage.*range/i, /mppt.*voltage.*range/i, /mpp.*voltage.*range/i],
+            Number_of_MPPTs: [/number.*of.*mpp.*tracker/i, /mppt.*count/i],
+            Inputs_per_MPPT: [/number.*of.*pv.*string.*per.*mppt/i, /number.*of.*inputs/i],
+            Max_Input_Current_MPPT_A: [/max.*current.*per.*mppt/i, /max.*input.*current/i],
+            Max_Isc_Current_MPPT_A: [/max.*short.*circuit.*current.*per.*mppt/i],
+            Rated_AC_Output_Power_kW: [/rated.*ac.*active.*power/i, /nominal.*output.*active.*power/i, /rated.*output.*power/i, /nominal.*ac.*power/i],
+            Max_AC_Apparent_Power_kVA: [/max.*apparent.*power/i, /max.*output.*apparent.*power/i],
+            Nominal_AC_Voltage_V: [/rated.*output.*voltage/i, /nominal.*output.*voltage/i, /nominal.*grid.*voltage/i],
+            Nominal_Frequency_Hz: [/rated.*ac.*grid.*frequency/i, /nominal.*grid.*frequency/i, /frequency/i],
+            Max_Efficiency_Pct: [/max.*efficiency/i, /ประสิทธิภาพสูงสุด/i],
+            Euro_CEC_Efficiency_Pct: [/european.*efficiency/i, /euro.*eff/i],
+
+            // Optimizer (Handled AndSolar specific phrasing)
+            Max_Input_Power_W: [/maximum.*input.*power/i, /rated.*power/i],
+            Max_Input_Voltage_Voc_V: [/maximum.*input.*voltage/i, /overvoltage.*level/i],
+            Max_Output_Voltage_V: [/voltage.*range/i],
+            Max_Output_Current_A: [/maximum.*output.*current/i],
+            Weighted_Efficiency_Pct: [/weighted.*efficiency/i],
+
+            // Battery ESS
+            Nominal_Capacity_kWh: [/total.*energy.*capacity/i, /nominal.*capacity/i, /energy.*capacity/i],
+            Usable_Capacity_kWh: [/usable.*energy/i, /usable.*capacity/i],
+            Battery_Chemistry: [/battery.*type/i, /chemistry/i],
+            Nominal_Voltage_V: [/nominal.*voltage/i, /rated.*voltage/i],
+            Max_Continuous_Charge_Power_kw: [/max.*charge.*power/i, /continuous.*charge.*power/i],
+            Max_Continuous_Discharge_Power_kw: [/max.*discharge.*power/i, /continuous.*discharge.*power/i],
+
+            // EV Charger
+            Max_Output_Power_kW: [/max.*output.*power/i, /charge.*power/i]
+        };
+
+        // =========================================================================
+        // GLOBAL STATE
+        // =========================================================================
+        let currentSchemaProfile = "PV_MODULE";
+        let activeExtractedModels = [];
+        let selectedModelIndex = 0;
+        let dbActiveFilter = "ALL";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupDragAndDrop();
+            updateDatabaseCounter();
+            renderDeviceInventoryTable();
+        });
+
+        function switchSchema(schemaType) {
+            currentSchemaProfile = schemaType;
+            document.querySelectorAll('.schema-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-50', 'text-blue-600', 'border-blue-500');
+            });
+            document.getElementById(`btn-${schemaType}`).classList.add('active');
+        }
+
+        function logStep(stepNum, message, status = 'info') {
+            const consoleLogs = document.getElementById('consoleLogs');
+            let colorClass = "text-blue-300";
+            if (status === 'warn') colorClass = "text-amber-400";
+            if (status === 'error') colorClass = "text-rose-400 font-bold";
+            if (status === 'success') colorClass = "text-emerald-400 font-bold";
+            
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            consoleLogs.innerHTML += `<div class="console-line ${colorClass}">[${time}] Step ${stepNum}: ${message}</div>`;
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        function setupDragAndDrop() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropzone.addEventListener('click', () => fileInput.click());
+            dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('border-blue-500', 'bg-blue-50'); });
+            dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('border-blue-500', 'bg-blue-50'); });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+                if (e.dataTransfer.files.length > 0) handleUploadedFile(e.dataTransfer.files[0]);
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleUploadedFile(e.target.files[0]);
+            });
+        }
+
+        async function handleUploadedFile(file) {
+            logStep(0, `Processing file: ${file.name}...`);
+            if (file.type === "text/plain") {
+                const reader = new FileReader();
+                reader.onload = (e) => { document.getElementById('rawTextArea').value = e.target.result; logStep(0, `Text loaded.`, 'success'); };
+                reader.readAsText(file);
+            } else if (file.type === "application/pdf") {
+                logStep(0, `Extracting PDF text...`);
+                try {
+                    const typedarray = new Uint8Array(await file.arrayBuffer());
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let fullText = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        fullText += content.items.map(item => item.str).join(" ") + "\n";
+                    }
+                    document.getElementById('rawTextArea').value = fullText;
+                    logStep(0, `PDF extraction success.`, 'success');
+                } catch(err) { logStep(0, `PDF Error: ${err.message}`, 'error'); }
+            } else if (file.type.startsWith("image/")) {
+                logStep(0, `Running Tesseract OCR Engine...`, 'warn');
+                try {
+                    const imageUrl = URL.createObjectURL(file);
+                    Tesseract.recognize(imageUrl, 'eng+tha', { 
+                        logger: m => { if (m.status === 'recognizing text' && (m.progress * 100) % 25 === 0) logStep(0, `OCR Progress: ${Math.round(m.progress * 100)}%`); } 
+                    }).then(({ data: { text } }) => {
+                        document.getElementById('rawTextArea').value = text;
+                        logStep(0, `OCR Extraction complete.`, 'success');
+                        URL.revokeObjectURL(imageUrl);
+                    });
+                } catch(err) { logStep(0, `OCR Error: ${err.message}`, 'error'); }
+            }
+        }
+
+        // =========================================================================
+        // 3. CORE FUZZY ENGINE (V5.5 Logic - Smart Interlace & Range Parsing)
+        // =========================================================================
+        function processDatasheetEngine() {
+            const rawText = document.getElementById('rawTextArea').value;
+            if (!rawText.trim()) { logStep(0, "No text found. Aborting.", "error"); return; }
+
+            activeExtractedModels = [];
+            selectedModelIndex = 0;
+            document.getElementById('sandboxEditor') ? document.getElementById('sandboxEditor').innerHTML = '' : null;
+            document.getElementById('consoleLogs').innerHTML = ''; 
+
+            logStep(1, "Parse Layout - Tracking Sub-Models...");
+            
+            const manualBrand = document.getElementById('manualBrand').value.trim();
+            const manualModelsInput = document.getElementById('manualModels').value.trim();
+            
+            let manufacturer = manualBrand || extractManufacturer(rawText);
+            let subModels = [];
+
+            if(manualModelsInput) {
+                subModels = manualModelsInput.split(',').map(m => m.trim());
+                logStep(1, `Applied Manual Models: ${subModels.join(', ')}`, "success");
+            } else {
+                subModels = discoverSubModelsList(rawText, manufacturer);
+                if (subModels.length === 0) {
+                    logStep(1, "Using Standard Model fallback.", "warn");
+                    subModels = [`${manufacturer}_Standard`];
+                } else {
+                    logStep(1, `Detected ${subModels.length} models.`, "success");
+                }
+            }
+
+            logStep(2, "Identify Shared Data - Processing Merged Cells & Ranges...");
+            let globalSharedProperties = extractGlobalSharedParameters(rawText);
+            
+            logStep(3, "Map & Extract - Executing Smart Regex mapping (Interlace & Fallbacks)...");
+            activeExtractedModels = compileExtractedModelsMatrix(rawText, manufacturer, subModels, globalSharedProperties);
+
+            logStep(4, "Format Output - Loading Validation UI.", "success");
+            buildModelResultTabs();
+            selectResultModelTab(0);
+        }
+
+        function extractManufacturer(text) {
+            const brands = ['Sigenergy', 'LONGi', 'Jinko', 'AIKO', 'Huawei', 'Growatt', 'SolarEdge', 'BYD', 'AndSolar'];
+            for(let b of brands) { if(new RegExp(b, 'i').test(text)) return b; }
+            return "Unknown_Brand";
+        }
+
+        function discoverSubModelsList(text, brand) {
+            let models = [];
+            const lines = text.split('\n');
+            
+            // Huawei style specific (Single Model catch) e.g., SUN2000-50KTL-M3
+            let singleModelMatch = text.match(/SUN2000-\d+KTL-[A-Z0-9]+/i);
+            if(singleModelMatch) return [singleModelMatch[0]];
+
+            // AndSolar Optimizer style (AMCP500-600T1)
+            let optMatch = text.match(/AMCP\d+-\d+[A-Z0-9]+/gi);
+            if(optMatch && currentSchemaProfile === "OPTIMIZER") return [...new Set(optMatch)];
+
+            // Sigen / General Header Matching (e.g. 50M1, 60M1, 5.0 TP)
+            for (let line of lines) {
+                if (/model|pv inverter|type/i.test(line) || /[0-9]+M[0-9]+/i.test(line) || /[0-9]+\.?[0-9]*\s*TP/i.test(line)) {
+                    let matches = line.match(/[A-Z0-9\-\.\_]{4,}/gi);
+                    if (matches && matches.length > 1) {
+                        return matches.filter(m => !/MODEL|INVERTER|TYPE|UNIT/i.test(m));
+                    }
+                }
+            }
+            
+            // LONGi Wattage Match
+            if (currentSchemaProfile === "PV_MODULE") {
+                let wMatch = text.match(/\b(600|610|620|625|630|635|640|645|650|655|660|670)\b/g);
+                if (wMatch) return [...new Set(wMatch)].sort().map(w => `${brand}_${w}W`);
+            }
+            return models;
+        }
+
+        function extractGlobalSharedParameters(text) {
+            let shared = {};
+            const fieldsToScan = Object.values(SCHEMA_FIELDS[currentSchemaProfile]).flat().filter(x => typeof x === 'string');
+            const lines = text.split('\n');
+            
+            for (let field of fieldsToScan) {
+                if (SEMANTIC_DICTIONARY[field]) {
+                    for (let regex of SEMANTIC_DICTIONARY[field]) {
+                        for (let line of lines) {
+                            if (regex.test(line)) {
+                                let cleanLine = line.replace(/,/g, ''); // Remove commas (100,000 -> 100000)
+                                
+                                // Special Multi-Value but Shared Items (e.g. "380 / 400" or "50 / 60")
+                                if (field === "Nominal_AC_Voltage_V" || field === "Nominal_Frequency_Hz") {
+                                    let nums = cleanLine.match(/\d+(\.\d+)?/g);
+                                    if(nums) shared[field] = parseFloat(nums[0]); 
+                                    break;
+                                }
+                                
+                                // Universal Range Parser (catches 160-1000, 200 V ~ 1,000 V)
+                                if (field === "MPPT_Voltage_Min_V" || field === "MPPT_Voltage_Max_V") {
+                                    let rangeMatch = cleanLine.match(/(\d+(?:\.\d+)?)\s*(?:-|~|to)\s*(\d+(?:\.\d+)?)/);
+                                    if (rangeMatch) {
+                                        shared["MPPT_Voltage_Min_V"] = parseFloat(rangeMatch[1]);
+                                        shared["MPPT_Voltage_Max_V"] = parseFloat(rangeMatch[2]);
+                                        break;
+                                    }
+                                }
+
+                                if (field === "Cell_Type" || field === "Battery_Chemistry" || field === "Inverter_Type" || field === "Phase_Type") {
+                                    let parts = cleanLine.split(/[:=]/);
+                                    if (parts.length > 1) shared[field] = parts[1].trim();
+                                } else {
+                                    let numMatch = cleanLine.match(/[\-\+]?\s*\d+\.\d+|[\-\+]?\s*\d+/g);
+                                    if (numMatch && numMatch.length === 1 && document.getElementById('propagateCells').checked) {
+                                        let val = parseFloat(numMatch[0].replace(/\s+/g, '').replace('%', ''));
+                                        // Auto-convert Power to kW if excessively large
+                                        if (field.includes('_kW') && val > 1000) val = val / 1000;
+                                        shared[field] = val;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return shared;
+        }
+
+        function compileExtractedModelsMatrix(text, brand, modelsList, sharedData) {
+            let compiledList = [];
+            let textLines = text.split('\n');
+            const targetFields = Object.values(SCHEMA_FIELDS[currentSchemaProfile]).flat().filter(x => typeof x === 'string');
+
+            modelsList.forEach((modelName, index) => {
+                let instanceData = { Manufacturer: brand, Model_Name: modelName, ProfileType: currentSchemaProfile };
+                Object.assign(instanceData, sharedData); 
+
+                targetFields.forEach(field => {
+                    if (instanceData[field] !== undefined) return; 
+
+                    let foundValue = "";
+                    if (SEMANTIC_DICTIONARY[field]) {
+                        for (let regex of SEMANTIC_DICTIONARY[field]) {
+                            for (let line of textLines) {
+                                if (regex.test(line)) {
+                                    let cleanLine = line.replace(/,/g, ''); // Strip comma
+                                    
+                                    if (field === "Cell_Type" || field === "Battery_Chemistry" || field === "Inverter_Type" || field === "Phase_Type") {
+                                        let parts = cleanLine.split(/[:=]/);
+                                        if (parts.length > 1) foundValue = parts[1].trim();
+                                        else foundValue = cleanLine.replace(regex, '').trim();
+                                    } else {
+                                        let arrayValues = cleanLine.match(/[\-\+]?\s*\d+(\.\d+)?/g);
+                                        if (arrayValues && arrayValues.length > 0) {
+                                            
+                                            // SINGLE MODEL FALLBACK (e.g. Huawei SUN2000)
+                                            if (modelsList.length === 1) {
+                                                foundValue = parseFloat(arrayValues[0]);
+                                            } 
+                                            // SMART INTERLACE DETECTION (e.g. LONGi STC & NOCT mixed on same line)
+                                            else if (arrayValues.length === modelsList.length * 2) {
+                                                let isNMOT = field.includes('NMOT') || field.includes('NOCT');
+                                                let offset = isNMOT ? 1 : 0; // If NMOT, pick odd index, if STC pick even index
+                                                let targetIdx = (index * 2) + offset;
+                                                foundValue = parseFloat(arrayValues[targetIdx]);
+                                            } 
+                                            // STANDARD COLUMN MAPPING
+                                            else if (arrayValues.length === 1) {
+                                                foundValue = parseFloat(arrayValues[0]);
+                                            } else {
+                                                let targetIdx = Math.min(index, arrayValues.length - 1);
+                                                foundValue = parseFloat(arrayValues[targetIdx]);
+                                            }
+                                            
+                                            // Unit conversion correction
+                                            if (field.includes('_kW') && foundValue > 1000) foundValue = foundValue / 1000;
+                                        }
+                                    }
+                                    break; // Stop looking once found for this specific field
+                                }
+                            }
+                            if(foundValue !== "") break;
+                        }
+                    }
+                    instanceData[field] = foundValue;
+                });
+                compiledList.push(instanceData);
+            });
+
+            // Dimensions Fallback Catch
+            const dimMatch = text.match(/(\d{3,4})\s*[\/xX*]\s*(\d{3,4})\s*[\/xX*]\s*(\d{2,3})/);
+            if(dimMatch) {
+                compiledList.forEach(model => {
+                    if (!model['Length_mm']) model['Length_mm'] = parseFloat(dimMatch[1]);
+                    if (!model['Width_mm']) model['Width_mm'] = parseFloat(dimMatch[2]);
+                    if (!model['Thickness_mm']) model['Thickness_mm'] = parseFloat(dimMatch[3]);
+                });
+            }
+
+            return compiledList;
+        }
+
+        // =========================================================================
+        // 4. VALIDATION UI 
+        // =========================================================================
+        function buildModelResultTabs() {
+            const tabContainer = document.getElementById('modelTabContainer');
+            tabContainer.innerHTML = "";
+            activeExtractedModels.forEach((model, idx) => {
+                let badgeTxt = model.Model_Name.length > 12 ? model.Model_Name.substring(0, 10) + "..." : model.Model_Name;
+                tabContainer.innerHTML += `
+                    <button onclick="selectResultModelTab(${idx})" id="tab-model-${idx}" class="model-tab-btn py-1.5 px-3 bg-white text-slate-500 font-semibold text-[11px] rounded-lg border border-slate-200 transition shadow-sm hover:bg-slate-50">
+                        ${badgeTxt}
+                    </button>
+                `;
+            });
+        }
+
+        function selectResultModelTab(idx) {
+            if (activeExtractedModels.length === 0) return;
+            selectedModelIndex = idx;
+            
+            document.querySelectorAll('.model-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.add('bg-white', 'text-slate-500', 'border-slate-200');
+            });
+            document.getElementById(`tab-model-${idx}`).classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+            document.getElementById(`tab-model-${idx}`).classList.remove('bg-white', 'text-slate-500');
+            
+            renderParameterEditorForm();
+            generateStandardTxtFormatOutput();
+        }
+
+        function renderParameterEditorForm() {
+            const formContainer = document.getElementById('paramEditorForm');
+            formContainer.innerHTML = "";
+            
+            const activeRecord = activeExtractedModels[selectedModelIndex];
+            const profile = SCHEMA_FIELDS[currentSchemaProfile];
+
+            Object.keys(profile).forEach(sectionKey => {
+                if (sectionKey === 'title') return;
+                
+                formContainer.innerHTML += `
+                    <div class="pt-3 pb-1 border-b border-slate-200 mb-3">
+                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">${sectionKey.replace(/_/g, ' ')}</span>
+                    </div>
+                `;
+
+                profile[sectionKey].forEach(field => {
+                    let val = activeRecord[field] !== undefined ? activeRecord[field] : "";
+                    let isMissing = (val === "" || val === undefined || val === null || val === 0);
+                    
+                    let inputClass = isMissing 
+                        ? "w-1/2 bg-white border rounded-lg px-2.5 py-1.5 text-xs font-mono font-medium text-slate-800 focus:outline-none transition error-glow placeholder-rose-300 text-right shadow-sm" 
+                        : "w-1/2 bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-2.5 py-1.5 text-slate-800 font-bold text-xs font-mono text-right focus:outline-none shadow-sm transition";
+
+                    let placeholderText = isMissing ? "Empty" : "";
+
+                    formContainer.innerHTML += `
+                        <div class="flex items-center justify-between gap-4 mb-2">
+                            <label class="text-slate-500 font-medium text-[10px] truncate w-1/2" title="${field}">${field}</label>
+                            <input type="text" data-field="${field}" value="${!isMissing ? val : ""}" placeholder="${placeholderText}" 
+                                oninput="updateLiveParameterValue('${field}', this.value)" class="${inputClass}">
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function updateLiveParameterValue(field, value) {
+            if (activeExtractedModels[selectedModelIndex]) {
+                let parsedVal = isNaN(value) || value.trim() === "" ? value : parseFloat(value);
+                activeExtractedModels[selectedModelIndex][field] = parsedVal;
+                
+                const inputEl = document.querySelector(`input[data-field="${field}"]`);
+                if(inputEl && value.trim() !== "") {
+                    inputEl.classList.remove('error-glow', 'placeholder-rose-300');
+                    inputEl.classList.add('border-slate-200', 'font-bold');
+                }
+                generateStandardTxtFormatOutput();
+            }
+        }
+
+        function generateStandardTxtFormatOutput() {
+            if (activeExtractedModels.length === 0) return;
+            const activeRecord = activeExtractedModels[selectedModelIndex];
+            const profile = SCHEMA_FIELDS[currentSchemaProfile];
+            let txt = `[${profile.title}]\n# Enterprise Parameters Extracted Output\n\n`;
+
+            Object.keys(profile).forEach(sectionKey => {
+                if (sectionKey === 'title') return;
+                txt += `[${sectionKey}]\n`;
+                profile[sectionKey].forEach(field => {
+                    let val = activeRecord[field];
+                    if (val === "" || val === undefined) txt += `${field} = ""\n`;
+                    else if (typeof val === 'string') txt += `${field} = "${val}"\n`;
+                    else txt += `${field} = ${val}\n`;
+                });
+                txt += `\n`;
+            });
+
+            document.getElementById('configTextOutput').value = txt;
+            let manufacturerClean = (activeRecord.Manufacturer || "Unknown").replace(/[\s\/]+/g, '_');
+            let modelClean = (activeRecord.Model_Name || "Model").replace(/[\s\/]+/g, '_');
+            document.getElementById('txtFileNameDisplay').innerText = `${manufacturerClean}_${modelClean}.txt`;
+        }
+
+        function copyGeneratedConfig() {
+            const copyText = document.getElementById("configTextOutput");
+            copyText.select();
+            document.execCommand("copy");
+            logStep(selectedModelIndex, "Copied to clipboard.", "success");
+        }
+
+        function downloadCurrentTxtFile() {
+            if (activeExtractedModels.length === 0) return;
+            const textData = document.getElementById('configTextOutput').value;
+            const fileName = document.getElementById('txtFileNameDisplay').innerText;
+            const blob = new Blob([textData], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // =========================================================================
+        // 5. DEVICEDB INVENTORY
+        // =========================================================================
+        function saveActiveModelToDB() {
+            if (activeExtractedModels.length === 0) return;
+            let db = JSON.parse(localStorage.getItem('solarDeviceDB_v4')) || [];
+            
+            activeExtractedModels.forEach(modelData => {
+                const existingIndex = db.findIndex(item => item.Model_Name === modelData.Model_Name && item.ProfileType === modelData.ProfileType);
+                if(existingIndex > -1) db[existingIndex] = modelData;
+                else db.push(modelData);
+            });
+            
+            localStorage.setItem('solarDeviceDB_v4', JSON.stringify(db));
+            logStep(5, `Saved to DeviceDB.`, 'success');
+            updateDatabaseCounter();
+            renderDeviceInventoryTable();
+            alert(`Saved ${activeExtractedModels.length} models to Local DB!`);
+        }
+
+        function updateDatabaseCounter() {
+            const db = JSON.parse(localStorage.getItem('solarDeviceDB_v4')) || [];
+            const counts = { PV_MODULE: 0, INVERTER: 0, BATTERY_ESS: 0, OPTIMIZER: 0, EV_CHARGER: 0 };
+            db.forEach(item => { if(counts[item.ProfileType] !== undefined) counts[item.ProfileType]++; });
+            Object.keys(counts).forEach(type => {
+                const el = document.getElementById(`count-${type}`);
+                if(el) el.innerText = counts[type];
+            });
+        }
+
+        function filterDeviceDB(type) {
+            if (dbActiveFilter === type) {
+                dbActiveFilter = "ALL";
+                document.getElementById('dbTargetTitle').innerText = `Showing: All Devices`;
+            } else {
+                dbActiveFilter = type;
+                document.getElementById('dbTargetTitle').innerText = `Showing: ${type.replace('_', ' ')}`;
+            }
+
+            document.querySelectorAll('.db-type-card').forEach(card => card.classList.remove('active', 'border-blue-500', 'bg-blue-50'));
+            if (dbActiveFilter !== "ALL") {
+                const activeCard = document.getElementById(`card-${type}`);
+                activeCard.classList.add('active', 'border-blue-500', 'bg-blue-50');
+            }
+            renderDeviceInventoryTable();
+        }
+
+        function renderDeviceInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            const db = JSON.parse(localStorage.getItem('solarDeviceDB_v4')) || [];
+            const searchQuery = document.getElementById('dbSearch').value.toLowerCase();
+
+            const filtered = db.filter(item => {
+                const matchesType = (dbActiveFilter === "ALL") || (item.ProfileType === dbActiveFilter);
+                const matchesSearch = (item.Manufacturer && item.Manufacturer.toLowerCase().includes(searchQuery)) || 
+                                      (item.Model_Name && item.Model_Name.toLowerCase().includes(searchQuery));
+                return matchesType && matchesSearch;
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">No devices found in DB.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                
+                let highlightMetrics = "";
+                if(item.ProfileType === 'PV_MODULE') highlightMetrics = `Pmax: ${item.Pmax_Wp || '-'} Wp | Eff: ${item.Module_Efficiency_Pct || '-'}%`;
+                else if(item.ProfileType === 'INVERTER') highlightMetrics = `AC Output: ${item.Rated_AC_Output_Power_kW || '-'} kW | Max DC Input: ${item.Max_DC_Input_Voltage_V || '-'} V`;
+                else if(item.ProfileType === 'BATTERY_ESS') highlightMetrics = `Capacity: ${item.Nominal_Capacity_kWh || '-'} kWh | Voltage: ${item.Nominal_Voltage_V || '-'} V`;
+                else if(item.ProfileType === 'OPTIMIZER') highlightMetrics = `Max Input: ${item.Max_Input_Power_W || '-'} W | Max Volts: ${item.Max_Input_Voltage_Voc_V || '-'} V`;
+                else if(item.ProfileType === 'EV_CHARGER') highlightMetrics = `Max Output: ${item.Max_Output_Power_kW || '-'} kW | Phase: ${item.Phase_Type || '-'}`;
+
+                let iconClass = getProfileIconClass(item.ProfileType);
+
+                tr.innerHTML = `
+                    <td class="p-4 text-[10px] uppercase font-bold tracking-wider text-blue-600"><i class="fa-solid ${iconClass} mr-2"></i>${item.ProfileType.replace('_', ' ')}</td>
+                    <td class="p-4 font-bold text-slate-700">${item.Manufacturer || '-'}</td>
+                    <td class="p-4"><span class="bg-slate-100 text-slate-700 font-mono px-2 py-1 rounded border border-slate-200">${item.Model_Name || '-'}</span></td>
+                    <td class="p-4 text-slate-600 font-mono text-[11px] font-medium">${highlightMetrics}</td>
+                    <td class="p-4 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="downloadSingleDBModelTxt('${item.Manufacturer}', '${item.Model_Name}', '${item.ProfileType}')" class="text-blue-500 hover:text-blue-700 p-1.5 bg-white rounded-lg border border-slate-200 hover:border-blue-300 shadow-sm transition-all" title="Download .txt"><i class="fa-solid fa-download"></i></button>
+                            <button onclick="deleteDeviceRecord('${item.Manufacturer}', '${item.Model_Name}', '${item.ProfileType}')" class="text-rose-500 hover:text-rose-700 p-1.5 bg-white rounded-lg border border-slate-200 hover:border-rose-300 shadow-sm transition-all" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadSingleDBModelTxt(manufacturer, modelName, profileType) {
+            const db = JSON.parse(localStorage.getItem('solarDeviceDB_v4')) || [];
+            const item = db.find(x => x.Manufacturer === manufacturer && x.Model_Name === modelName && x.ProfileType === profileType);
+            if(!item) return;
+
+            const profile = SCHEMA_FIELDS[profileType];
+            let txtOutput = `[${profile.title}]\n# Enterprise Device DB Export\n\n`;
+            
+            Object.keys(profile).forEach(section => {
+                if (section === 'title') return;
+                txtOutput += `[${section}]\n`;
+                profile[section].forEach(field => {
+                    let val = item[field];
+                    if(val === "" || val === undefined || val === null) txtOutput += `${field} = ""\n`;
+                    else if(typeof val === 'string') txtOutput += `${field} = "${val}"\n`;
+                    else txtOutput += `${field} = ${val}\n`;
+                });
+                txtOutput += `\n`;
+            });
+
+            const fileName = `${item.Manufacturer || 'Unknown'}_${item.Model_Name || 'Model'}.txt`.replace(/[\s\/]+/g, '_');
+            const blob = new Blob([txtOutput], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function getProfileIconClass(profileType) {
+            if (profileType === "PV_MODULE") return "fa-solar-panel";
+            if (profileType === "INVERTER") return "fa-bolt";
+            if (profileType === "BATTERY_ESS") return "fa-battery-three-quarters";
+            if (profileType === "OPTIMIZER") return "fa-chart-line";
+            return "fa-charging-station";
+        }
+
+        function deleteDeviceRecord(manufacturer, modelName, profileType) {
+            if(!confirm(`Delete ${modelName} from DB?`)) return;
+            let db = JSON.parse(localStorage.getItem('solarDeviceDB_v4')) || [];
+            db = db.filter(x => !(x.Manufacturer === manufacturer && x.Model_Name === modelName && x.ProfileType === profileType));
+            localStorage.setItem('solarDeviceDB_v4', JSON.stringify(db));
+            updateDatabaseCounter();
+            renderDeviceInventoryTable();
+        }
+
+        function clearSystemDatabase() {
+            if (confirm("WARNING! Clear entire DeviceDB?")) {
+                localStorage.removeItem('solarDeviceDB_v4');
+                updateDatabaseCounter();
+                renderDeviceInventoryTable();
+            }
+        }
+    </script>
+</body>
+</html>
