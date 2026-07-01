@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Web Programs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212; /* พื้นหลังสีดำ */
+            color: #e0e0e0; /* สีตัวอักษรโทนสว่าง */
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #1e1e1e; /* พื้นหลังกล่องข้อความเทาเข้ม */
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .text-center {
+            text-align: center;
+        }
+        h1, h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            text-align: center;
+        }
+        /* ฟอร์มล็อกอิน */
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 14px 20px;
+            margin: 10px 0 20px 0;
+            display: inline-block;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            border: 1px solid #444;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input::placeholder {
+            color: #999;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #errorMessage {
+            color: #ff5252;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+        }
+        /* รายการโปรแกรม */
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .link-list li {
+            margin-bottom: 12px;
+        }
+        .link-list a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #64b5f6; /* ลิงก์สีฟ้าสว่างสำหรับ Dark Mode */
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            transition: all 0.2s ease-in-out;
+            font-size: 16px;
+        }
+        .link-list a:before {
+            content: "📄";
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        .link-list a:hover {
+            background-color: #333;
+            border-color: #64b5f6;
+            transform: translateX(5px);
+            color: #90caf9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginForm" class="container text-center">
+        <h2>เข้าสู่ระบบเพื่อใช้งานโปรแกรม</h2>
+        <input type="email" id="email" placeholder="ใส่อีเมลของคุณ" required>
+        <input type="password" id="password" placeholder="ใส่รหัสผ่าน" required>
+        <button onclick="checkLogin()">เข้าสู่ระบบ</button>
+        <div id="errorMessage">อีเมลหรือรหัสผ่านไม่ถูกต้อง!</div>
+    </div>
+
+    <div id="programList" class="container" style="display: none;">
+        <h1>รายการโปรแกรม (Solar Web Apps)</h1>
+        <ul class="link-list">
+            <li><a href="Auto_Solar_Copilot_Report V3.6.8.html" target="_blank">Auto_Solar_Copilot_Report V3.6.8</a></li>
+            <li><a href="Auto_Solar_Copilot_V7.4.html" target="_blank">Auto_Solar_Copilot_V7.4</a></li>
+            <li><a href="On-grid&Hybrid Cal.html" target="_blank">On-grid&Hybrid Cal</a></li>
+            <li><a href="Solar Feasibility Calculator V4.1.html" target="_blank">Solar Feasibility Calculator V4.1</a></li>
+            <li><a href="Solar_Extractor V2.2.0.html" target="_blank">Solar_Extractor V2.2.0</a></li>
+            <li><a href="solar energy potential based on satellite data.html" target="_blank">solar energy potential based on satellite data</a></li>
+        </ul>
+    </div>
+
+    <script>
+        // รายชื่อผู้ใช้งานที่อนุญาตและรหัสผ่าน
+        const allowedUsers = {
+            "pholjanseesuwan@gmail.com": "pholjanseesuwan",
+            "jameskittisak813@gmail.com": "jameskittisak813",
+            "alohajames8295@gmail.com": "alohajames8295",
+            "ntseng.info@gmail.com": "ntseng.info",
+            "sittisakruji@gmail.com": "sittisakruji",
+            "thatthaphong.r@gmail.com": "thatthaphong.r",
+            "sonic.01.tong@gmail.com": "sonic.01.tong",
+            "nuthapast@gmail.com": "nuthapast",
+            "seksansrisuwanno@gmail.com": "seksansrisuwanno",
+            "apirak.t@gmail.com": "apirak.t",
+            "wasuthornpadlom@gmail.com": "wasuthornpadlom",
+            "wantnw@gmail.com": "wantnw",
+            "janchim@gmail.com": "janchim",
+            "fa.is.muso.ee@gmail.com": "fa.is.muso.ee",
+            "plaiiwinwars@gmail.com": "plaiiwinwars",
+            "phol18531@gmail.com": "phol18531",
+            "solarengineer9@gmail.com": "solarengineer9",
+            "phoonsak.r@gmail.com": "phoonsak.r",
+            "porza12420@hotmail.com": "porza12420",
+            "nimithr10@gmail.com": "nimithr10",
+            "mantrasmend.energy@hotmail.com": "mantrasmend.energy",
+            "themysticpop@gmail.com": "themysticpop",
+            "nimithr@hotmail.com": "nimithr",
+            "p.innovation89@hotmail.com": "p.innovation89",
+            "pop_chang@hotmail.com": "pop_chang",
+            "chittin.ph@gmail.com": "chittin.ph",
+            "somboonkcpower@gmail.com": "somboonkcpower",
+            "atapol.tong@gmail.com": "atapol.tong",
+            "pureman44@gmail.com": "pureman44",
+            "napat2995@gmail.com": "napat2995",
+            "clubmanart@gmail.com": "clubmanart",
+            "arior2@gmail.com": "arior2",
+            "c.nexledtec@gmail.com": "c.nexledtec",
+            "sevikul@gmail.com": "sevikul",
+            "pawitchbwt@gmail.com": "pawitchbwt",
+            "wutsangsopit.pj@gmail.com": "wutsangsopit.pj",
+            "cherd19@gmail.com": "cherd19",
+            "aunpea@gmail.com": "aunpea",
+            "s.chanon@hotmail.com": "s.chanon",
+            "thatarat.s@gmail.com": "thatarat.s",
+            "thiraphatft@gmail.com": "thiraphatft",
+            "jthana@gmail.com": "jthana",
+            "duck4computer@gmail.com": "duck4computer",
+            "faaktong@gmail.com": "faaktong",
+            "ohm2999@gmail.com": "ohm2999",
+            "chayut.j23@gmail.com": "chayut.j23",
+            "nattapon.kanjanakate@gmail.com": "nattapon.kanjanakate",
+            "nano.it1999@gmail.com": "nano.it1999",
+            "domer249@gmail.com": "domer249",
+            "nopparat2184@gmail.com": "nopparat2184",
+            "aerock2001@gmail.com": "aerock2001",
+            "tidarat.sairy999@gmail.com": "tidarat.sairy999",
+            "supasarink@gmail.com": "supasarink",
+            "lifepoom@gmail.com": "lifepoom",
+            "arm.phichet48@gmail.com": "arm.phichet48",
+            "muser.2526@gmail.com": "muser.2526",
+            "tongthitiwat@gmail.com": "tongthitiwat",
+            "rattanasak.king@gmail.com": "rattanasak.king",
+            "mbimber9@gmail.com": "mbimber9",
+            "wararuk2926@gmail.com": "wararuk2926",
+            "clouds.sky2000@gmail.com": "clouds.sky2000",
+            "phuritat005@gmail.com": "phuritat005",
+            "chonlada.srichua@gmail.com": "chonlada.srichua",
+            "thedome81@gmail.com": "thedome81",
+            "ee20jung@gmail.com": "ee20jung",
+            "nickhack01@gmail.com": "nickhack01",
+            "th.suriyan@gmail.com": "th.suriyan",
+            "lekpunk24@gmail.com": "lekpunk24",
+            "purimthongnoi@gmail.com": "purimthongnoi",
+            "porametech@gmail.com": "porametech",
+            "samngamkenpen@gmail.com": "samngamkenpen",
+            "pos1sell2@gmail.com": "pos1sell2",
+            "taweesak.3ktbattery@gmail.com": "taweesak.3ktbattery",
+            "sirivimon.pt@gmail.com": "sirivimon.pt",
+            "adison17ph@gmail.com": "adison17ph",
+            "sukrit2803@gmail.com": "sukrit2803",
+            "witsarawat1@gmail.com": "witsarawat1",
+            "p.suttanun60@gmail.com": "p.suttanun60",
+            "aumaloha@gmail.com": "aumaloha",
+            "oraphit3532@gmail.com": "oraphit3532",
+            "tae.saksit23@gmail.com": "tae.saksit23",
+            "ksuttitham@gmail.com": "ksuttitham",
+            "nat.sook01@gmail.com": "nat.sook01",
+            "sutiwas.jancharoen@gmail.com": "sutiwas.jancharoen",
+            "golfnp21@gmail.com": "golfnp21",
+            "eagarat.ch@gmail.com": "eagarat.ch",
+            "wasin.aero@gmail.com": "wasin.aero",
+            "natthasak.ph@gmail.com": "natthasak.ph",
+            "surawasu.su@gmail.com": "surawasu.su",
+            "pee": "123456789"
+        };
+
+        function checkLogin() {
+            const emailInput = document.getElementById("email").value.trim().toLowerCase();
+            const passwordInput = document.getElementById("password").value;
+            const errorMsg = document.getElementById("errorMessage");
+
+            // ตรวจสอบข้อมูล
+            if (allowedUsers[emailInput] && allowedUsers[emailInput] === passwordInput) {
+                // ถ้าถูก ให้ซ่อนฟอร์ม login และแสดงหน้ารายการโปรแกรมทันที
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("programList").style.display = "block";
+            } else {
+                // ถ้าผิด ให้แสดงข้อความเตือน
+                errorMsg.style.display = "block";
+            }
+        }
+
+        // เพิ่มการกด Enter เพื่อ Login
+        document.getElementById("password").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                checkLogin();
+            }
+        });
+    </script>
+
+</body>
+</html>
