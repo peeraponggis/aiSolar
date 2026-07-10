@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนการสอนการใช้ AI ในการออกแบบระบบโซลาร์เซลล์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f4f7f6; /* สีพื้นหลังโทนสว่างสบายตา */
+        }
+        .menu-active {
+            background-color: #e6f4ea;
+            color: #1e7e34;
+            border-left: 4px solid #28a745;
+            font-weight: 600;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        
+        <aside class="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col shrink-0">
+            <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+                <h1 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>แผนการเรียนรู้ AI & Web</span>
+                </h1>
+                <p class="text-xs text-emerald-100 mt-1">หลักสูตรการออกแบบระบบโซลาร์เซลล์</p>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-6 overflow-y-auto">
+                <div>
+                    <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                        <i class="fa-solid fa-solar-panel mr-1"></i> Solar & AI
+                    </span>
+                    <div class="space-y-1">
+                        <button onclick="switchTab('l1-p1')" id="btn-l1-p1" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2 menu-active">
+                            <i class="fa-solid fa-book-open text-xs"></i> เฟส 1: ปูพื้นฐานความเข้าใจ
+                        </button>
+                        <button onclick="switchTab('l1-p2')" id="btn-l1-p2" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-xs"></i> เฟส 2: สำรวจและประเมินพื้นที่
+                        </button>
+                        <button onclick="switchTab('l1-p3')" id="btn-l1-p3" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-xs"></i> เฟส 3: คำนวณขนาดและอุปกรณ์
+                        </button>
+                        <button onclick="switchTab('l1-p4')" id="btn-l1-p4" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-xs"></i> เฟส 4: ความคุ้มทุนและรายงาน
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                        <i class="fa-solid fa-code mr-1"></i> Web Development
+                    </span>
+                    <div class="space-y-1">
+                        <button onclick="switchTab('l2-p1')" id="btn-l2-p1" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-xs"></i> หน้าที่ของ HTML, CSS, JS
+                        </button>
+                        <button onclick="switchTab('l2-p2')" id="btn-l2-p2" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-xs"></i> Browser Workflow
+                        </button>
+                        <button onclick="switchTab('l2-p3')" id="btn-l2-p3" class="menu-item w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
+                            <i class="fa-solid fa-laptop-code text-xs"></i> ตัวอย่างวงจรการทำงานจริง
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-gray-100 bg-gray-50 text-xs text-gray-500 text-center">
+                ระบบจัดการแผนการเรียนรู้ &copy; 2026
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full">
+            
+            <div id="l1-p1" class="content-section active space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wide bg-emerald-50 px-2.5 py-1 rounded-full">Lesson 1</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">เฟสที่ 1: ปูพื้นฐานความเข้าใจ (Foundations)</h2>
+                </div>
+                <blockquote class="border-l-4 border-amber-500 bg-amber-50 p-4 text-gray-700 rounded-r-lg">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+                    <strong>สิ่งสำคัญก่อนเริ่ม:</strong> ก่อนจะให้ AI คำนวณ ผู้เรียนต้องเข้าใจ "ภาษา" ของโซลาร์เซลล์ก่อนเพื่อตรวจสอบความถูกต้องของ AI ได้
+                </blockquote>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 class="font-bold text-lg text-emerald-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-sm"></i> หัวข้อหลัก
+                        </h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            ส่วนประกอบของระบบโซลาร์เซลล์ (On-grid, Off-grid, Hybrid) และค่าไฟฟ้า (Peak / Off-Peak)
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 class="font-bold text-lg text-emerald-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-sm"></i> สิ่งที่ต้องเน้น
+                        </h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            วิธีอ่านบิลค่าไฟเพื่อหาพฤติกรรมการใช้ไฟ (Load Profile) ของบ้านหรือโรงงาน
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
+                    <h3 class="font-bold text-emerald-800 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-robot"></i> บทบาทของ AI ในขั้นนี้
+                    </h3>
+                    <p class="text-emerald-900 leading-relaxed">
+                        วิเคราะห์พฤติกรรมการใช้ไฟเบื้องต้น หรือให้สรุปข้อมูลดิบจากมิเตอร์ไฟฟ้า
+                    </p>
+                </div>
+            </div>
+
+            <div id="l1-p2" class="content-section space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wide bg-emerald-50 px-2.5 py-1 rounded-full">Lesson 1</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">เฟสที่ 2: การสำรวจและประเมินพื้นที่ด้วย AI & Satellite Image</h2>
+                </div>
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-blue-900 flex items-center gap-3">
+                    <i class="fa-solid fa-cloud-sun text-2xl text-blue-500"></i>
+                    <p>ขั้นตอนนี้คือการหา <strong>"พื้นที่ติดตั้ง"</strong> และ <strong>"ปริมาณแสงแดด"</strong> โดยไม่ต้องไปปีนหลังคาจริง</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg text-emerald-700 mb-3">หัวข้อหลัก</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>การประเมินพื้นที่หลังคา</li>
+                        <li>ทิศทางแสง (Azimuth) และมุมเอียง (Tilt Angle)</li>
+                        <li>สิ่งกีดขวาง (Shading)</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg text-indigo-700 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-laptop-code"></i> เครื่องมือ AI / Digital Tools ที่ต้องสอน
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-indigo-500 pl-3">
+                            <h4 class="font-bold text-gray-800">Google Solar API / Project Sunroof</h4>
+                            <p class="text-sm text-gray-600">(ถ้าพื้นที่รองรับ) เพื่อดูศักยภาพการรับแสงแดดรายปี</p>
+                        </div>
+                        <div class="border-l-4 border-indigo-500 pl-3">
+                            <h4 class="font-bold text-gray-800">เครื่องมือเฉพาะทาง</h4>
+                            <p class="text-sm text-gray-600">สอนการใช้แพลตฟอร์มระดับโปรที่มี AI ช่วยตรวจจับขอบหลังคาและคำนวณเงา</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="l1-p3" class="content-section space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wide bg-emerald-50 px-2.5 py-1 rounded-full">Lesson 1</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">เฟสที่ 3: การคำนวณขนาดและเลือกอุปกรณ์ (System Sizing)</h2>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg text-emerald-700 mb-2">หัวข้อหลัก</h3>
+                    <p class="text-gray-600">การจับคู่อินเวอร์เตอร์ (Inverter) กับแผงโซลาร์เซลล์ และการคำนวณขนาดสตริง (String Sizing)</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-lg text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-emerald-600"></i> บทบาทของ AI ในการออกแบบ
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <span class="font-bold text-sm text-emerald-700 block mb-1">การเขียน Prompt</span>
+                            <p class="text-sm text-gray-600">เพื่อให้คำนวณหาจำนวนแผงที่เหมาะสมจากขนาดกิโลวัตต์ (kW) ที่ต้องการ</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <span class="font-bold text-sm text-emerald-700 block mb-1">ฟีเจอร์ Auto-Sizing</span>
+                            <p class="text-sm text-gray-600">ใช้ AI ในโปรแกรมออกแบบเลือกโมเดลแผงและอินเวอร์เตอร์ที่เข้ากันได้ดีที่สุดโดยอัตโนมัติ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="l1-p4" class="content-section space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wide bg-emerald-50 px-2.5 py-1 rounded-full">Lesson 1</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">เฟสที่ 4: การวิเคราะห์ความคุ้มทุนและการรายงาน</h2>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg text-emerald-700 mb-4">หัวข้อหลัก & เครื่องมือ</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-2.5 text-gray-600">
+                            <i class="fa-solid fa-check text-emerald-500 mt-1"></i>
+                            <span><strong>การวิเคราะห์:</strong> คำนวณจุดคุ้มทุน (ROI), ระยะเวลาคืนทุน (Payback Period), และการประหยัดคาร์บอน (Carbon Offset)</span>
+                        </div>
+                        <div class="flex items-start gap-2.5 text-gray-600">
+                            <i class="fa-solid fa-check text-emerald-500 mt-1"></i>
+                            <span><strong>เครื่องมือ:</strong> ใช้ AI ในโปรแกรมออกแบบเพื่อ Gen Report อัตโนมัติ มีคำอธิบายรายงานให้เข้าใจง่ายสำหรับลูกค้า</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-rose-50 border border-rose-100 p-6 rounded-xl">
+                    <h3 class="font-bold text-rose-800 text-lg mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i> เน้นย้ำเรื่อง "AI ไม่ได้ถูก 100%"
+                    </h3>
+                    <p class="text-rose-950 text-sm leading-relaxed">
+                        ต้องสอนให้ผู้เรียนมีทักษะในการตรวจสอบทาน (Double-check) เสมอ เช่น AI อาจมองเห็นร่มเงาต้นไม้ผิดพลาด หรือคำนวณมุมหลังคาคลาดเคลื่อนเล็กน้อย ทักษะของมนุษย์ยังจำเป็นในการปรับแต่งขั้นสุดท้าย
+                    </p>
+                </div>
+            </div>
+
+
+            <div id="l2-p1" class="content-section space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide bg-indigo-50 px-2.5 py-1 rounded-full">Lesson 2</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">การทำงานของหน้าเว็บแบบ Single HTML</h2>
+                </div>
+                <p class="text-gray-600 leading-relaxed">
+                    การทำงานของหน้าเว็บแบบ Single HTML (ซึ่งรวมทั้ง HTML, CSS และ JavaScript ไว้ในไฟล์เดียว) สามารถเปรียบเทียบได้กับการสร้าง <strong>"มนุษย์"</strong> หรือ <strong>"รถยนต์"</strong> 1 คัน โดยทั้ง 3 ส่วนนี้มีหน้าที่แตกต่างกัน แต่ต้องทำงานร่วมกันอย่างใกล้ชิด
+                </p>
+                
+                <h3 class="text-lg font-bold text-gray-800 mt-4">1. บทบาทและหน้าที่ของแต่ละส่วน</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex gap-4">
+                        <div class="text-orange-500 text-2xl mt-1 shrink-0"><i class="fa-solid fa-bone"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">HTML (HyperText Markup Language) - <span class="text-orange-600">"โครงกระดูกและอวัยวะ"</span></h4>
+                            <p class="text-sm text-gray-600 mt-1"><strong>หน้าที่:</strong> กำหนดโครงสร้างและเนื้อหาทั้งหมดของหน้าเว็บ (อะไรอยู่ตรงไหน) เช่น ปุ่มกด, ช่องกรอกข้อมูล (Input), หัวข้อ (Header), หรือตารางแสดงผล</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">เปรียบเทียบ: เหมือนโครงเหล็กของรถยนต์ หรือโครงกระดูกของมนุษย์ที่ระบุว่าตรงนี้คือแขน ตรงนี้คือขา</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex gap-4">
+                        <div class="text-blue-500 text-2xl mt-1 shrink-0"><i class="fa-solid fa-shirt"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">CSS (Cascading Style Sheets) - <span class="text-blue-600">"ผิวหนัง เสื้อผ้า และหน้าตา"</span></h4>
+                            <p class="text-sm text-gray-600 mt-1"><strong>หน้าที่:</strong> ตกแต่งหน้าตา จัดวางตำแหน่ง สีสัน ขนาดอักษร และความสวยงาม (ทำให้อวัยวะดูดีขึ้น)</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">เปรียบเทียบ: เหมือนสีพ่นรถยนต์ เบาะหนัง หรือเสื้อผ้าเครื่องแต่งกายของมนุษย์ที่ทำให้โครงสร้างดูสวยงามน่ามอง</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex gap-4">
+                        <div class="text-yellow-500 text-2xl mt-1 shrink-0"><i class="fa-solid fa-brain"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">JavaScript (JS) - <span class="text-yellow-600">"ระบบประสาทและกล้ามเนื้อ"</span></h4>
+                            <p class="text-sm text-gray-600 mt-1"><strong>หน้าที่:</strong> ควบคุมพฤติกรรม ตรรกะ การคำนวณ และการตอบสนองแบบเรียลไทม์ (ทำให้ขยับและคิดได้) เช่น เมื่อคลิกปุ่มแล้วให้เริ่มคำนวณอัลกอริทึม MCTS ทันที โดยไม่ต้องดาวน์โหลดหน้าเว็บใหม่</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">เปรียบเทียบ: เหมือนเครื่องยนต์และระบบสมองกลของรถยนต์ หรือระบบประสาทของมนุษย์ที่สั่งการให้ก้าวขาเดิน</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="l2-p2" class="content-section space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide bg-indigo-50 px-2.5 py-1 rounded-full">Lesson 2</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">2. แผนผังและขั้นตอนการทำงานร่วมกันในเบราว์เซอร์</h2>
+                </div>
+                <p class="text-gray-600">เมื่อคุณเปิดไฟล์ <code class="bg-gray-100 text-rose-600 px-1.5 py-0.5 rounded font-mono text-sm">solar.html</code> ขึ้นมาบนเบราว์เซอร์ (เช่น Chrome, Safari, Edge) คอมพิวเตอร์จะประมวลผลตามขั้นตอนเหล่านี้:</p>
+                
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="flex gap-4 relative">
+                        <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold shrink-0 z-10">1</div>
+                        <div class="border-l-2 border-gray-200 pl-4 pb-2 w-full">
+                            <h4 class="font-bold text-gray-900">การโหลดโครงสร้าง (Parsing HTML)</h4>
+                            <p class="text-sm text-gray-600 mt-1">เบราว์เซอร์จะอ่านไฟล์จากบนลงล่าง เจอแท็ก เช่น <code class="bg-gray-50 text-gray-700 px-1 font-mono text-xs">&lt;div&gt;</code>, <code class="bg-gray-50 text-gray-700 px-1 font-mono text-xs">&lt;input&gt;</code>, <code class="bg-gray-50 text-gray-700 px-1 font-mono text-xs">&lt;button&gt;</code> มันจะสร้างสิ่งที่เรียกว่า <strong>DOM (Document Object Model)</strong> ซึ่งเป็นต้นไม้โครงสร้างของวัตถุทั้งหมดบนหน้าจอ</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 relative">
+                        <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold shrink-0 z-10">2</div>
+                        <div class="border-l-2 border-gray-200 pl-4 pb-2 w-full">
+                            <h4 class="font-bold text-gray-900">การแต่งตัว (Applying CSS)</h4>
+                            <p class="text-sm text-gray-600 mt-1">เมื่ออ่านไปเจอแท็ก <code class="bg-gray-50 text-gray-700 px-1 font-mono text-xs">&lt;style&gt;</code> หรือคลาสของ Tailwind CSS (เช่น <code class="bg-gray-100 text-indigo-600 px-1 font-mono text-xs">bg-white p-5 rounded-xl</code>) เบราว์เซอร์จะนำสไตล์เหล่านี้ไปครอบลงบนโครงสร้าง HTML ทำให้ปุ่มกลายเป็นสีเหลืองอมส้ม แผงแสดงผลกลายเป็นบล็อกมนๆ สวยงาม (สร้าง Render Tree -> แสดงผลบนจอ)</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-yellow-500 text-white flex items-center justify-center font-bold shrink-0 z-10">3</div>
+                        <div class="pl-4 w-full">
+                            <h4 class="font-bold text-gray-900">การเปิดระบบควบคุม (Executing JavaScript)</h4>
+                            <p class="text-sm text-gray-600 mt-1">เมื่ออ่านลงมาถึงแท็ก <code class="bg-gray-50 text-gray-700 px-1 font-mono text-xs">&lt;script&gt;</code> เบราว์เซอร์จะเตรียมเปิดระบบประมวลผลของ JavaScript ขึ้นมาทำงานในพื้นหลัง โดยจะทำการสร้างฐานข้อมูลจำลอง (<code class="bg-gray-50 text-emerald-600 font-mono text-xs">tempDB</code>), ตั้งค่าปุ่มกดให้รอรับแรงคลิก (<code class="bg-gray-50 text-emerald-600 font-mono text-xs">onclick</code>), และเตรียมอัลกอริทึมคำนวณ (MCTS) ให้พร้อมใช้งานเพื่อรอรับเหตุการณ์ (Event)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="l2-p3" class="content-section space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide bg-indigo-50 px-2.5 py-1 rounded-full">Lesson 2</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-900">3. ตัวอย่างการทำงานร่วมกันในโปรแกรมโซลาร์เซลล์ของคุณ</h2>
+                </div>
+                <p class="text-gray-600">วงจรรูปแบบการทำงานจริงเมื่อผู้ใช้เปิดใช้งานระบบเลือกอุปกรณ์โซลาร์เซลล์:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 mb-1">ขั้นที่ 1</div>
+                        <h4 class="font-bold text-gray-800 mb-2">หน้าตาและการป้อนข้อมูล (HTML + CSS)</h4>
+                        <p class="text-sm text-gray-600">ผู้ใช้เห็นช่องกรอกข้อมูล "ความต้องการไฟฟ้า (Wh/วัน)" เป็นกล่องข้อความสีขาวขอบเทาอย่างสวยงามพึงประสงค์ นี่คือหน้าที่ของ HTML ที่สร้างช่องกรอก และ CSS ที่จัดให้มันดูเรียบร้อย</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 mb-1">ขั้นที่ 2</div>
+                        <h4 class="font-bold text-gray-800 mb-2">การเกิดเหตุการณ์ (Event Trigger)</h4>
+                        <p class="text-sm text-gray-600">เมื่อผู้ใช้กรอกตัวเลขแล้วใช้นิ้วคลิกหรือกดปุ่ม "เริ่มการวิเคราะห์ MCTS" เหตุการณ์ที่เรียกว่า <code class="bg-gray-50 text-rose-500 font-mono text-xs">click</code> จะเกิดขึ้น ปุ่มนี้จะส่งสัญญาณไปเรียกฟังก์ชัน <code class="bg-gray-50 text-indigo-600 font-mono text-xs">runMCTSOptimization()</code> ใน JavaScript มารับไม้ต่อ</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 mb-1">ขั้นที่ 3</div>
+                        <h4 class="font-bold text-gray-800 mb-2">การประมวลผลแอบซ่อน (JavaScript Logic)</h4>
+                        <p class="text-sm text-gray-600">JavaScript จะวิ่งไปหยิบตัวเลขที่ผู้ใช้กรอกมาจาก HTML ดึงข้อมูลอุปกรณ์จากฐานข้อมูลชั่วคราว (<code class="bg-gray-50 text-emerald-600 font-mono text-xs">tempDB</code>) แล้วสั่งรันลูปสุ่มคำนวณสเปคและ NPV อย่างรวดเร็วในหน่วยความจำ (RAM) โดยที่ผู้ใช้จะไม่เห็นสูตรคณิตศาสตร์เหล่านี้บนหน้าจอเลย</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 mb-1">ขั้นที่ 4</div>
+                        <h4 class="font-bold text-gray-800 mb-2">การเปลี่ยนสภาพหน้าจอ (Dynamic UI Update)</h4>
+                        <p class="text-sm text-gray-600">เมื่อ JavaScript คำนวณเสร็จมันจะหันกลับไปสั่ง HTML ว่า ให้เอาชื่อรุ่นแผงนี้ไปใส่ในแท็ก ID ชื่อ <code class="bg-gray-50 text-indigo-600 font-mono text-xs">resPanelModel</code> และสั่งแก้สไตล์ CSS ให้ข้อความกระพริบตัวโหลด (<code class="bg-gray-50 text-rose-500 font-mono text-xs">loadingStatus</code>) หายไป แล้วเปิดแสดงกล่องผลลัพธ์ (<code class="bg-gray-50 text-emerald-600 font-mono text-xs">resultContainer</code>)</p>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-900 text-indigo-100 p-6 rounded-xl shadow-md">
+                    <p class="leading-relaxed text-sm">
+                        <i class="fa-solid fa-bolt text-yellow-400 mr-1"></i>
+                        ด้วยเหตุนี้ <strong>Single HTML</strong> จึงเป็นโครงสร้างที่ทรงพลังมากสำหรับการสร้างแอปพลิเคชันขนาดเล็กถึงปานกลาง เพราะไฟล์เดียวบรรจุทั้งภาพลักษณ์ (HTML/CSS) และสมองกล (JavaScript) ทำให้มันทำงานร่วมกันได้อย่างรวดเร็ว ไหลลื่น โดยไม่ต้องพึ่งพาเซิร์ฟเวอร์ภายนอกเลยครับ
+                    </p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // ซ่อนทุก content section
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // เอาคลาสแอคทีฟออกจากทุกปุ่มในเมนู
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('menu-active');
+            });
+
+            // แสดงเฉพาะส่วนที่เลือก
+            const targetSection = document.getElementById(tabId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // เพิ่มคลาสแอคทีฟให้ปุ่มที่กด
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('menu-active');
+            }
+
+            // เลื่อนหน้าจอกลับไปด้านบนสุด (สำหรับอุปกรณ์พกพา)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
