@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Yield & Financial Report V5.4 (Simulation Engine)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script> 
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .sidebar-menu-item { display: block; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; color: #4b5563; text-decoration: none; transition: all 0.2s; }
+        .sidebar-menu-item:hover { background-color: #e5e7eb; color: #1f2937; }
+        .sidebar-menu-item.active { background-color: #3b82f6; color: white; font-weight: bold; }
+        input[type="file"]::file-selector-button { background-color: #e5e7eb; color: #374151; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: 'Kanit', sans-serif;}
+        
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            @page { size: A4 portrait; margin: 38mm 15mm 20mm 15mm; }
+            body { background-color: white; margin: 0; padding: 0; font-size: 12px; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .pdf-page { page-break-after: always; position: relative; width: 100%; min-height: 270mm; line-height: 1.6; }
+            .pdf-page:last-child { page-break-after: auto; }
+            .chart-img { width: 100%; max-height: 665px; object-fit: contain; margin: 20px 0 30px 0; }
+            .svg-container { overflow: hidden; width: 100%; margin: 20px 0 30px 0; }
+            .svg-container svg { width: 100% !important; height: auto !important; max-height: 665px;}
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px;}
+            th, td { border: 1px solid #cbd5e1; padding: 5px; }
+            th { background-color: #f1f5f9; font-weight: bold; }
+            h2.pdf-heading { color: #1d4ed8; font-size: 16px; font-weight: bold; background-color: #eff6ff; padding: 8px; margin: 30px 0 15px 0; border-left: 4px solid #2563eb; }
+        }
+        @media screen { .print-only { display: none; } }
+        
+        .explanation-box { background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 16px; font-size: 14px; margin-top: 15px; color: #334155; line-height: 1.6; border-radius: 4px;}
+        .chart-container { width: 100%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; display: block;}
+        
+        .param-group { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; background-color: #f9fafb; margin-bottom: 16px;}
+        .param-group h4 { margin-top: 0; margin-bottom: 10px; font-size: 14px; color: #1d4ed8; font-weight: bold; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;}
+        .param-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+        .param-grid div { display: flex; flex-direction: column; }
+        .param-grid label { font-size: 11px; color: #4b5563; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .param-grid input { font-size: 12px; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-family: 'Kanit', sans-serif;}
+
+        .google-visualization-tooltip { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <div id="modal-preview" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center no-print">
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b bg-blue-50 rounded-t-xl flex justify-between items-center">
+                <h2 class="text-xl font-bold text-blue-800">✅ ระบบกวาดข้อมูลสำเร็จ</h2>
+                <button onclick="closeModal('modal-preview')" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div id="preview-summary" class="text-sm space-y-2 text-gray-700 bg-gray-50 p-4 rounded border"></div>
+                <p class="text-xs text-gray-500 mt-2">* ระบบตรวจสอบอักขระพิเศษและเชื่อมข้อมูลสภาพอากาศ อ้างอิงแหล่งข้อมูล API เรียบร้อยแล้ว</p>
+            </div>
+            <div class="p-4 border-t text-right bg-gray-50 rounded-b-xl">
+                <button onclick="closeModal('modal-preview')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-bold shadow">นำไปใช้งาน</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-error" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center no-print">
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-lg border-t-4 border-red-500">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 class="text-xl font-bold text-red-600">⚠️ ประมวลผลล้มเหลว</h2>
+                <button onclick="closeModal('modal-error')" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto"><ul id="error-list" class="list-disc pl-5 text-sm text-red-600 space-y-2 font-medium"></ul></div>
+            <div class="p-4 border-t text-right bg-gray-50 rounded-b-xl"><button onclick="closeModal('modal-error')" class="bg-red-500 text-white px-6 py-2 rounded font-bold">รับทราบ</button></div>
+        </div>
+    </div>
+
+    <div class="no-print w-64 bg-white shadow-lg z-10 flex flex-col">
+        <div class="p-6 border-b">
+            <h1 class="text-xl font-bold text-blue-700">Solar Report</h1>
+            <p class="text-xs text-gray-500">Version 5.4 (Simulation Engine)</p>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <a href="#" onclick="switchMenu('menu-setup', this)" class="sidebar-menu-item active">📂 1. ตั้งค่าระบบ (Setup)</a>
+            <a href="#" onclick="switchMenu('menu-load', this)" class="sidebar-menu-item">⚡ 2. พฤติกรรมใช้ไฟ (Load)</a>
+            <a href="#" onclick="switchMenu('menu-finance', this)" class="sidebar-menu-item">💰 3. การเงิน (Finance)</a>
+            <a href="#" id="btn-menu-dashboard" onclick="switchMenu('menu-dashboard', this)" class="sidebar-menu-item">📊 4. Dashboard & Report</a>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="clearState()" class="w-full text-red-600 hover:bg-red-50 py-2 rounded text-sm font-bold border border-red-200">ล้างข้อมูลทั้งหมด</button>
+        </div>
+    </div>
+
+    <div class="no-print flex-1 flex flex-col h-screen overflow-hidden bg-gray-100">
+        <div class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-700" id="header-title">1. ตั้งค่าระบบ (Setup)</h2>
+            <div class="flex items-center space-x-3">
+                <span class="text-xs text-gray-500 hidden sm:block">อัปโหลดผังโครงการ (PDF หน้า 1):</span>
+                <input type="file" id="upload-layout-img" accept="image/*" class="text-sm border border-blue-300 rounded p-1 bg-blue-50 cursor-pointer" onchange="previewProjectImage(event)" title="อัปโหลดภาพผังโครงการสำหรับแสดงในหน้ารายงาน PDF">
+                
+                <span class="text-xs text-gray-500 hidden sm:block">| นำเข้า JSON:</span>
+                <input type="file" id="file-upload" class="text-sm border border-gray-300 rounded p-1 bg-gray-50" onchange="handleFileUpload(event)">
+                <button onclick="generatePDF()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded text-sm font-bold shadow-md">Export PDF</button>
+                <button onclick="exportDB3()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-bold shadow-md ml-2">Export DB3</button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            
+            <div id="menu-setup" class="tab-content active space-y-6 max-w-6xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">ข้อมูลโครงการ & พารามิเตอร์เชิงพื้นที่ (Project & Meteo Parameters)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="md:col-span-2"><label class="block text-xs font-bold">ชื่อโปรเจกต์</label><input type="text" id="inp-proj" class="w-full border rounded p-2 text-sm" value="-"></div>
+                        <div><label class="block text-xs font-bold">สถานที่ตั้ง</label><input type="text" id="inp-loc" class="w-full border rounded p-2 text-sm" value="-"></div>
+                        <div><label class="block text-xs font-bold">พิกัด (Lat, Lon)</label><input type="text" id="inp-coords" class="w-full border rounded p-2 text-sm" value="-"></div>
+                    </div>
+                    
+                    <h4 class="text-sm font-bold text-blue-700 mb-2 mt-4">ทิศทางและค่าสัมประสิทธิ์ (Orientation & Thermal Parameters)</h4>
+                    <div class="grid grid-cols-5 gap-4 mb-4">
+                        <div><label class="block text-xs font-bold">มุมเอียงแผง (Tilt °)</label><input type="text" id="inp-tilt" value="15" class="w-full border rounded p-2 text-sm" placeholder="เช่น 15, 20"></div>
+                        <div><label class="block text-xs font-bold">มุมทิศ (Azimuth °)</label><input type="text" id="inp-azi" value="0" class="w-full border rounded p-2 text-sm" placeholder="เช่น 0, -90"></div>
+                        <div><label class="block text-xs font-bold text-green-600">GHI (kWh/m²/y)</label><input type="number" step="0.01" id="inp-ghi" value="0" class="w-full border rounded p-2 text-sm bg-green-50"></div>
+                        <div><label class="block text-xs font-bold text-red-600">Temp Coeff Pmax (%/°C)</label><input type="number" step="0.01" id="inp-pv-tc-pmax" value="0" class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs font-bold text-red-600">Temp Coeff Voc (%/°C)</label><input type="number" step="0.01" id="inp-pv-tc-voc" value="0" class="w-full border rounded p-2 text-sm"></div>
+                    </div>
+
+                    <h4 class="text-sm font-bold text-orange-600 mb-2 mt-4">การสูญเสียในระบบ (Loss Parameters)</h4>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div><label class="block text-xs font-bold text-gray-700">Soiling Loss (%)</label><input type="number" step="0.01" id="inp-loss-soil" value="0" class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs font-bold text-gray-700">LID Loss (%)</label><input type="number" step="0.01" id="inp-loss-lid" value="0" class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs font-bold text-gray-700">Wiring Ohmic Loss (%)</label><input type="number" step="0.01" id="inp-loss-wire" value="0" class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs font-bold text-blue-600">INV Eff. Average (%)</label><input type="number" step="0.01" id="inp-inv-eff" value="0" class="w-full border rounded p-2 text-sm"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-end border-b pb-2 mb-4">
+                        <h3 class="font-bold text-gray-800">แผงโซล่าร์เซลล์ (PV Module)</h3>
+                        <div class="text-right">
+                            <span class="text-xs">กำลังผลิตรวม (Pnom): </span>
+                            <span id="display-pnom" class="text-xl font-bold text-green-600">0.00</span> <span class="font-bold text-green-600">kWp</span>
+                        </div>
+                    </div>
+                    <div class="param-group border-blue-200">
+                        <div class="param-grid">
+                            <div><label class="text-blue-700">จำนวนแผง (Units)</label><input type="number" id="inp-pv-qty" value="0" onkeyup="calcPnom()" class="bg-blue-50 font-bold"></div>
+                            <div><label class="text-blue-700">Pmax (Wp)</label><input type="number" id="inp-pv-wp" value="0" onkeyup="calcPnom()" class="bg-blue-50 font-bold"></div>
+                            <div><label>Manufacturer</label><input type="text" id="pv-Manufacturer" value="-"></div>
+                            <div><label>Model Name</label><input type="text" id="inp-pv-model" value="-"></div>
+                            <div><label>Efficiency (%)</label><input type="number" step="0.01" id="pv-Module_Efficiency_Pct" value="0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">อินเวอร์เตอร์หลัก (Main Inverter)</h3>
+                    <div class="param-group border-orange-200">
+                        <div class="param-grid">
+                            <div><label class="text-orange-600">จำนวนเครื่อง (Units)</label><input type="number" id="inv1-qty" value="0" class="bg-orange-50 font-bold"></div>
+                            <div><label class="text-orange-600">Rated AC Power (kW)</label><input type="number" id="inp-invKw" value="0" class="bg-orange-50 font-bold"></div>
+                            <div><label>Manufacturer</label><input type="text" id="inv1-Manufacturer" value="-"></div>
+                            <div><label>Model Name</label><input type="text" id="inp-inv-model" value="-"></div>
+                            <div><label>Max DC Input (V)</label><input type="number" id="inv1-Max_DC_Input_Voltage_V" value="0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">ระบบกักเก็บพลังงาน (Battery ESS)</h3>
+                    <div class="param-group border-green-200">
+                        <div class="param-grid">
+                            <div><label class="text-green-700">จำนวนชุด (Units)</label><input type="number" id="inp-bat-qty" value="0" class="bg-green-50 font-bold" onchange="autoSetOM()" onkeyup="autoSetOM()"></div>
+                            <div><label class="text-green-700">Nominal Cap. (kWh/ชุด)</label><input type="number" id="inp-bat-kwh" value="0" class="bg-green-50 font-bold"></div>
+                            <div><label>Manufacturer</label><input type="text" id="bat-Manufacturer" value="-"></div>
+                            <div><label>Model Name</label><input type="text" id="inp-bat-model" value="-"></div>
+                            <div><label>Max Charge (kW)</label><input type="number" id="bat-Max_Continuous_Charge_Power_kw" value="0"></div>
+                            <div><label>Max Discharge (kW)</label><input type="number" id="bat-Max_Continuous_Discharge_Power_kw" value="0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-indigo-500 mt-6" id="box-hourly-sim">
+                    <h3 class="font-bold text-indigo-800 mb-4 border-b pb-2">
+                        <i class="fa-solid fa-microchip"></i> ผลการจำลองคณิตศาสตร์วิศวกรรม (Hourly Simulation - DB3)
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-4">* ข้อมูลด้านล่างจะอัปเดตอัตโนมัติเมื่อกด "ประมวลผล (Run Simulation)" ในเมนู 3</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <div class="bg-indigo-50 p-3 rounded border border-indigo-100">
+                                <h4 class="text-xs font-bold text-indigo-700 mb-1">1. การคำนวณตำแหน่งดวงอาทิตย์ (Solar Geometry)</h4>
+                                <div class="text-sm flex justify-between"><span>Sun Zenith Angle (Max):</span> <span id="sim-zenith" class="font-bold text-gray-800">-</span></div>
+                                <div class="text-sm flex justify-between"><span>Sun Azimuth Angle (Max):</span> <span id="sim-sun-azi" class="font-bold text-gray-800">-</span></div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-3 rounded border border-blue-100">
+                                <h4 class="text-xs font-bold text-blue-700 mb-1">2. คำนวณมุมตกกระทบ (AOI)</h4>
+                                <div class="text-sm flex justify-between"><span>รับแดดเฉลี่ย (AOI Efficiency):</span> <span id="sim-aoi-eff" class="font-bold text-gray-800">-</span></div>
+                                <div class="text-sm flex justify-between"><span>มุมเอียงหลังคา (Slope):</span> <span id="sim-roof-tilt" class="font-bold text-gray-800">-</span></div>
+                                <div class="text-sm flex justify-between"><span>มุมทิศหลังคา (Azimuth):</span> <span id="sim-roof-azi" class="font-bold text-gray-800">-</span></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="bg-orange-50 p-3 rounded border border-orange-100">
+                                <h4 class="text-xs font-bold text-orange-700 mb-1">3. การแปลงความเข้มแสง (POA)</h4>
+                                <div class="text-sm flex justify-between"><span>แสงตรงหน้าแผง (Beam Irradiance):</span> <span id="sim-poa-beam" class="font-bold text-gray-800">-</span></div>
+                                <div class="text-sm flex justify-between"><span>แสงรวมหน้าแผง (POA Total):</span> <span id="sim-poa-tot" class="font-bold text-gray-800">-</span></div>
+                            </div>
+
+                            <div class="bg-green-50 p-3 rounded border border-green-100">
+                                <h4 class="text-xs font-bold text-green-700 mb-1">4 & 5. กำลังผลิต & จัดการแบตเตอรี่ (Dispatch)</h4>
+                                <div class="text-sm flex justify-between"><span>กำลังผลิตรายชั่วโมงสูงสุด (Peak DC):</span> <span id="sim-peak-dc" class="font-bold text-gray-800">-</span></div>
+                                <div class="text-sm flex justify-between"><span>พลังงานรวมฝั่ง DC (Annual):</span> <span id="sim-total-dc" class="font-bold text-gray-800">-</span></div>
+                                
+                                <div id="sim-mppt-breakdown" class="text-xs text-blue-700 bg-white p-2 rounded mt-1 mb-1 border border-green-200"></div>
+
+                                <div class="text-sm flex justify-between"><span>แปลงเป็น AC (หัก INV Loss):</span> <span id="sim-total-ac" class="font-bold text-gray-800">-</span></div>
+                                <div class="text-sm flex justify-between"><span>พลังงานเหลือชาร์จแบตฯ (Surplus):</span> <span id="sim-surplus" class="font-bold text-gray-800">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="menu-load" class="tab-content space-y-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">ประเภทมิเตอร์ & ค่าไฟฟ้า</h3>
+                    <div class="mb-4 flex space-x-6">
+                        <label class="inline-flex items-center"><input type="radio" name="tariff" value="normal" checked onchange="toggleTariffMode()" class="form-radio text-blue-600"> <span class="ml-2 font-medium">อัตราปกติ</span></label>
+                        <label class="inline-flex items-center"><input type="radio" name="tariff" value="tou" onchange="toggleTariffMode()" class="form-radio text-blue-600"> <span class="ml-2 font-medium">อัตรา TOU</span></label>
+                    </div>
+                    
+                    <div id="form-normal" class="grid grid-cols-2 gap-4 mb-4 bg-blue-50 p-4 rounded border border-blue-100">
+                        <div><label class="block text-sm text-gray-700 font-bold">หน่วยการใช้ไฟ (kWh/เดือน)</label><input type="number" id="inp-bill-unit" class="w-full border rounded p-2" value="0" onkeyup="calcBill()"></div>
+                        <div><label class="block text-sm text-gray-700 font-bold">อัตราค่าไฟเฉลี่ย (บาท/หน่วย)</label><input type="number" step="0.01" id="inp-bill-rate" value="0" class="w-full border rounded p-2" onkeyup="calcBill()"></div>
+                    </div>
+
+                    <div id="form-tou" class="hidden grid grid-cols-2 gap-4 mb-4 bg-orange-50 p-4 rounded border border-orange-100">
+                        <div><label class="block text-sm font-bold text-orange-600">หน่วยไฟ On-Peak (kWh)</label><input type="number" id="inp-tou-unit-on" value="0" class="w-full border rounded p-2 mb-2" onkeyup="calcBill()"><label class="block text-sm text-gray-600">อัตรา On-Peak (บาท)</label><input type="number" step="0.0001" id="inp-tou-rate-on" value="4.1839" class="w-full border rounded p-2" onkeyup="calcBill()"></div>
+                        <div><label class="block text-sm font-bold text-green-600">หน่วยไฟ Off-Peak (kWh)</label><input type="number" id="inp-tou-unit-off" value="0" class="w-full border rounded p-2 mb-2" onkeyup="calcBill()"><label class="block text-sm text-gray-600">อัตรา Off-Peak (บาท)</label><input type="number" step="0.0001" id="inp-tou-rate-off" value="2.6037" class="w-full border rounded p-2" onkeyup="calcBill()"></div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div><label class="block text-sm text-gray-600">ค่า Ft (บาท)</label><input type="number" id="inp-bill-ft" value="0.1" step="0.0001" class="w-full border rounded p-2" onkeyup="calcBill()"></div>
+                        <div><label class="block text-sm text-gray-600">VAT (%)</label><input type="number" id="inp-bill-vat" value="7" class="w-full border rounded p-2" onkeyup="calcBill()"></div>
+                        <div><label class="block text-sm text-gray-600">ค่าบริการรายเดือน (บาท)</label><input type="number" step="0.01" id="inp-bill-serv" value="312.24" class="w-full border rounded p-2" onkeyup="calcBill()"></div>
+                    </div>
+                    
+                    <div class="bg-gray-800 text-white p-4 rounded-lg text-center font-bold text-xl shadow-inner">
+                        รวมค่าไฟฟ้าสุทธิ: <span id="display-total-bill" class="text-green-400">0.00</span> บาท/เดือน<br>
+                        <span class="text-sm font-normal text-gray-300">เฉลี่ยต่อวัน: <span id="display-daily-kwh">0.00</span> kWh/วัน</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">พฤติกรรมการใช้ไฟ (Load Distribution)</h3>
+                    <p class="text-sm text-gray-500 mb-4">ระบุเปอร์เซ็นต์การใช้งานในแต่ละช่วงเวลา (ผลรวมต้องได้ 100%)</p>
+                    <div class="grid grid-cols-4 gap-4 mb-2">
+                        <div><label class="block text-xs font-bold text-gray-600">06.00-09.00</label><input type="number" id="ld-1" value="0" class="w-full border rounded p-2 text-center" onkeyup="validateLoad()"></div>
+                        <div><label class="block text-xs font-bold text-orange-600">09.00-15.00 (Peak)</label><input type="number" id="ld-2" value="0" class="w-full border rounded p-2 text-center border-orange-200" onkeyup="validateLoad()"></div>
+                        <div><label class="block text-xs font-bold text-gray-600">15.00-22.00</label><input type="number" id="ld-3" value="0" class="w-full border rounded p-2 text-center" onkeyup="validateLoad()"></div>
+                        <div><label class="block text-xs font-bold text-blue-600">22.00-06.00</label><input type="number" id="ld-4" value="0" class="w-full border rounded p-2 text-center border-blue-200" onkeyup="validateLoad()"></div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4 mt-4 overflow-hidden border border-gray-300">
+                        <div id="load-bar" class="bg-gray-400 h-4 transition-all duration-300" style="width: 0%;"></div>
+                    </div>
+                    <div id="load-msg" class="text-xs font-bold mt-1 text-center text-gray-600">รวม 0%</div>
+                </div>
+            </div>
+
+            <div id="menu-finance" class="tab-content space-y-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">พารามิเตอร์การเงิน (Financial Parameters)</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div><label class="block text-sm text-gray-600">CAPEX (บาท/วัตต์)</label><input type="number" id="fin-capex" value="22" step="0.1" class="w-full border rounded p-2 font-bold text-blue-700"></div>
+                        <div><label class="block text-sm text-gray-600">CAPEX แบตฯ (บาท/kWh)</label><input type="number" id="fin-capex-bat" value="10000" step="100" class="w-full border rounded p-2 font-bold text-green-700" onkeyup="updateBatTotal()" onchange="updateBatTotal()"></div> 
+                        <div><label class="block text-sm text-gray-600">ต้นทุนแบตเตอรี่รวม (บาท)</label><input type="number" id="fin-bat-total" value="0" class="w-full border rounded p-2 bg-green-50 font-bold text-green-700" readonly></div>
+                        <div><label class="block text-sm text-gray-600">O&M (บาท/วัตต์/ปี)</label><input type="number" id="fin-om" value="0.06" step="0.01" class="w-full border rounded p-2"></div>
+                        <div><label class="block text-sm text-gray-600">อัตราค่าไฟฟ้า (Tariff)</label><input type="number" id="fin-tariff" value="0" class="w-full border rounded p-2 bg-gray-100 font-bold" readonly></div>
+                        <div><label class="block text-sm text-gray-600">อัตราเพิ่มค่าไฟฟ้า (%/ปี)</label><input type="number" id="fin-tariff-inf" value="3.0" step="0.1" class="w-full border rounded p-2 text-orange-600 font-bold"></div>
+                        <div><label class="block text-sm text-gray-600">อัตราเงินเฟ้อ(%/ปี)</label><input type="number" id="fin-inf" value="3.0" step="0.1" class="w-full border rounded p-2"></div>                       
+                        <div><label class="block text-sm text-gray-600">อัตราคิดลด (Discount Rate: r)(%/ปี)</label><input type="number" id="fin-dr" value="6.5" step="0.1" class="w-full border rounded p-2"></div>
+                        <div><label class="block text-sm text-gray-600">Degradation ปี 1 (%)</label><input type="number" id="fin-deg" value="0.5" step="0.1" class="w-full border rounded p-2 text-red-600 font-bold"></div>
+                        <div><label class="block text-sm text-gray-600">Degradation ปี 2-30 (%)</label><input type="number" id="fin-deg-2" value="0.5" step="0.1" class="w-full border rounded p-2 text-red-600 font-bold"></div>
+                    </div>
+                    
+                    <div class="text-center border-t pt-8 mt-6">
+                        <button onclick="runSimulationEngine()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full text-lg font-bold shadow-lg transform hover:scale-105 transition w-full md:w-2/3">
+                            ▶ ประมวลผลและสร้างรายงาน (Run Simulation)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="menu-dashboard" class="tab-content max-w-5xl mx-auto">
+                <div class="grid grid-cols-1 w-full pb-20">
+                    
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-green-700">🌱 1. Environmental Impact (แบบจำลองด้านสิ่งแวดล้อม)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-green-50 p-4 rounded border border-green-200 text-center">
+                            <div><p class="text-xs text-gray-500">ลดการปล่อย CO2 (ตัน/ปี)</p><p class="text-2xl font-bold text-gray-700" id="env-co2">-</p></div>
+                            <div><p class="text-xs text-gray-500">เทียบเท่าปลูกต้นไม้ (ต้น/ปี)</p><p class="text-2xl font-bold text-green-600" id="env-tree">-</p></div>
+                            <div><p class="text-xs text-gray-500">ลดการใช้ถ่านหิน (ตัน/ปี)</p><p class="text-2xl font-bold text-gray-700" id="env-coal">-</p></div>
+                            <div><p class="text-xs text-gray-500">เทียบเท่าประหยัดน้ำมัน (ลิตร/ปี)</p><p class="text-2xl font-bold text-orange-600" id="env-oil">-</p></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">2. Balances and Main Results</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-right border">
+                                <thead class="bg-gray-100"><tr><th class="text-center p-2 border">Month</th><th class="border">GlobHor<br>(kWh/m²)</th><th class="border">GlobInc<br>(kWh/m²)</th><th class="border">T_Amb<br>(°C)</th><th class="border">EArray<br>(kWh)</th><th class="border">E_Grid<br>(kWh)</th><th class="border">PR (%)</th></tr></thead>
+                                <tbody id="tbl-balances"></tbody>
+                            </table>
+                        </div>
+                        <div class="explanation-box" id="desc-balances"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">3. PV System Loss Diagram</h3>
+                        <div id="custom-loss-diagram"></div>
+                        <div class="explanation-box" id="desc-waterfall"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2 gap-2">
+                            <h3 class="font-bold text-lg text-blue-800">4. Daily Battery & PV Operation</h3>
+                            <div class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded border border-blue-200 flex flex-wrap gap-3 items-center">
+                                <span>Discharge แบตเตอรี่ (ถึง 25%):</span>
+                                <label><input type="checkbox" id="chk-b-before" checked onchange="updateChartjsDailyInteractive()"> ก่อน PSH (00:00-09:00)</label>
+                                <label><input type="checkbox" id="chk-b-after" checked onchange="updateChartjsDailyInteractive()"> หลัง PSH (15:00-24:00)</label>
+                            </div>
+                        </div>
+                        <div style="position: relative; height:450px; width:100%;">
+                            <canvas id="chart-daily-chartjs"></canvas>
+                        </div>
+                        <div class="explanation-box" id="desc-daily"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">5. Monthly Energy Production & Performance Ratio (PR)</h3>
+                        <div style="position: relative; height:450px; width:100%;">
+                            <canvas id="chart-monthly-chartjs"></canvas>
+                        </div>
+                        <div class="explanation-box" id="desc-monthly"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">6. Daily Input/Output Diagram (Scatter with Trendline)</h3>
+                        <div style="position: relative; height:450px; width:100%;">
+                            <canvas id="chart-scatter-chartjs"></canvas>
+                        </div>
+                        <div class="explanation-box" id="desc-scatter"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">7. System Output Power Distribution</h3>
+                        <div style="position: relative; height:450px; width:100%;">
+                            <canvas id="chart-hist-chartjs"></canvas>
+                        </div>
+                        <div class="explanation-box" id="desc-hist"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">8. Probability Distribution (P50/P75/P90/P95)</h3>
+                        <div style="position: relative; height:450px; width:100%;">
+                            <canvas id="chart-bell-chartjs"></canvas>
+                        </div>
+                        <div class="explanation-box" id="desc-bell"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">9. Cumulative Cash Flow</h3>
+                        <div id="chart-cashflow-apex" style="height: 450px; width:100%;"></div>
+                        <div class="explanation-box" id="desc-cashflow"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">10. Financial Evaluation Table</h3>
+                        <div class="flex space-x-6 mb-4 bg-gray-50 p-4 rounded border">
+                            <div class="text-center w-1/3"><p class="text-xs text-gray-500">Payback Period</p><p class="text-2xl font-bold text-green-600" id="txt-payback">-</p></div>
+                            <div class="text-center w-1/3"><p class="text-xs text-gray-500">IRR (25 Yrs)</p><p class="text-2xl font-bold text-blue-600" id="txt-irr">-</p></div>
+                            <div class="text-center w-1/3"><p class="text-xs text-gray-500">NPV</p><p class="text-2xl font-bold text-indigo-600" id="txt-npv">-</p></div>
+                        </div>
+                        <div class="overflow-x-auto border border-gray-200 mb-4">
+                            <table class="w-full text-sm text-right border relative">
+                                <thead class="bg-gray-200 sticky top-0 z-10"><tr><th class="text-center p-2 border">Year</th><th class="border">Energy (kWh)</th><th class="border">Savings (฿)</th><th class="border">O&M (฿)</th><th class="border">Net Cash (฿)</th><th class="border">DCF (฿)</th><th class="border">Cumulative (฿)</th></tr></thead>
+                                <tbody id="tbl-finance"></tbody>
+                            </table>
+                        </div>
+                        <div class="explanation-box" id="desc-tbl-finance"></div>
+                    </div>
+
+                    <div class="chart-container avoid-break" id="bom-container" style="display: none;">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800">11. Engineering & Bill of Materials (BOM)</h3>
+                        <div class="overflow-x-auto border border-gray-200 mb-4 rounded">
+                            <table class="w-full text-sm text-left border">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="p-2 border text-center w-24">หมวด</th>
+                                        <th class="p-2 border w-1/4">รายการอุปกรณ์</th>
+                                        <th class="p-2 border text-left">สเปก / ขนาดอ้างอิง วสท.</th>
+                                        <th class="p-2 border text-center w-32">จำนวน</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbl-bom-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="report-preview-area" class="print-only">
+        
+        <div class="pdf-page">
+            <h1 class="text-2xl font-bold text-blue-700 text-center mb-6">Solar Simulation Report</h1>
+            
+            <h2 class="pdf-heading">ข้อมูลโครงการ & พารามิเตอร์เชิงพื้นที่ (Project & Meteo Parameters)</h2>
+            <table class="w-full text-left">
+                <tr><th class="w-1/4">ชื่อโปรเจกต์</th><td id="prt-txt-proj" class="w-1/4"></td><th class="w-1/4">กำลังผลิตรวม (Pnom)</th><td id="prt-txt-pnom" class="text-green-600 font-bold"></td></tr>
+                <tr><th>สถานที่ตั้ง</th><td id="prt-txt-loc"></td><th>พิกัด (Lat, Lon)</th><td id="prt-txt-coords"></td></tr>
+            </table>
+
+            <h2 class="pdf-heading">ทิศทางและค่าสัมประสิทธิ์ (Orientation & Thermal Parameters)</h2>
+            <table class="w-full text-left">
+                <tr><th class="w-1/4">มุมเอียงแผง (Tilt °)</th><td id="prt-txt-tilt"></td><th class="w-1/4">Temp Coeff Pmax</th><td id="prt-txt-tc-pmax"></td></tr>
+                <tr><th>มุมทิศ (Azimuth °)</th><td id="prt-txt-azi"></td><th>Temp Coeff Voc</th><td id="prt-txt-tc-voc"></td></tr>
+                <tr><th>GHI (kWh/m²/y)</th><td id="prt-txt-ghi" class="text-orange-600 font-bold" colspan="3"></td></tr>
+            </table>
+
+            <h2 class="pdf-heading">การสูญเสียในระบบ (Loss Parameters)</h2>
+            <table class="w-full text-left">
+                <tr><th class="w-1/4">Soiling Loss (%)</th><td id="prt-txt-soil"></td><th class="w-1/4">Wiring Ohmic Loss (%)</th><td id="prt-txt-wire"></td></tr>
+                <tr><th>LID Loss (%)</th><td id="prt-txt-lid"></td><th>INV Eff. Average (%)</th><td id="prt-txt-inv-eff"></td></tr>
+            </table>
+
+            <h2 class="pdf-heading">ผังโครงการ (Project Layout)</h2>
+            <div class="h-[600px] flex items-center justify-center">
+                <span id="prt-layout-txt" class="text-gray-400">ไม่ได้อัปโหลดภาพผังโครงการ</span>
+                <img id="prt-layout-img" src="" class="hidden object-contain w-full h-full">
+            </div>
+
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">ข้อมูลอุปกรณ์ (Equipment Details)</h2>
+            <table class="w-full text-left mb-4">
+                <tr><th class="w-1/4 bg-blue-50">แผงโซลาร์เซลล์ (PV)</th><td id="prt-pv-desc" colspan="3"></td></tr>
+                <tr><th class="bg-blue-50">อินเวอร์เตอร์หลัก (INV 1)</th><td id="prt-inv1-desc" colspan="3"></td></tr>
+                <tr><th class="bg-blue-50">อินเวอร์เตอร์เสริม (INV 2)</th><td id="prt-inv2-desc" colspan="3"></td></tr>
+                <tr><th class="bg-blue-50">ออปติไมเซอร์ (Optimizer)</th><td id="prt-opt-desc" colspan="3"></td></tr>
+                <tr><th class="bg-blue-50">ระบบแบตเตอรี่ (Battery)</th><td id="prt-bat-desc" colspan="3"></td></tr>
+            </table>
+
+            <h2 class="pdf-heading">พฤติกรรมการใช้ไฟ (Load Profile)</h2>
+            <table class="w-full text-center mb-4">
+                <tr><th>06.00-09.00</th><th>09.00-15.00 (Peak)</th><th>15.00-22.00</th><th>22.00-06.00</th></tr>
+                <tr><td id="prt-ld-1"></td><td id="prt-ld-2"></td><td id="prt-ld-3"></td><td id="prt-ld-4"></td></tr>
+            </table>
+
+            <h2 class="pdf-heading">พารามิเตอร์การเงิน (Financial Parameters)</h2>
+            <table class="w-full text-left">
+                <tr><th class="w-1/4">CAPEX (บาท/วัตต์)</th><td id="prt-fin-capex"></td><th class="w-1/4">อัตราเงินเฟ้อ O&M (%/ปี)</th><td id="prt-fin-inf"></td></tr>
+                <tr><th>O&M (บาท/วัตต์/ปี)</th><td id="prt-fin-om"></td><th>Discount Rate (%/ปี)</th><td id="prt-fin-dr"></td></tr>
+                <tr><th>อัตราค่าไฟฟ้าเฉลี่ย</th><td id="prt-fin-tariff"></td><th>Degradation ปี 1 (%)</th><td id="prt-fin-deg"></td></tr>
+                <tr><th>อัตราเพิ่มค่าไฟฟ้า (%/ปี)</th><td id="prt-fin-tariff-inf"></td><th>Degradation ปี 2-30 (%)</th><td id="prt-fin-deg2"></td></tr>
+            </table>
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">3. PV System Loss Diagram</h2>
+            <div id="prt-sankey" class="svg-container w-full mb-2"></div>
+            <div id="prt-desc-waterfall" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            
+            <h2 class="pdf-heading">Balances and Main Results</h2>
+            <table class="w-full text-right border mt-4">
+                <thead class="bg-gray-100"><tr><th class="text-center p-2 border">Month</th><th class="border">GlobHor<br>(kWh/m²)</th><th class="border">GlobInc<br>(kWh/m²)</th><th class="border">T_Amb<br>(°C)</th><th class="border">EArray<br>(kWh)</th><th class="border">E_Grid<br>(kWh)</th><th class="border">PR (%)</th></tr></thead>
+                <tbody id="prt-tbl-balances"></tbody>
+            </table>
+            <div id="prt-desc-balances" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">4. Daily Battery & PV Operation</h2>
+            <img id="prt-img-daily" class="chart-img" style="margin-bottom: 5px;">
+            <div id="prt-desc-daily" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            
+            <h2 class="pdf-heading">5. Monthly Energy Production & Performance Ratio (PR)</h2>
+            <img id="prt-img-monthly" class="chart-img" style="margin-bottom: 5px;">
+            <div id="prt-desc-monthly" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">6. Daily Input/Output Diagram (Scatter with Trendline)</h2>
+            <img id="prt-img-scatter" class="chart-img" style="margin-bottom: 5px;">
+            <div id="prt-desc-scatter" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            
+            <h2 class="pdf-heading">7. System Output Power Distribution</h2>
+            <img id="prt-img-hist" class="chart-img" style="margin-bottom: 5px;">
+            <div id="prt-desc-hist" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">8. Probability Distribution (P50/P75/P90/P95)</h2>
+            <img id="prt-img-bell" class="chart-img" style="margin-bottom: 5px;">
+            <div id="prt-desc-bell" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            
+            <h2 class="pdf-heading">9. Cumulative Cash Flow</h2>
+            <div id="prt-cashflow" class="svg-container w-full" style="margin-bottom: 5px;"></div>
+            <div id="prt-desc-cashflow" class="text-xs text-gray-600 bg-gray-50 p-2 border-l-2 border-blue-500 mb-6 leading-relaxed"></div>
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">10. Financial Evaluation Table</h2>
+            <div class="flex space-x-6 mb-4 mt-4 bg-gray-50 p-4 rounded border">
+                <div class="text-center w-1/3"><p class="text-xs text-gray-500">Payback Period</p><p class="text-xl font-bold text-green-600" id="prt-payback">-</p></div>
+                <div class="text-center w-1/3"><p class="text-xs text-gray-500">IRR (25 Yrs)</p><p class="text-xl font-bold text-blue-600" id="prt-irr">-</p></div>
+                <div class="text-center w-1/3"><p class="text-xs text-gray-500">NPV</p><p class="text-xl font-bold text-indigo-600" id="prt-npv">-</p></div>
+            </div>
+            <table class="w-full text-right border mt-4">
+                <thead class="bg-gray-200"><tr><th class="text-center p-2 border">Year</th><th class="border">Energy (kWh)</th><th class="border">Savings (฿)</th><th class="border">O&M (฿)</th><th class="border">Net Cash (฿)</th><th class="border">DCF (฿)</th><th class="border">Cumulative (฿)</th></tr></thead>
+                <tbody id="prt-tbl-finance"></tbody>
+            </table>
+            
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+        <div class="pdf-page">
+            <h2 class="pdf-heading">11. Engineering & Bill of Materials (BOM)</h2>
+            <table class="w-full text-left border mt-4">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 border text-center w-24">หมวด</th>
+                        <th class="p-2 border w-1/4">รายการอุปกรณ์</th>
+                        <th class="p-2 border text-left">สเปก / ขนาดอ้างอิง วสท.</th>
+                        <th class="p-2 border text-center w-32">จำนวน</th>
+                    </tr>
+                </thead>
+                <tbody id="prt-tbl-bom"></tbody>
+            </table>
+            <div class="absolute bottom-0.5 right-0.5 text-xs text-gray-500 font-medium">Assessed by Pro Inventive Co., Ltd</div>
+        </div>
+
+    </div>
+    
+    <script>
+        function updateBatTotal() {
+            let batQty = getVal('inp-bat-qty', 0);
+            let batKwh = getVal('inp-bat-kwh', 0);
+            let capexBatRate = getVal('fin-capex-bat', 10000);
+            
+            let totalCost = batQty * batKwh * capexBatRate;
+            setVal('fin-bat-total', totalCost);
+        }
+        
+        function calculateIRR(cashFlows, guess = 0.1) {
+            const maxIter = 1000;
+            const tolerance = 1e-5;
+            let rate = guess;
+
+            for (let i = 0; i < maxIter; i++) {
+                let npv = 0;
+                let npvDerivative = 0;
+
+                for (let t = 0; t < cashFlows.length; t++) {
+                    npv += cashFlows[t] / Math.pow(1 + rate, t);
+                    if (t > 0) {
+                        npvDerivative -= t * cashFlows[t] / Math.pow(1 + rate, t + 1);
+                    }
+                }
+
+                if (Math.abs(npv) < tolerance) return rate;
+
+                let newRate = rate - (npv / npvDerivative);
+                if (Math.abs(newRate - rate) < tolerance) return newRate;
+                rate = newRate;
+            }
+            return null;
+        }
+
+        Chart.defaults.plugins.datalabels = { display: false };
+        Chart.register(window['chartjs-plugin-annotation']);
+        Chart.register(window.ChartDataLabels);
+        google.charts.load('current', {'packages':['sankey']});
+        
+        const AppState = { monthlyBalances: [], daily8760: [], financials: [], results: {}, charts: {}, bomData: null, equipData: null, hourlyMeteo: [] };
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        let projectImageBase64 = ""; 
+        
+        const formatNum = (num, dec=2) => { return Number(num).toLocaleString('en-US', {minimumFractionDigits: dec, maximumFractionDigits: dec}); };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            calcBill();
+            initApexChart();
+        });
+
+        function previewProjectImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    projectImageBase64 = e.target.result;
+                    alert('✅ อัปโหลดภาพผังโครงการสำเร็จ! ภาพจะถูกแสดงใน PDF หน้าที่ 1 ตอนกด Export ครับ');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function initApexChart() {
+            let co = { chart: { fontFamily: 'Kanit, sans-serif', animations: { enabled: true }, toolbar: { show: false } }, legend: { position: 'bottom' }};
+            if(document.querySelector("#chart-cashflow-apex")) {
+                AppState.charts.cash = new ApexCharts(document.querySelector("#chart-cashflow-apex"), { ...co, series: [], chart: {type: 'area', height: 450} });
+                AppState.charts.cash.render();
+            }
+        }
+
+        const getVal = (id, fallback = 0) => { let el = document.getElementById(id); return el && !isNaN(parseFloat(el.value)) ? parseFloat(el.value) : fallback; };
+        const getStr = (id, fallback = "-") => { let el = document.getElementById(id); return el && el.value.trim() !== "" ? el.value : fallback; };
+        const isChecked = (id, fallback = false) => { let el = document.getElementById(id); return el ? el.checked : fallback; };
+        const setVal = (id, value) => { let el = document.getElementById(id); if (el) el.value = value; };
+
+        function clearState() {
+            if(!confirm("ยืนยันการล้างข้อมูลทั้งหมด?")) return;
+            document.querySelectorAll('input[type="number"]').forEach(el => el.value = '0');
+            document.querySelectorAll('input[type="text"], input[type="file"]').forEach(el => el.value = (el.type === 'file' ? '' : '-'));
+            
+            setVal('inp-bill-ft', 0.1); setVal('inp-bill-vat', 7); setVal('inp-bill-serv', 312.24);
+            setVal('inp-tou-rate-on', 4.1839); setVal('inp-tou-rate-off', 2.6037);
+            setVal('fin-capex', 22); setVal('fin-om', 0.06); setVal('fin-inf', 3.0); setVal('fin-dr', 6.5); 
+            setVal('fin-deg', 0.5); setVal('fin-deg-2', 0.5); setVal('fin-tariff-inf', 3.0);
+
+            projectImageBase64 = "";
+
+            AppState.monthlyBalances = []; AppState.daily8760 = []; AppState.financials = []; AppState.results = {}; AppState.bomData = null; AppState.equipData = null; AppState.hourlyMeteo = [];
+            
+            ['display-pnom', 'display-total-bill', 'display-daily-kwh'].forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).innerText = '0.00';
+            });
+            
+            document.getElementById('tbl-balances').innerHTML = '';
+            document.getElementById('tbl-finance').innerHTML = '';
+            document.getElementById('custom-loss-diagram').innerHTML = '';
+            
+            let bomContainer = document.getElementById('bom-container');
+            if(bomContainer) bomContainer.style.display = 'none';
+            document.getElementById('tbl-bom-body').innerHTML = '';
+            
+            ['myChartjsDaily', 'myChartjsMonthly', 'myChartjsScatter', 'myChartjsHist', 'myChartjsBell'].forEach(c => {
+                if(window[c]) window[c].destroy();
+            });
+
+            if(AppState.charts.cash) { AppState.charts.cash.updateSeries([]); }
+
+            document.getElementById('txt-payback').innerText = '-';
+            document.getElementById('txt-irr').innerText = '-';
+            document.getElementById('txt-npv').innerText = '-';
+
+            // Clear DB3 Box
+            document.getElementById('sim-zenith').innerText = "-";
+            document.getElementById('sim-sun-azi').innerText = "-";
+            document.getElementById('sim-aoi-eff').innerText = "-";
+            document.getElementById('sim-roof-tilt').innerText = "-";
+            document.getElementById('sim-roof-azi').innerText = "-";
+            document.getElementById('sim-poa-beam').innerText = "-";
+            document.getElementById('sim-poa-tot').innerText = "-";
+            document.getElementById('sim-peak-dc').innerText = "-";
+            document.getElementById('sim-total-dc').innerText = "-";
+            document.getElementById('sim-mppt-breakdown').innerHTML = ""; // Clear mppt breakdown
+            document.getElementById('sim-total-ac').innerText = "-";
+            document.getElementById('sim-surplus').innerText = "-";
+
+            sessionStorage.removeItem('db3');
+
+            alert("ล้างข้อมูลเรียบร้อยแล้ว");
+        }
+
+        function switchMenu(menuId, el) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.getElementById(menuId).classList.add('active');
+            document.querySelectorAll('.sidebar-menu-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('header-title').innerText = el.innerText.split('. ')[1] || 'Dashboard';
+            if(menuId === 'menu-dashboard') { setTimeout(() => window.dispatchEvent(new Event('resize')), 100); }
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const jsonData = JSON.parse(text);
+
+                    const db1 = jsonData.base_layout_db1 || {};
+                    const step1 = db1.step1_initialization || {};
+                    const step2 = db1.step2_equipment || {};
+                    const step3 = db1.step3_design_and_layout || {};
+                    const step4 = db1.step4_validation_results || {};
+                    
+                    AppState.sysPolygons = step3.roofPolygons || [];
+                    AppState.sysMountType = step3.mountType || "1";
+                    
+                    let strConfig = step4.stringConfiguration_EIT_Standard || {};
+                    let totalStringsText = strConfig.totalStringsUsed || "1";
+                    
+                    AppState.bomData = step4.engineering_and_bom || null;
+                    AppState.equipData = {
+                        pv: step2.pv || {}, inv1: step2.inv1 || {}, inv2: step2.inv2 || {},
+                        opt: step2.opt || {}, bat: step2.bat || {},
+                        counts: step4.equipmentCounts || {},
+                        numStrings: parseInt(String(totalStringsText).replace(/\D/g, '')) || 1
+                    };
+                    
+                    const db2 = jsonData.simulation_params_db2 || {};
+                    const losses = db2.losses || {};
+                    const thermal = db2.thermal || {};
+
+                    setVal('inp-proj', step1.projectName || "-");
+                    setVal('inp-loc', step1.locationName || "-");
+                    setVal('inp-coords', step1.coordinates || "-");
+                    
+                    if(step1.coordinates && step1.coordinates !== "-") {
+                        let cl = step1.coordinates.split(',');
+                        if(cl.length === 2) {
+                            fetchMeteoData(cl[0].trim(), cl[1].trim()); 
+                        }
+                    }
+
+                    if(db2.meteoData && db2.meteoData.yearlyGHI_kWh_m2) {
+                        setVal('inp-ghi', db2.meteoData.yearlyGHI_kWh_m2);
+                    }
+
+                    setVal('inp-tilt', step3.globalSlope || 15);
+                    setVal('inp-azi', step3.globalAzimuthOverride || 0);
+
+                    const pv = step2.pv || {};
+                    setVal('pv-Manufacturer', pv.Manufacturer || "-");
+                    setVal('inp-pv-model', pv.Model_Name || "-");
+                    setVal('inp-pv-wp', pv.Pmax_Wp || pv.pmax || 0);
+                    
+                    let pvEff = pv.Module_Efficiency_Pct || 0;
+                    if (pvEff === 0 && pv.Pmax_Wp > 0 && pv.Length_mm > 0 && pv.Width_mm > 0) {
+                        let area_m2 = (pv.Length_mm * pv.Width_mm) / 1000000;
+                        pvEff = (pv.Pmax_Wp / (area_m2 * 1000)) * 100;
+                    }
+                    setVal('pv-Module_Efficiency_Pct', pvEff.toFixed(2));
+                    
+                    setVal('inp-pv-tc-pmax', thermal.tempCoeffPmax || pv.Tk_Pmax_Pct_Per_C || -0.35);
+                    setVal('inp-pv-tc-voc', thermal.tempCoeffVoc || pv.Tk_Voc_Pct_Per_C || -0.27);
+                    
+                    let totalPanels = (step4.equipmentCounts && step4.equipmentCounts.totalPanels) || pv.qty || 0;
+                    setVal('inp-pv-qty', totalPanels);
+
+                    const inv1 = step2.inv1 || {};
+                    const inv2 = step2.inv2 || {};
+                    
+                    let inv1Qty = (step4.equipmentCounts && step4.equipmentCounts.inv1Qty) || inv1.qty || 0;
+                    let inv2Qty = (step4.equipmentCounts && step4.equipmentCounts.inv2Qty) || inv2.qty || 0;
+                    
+                    setVal('inv1-Manufacturer', inv1.Manufacturer || "-");
+                    setVal('inv1-Max_DC_Input_Voltage_V', inv1.Max_DC_Input_Voltage_V || inv1.maxDc || 0);
+                    setVal('inv1-qty', inv1Qty);
+
+                    let totalInvKw = ((inv1.Rated_AC_Output_Power_kW || inv1.acKw || 0) * inv1Qty) + 
+                                     ((inv2.Rated_AC_Output_Power_kW || inv2.acKw || 0) * inv2Qty);
+                    
+                    setVal('inp-invKw', totalInvKw);
+                    
+                    if (inv2Qty > 0 && inv2.Model_Name) {
+                        setVal('inp-inv-model', `${inv1.Model_Name || ""} (+ ${inv2.Model_Name})`);
+                    } else {
+                        setVal('inp-inv-model', inv1.Model_Name || "-");
+                    }
+
+                    setVal('inp-inv-eff', losses.invEffNominal || inv1.Max_Efficiency_Pct || 98.5);
+                    
+                    setVal('inv2-Manufacturer', inv2.Manufacturer || "-");
+                    setVal('inp-inv2-model', inv2.Model_Name || "-");
+                    setVal('inv2-Max_DC_Input_Voltage_V', inv2.Max_DC_Input_Voltage_V || inv2.maxDc || 0);
+                    setVal('inv2-qty', inv2Qty);
+                    
+                    const bat = step2.bat || {};
+                    let batQty = (step4.equipmentCounts && step4.equipmentCounts.batQty) || bat.qty || 0;
+                    
+                    setVal('bat-Manufacturer', bat.Manufacturer || "-");
+                    setVal('inp-bat-model', bat.Model_Name || "-");
+                    setVal('inp-bat-kwh', bat.Nominal_Capacity_kWh || 0);
+                    setVal('bat-Max_Continuous_Charge_Power_kw', bat.Max_Continuous_Charge_Power_kw || 0);
+                    setVal('bat-Max_Continuous_Discharge_Power_kw', bat.Max_Continuous_Discharge_Power_kw || 0);
+                    setVal('inp-bat-qty', batQty);
+                    
+                    const opt = step2.opt || {};
+                    let optQty = (step4.equipmentCounts && step4.equipmentCounts.optQty) || opt.qty || 0;
+                    setVal('opt-Manufacturer', opt.Manufacturer || "-");
+                    setVal('inp-opt-model', opt.Model_Name || "-");
+                    setVal('opt-Max_Input_Power_W', opt.Max_Input_Power_W || 0);
+                    setVal('inp-opt-qty', optQty);
+                    
+                    setVal('inp-loss-soil', losses.soiling || 5);
+                    setVal('inp-loss-lid', losses.lid || 1);
+                    setVal('inp-loss-wire', losses.wiring || 1);
+
+                    setVal('ld-1', 25); setVal('ld-2', 25); setVal('ld-3', 25); setVal('ld-4', 25);
+                    validateLoad(); 
+
+                    autoSetOM();
+                    calcPnom();
+
+                    document.getElementById('preview-summary').innerHTML = `
+                        <p class="text-blue-800 font-medium">📥 อ่านโครงสร้าง JSON สำเร็จ (DB2)</p>
+                        <hr class="my-2 border-gray-200">
+                        <p><b>ชื่อโครงการ:</b> ${getStr('inp-proj')}</p>
+                        <p><b>แผง PV:</b> ${getStr('inp-pv-model')} (${formatNum(getVal('inp-pv-qty'), 0)} แผง)</p>
+                        <p><b>อินเวอร์เตอร์รวม:</b> ${getStr('inp-inv-model')} (${formatNum(getVal('inp-invKw'), 2)} kW)</p>
+                        <p><b>กำลังผลิต DC สุทธิ:</b> <span class="text-green-600 font-bold">${formatNum(getVal('inp-pnom'), 2)} kWp</span></p>`;
+                    
+                    document.getElementById('modal-preview').classList.remove('hidden');
+                    document.getElementById('file-upload').value = ""; 
+
+                } catch(err) {
+                    console.error("Error parsing JSON:", err);
+                    let errList = document.getElementById('error-list');
+                    if(errList) errList.innerHTML = `
+                        <li>ไฟล์ที่อัปโหลดไม่รองรับหรือไม่ใช่รูปแบบ JSON</li>
+                        <li class="text-xs text-gray-500 mt-1">รายละเอียดข้อผิดพลาด: ${err.message}</li>`;
+                    let errModal = document.getElementById('modal-error');
+                    if(errModal) errModal.classList.remove('hidden');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function autoSetOM() {
+            let batQty = getVal('inp-bat-qty');
+            setVal('fin-om', batQty > 0 ? 0.1 : 0.06);
+        }
+
+        async function fetchMeteoData(lat, lon) {
+            try {
+                const urlHourly = `https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat=${lat}&lon=${lon}&startyear=2020&endyear=2020&trackingtype=0&optimal_inclination=1&optimal_angles=1&outputformat=json`;
+                const response = await fetch(urlHourly);
+                if (response.ok) {
+                    const data = await response.json();
+                    AppState.hourlyMeteo = data.outputs.hourly; 
+                    
+                    let totalGHI = 0;
+                    AppState.hourlyMeteo.forEach(h => {
+                        totalGHI += (h['G(i)'] || 0); 
+                    });
+                    
+                    if(totalGHI > 0) {
+                        setVal('inp-ghi', (totalGHI / 1000).toFixed(2)); 
+                        return;
+                    }
+                }
+            } catch (e) { console.log("PVGIS Hourly Fetch Failed. Will use Synthetic 8760 in Simulation.", e); }
+
+            setVal('inp-ghi', 1850.00); 
+        }
+
+        function calcPnom() {
+            let kwp = (getVal('inp-pv-qty') * getVal('inp-pv-wp')) / 1000;
+            if(document.getElementById('display-pnom')) document.getElementById('display-pnom').innerText = formatNum(kwp, 2);
+            setVal('inp-pnom', kwp);
+            return kwp;
+        }
+
+        function toggleTariffMode() {
+            let isTou = document.querySelector('input[name="tariff"]:checked')?.value === 'tou';
+            let fn = document.getElementById('form-normal'); let ft = document.getElementById('form-tou');
+            if(fn) fn.classList.toggle('hidden', isTou);
+            if(ft) ft.classList.toggle('hidden', !isTou);
+            calcBill();
+        }
+
+        function calcBill() {
+            let isTou = document.querySelector('input[name="tariff"]:checked')?.value === 'tou';
+            let ft = getVal('inp-bill-ft'); let serv = getVal('inp-bill-serv'); let vat = getVal('inp-bill-vat');
+            let finalBill = 0; let totalUnit = 0;
+
+            if(isTou) {
+                let uOn = getVal('inp-tou-unit-on'); let rOn = getVal('inp-tou-rate-on');
+                let uOff = getVal('inp-tou-unit-off'); let rOff = getVal('inp-tou-rate-off');
+                totalUnit = uOn + uOff;
+                finalBill = ((uOn * rOn) + (uOff * rOff) + (totalUnit * ft) + serv) * (1 + (vat/100));
+            } else {
+                totalUnit = getVal('inp-bill-unit'); let rate = getVal('inp-bill-rate');
+                finalBill = ((totalUnit * rate) + (totalUnit * ft) + serv) * (1 + (vat/100));
+            }
+            
+            if(document.getElementById('display-total-bill')) document.getElementById('display-total-bill').innerText = formatNum(finalBill, 2);
+            if(document.getElementById('display-daily-kwh')) document.getElementById('display-daily-kwh').innerText = formatNum(totalUnit / 30, 2);
+            if(totalUnit > 0) setVal('fin-tariff', (finalBill / totalUnit).toFixed(2));
+        }
+
+        function validateLoad() {
+            let total = getVal('ld-1') + getVal('ld-2') + getVal('ld-3') + getVal('ld-4');
+            let bar = document.getElementById('load-bar'); let msg = document.getElementById('load-msg');
+            if(bar) bar.style.width = (total > 100 ? 100 : total) + '%';
+            if(total === 100) {
+                if(bar) bar.className = "bg-green-500 h-4 transition-all duration-300";
+                if(msg) { msg.innerHTML = "รวม 100% (ผ่าน)"; msg.className = "text-xs font-bold mt-1 text-center text-green-600"; }
+                return true;
+            } else {
+                if(bar) bar.className = "bg-red-500 h-4 transition-all duration-300";
+                if(msg) { msg.innerHTML = `รวม ${total}% (ต้องให้ได้ 100%)`; msg.className = "text-xs font-bold mt-1 text-center text-red-600"; }
+                return false;
+            }
+        }
+
+        // ==============================================================
+        // 🌟 5 ขั้นตอนทางคณิตศาสตร์วิศวกรรม (Hourly Time-Series Simulation)
+        // ==============================================================
+        function runSimulationEngine() {
+            try {
+                if(!validateLoad()) throw new Error("พฤติกรรมใช้ไฟ (Load) รวมต้องเท่ากับ 100%");
+                
+                let pnom = getVal('inp-pnom') || calcPnom();
+                if(pnom <= 0) throw new Error("กำลังผลิต (Pnom) ต้องมากกว่า 0");
+
+                let tariff = getVal('fin-tariff', 4.1839);
+                let isTou = document.querySelector('input[name="tariff"]:checked')?.value === 'tou';
+                let units = isTou ? (getVal('inp-tou-unit-on') + getVal('inp-tou-unit-off')) : getVal('inp-bill-unit');
+                
+                let l1 = getVal('ld-1')/100; let l2 = getVal('ld-2')/100;
+                let l3 = getVal('ld-3')/100; let l4 = getVal('ld-4')/100;
+
+                let loss_Env = getVal('inp-loss-soil'); 
+                let loss_Wiring = getVal('inp-loss-wire') + getVal('inp-loss-lid'); 
+                let invEff = getVal('inp-inv-eff');
+                let invLoss = invEff > 0 ? (100 - invEff) : 2.0; 
+                
+                let tc_pmax = getVal('inp-pv-tc-pmax');
+                let GHI_annual = getVal('inp-ghi'); 
+                
+                let lat = parseFloat((getStr('inp-coords')||"13.75,100.5").split(',')[0]) || 13.75;
+                let lon = parseFloat((getStr('inp-coords')||"13.75,100.5").split(',')[1]) || 100.50;
+
+                let polygons = AppState.sysPolygons;
+                if (!polygons || polygons.length === 0) {
+                    polygons = [{ 
+                        area: 1, 
+                        slope: parseFloat(getStr('inp-tilt', "15").split(',')[0]), 
+                        azimuth: parseFloat(getStr('inp-azi', "0").split(',')[0]) 
+                    }];
+                }
+                let totalArea = polygons.reduce((sum, p) => sum + p.area, 0);
+
+                let mountCode = AppState.sysMountType ? AppState.sysMountType.charAt(0) : "1";
+                let uMapping = { "1": 29.0, "2": 20.0, "3": 15.0, "4": 20.0, "5": 29.0, "6": 29.0, "7": 20.0, "8": 20.0, "9": 20.0 };
+                let U_value = uMapping[mountCode] || 29.0;
+
+                let invKw = getVal('inp-invKw') || pnom;
+                let batKwh = getVal('inp-bat-kwh'); 
+                let batQty = getVal('inp-bat-qty');
+                let totalBatCap = batKwh * batQty;
+
+                let dailyLoad = units/30;
+                
+                // --- Variables for DB3 Stats ---
+                let db3 = {
+                    zenithMax: 0, sunAziMax: 0, aoiEffSum: 0, aoiEffCount: 0,
+                    poaBeamSum: 0, poaTotalSum: 0,
+                    dcPeak: 0, dcSum: 0, acSum: 0, surplusSum: 0,
+                    mpptDcSum: [] // 🌟 เก็บค่าผลิตไฟ DC แยกตาม MPPT (ราย Polygon)
+                };
+
+                let aggregatedDaily = Array(24).fill().map((_, i) => ({h: i, pv: 0, load: 0, bat: 0}));
+                let monthlyData = Array(12).fill().map((_, i) => ({
+                    month: months[i], globHor: 0, globInc: 0, T_amb: 0, 
+                    eArray: 0, eGrid: 0, targetGrid: 0, pr: 0, count: 0
+                }));
+
+                let Tamb_dist = [26, 27, 29, 31, 30, 29, 28, 28, 27, 27, 27, 26];
+
+                // 🔥 8760 HOURLY LOOP
+                let hourCount = 0;
+                for (let d = 0; d < 365; d++) {
+                    let date = new Date(2025, 0, 1);
+                    date.setDate(date.getDate() + d);
+                    let m = date.getMonth();
+
+                    for (let h = 0; h < 24; h++) {
+                        date.setHours(h, 30, 0); 
+                        
+                        // [ขั้นที่ 1] Solar Geometry
+                        let sunPos = SunCalc.getPosition(date, lat, lon);
+                        let altitude = sunPos.altitude;
+                        let zenith = (Math.PI/2) - altitude;
+                        let sunAzi = sunPos.azimuth + Math.PI; 
+                        
+                        let zDeg = zenith * 180 / Math.PI;
+                        if(zDeg > db3.zenithMax) db3.zenithMax = zDeg;
+                        let saDeg = sunAzi * 180 / Math.PI;
+                        if(saDeg > db3.sunAziMax) db3.sunAziMax = saDeg;
+
+                        // Calculate/Mock Weather
+                        let GHI = 0, DNI = 0, DHI = 0, Tamb = Tamb_dist[m];
+                        if (altitude > 0) {
+                            let airmass = 1 / Math.cos(zenith);
+                            DNI = 1367 * Math.pow(0.7, Math.pow(airmass, 0.678));
+                            DHI = 0.3 * (1367 - DNI) * Math.sin(altitude);
+                            GHI = DNI * Math.sin(altitude) + DHI;
+                            
+                            // Adjust slightly to match user GHI if needed (Simplified clear sky)
+                            let adjFactor = (GHI_annual / (1850)); 
+                            GHI *= adjFactor; DNI *= adjFactor; DHI *= adjFactor;
+                        }
+
+                        let hourDC = 0;
+                        let hourGlobInc = 0;
+
+                        // [ขั้นที่ 2 & 3 & 4] Calculate per Polygon (MPPT)
+                        polygons.forEach((poly, idx) => {
+                            let pTilt = poly.slope * Math.PI / 180;
+                            let pAzi = poly.azimuth * Math.PI / 180;
+                            let polyCap = pnom * (poly.area / totalArea);
+
+                            // [ขั้นที่ 2] AOI
+                            let cosAOI = Math.cos(zenith)*Math.cos(pTilt) + Math.sin(zenith)*Math.sin(pTilt)*Math.cos(sunAzi - pAzi);
+                            if (cosAOI < 0) cosAOI = 0;
+                            let aoiDeg = Math.acos(cosAOI) * 180 / Math.PI;
+                            let aoiEff = Math.max(0, 100 - (aoiDeg/90)*100);
+
+                            if (altitude > 0) {
+                                db3.aoiEffSum += aoiEff;
+                                db3.aoiEffCount++;
+                            }
+
+                            // [ขั้นที่ 3] POA
+                            let poaBeam = DNI * cosAOI;
+                            let poaDiff = DHI * (1 + Math.cos(pTilt))/2;
+                            let poaRef = GHI * 0.2 * (1 - Math.cos(pTilt))/2; 
+                            let poaTotal = poaBeam + poaDiff + poaRef;
+
+                            db3.poaBeamSum += poaBeam;
+                            db3.poaTotalSum += poaTotal;
+                            hourGlobInc += poaTotal * (poly.area / totalArea);
+
+                            // [ขั้นที่ 4] DC Power
+                            let tCell = Tamb + (poaTotal * Math.exp(-3.56 + -0.075 * 1.5)); // Sandia
+                            let tempLoss = (tCell > 25) ? (tCell - 25) * Math.abs(tc_pmax/100) : 0;
+                            let dc = polyCap * (poaTotal/1000) * (1 - tempLoss) * (1 - (loss_Wiring+loss_Env)/100);
+                            
+                            hourDC += dc;
+                            
+                            // 🌟 เก็บค่า DC ลง Array แยกตาม MPPT
+                            if(db3.mpptDcSum[idx] === undefined) db3.mpptDcSum[idx] = 0;
+                            db3.mpptDcSum[idx] += dc;
+                        });
+
+                        if (hourDC > db3.dcPeak) db3.dcPeak = hourDC;
+                        db3.dcSum += hourDC;
+
+                        // [ขั้นที่ 5] Battery Dispatch & AC Power
+                        let hourAC = hourDC * (1 - (invLoss/100));
+                        if(hourAC > invKw) hourAC = invKw; // Clipping
+                        db3.acSum += hourAC;
+
+                        // Load for this hour
+                        let hourLoad = 0;
+                        if(h>=0 && h<9) hourLoad = dailyLoad * (l1+l4/2) / 9;
+                        else if(h>=9 && h<15) hourLoad = dailyLoad * l2 / 6;
+                        else if(h>=15 && h<22) hourLoad = dailyLoad * l3 / 7;
+                        else hourLoad = dailyLoad * (l4/2) / 2;
+
+                        let surplus = hourAC - hourLoad;
+                        if(surplus > 0) db3.surplusSum += surplus;
+
+                        // Accumulate for Daily 24h Profile Chart
+                        aggregatedDaily[h].pv += hourAC / 365;
+                        aggregatedDaily[h].load += hourLoad / 365;
+                        
+                        // Accumulate for Monthly Chart
+                        monthlyData[m].globHor += GHI / 1000;
+                        monthlyData[m].globInc += hourGlobInc / 1000;
+                        monthlyData[m].T_amb += Tamb;
+                        monthlyData[m].eArray += hourDC;
+                        monthlyData[m].eGrid += hourAC;
+                        monthlyData[m].targetGrid += hourGlobInc/1000 * pnom;
+                        monthlyData[m].count++;
+
+                        hourCount++;
+                    }
+                }
+
+                // Finalize Monthly Data
+                let totalEGrid = 0;
+                let globInc_annual = 0;
+                monthlyData.forEach(md => {
+                    md.T_amb /= (md.count/24); // Avg temp per day
+                    md.pr = md.eGrid / md.targetGrid;
+                    totalEGrid += md.eGrid;
+                    globInc_annual += md.globInc;
+                });
+
+                // Update Globals
+                AppState.daily8760 = aggregatedDaily;
+                AppState.monthlyBalances = monthlyData;
+                
+                let averagePR = totalEGrid / (globInc_annual * pnom);
+                AppState.results = { 
+                    pnom, effPR: averagePR, totalEGrid, totalTarget: globInc_annual*pnom, 
+                    globInc_annual, loss_Env, loss_Temp: 6.0, loss_Wiring: loss_Wiring + 3.5, invLoss 
+                };
+
+                // --- อัปเดตข้อมูล UI DB3 ใน Menu 1 ---
+                document.getElementById('sim-zenith').innerText = formatNum(db3.zenithMax, 2) + " °";
+                document.getElementById('sim-sun-azi').innerText = formatNum(db3.sunAziMax, 2) + " °";
+                document.getElementById('sim-aoi-eff').innerText = formatNum(db3.aoiEffSum / db3.aoiEffCount, 2) + " %";
+                
+                let sRoofTilt = polygons.map(p => p.slope).join(", ");
+                let sRoofAzi = polygons.map(p => p.azimuth).join(", ");
+                document.getElementById('sim-roof-tilt').innerText = sRoofTilt + " °";
+                document.getElementById('sim-roof-azi').innerText = sRoofAzi + " °";
+                
+                document.getElementById('sim-poa-beam').innerText = formatNum(db3.poaBeamSum/1000, 2) + " kWh/m²";
+                document.getElementById('sim-poa-tot').innerText = formatNum(db3.poaTotalSum/1000, 2) + " kWh/m²";
+                
+                document.getElementById('sim-peak-dc').innerText = formatNum(db3.dcPeak, 2) + " kW";
+                document.getElementById('sim-total-dc').innerText = formatNum(db3.dcSum, 2) + " kWh/y";
+                
+                // 🌟 อัปเดต UI ของ MPPT Breakdown 
+// 🌟 อัปเดต UI ของ MPPT Breakdown 
+let mpptHtml = "";
+
+// สร้างฟังก์ชันย่อยแปลงองศา (0-360) เป็นชื่อทิศภาษาไทย 8 ทิศ
+const getDirName = (azi) => {
+    let a = (azi % 360 + 360) % 360; // ป้องกันกรณีองศาติดลบ
+    if (a >= 337.5 || a < 22.5) return "เหนือ";
+    if (a >= 22.5 && a < 67.5) return "ตะวันออกเฉียงเหนือ";
+    if (a >= 67.5 && a < 112.5) return "ตะวันออก";
+    if (a >= 112.5 && a < 157.5) return "ตะวันออกเฉียงใต้";
+    if (a >= 157.5 && a < 202.5) return "ใต้";
+    if (a >= 202.5 && a < 247.5) return "ตะวันตกเฉียงใต้";
+    if (a >= 247.5 && a < 292.5) return "ตะวันตก";
+    if (a >= 292.5 && a < 337.5) return "ตะวันตกเฉียงเหนือ";
+    return "";
+};
+
+db3.mpptDcSum.forEach((val, index) => {
+    let azi = polygons[index].azimuth;
+    let dirName = getDirName(azi); // เรียกใช้ฟังก์ชันแปลงชื่อทิศ
+    
+    // 🌟 คำนวณหาเปอร์เซ็นต์ (สัดส่วนของด้านนี้ เทียบกับพลังงานรวมทั้งหมด)
+    // ป้องกันกรณีพลังงานรวมเป็น 0 (หารด้วย 0) จะได้ไม่เกิด Error NaN
+    let percent = (db3.dcSum > 0) ? (val / db3.dcSum) * 100 : 0;
+    
+    // 🌟 แทรกเปอร์เซ็นต์เข้าไปต่อท้าย kWh/y 
+    mpptHtml += `<div class="flex justify-between text-gray-600">
+        <span>กลุ่มแผงด้านที่ ${index + 1} (เอียง ${polygons[index].slope}°, ทิศ ${azi}° ${dirName}):</span> 
+        <span class="font-bold text-gray-800">${formatNum(val, 2)} kWh/y <span class="text-blue-600 text-xs ml-1">(${formatNum(percent, 2)}%)</span></span>
+    </div>`;
+});
+document.getElementById('sim-mppt-breakdown').innerHTML = mpptHtml;
+
+                document.getElementById('sim-total-ac').innerText = formatNum(db3.acSum, 2) + " kWh/y";
+                document.getElementById('sim-surplus').innerText = formatNum(db3.surplusSum, 2) + " kWh/y";
+
+                // Save to Session Storage
+                db3.projectName = getStr('inp-proj');
+                sessionStorage.setItem('db3', JSON.stringify(db3, null, 2));
+
+                // --- Financials ---
+                let capex = getVal('fin-capex'); let om = getVal('fin-om');
+                let infOM = getVal('fin-inf'); let dr = getVal('fin-dr'); 
+                let deg1 = getVal('fin-deg'); let deg2 = getVal('fin-deg-2');
+                let tariffInf = getVal('fin-tariff-inf');
+                
+                let capexBat = getVal('fin-capex-bat', 10000); 
+                let solarInvestment = pnom * 1000 * capex;
+                let batteryInvestment = batQty * batKwh * capexBat;
+                let initialInvestment = solarInvestment + batteryInvestment; 
+                
+                let cumulative = -initialInvestment;
+                let currentDegRate = 1.0;
+
+                AppState.financials = [];
+                for(let y=0; y<=25; y++) {
+                    if(y===0) { AppState.financials.push({ y, energy:0, savings:0, om:0, net: -initialInvestment, dcf: -initialInvestment, cum: cumulative }); continue; }
+                    
+                    if(y===1) { currentDegRate = 1 - (deg1/100); } 
+                    else { currentDegRate -= (deg2/100); }
+                    if(currentDegRate < 0) currentDegRate = 0;
+
+                    let energy = totalEGrid * currentDegRate;
+                    let currentTariff = tariff * Math.pow(1 + (tariffInf/100), y-1);
+                    let savings = energy * currentTariff;
+                    
+                    let omCost = (pnom * 1000 * om) * Math.pow(1 + (infOM/100), y-1);
+                    let netFlow = savings - omCost;
+                    let dcf = netFlow / Math.pow(1 + (dr/100), y);
+                    cumulative += dcf;
+                    AppState.financials.push({ y, energy, savings, om:omCost, net:netFlow, dcf, cum: cumulative });
+                }
+
+                renderDashboard();
+                switchMenu('menu-dashboard', document.getElementById('btn-menu-dashboard'));
+
+            } catch (err) {
+                let errList = document.getElementById('error-list');
+                if(errList) errList.innerHTML = `<li>${err.message}</li>`;
+                let errModal = document.getElementById('modal-error');
+                if(errModal) errModal.classList.remove('hidden');
+            }
+        }
+
+        // 🌟 ฟังก์ชัน Export DB3
+        function exportDB3() {
+            let data = sessionStorage.getItem('db3');
+            if(!data) { 
+                alert('กรุณากดปุ่ม "▶ ประมวลผลและสร้างรายงาน (Run Simulation)" ในเมนูที่ 3 ก่อนทำการ Export ครับ'); 
+                return; 
+            }
+            
+            let projName = getStr('inp-proj', 'Project');
+            let dObj = new Date();
+            let dateStr = dObj.getFullYear().toString() + 
+                          (dObj.getMonth()+1).toString().padStart(2, '0') + 
+                          dObj.getDate().toString().padStart(2, '0') + "_" + 
+                          dObj.getHours().toString().padStart(2, '0') + 
+                          dObj.getMinutes().toString().padStart(2, '0');
+            
+            let fileName = `Report_${projName}_db3_${dateStr}.txt`.replace(/\s+/g, '_');
+            
+            const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function renderDashboard() {
+            let d = AppState.monthlyBalances; 
+            let r = AppState.results;
+            
+            if (!AppState.equipData) {
+                AppState.equipData = {
+                    pv: { model: getStr('inp-pv-model', '-') },
+                    inv1: { model: getStr('inp-inv-model', '-') },
+                    inv2: { model: getStr('inp-inv2-model', '-') },
+                    opt: { model: getStr('inp-opt-model', '-') },
+                    bat: { model: getStr('inp-bat-model', '-') },
+                    counts: { 
+                        totalPanels: getVal('inp-pv-qty', 0), 
+                        inv1Qty: getVal('inv1-qty', 0), 
+                        inv2Qty: getVal('inv2-qty', 0), 
+                        optQty: getVal('inp-opt-qty', 0), 
+                        batQty: getVal('inp-bat-qty', 0) 
+                    },
+                    numStrings: 1 
+                };
+            }
+
+            if (!AppState.bomData) {
+                AppState.bomData = {
+                    calculated_sizing: { pv_cable_sqmm: 4, ac_cable_sqmm: 16, gnd_cable_sqmm: 25, conduit_or_wireway: "Wireway 50x50 มม." },
+                    protection: { dc_breaker_amp: 20, ac_breaker_amp: 75 },
+                    distances: { dc_m: 20, ac_m: 10, gnd_m: 15 },
+                    routing_strategy: "wireway" 
+                };
+            }
+
+            let totalEnergy = r.totalEGrid || 0; 
+            if(document.getElementById('env-co2')) {
+                document.getElementById('env-co2').innerText = formatNum((totalEnergy * 0.433) / 1000, 2); 
+                document.getElementById('env-tree').innerText = formatNum((totalEnergy * 0.433) / 9, 0); 
+                document.getElementById('env-coal').innerText = formatNum((totalEnergy * 0.4) / 1000, 2); 
+                document.getElementById('env-oil').innerText = formatNum(totalEnergy * 0.25, 0);	
+            }
+
+            let tblBalances = document.getElementById('tbl-balances');
+            if(tblBalances) {
+                tblBalances.innerHTML = d.map(x => `<tr>
+                    <td class="text-center font-bold bg-gray-50 border">${x.month}</td>
+                    <td class="border">${formatNum(x.globHor, 2)}</td><td class="border">${formatNum(x.globInc, 2)}</td>
+                    <td class="border">${formatNum(x.T_amb, 2)}</td>
+                    <td class="border">${formatNum(x.eArray, 2)}</td><td class="text-green-600 font-bold border">${formatNum(x.eGrid, 2)}</td>
+                    <td class="border">${formatNum(x.pr*100, 2)}%</td></tr>`).join('');
+            }
+
+            let f = AppState.financials;
+            let paybackYr = "-"; 
+            for(let i=0; i<f.length; i++) { 
+                if(f[i].cum >= 0 && paybackYr === "-") paybackYr = f[i].y; 
+            }
+
+            let cashFlowArray = f.map(x => x.net);
+            let irr = "-";
+            let calculatedIRR = calculateIRR(cashFlowArray);
+            if (calculatedIRR !== null && !isNaN(calculatedIRR)) {
+                irr = (calculatedIRR * 100).toFixed(2); 
+            }
+
+            document.getElementById('txt-payback').innerText = paybackYr + " ปี";
+            let irrElem = document.getElementById('txt-irr'); 
+            if(irrElem) {
+                irrElem.innerText = irr !== "-" ? formatNum(irr, 2) + " %" : "-";
+                if(parseFloat(irr) > 20) { irrElem.classList.add("text-red-500"); irrElem.classList.remove("text-blue-600"); }
+            }
+            document.getElementById('txt-npv').innerText = formatNum(f[25].cum, 2) + " ฿";
+
+            let tFin = document.getElementById('tbl-finance');
+            if(tFin) {
+                tFin.innerHTML = f.map(x => `<tr>
+                    <td class="text-center font-bold bg-gray-50 border">${x.y}</td>
+                    <td class="border">${formatNum(x.energy, 2)}</td>
+                    <td class="border">${formatNum(x.savings, 2)}</td>
+                    <td class="border">${formatNum(x.om, 2)}</td>
+                    <td class="border">${formatNum(x.net, 2)}</td>
+                    <td class="border">${formatNum(x.dcf, 2)}</td>
+                    <td class="font-bold border ${x.cum < 0 ? 'text-red-600' : 'text-green-600'}">${formatNum(x.cum, 2)}</td>
+                </tr>`).join('');
+            }
+
+            try {
+                if (AppState.bomData && AppState.equipData) {
+                    document.getElementById('bom-container').style.display = 'block';
+                    let b = AppState.bomData;
+                    let eq = AppState.equipData;
+                    let c = eq.counts || {};
+                    let bSize = b.calculated_sizing || {};
+                    let bProt = b.protection || {};
+                    let bDist = b.distances || {};
+
+                    let invModel = eq.inv1.model || '-';
+                    if (c.inv2Qty > 0) invModel += `<br>+ ${eq.inv2.model || ''}`;
+
+                    let routingRaw = b.routing_strategy || '';
+                    let isWireway = routingRaw.includes('wireway') || routingRaw === 'wireway';
+                    let conduitStr = bSize.conduit_or_wireway || '-';
+
+                    function makeRow(category, catColorClass, name, spec, qty, unit) {
+                        return `<tr>
+                                    <td class="border p-2 text-center font-bold ${catColorClass}">${category}</td>
+                                    <td class="border p-2 text-gray-700">${name}</td>
+                                    <td class="border p-2 font-medium text-gray-600">${spec}</td>
+                                    <td class="border p-2 text-center text-gray-800"><b>${qty}</b> ${unit}</td>
+                                </tr>`;
+                    }
+
+                    let htmlBOM = "";
+                    let mainCol = "text-blue-600";
+                    htmlBOM += makeRow("MAIN", mainCol, "แผงโซลาร์เซลล์ (PV Panel)", eq.pv.model || '-', c.totalPanels || 0, "แผง");
+                    htmlBOM += makeRow("MAIN", mainCol, "อินเวอร์เตอร์ 1 (Inverter)", invModel, (c.inv1Qty || 0) + (c.inv2Qty || 0), "เครื่อง");
+                    htmlBOM += makeRow("MAIN", mainCol, "ออปติไมเซอร์ (Optimizer)", eq.opt.model || '-', c.optQty || 0, "ตัว");
+                    htmlBOM += makeRow("MAIN", mainCol, "ระบบแบตเตอรี่ (ESS)", eq.bat.model || '-', c.batQty || 0, "ชุด");
+
+                    let dcCol = "text-orange-500";
+                    let numStrings = eq.numStrings || 1;
+                    htmlBOM += makeRow("DC Box", dcCol, "DC Disconnect Switch", "พิกัด &ge; 1100Vdc (Non-Polarity)", numStrings, "ตัว");
+                    htmlBOM += makeRow("DC Box", dcCol, "DC Breaker / Fuse", `พิกัด ${bProt.dc_breaker_amp || '20'}A / 1000Vdc`, numStrings, "ชุด");
+                    htmlBOM += makeRow("DC Box", dcCol, "DC Surge Protection (SPD)", "Type 2, &ge; 1100Vdc, Imax &ge; 20kA", (c.inv1Qty||0) + (c.inv2Qty||0), "ตัว");
+
+                    let acCol = "text-emerald-500";
+                    htmlBOM += makeRow("AC Box", acCol, "AC Breaker (MCB/MCCB)", `พิกัด ${bProt.ac_breaker_amp || '75'}A / 400V (3-Phase)`, 1, "ตัว");
+                    htmlBOM += makeRow("AC Box", acCol, "เครื่องตัดไฟรั่ว (RCD)", "Type B, ป้องกันกระแสรั่ว &le; 30mA", 1, "ตัว");
+                    htmlBOM += makeRow("AC Box", acCol, "AC Surge Protection (SPD)", "Type 2, 275Vac/400Vac", 1, "ตัว");
+                    let brandInv = eq.inv1.model ? eq.inv1.model.split(' ')[0] : 'Inverter';
+                    htmlBOM += makeRow("AC Box", acCol, "มิเตอร์กันย้อน (Smart Meter)", `เข้ากันได้กับแบรนด์ ${brandInv}`, 1, "ชุด");
+
+                    let cabCol = "text-gray-500";
+                    let dcCableLength = (bDist.dc_m || 0) * 2 * numStrings;
+                    let acCableLength = bDist.ac_m || 0;
+                    let routeLength = (bDist.dc_m || 0) + (bDist.ac_m || 0);
+                    
+                    htmlBOM += makeRow("Cable", cabCol, "สายไฟ DC (PV1-F)", `ขนาด <b>${bSize.pv_cable_sqmm || '4'} sq.mm</b> (V-Drop &le; 3%)`, dcCableLength, "เมตร");
+                    htmlBOM += makeRow("Cable", cabCol, "สายไฟ AC (THW/CV)", `ขนาด <b>${bSize.ac_cable_sqmm || '16'} sq.mm</b> (4 Core)`, acCableLength, "เมตร");
+                    htmlBOM += makeRow("Cable", cabCol, "สายดินหลัก (Grounding)", `ชนิด THW สีเขียว-เหลือง ขนาด <b>${bSize.gnd_cable_sqmm || '25'} sq.mm</b>`, bDist.gnd_m || 0, "เมตร");
+
+                    let routeCol = "text-gray-500";
+                    let conduitDisplay = isWireway 
+                        ? `ราง <span class="text-sky-500 font-bold">Wireway 50x50 มม.</span> (คำนวณเผื่อระบายความร้อนตาม วสท.)` 
+                        : `ท่อ <span class="text-sky-500 font-bold">${conduitStr}</span>`;
+                    htmlBOM += makeRow("Routing", routeCol, "ท่อร้อยสาย / รางสายไฟ", conduitDisplay, routeLength, "เมตร");
+ 
+                    document.getElementById('tbl-bom-body').innerHTML = htmlBOM;
+                }
+            } catch(e) { console.error("BOM Render Error:", e); }
+
+            try { renderCustomLossDiagram(r); } catch(e) { console.error("Sankey Failed", e); }
+            try { updateChartjsDailyInteractive(); } catch(e) { console.error("Daily Chart Failed", e); }
+            try { renderChartjsMonthly(d); } catch(e) { console.error("Monthly Chart Failed", e); }
+            try { renderChartjsScatter(r); } catch(e) { console.error("Scatter Chart Failed", e); }
+            try { renderChartjsHistogram(r); } catch(e) { console.error("Histogram Failed", e); }
+            try { renderChartjsBellCurve(r); } catch(e) { console.error("Bell Curve Failed", e); }
+            try { renderApexCashflow(); } catch(e) { console.error("Cashflow Failed", e); }
+            
+            let descBalances = document.getElementById('desc-balances');
+            if(descBalances) descBalances.innerHTML = `<b>อธิบาย (Balances and main results):</b> การสูญเสียพลังงาน Cascade Loss รายเดือน อ้างอิงทฤษฎีอุณหภูมิ <b>Sandia Model</b> เพื่อประเมินค่า EArray สู่ E_Grid <br><b>สรุปประเมินผล:</b> ค่า E_Grid คือหัวใจหลักที่ส่งผลโดยตรงต่อระยะเวลาคืนทุนในโมเดล DCF.`;
+
+            let descWaterfall = document.getElementById('desc-waterfall');
+            if(descWaterfall) descWaterfall.innerHTML = `<b>อธิบาย (PV System Loss Diagram):</b> รูปแบบ Waterfall Chart แสดงภาพรวมการหักลบเปอร์เซ็นต์ Loss จากรังสีตกกระทบจนเหลือพลังงานที่ผลิตได้จริง<br><b>สรุปประเมินผล:</b> ประสิทธิภาพสุดท้ายที่ระบบโซล่าร์เซลล์ผลิตไฟได้จริงเทียบแสงอาทิตย์ (PR) คือ <b>${formatNum(r.effPR*100, 2)}%</b>.`;
+
+            let descDaily = document.getElementById('desc-daily');
+            if(descDaily) descDaily.innerHTML = `<b>อธิบาย (Daily Battery & PV Operation):</b> แสดงกราฟ PV (สีเขียว) และการทำงานของแบตเตอรี่ แยกเส้นชาร์จ(ฟ้า) และคายประจุ(ส้ม) พื้นที่สีเหลืองโปร่งแสงคือช่วง Peak Sun Hours (09.00-15.00)<br><b>สรุปประเมินผล:</b> จำลองจากความจุแบตเตอรี่ในระบบ ควบคุมการทำงานอิงตามโหลดและช่วงเวลาที่อนุญาต.`;
+
+            let descMonthly = document.getElementById('desc-monthly');
+            if(descMonthly) descMonthly.innerHTML = `<b>อธิบาย (Monthly Energy Production & PR):</b> กราฟแท่งพลังงานผลิตต่อเดือน ซ้อนทับกับเส้นค่า PR <span class="text-red-800 font-bold">สีแดงเข้มตัวหนา</span><br><b>สรุปประเมินผล:</b> ระบบประเมินอุณหภูมิจริงรายเดือน ทำให้ค่า PR สวิงขึ้นลงตามสภาพอากาศจริง ไม่คงที่ทุกเดือน.`;
+
+            let descScatter = document.getElementById('desc-scatter');
+            if(descScatter) descScatter.innerHTML = `<b>อธิบาย (Daily Input/Output diagram):</b> Scatter Plot ประเมินความสัมพันธ์ระหว่างรังสีตกกระทบและพลังงานไฟฟ้า.<br><b>สรุปประเมินผล:</b> ความหนาแน่นของจุดในแนวเฉียงยืนยันว่าระบบทำงานได้เสถียร (Linear) และไม่มีปัญหา Inverter Clipping.`;
+
+            let descHist = document.getElementById('desc-hist');
+            if(descHist) descHist.innerHTML = `<b>อธิบาย (System Output Power Distribution):</b> ฮิสโตแกรมการจ่ายกำลังไฟฟ้า (MWh สะสม).<br><b>สรุปประเมินผล:</b> วิเคราะห์พฤติกรรมการจ่ายพลังงานว่าอินเวอร์เตอร์ถูกใช้งานคุ้มค่าหรือไม่.`;
+
+            let descBell = document.getElementById('desc-bell');
+            if(descBell) descBell.innerHTML = `<b>อธิบาย (Probability Distribution):</b> กราฟระฆังคว่ำโค้งสมูท แสดงการกระจายความน่าจะเป็นของการผลิตไฟฟ้า พร้อม Mark P50/P75/P90/P95 แยกสีโปร่งแสง.<br><b>สรุปประเมินผล:</b> ค่า <b>P90</b> และ <b>P95</b> คือค่าประกันการผลิตขั้นต่ำที่มีความแม่นยำสูง (Worst-case scenario) ที่ธนาคารพิจารณาปล่อยสินเชื่อ.`;
+
+            let descCashflow = document.getElementById('desc-cashflow');
+            if(descCashflow) descCashflow.innerHTML = `<b>อธิบาย (Cash Flow Chart):</b> กราฟสะสมกระแสเงินสด 0-25 ปี จุดตัดแกน Y=0 จะเปลี่ยนเป็นสีเขียว คือปีที่คุ้มทุน.<br><b>สรุปประเมินผล:</b> ช่วยให้ผู้บริหารเห็นภาพรวมสภาพคล่องและความคุ้มค่าของการลงทุน (ROI) ด้วยสายตาอย่างรวดเร็ว.`;
+
+            let descFinance = document.getElementById('desc-tbl-finance');
+            if(descFinance) descFinance.innerHTML = `<b>อธิบาย (Cash Flow Table):</b> ตารางประเมินผลทางการเงินคำนวณผ่านโมเดล Discounted Cash Flow โดยพิจารณาอัตราเสื่อมแผงและเงินเฟ้อร่วมด้วย.<br><b>สรุปประเมินผล:</b> ตารางแสดงตัวเลข NPV และ IRR แบบละเอียด`;
+        }
+
+        function renderCustomLossDiagram(r) {
+            function formatNodeLabel(name, val, unit, pct) { return `${name} | ${formatNum(val, 2)} ${unit} (${formatNum(pct, 2)}%)`; }
+
+            let vSoil = r.loss_Env; let vTemp = r.loss_Temp; let vLID = getVal('inp-loss-lid'); let vWire = r.loss_Wiring - vLID; let vInv = r.invLoss; let vPR = r.effPR * 100;
+            let meteoSource = "PVGIS"; let ghi_kwh = getVal('inp-ghi') || 1850.5; let globInc_kwh = r.globInc_annual || (ghi_kwh * 1.12); 
+            let netIrr = globInc_kwh * (1 - (vSoil / 100)); let netAfterTemp = netIrr * (1 - (vTemp / 100)); let netAfterLid = netAfterTemp * (1 - (vLID / 100));
+            let pnom_kw = r.pnom || 1; let dcPower = netAfterLid * pnom_kw * (1 - (vWire / 100)); let acPower = dcPower * (1 - (vInv / 100));
+
+            let dataArray = [['From', 'To', 'สัดส่วนพลังงาน (%)']];
+            let nodeStart = formatNodeLabel(`Global incident (${meteoSource})`, globInc_kwh, "kWh/m²", 100);
+            let currNode = nodeStart;
+
+            let steps = [
+                { lossName: 'Soiling Loss', lossPct: vSoil, nextVal: netIrr, nextUnit: 'kWh/m²', nextPct: (netIrr/globInc_kwh)*100, nextName: 'Irradiance' },
+                { lossName: 'Temperature Loss', lossPct: vTemp, nextVal: netAfterTemp, nextUnit: 'kWh/m²', nextPct: (netAfterTemp/globInc_kwh)*100, nextName: '-Temp' },
+                { lossName: 'LID Loss', lossPct: vLID, nextVal: netAfterLid, nextUnit: 'kWh/m²', nextPct: (netAfterLid/globInc_kwh)*100, nextName: '-LID' },
+                { lossName: 'Wiring Loss', lossPct: vWire, nextVal: dcPower, nextUnit: 'kWh', nextPct: (dcPower/(globInc_kwh*pnom_kw))*100, nextName: 'DC Power' },
+                { lossName: 'Inverter Loss', lossPct: vInv, nextVal: acPower, nextUnit: 'kWh', nextPct: vPR, nextName: 'Energy to Grid (PR)' }
+            ];
+
+            let currentFlowWeight = 100.0; 
+            steps.forEach(s => {
+                if (s.lossPct > 0) {
+                    let nodeNext = formatNodeLabel(s.nextName, s.nextVal, s.nextUnit, s.nextPct);
+                    let lossNodeName = `${s.lossName} | (-${formatNum(s.lossPct, 2)}%)`;
+                    dataArray.push([currNode, lossNodeName, s.lossPct]); 
+                    currentFlowWeight = currentFlowWeight - s.lossPct; 
+                    dataArray.push([currNode, nodeNext, currentFlowWeight]);
+                    currNode = nodeNext;
+                }
+            });
+
+            var data = google.visualization.arrayToDataTable(dataArray);
+            var chartBox = document.getElementById('custom-loss-diagram').parentElement;
+            var boxWidth = chartBox.clientWidth;
+            var colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b', '#0ea5e9'];
+            
+            var options = {
+                height: 450,
+                width: boxWidth > 0 ? (boxWidth - 40) : 950, 
+                tooltip: { trigger: 'none' }, 
+                sankey: {
+                    node: { colors: colors, label: { fontName: 'Kanit', fontSize: 13, color: '#1e293b', bold: false }, nodePadding: 25, width: 15 },
+                    link: { colorMode: 'gradient', fillOpacity: 0.7 }
+                }
+            };
+
+            var chart = new google.visualization.Sankey(document.getElementById('custom-loss-diagram'));
+            
+            function applyMultilineLabels() {
+                var texts = document.getElementById('custom-loss-diagram').getElementsByTagName('text');
+                for (var i = 0; i < texts.length; i++) {
+                    var textNode = texts[i];
+                    if (textNode.innerHTML.indexOf('|') > -1) {
+                        var parts = textNode.innerHTML.split('|');
+                        var xCoordinate = textNode.getAttribute('x');
+                        textNode.innerHTML = '<tspan x="' + xCoordinate + '" dy="-2" font-weight="bold">' + parts[0].trim() + '</tspan>' +
+                                             '<tspan x="' + xCoordinate + '" dy="16" font-weight="normal" font-size="11" fill="#475569">' + parts[1].trim() + '</tspan>';
+                    }
+                }
+            }
+
+            google.visualization.events.addListener(chart, 'ready', function() {
+                applyMultilineLabels(); 
+                var chartContainer = document.getElementById('custom-loss-diagram');
+                var observer = new MutationObserver(function() {
+                    observer.disconnect(); 
+                    applyMultilineLabels(); 
+                    observer.observe(chartContainer, { childList: true, subtree: true }); 
+                });
+                observer.observe(chartContainer, { childList: true, subtree: true });
+            });
+
+            chart.draw(data, options);
+        }
+
+        function updateChartjsDailyInteractive() {
+            if(!AppState.daily8760 || AppState.daily8760.length === 0) return;
+            
+            let batKwh = getVal('inp-bat-kwh'); let batQty = getVal('inp-bat-qty');
+            let totalBatCap = batKwh * batQty; 
+            let invKw = getVal('inp-invKw') || AppState.results.pnom;
+
+            let canDisBefore = isChecked('chk-b-before', true);
+            let canDisAfter = isChecked('chk-b-after', true);
+
+            let dData = JSON.parse(JSON.stringify(AppState.daily8760));
+            let currentSoC = 0; 
+            let minSoC = totalBatCap * 0.25; 
+
+            dData.forEach(d => {
+                let h = d.h;
+                let canDischarge = (h < 9 && canDisBefore) || (h >= 15 && canDisAfter);
+                d.bat = 0; d.pvToLoad = Math.min(d.pv, d.load);
+                
+                if(totalBatCap > 0) {
+                    if(d.pv > d.load) { 
+                        let surplus = d.pv - d.load;
+                        let chargePwr = Math.min(surplus, invKw);
+                        if(currentSoC + chargePwr <= totalBatCap) { d.bat = chargePwr; currentSoC += chargePwr; }
+                        else { d.bat = totalBatCap - currentSoC; currentSoC = totalBatCap; }
+                    } else if (d.pv < d.load && canDischarge) { 
+                        let deficit = d.load - d.pv;
+                        let disPwr = Math.min(deficit, invKw);
+                        if(currentSoC - disPwr >= minSoC) { d.bat = -disPwr; currentSoC -= disPwr; }
+                        else { d.bat = -(currentSoC - minSoC); currentSoC = minSoC; }
+                        if(d.bat > 0) d.bat = 0; 
+                    }
+                }
+            });
+
+            if(window.myChartjsDaily) { window.myChartjsDaily.destroy(); }
+            
+            const ctx = document.getElementById('chart-daily-chartjs').getContext('2d');
+            window.myChartjsDaily = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dData.map(d => `${d.h}:00`),
+                    datasets: [
+                        { label: 'PV (ผลิต)', data: dData.map(d=>d.pv), fill: false, borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2, datalabels: {display: false} },
+                        { label: 'PV to Load', data: dData.map(d=>d.pvToLoad), fill: true, backgroundColor: 'rgba(34, 197, 94, 0.4)', borderColor: 'transparent', tension: 0.4, pointRadius: 0, datalabels: {display: false} },
+                        { label: 'Load (ความต้องการ)', data: dData.map(d=>d.load), borderColor: '#ef4444', tension: 0.4, fill: false, pointRadius: 0, borderWidth: 2, datalabels: {display: false} },
+                        { label: 'Battery', data: dData.map(d=>d.bat), borderColor: '#f97316', backgroundColor: '#f97316', borderDash: [5, 5], tension: 0, fill: false, pointRadius: 0, stepped: true, borderWidth: 2, datalabels: {display: false} }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Energy (kWh)'}, ticks: {callback: (v) => formatNum(v, 2)} },
+                        y2: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'PR (%)'}, min: 60, max: 100, grid: {drawOnChartArea: false}, ticks: {callback: (v) => formatNum(v, 2)} }
+                    },
+                    plugins: { 
+                        tooltip: { 
+                            bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'},
+                            callbacks: {
+                                label: function(context) {
+                                    if(context.dataset.yAxisID === 'y2') return `PR: ${formatNum(context.raw, 2)}%`;
+                                    return `${context.dataset.label}: ${formatNum(context.raw, 2)} kWh`;
+                                }
+                            }
+                        }, 
+                        legend: { labels: {font: {family:'Kanit'}} } 
+                    }
+                }               
+            });
+        }
+
+        function renderChartjsMonthly(d) {
+            if(window.myChartjsMonthly) window.myChartjsMonthly.destroy();
+            const ctxM = document.getElementById('chart-monthly-chartjs').getContext('2d');
+            window.myChartjsMonthly = new Chart(ctxM, {
+                type: 'bar',
+                data: {
+                    labels: d.map(x=>x.month),
+                    datasets: [
+                        { label: 'ผลผลิตคาดการณ์', data: d.map(x=>x.targetGrid), backgroundColor: '#cbd5e1', yAxisID: 'y', barPercentage: 0.8, categoryPercentage: 0.4, order: 2, datalabels: {display: false} },
+                        { label: 'ผลผลิตจริง', data: d.map(x=>x.eGrid), backgroundColor: '#3b82f6', yAxisID: 'y', barPercentage: 0.8, categoryPercentage: 0.4, order: 2, datalabels: {display: false} },
+                        { 
+                            label: 'PR (%)', data: d.map(x=>(x.pr*100)), type: 'line', borderColor: '#ef4444', backgroundColor: '#ef4444', yAxisID: 'y2', tension: 0.3, pointRadius: 5,order: 1,
+                            datalabels: { display: true, align: 'top', anchor: 'end', formatter: (val) => val.toFixed(2) + '%', font: {family: 'Kanit', size: 10, weight: 'bold'} } 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Energy (kWh)'}, ticks: {callback: (v) => formatNum(v, 2)} },
+                        y2: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'PR (%)'}, min: 60, max: 100, grid: {drawOnChartArea: false}, ticks: {callback: (v) => formatNum(v, 2)} }
+                    },
+                    plugins: { 
+                        subtitle: {
+                            display: true,
+                            text: 'Annual PR (ค่าประสิทธิภาพรวมสุทธิของทั้งปี): ' + formatNum(AppState.results.effPR * 100, 2) + '%',
+                            align: 'end',
+                            font: { family: 'Kanit', size: 12, weight: 'bold' },
+                            color: '#dc2626',
+                            padding: { bottom: 10 }
+                        },
+                        tooltip: { 
+                            bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'},
+                            callbacks: {
+                                label: function(context) {
+                                    if(context.dataset.yAxisID === 'y2') return `PR: ${formatNum(context.raw, 2)}%`;
+                                    return `${context.dataset.label}: ${formatNum(context.raw, 2)} kWh`;
+                                }
+                            }
+                        }, 
+                        legend: { labels: {font: {family:'Kanit'}} } 
+                    }
+                }
+            });
+        }
+
+        function renderChartjsScatter(r) {
+            if(window.myChartjsScatter) window.myChartjsScatter.destroy();
+            let scatterData = []; let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0; let n = 365;
+            for(let i=0; i<n; i++) {
+                let x = 2.5 + (Math.random() * 4); let y = x * r.pnom * r.effPR * (0.9 + Math.random()*0.2); 
+                scatterData.push({x: x, y: y}); sumX += x; sumY += y; sumXY += x*y; sumXX += x*x;
+            }
+            let mLine = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            let cLine = (sumY - mLine * sumX) / n; let minX = 2.5, maxX = 6.5;
+            const ctx = document.getElementById('chart-scatter-chartjs').getContext('2d');
+            window.myChartjsScatter = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        { label: 'Daily Energy', data: scatterData, backgroundColor: '#3b82f6', datalabels: {display: false} },
+                        { label: 'Trendline', data: [{x: minX, y: mLine*minX + cLine}, {x: maxX, y: mLine*maxX + cLine}], type: 'line', borderColor: '#ef4444', borderDash: [5, 5], fill: false, pointRadius: 0, borderWidth: 2, datalabels: {display: false} }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'linear', position: 'bottom', title: {display: true, text: 'Daily Irradiance (kWh/m²/day)'}, ticks: {callback: (v) => formatNum(v, 2)} },
+                        y: { title: {display: true, text: 'Daily Energy (kWh/day)'}, ticks: {callback: (v) => formatNum(v, 2)} }
+                    },
+                    plugins: { tooltip: { callbacks: { label: (c) => `Irradiance: ${formatNum(c.raw.x, 2)}, Energy: ${formatNum(c.raw.y, 2)}` }, bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'} }, legend: { labels: {font: {family: 'Kanit'}} } }
+                }
+            });
+        }
+
+        function renderChartjsHistogram(r) {
+            if(window.myChartjsHist) window.myChartjsHist.destroy();
+            let hourlyData = [];
+            for(let i=0; i<8760; i++) { let h = i%24; if(h>6 && h<18) hourlyData.push( Math.random() * r.pnom ); }
+            let bins = 10; let maxP = r.pnom; let binSize = maxP / bins; let counts = new Array(bins).fill(0); let labels = [];
+            for(let i=0; i<bins; i++) { labels.push(`${formatNum(i*binSize, 1)}-${formatNum((i+1)*binSize, 1)}`); }
+            hourlyData.forEach(val => { let idx = Math.floor(val / binSize); if(idx >= bins) idx = bins - 1; counts[idx]++; });
+            const ctx = document.getElementById('chart-hist-chartjs').getContext('2d');
+            window.myChartjsHist = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ 
+                        label: 'Frequency (Hours)', 
+                        data: counts, 
+                        backgroundColor: 'rgba(14, 165, 233, 0.5)', 
+                        borderColor: 'transparent', 
+                        borderWidth: 0,
+                        barPercentage: 1.0, 
+                        categoryPercentage: 1.0, 
+                        datalabels: {display: false} 
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { title: {display: true, text: 'Power Class (kW)'} },
+                        y: { title: {display: true, text: 'Frequency (Hours)'}, ticks: {callback: (v) => formatNum(v, 2)} }
+                    },
+                    plugins: { tooltip: { bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'} }, legend: { labels: {font: {family: 'Kanit'}} } }
+                }
+            });
+        }
+
+        function renderChartjsBellCurve(r) {
+            if(window.myChartjsBell) window.myChartjsBell.destroy();
+            
+            let p50 = r.totalEGrid; 
+            if (!p50 || p50 <= 0) return;
+
+            let stdDev = p50 * 0.05; 
+            if (stdDev <= 0) return;
+
+            let p75 = p50 - (0.674 * stdDev);
+            let p90 = p50 - (1.282 * stdDev);
+            let p95 = p50 - (1.645 * stdDev);
+            
+            let minX = p50 - (3.5 * stdDev);
+            let maxX = p50 + (3.5 * stdDev);
+            
+            let step = (maxX - minX) / 100;
+            if (step <= 0 || isNaN(step)) step = 1;
+
+            let xs = [];
+            for(let x = minX; x <= maxX; x += step) xs.push(x);
+            xs.push(p90, p50); 
+            xs.sort((a, b) => a - b);
+            xs = [...new Set(xs)]; 
+
+            let dataPoints = [];
+            for(let x of xs) {
+                let y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - p50) / stdDev, 2));
+                dataPoints.push({x: x, y: y});
+            }
+
+            const ctx = document.getElementById('chart-bell-chartjs').getContext('2d');
+            window.myChartjsBell = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'ความเสี่ยงสูง (>P50)',
+                            data: dataPoints.map(p => ({ x: p.x, y: p.x >= p50 ? p.y : null })),
+                            borderColor: 'transparent', backgroundColor: 'rgba(239, 68, 68, 0.4)', fill: true, pointRadius: 0, hoverRadius: 0, datalabels: {display: false}
+                        },
+                        {
+                            label: 'ปานกลาง (P90 - P50)',
+                            data: dataPoints.map(p => ({ x: p.x, y: (p.x >= p90 && p.x <= p50) ? p.y : null })),
+                            borderColor: 'transparent', backgroundColor: 'rgba(234, 179, 8, 0.4)', fill: true, pointRadius: 0, hoverRadius: 0, datalabels: {display: false}
+                        },
+                        {
+                            label: 'ปลอดภัยสูง (<=P90)',
+                            data: dataPoints.map(p => ({ x: p.x, y: p.x <= p90 ? p.y : null })),
+                            borderColor: 'transparent', backgroundColor: 'rgba(34, 197, 94, 0.4)', fill: true, pointRadius: 0, hoverRadius: 0, datalabels: {display: false}
+                        },
+                        {
+                            label: 'Probability Density Curve',
+                            data: dataPoints,
+                            borderColor: '#3b82f6', borderWidth: 2, fill: false, pointRadius: 0, hoverRadius: 0, datalabels: {display: false}
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { type: 'linear', title: {display: true, text: 'Annual Energy (kWh)'}, ticks: {callback: (v) => formatNum(v, 2)} },
+                        y: { display: false } 
+                    },
+                    plugins: {
+                        tooltip: { 
+                            enabled: true, mode: 'index', intersect: false,
+                            bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'},
+                            callbacks: {
+                                title: function(tooltipItems) { return `พลังงาน: ${formatNum(tooltipItems[0].raw.x, 2)} kWh`; },
+                                label: function(context) {
+                                    if (context.raw.y === null) return null; 
+                                    return context.dataset.label;
+                                }
+                            }
+                        },
+                        legend: { labels: {font: {family: 'Kanit'}} },
+                        annotation: {
+                            annotations: {
+                                lineP95: { type: 'line', xMin: p95, xMax: p95, borderColor: '#16a34a', borderWidth: 2, borderDash: [5,5], label: { content: `P95: ${formatNum(p95,0)}`, display: true, position: 'end', xAdjust: -55, yAdjust: 0, backgroundColor: 'rgba(22, 163, 74, 0.8)', color: 'white', font: {family: 'Kanit', weight: 'bold', size: 11} } },
+                                lineP90: { type: 'line', xMin: p90, xMax: p90, borderColor: '#ca8a04', borderWidth: 2, borderDash: [5,5], label: { content: `P90: ${formatNum(p90,0)}`, display: true, position: 'end', xAdjust: -20, yAdjust: 25, backgroundColor: 'rgba(202, 138, 4, 0.8)', color: 'white', font: {family: 'Kanit', weight: 'bold', size: 11} } },
+                                lineP75: { type: 'line', xMin: p75, xMax: p75, borderColor: '#f97316', borderWidth: 2, borderDash: [5,5], label: { content: `P75: ${formatNum(p75,0)}`, display: true, position: 'end', xAdjust: 20, yAdjust: 50, backgroundColor: 'rgba(249, 115, 22, 0.8)', color: 'white', font: {family: 'Kanit', weight: 'bold', size: 11} } },
+                                lineP50: { type: 'line', xMin: p50, xMax: p50, borderColor: '#dc2626', borderWidth: 2, borderDash: [5,5], label: { content: `P50: ${formatNum(p50,0)}`, display: true, position: 'end', xAdjust: 55, yAdjust: 75, backgroundColor: 'rgba(220, 38, 38, 0.8)', color: 'white', font: {family: 'Kanit', weight: 'bold', size: 11} } }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderApexCashflow() {
+            let f = AppState.financials;
+            let paybackYr = "-"; 
+            for(let i=0; i<f.length; i++) { if(f[i].cum >= 0 && paybackYr === "-") paybackYr = f[i].y; }
+            
+            let cflowData = f.map(x => {
+                let val = parseFloat(x.cum.toFixed(2));
+                return isNaN(val) ? 0 : val;
+            });
+
+            if(AppState.charts.cash) {
+                AppState.charts.cash.updateSeries([{ name: 'Cumulative Cash Flow (THB)', data: cflowData }]);
+                AppState.charts.cash.updateOptions({
+                    xaxis: { categories: f.map(x=>x.y), title: {text: 'Year (ปี)'} },
+                    yaxis: { title: {text: 'THB'}, labels: { formatter: (val) => formatNum(val, 0) } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    colors: ['#3b82f6'], 
+                    fill: {
+                        type: 'gradient',
+                        gradient: { shadeIntensity: 1, opacityFrom: 0.6, opacityTo: 0.1, stops: [0, 90, 100] }
+                    },
+                    annotations: { 
+                        xaxis: (paybackYr !== "-") ? [{ 
+                            x: paybackYr, 
+                            borderColor: '#16a34a', 
+                            borderWidth: 2,
+                            strokeDashArray: 5,
+                            label: { style: { background: '#16a34a', color: '#fff', fontSize: '13px', fontFamily: 'Kanit' }, text: 'จุดคุ้มทุน (Payback)' } 
+                        }] : [] 
+                    }
+                });
+            }
+        }
+        
+        async function generatePDF() {
+            if(!AppState.results.pnom) { 
+                let mE = document.getElementById('modal-error');
+                let eL = document.getElementById('error-list');
+                if(eL) eL.innerHTML = `<li>กรุณากดปุ่มประมวลผล (Run Simulation) ก่อนการพิมพ์เอกสาร</li>`;
+                if(mE) mE.classList.remove('hidden'); 
+                return; 
+            }
+
+            let imgTag = document.getElementById('prt-layout-img');
+            let txtTag = document.getElementById('prt-layout-txt');
+            if (projectImageBase64 !== "") {
+                imgTag.src = projectImageBase64;
+                imgTag.classList.remove('hidden');
+                txtTag.classList.add('hidden');
+            } else {
+                imgTag.classList.add('hidden');
+                txtTag.classList.remove('hidden');
+            }
+
+            document.getElementById('prt-txt-proj').innerText = getStr('inp-proj');
+            document.getElementById('prt-txt-loc').innerText = getStr('inp-loc');
+            document.getElementById('prt-txt-coords').innerText = getStr('inp-coords');
+            document.getElementById('prt-txt-pnom').innerText = formatNum(AppState.results.pnom, 2) + ' kWp';
+            document.getElementById('prt-txt-tilt').innerText = getStr('inp-tilt');
+            document.getElementById('prt-txt-azi').innerText = getStr('inp-azi');
+            document.getElementById('prt-txt-ghi').innerText = getStr('inp-ghi');
+            document.getElementById('prt-txt-tc-pmax').innerText = getStr('inp-pv-tc-pmax') + " %/°C";
+            document.getElementById('prt-txt-tc-voc').innerText = getStr('inp-pv-tc-voc') + " %/°C";
+            document.getElementById('prt-txt-soil').innerText = getStr('inp-loss-soil');
+            document.getElementById('prt-txt-lid').innerText = getStr('inp-loss-lid');
+            document.getElementById('prt-txt-wire').innerText = getStr('inp-loss-wire');
+            document.getElementById('prt-txt-inv-eff').innerText = getStr('inp-inv-eff');
+
+            document.getElementById('prt-pv-desc').innerText = `${getStr('inp-pv-model')} (${formatNum(getVal('inp-pv-qty'), 0)} แผง)`;
+            document.getElementById('prt-inv1-desc').innerText = `${getStr('inp-inv-model')} (${formatNum(getVal('inv1-qty'), 0)} เครื่อง)`;
+            document.getElementById('prt-inv2-desc').innerText = getVal('inv2-qty') > 0 ? `${getStr('inp-inv2-model')} (${formatNum(getVal('inv2-qty'), 0)} เครื่อง)` : '-';
+            document.getElementById('prt-opt-desc').innerText = getVal('inp-opt-qty') > 0 ? `${getStr('inp-opt-model')} (${formatNum(getVal('inp-opt-qty'), 0)} ตัว)` : '-';
+            document.getElementById('prt-bat-desc').innerText = getVal('inp-bat-qty') > 0 ? `${getStr('inp-bat-model')} (${formatNum(getVal('inp-bat-qty'), 0)} ชุด)` : '-';
+
+            document.getElementById('prt-ld-1').innerText = getStr('ld-1') + '%';
+            document.getElementById('prt-ld-2').innerText = getStr('ld-2') + '%';
+            document.getElementById('prt-ld-3').innerText = getStr('ld-3') + '%';
+            document.getElementById('prt-ld-4').innerText = getStr('ld-4') + '%';
+
+            document.getElementById('prt-fin-capex').innerText = getStr('fin-capex');
+            document.getElementById('prt-fin-om').innerText = getStr('fin-om');
+            document.getElementById('prt-fin-tariff').innerText = getStr('fin-tariff') + " บาท";
+            document.getElementById('prt-fin-tariff-inf').innerText = getStr('fin-tariff-inf');
+            document.getElementById('prt-fin-inf').innerText = getStr('fin-inf');
+            document.getElementById('prt-fin-dr').innerText = getStr('fin-dr');
+            document.getElementById('prt-fin-deg').innerText = getStr('fin-deg');
+            document.getElementById('prt-fin-deg2').innerText = getStr('fin-deg-2');
+
+            if(window.myChartjsDaily) document.getElementById('prt-img-daily').src = document.getElementById('chart-daily-chartjs').toDataURL('image/png', 1.0);
+            if(window.myChartjsMonthly) document.getElementById('prt-img-monthly').src = document.getElementById('chart-monthly-chartjs').toDataURL('image/png', 1.0);
+            if(window.myChartjsScatter) document.getElementById('prt-img-scatter').src = document.getElementById('chart-scatter-chartjs').toDataURL('image/png', 1.0);
+            if(window.myChartjsHist) document.getElementById('prt-img-hist').src = document.getElementById('chart-hist-chartjs').toDataURL('image/png', 1.0);
+            if(window.myChartjsBell) document.getElementById('prt-img-bell').src = document.getElementById('chart-bell-chartjs').toDataURL('image/png', 1.0);
+
+            document.getElementById('prt-sankey').innerHTML = document.getElementById('custom-loss-diagram').innerHTML;
+            document.getElementById('prt-cashflow').innerHTML = document.getElementById('chart-cashflow-apex').innerHTML;
+
+            document.getElementById('prt-tbl-balances').innerHTML = document.getElementById('tbl-balances').innerHTML;
+            document.getElementById('prt-tbl-finance').innerHTML = document.getElementById('tbl-finance').innerHTML;
+            document.getElementById('prt-tbl-bom').innerHTML = document.getElementById('tbl-bom-body').innerHTML;
+            
+            document.getElementById('prt-payback').innerText = document.getElementById('txt-payback').innerText;
+            document.getElementById('prt-irr').innerText = document.getElementById('txt-irr').innerText;
+            document.getElementById('prt-npv').innerText = document.getElementById('txt-npv').innerText;
+
+            const mapDesc = (srcId, destId) => {
+                let src = document.getElementById(srcId);
+                let dest = document.getElementById(destId);
+                if (src && dest) dest.innerHTML = src.innerHTML;
+            };
+            
+            mapDesc('desc-balances', 'prt-desc-balances');
+            mapDesc('desc-waterfall', 'prt-desc-waterfall');
+            mapDesc('desc-daily', 'prt-desc-daily');
+            mapDesc('desc-monthly', 'prt-desc-monthly');
+            mapDesc('desc-scatter', 'prt-desc-scatter');
+            mapDesc('desc-hist', 'prt-desc-hist');
+            mapDesc('desc-bell', 'prt-desc-bell');
+            mapDesc('desc-cashflow', 'prt-desc-cashflow');
+
+            setTimeout(() => { window.print(); }, 800);
+        }
+    </script>
+</body>
+</html>
