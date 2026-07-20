@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture & Developer Manual - Auto Solar Copilot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: #f8fafc; 
+            color: #1e293b;
+        }
+        
+        /* Tab Content Control */
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sidebar Menu Styles */
+        .menu-btn {
+            display: flex; align-items: center; width: 100%; padding: 10px 16px 10px 24px; 
+            margin-bottom: 4px; border-radius: 8px; font-weight: 400; color: #475569;
+            background-color: transparent; transition: all 0.2s ease; border: 1px solid transparent;
+            text-align: left; font-size: 0.95rem;
+        }
+        .menu-btn:hover { background-color: #f1f5f9; color: #0f172a; }
+        .menu-btn.active { 
+            background-color: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; 
+            font-weight: 500;
+        }
+
+        /* Dropdown Group Control */
+        .group-content { 
+            max-height: 3000px; 
+            overflow: hidden; 
+            transition: max-height 0.3s ease-in-out; 
+        }
+        .group-content.collapsed { max-height: 0; }
+        .dropdown-icon { transition: transform 0.3s ease; }
+        .dropdown-icon.collapsed { transform: rotate(-90deg); }
+
+        /* Content Card Styles */
+        .content-card {
+            background-color: white; border-radius: 16px; padding: 36px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+        }
+        .content-card h2 { color: #1e40af; font-size: 1.6rem; font-weight: 600; margin-bottom: 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .content-card h3 { color: #0f172a; font-size: 1.2rem; font-weight: 600; margin-top: 28px; margin-bottom: 12px; }
+        .content-card h4 { color: #334155; font-size: 1.05rem; font-weight: 600; margin-top: 20px; margin-bottom: 8px; }
+        .content-card p { color: #475569; line-height: 1.7; margin-bottom: 16px; }
+        .content-card ul { list-style-type: disc; margin-left: 24px; margin-bottom: 16px; color: #475569; line-height: 1.7;}
+        .content-card li { margin-bottom: 8px; }
+        
+        /* Math Box (Light Theme) */
+        .math-box {
+            background-color: #f8fafc; border-left: 4px solid #3b82f6; 
+            padding: 16px 20px; font-family: 'Courier New', Courier, monospace; 
+            font-size: 1.05rem; color: #0f172a; margin: 16px 0; border-radius: 0 8px 8px 0;
+            overflow-x: auto;
+            border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+        }
+        
+        /* Math Box (Dark Theme for Logic/Code) */
+        .math-box-dark {
+            background-color: #1e293b; color: #38bdf8; border-left: 4px solid #f97316; 
+            padding: 16px 20px; font-family: 'Courier New', Courier, monospace; 
+            font-size: 1.05rem; margin: 16px 0; border-radius: 0 8px 8px 0;
+            overflow-x: auto; line-height: 1.5;
+            border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155;
+        }
+        .math-comment { color: #94a3b8; font-size: 0.9em; }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 8px; }
+        .badge-blue { background-color: #dbeafe; color: #1e40af; }
+        .badge-green { background-color: #dcfce3; color: #166534; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <div class="w-80 bg-white shadow-[4px_0_15px_rgba(0,0,0,0.03)] border-r border-slate-200 flex flex-col relative z-10 h-full">
+        <div class="p-6 border-b border-slate-100 bg-slate-50">
+            <div class="flex items-center space-x-3 mb-1">
+                <span class="text-2xl">⚙️</span>
+                <h2 class="text-xl font-bold text-slate-800 tracking-tight">System Architecture</h2>
+            </div>
+            <p class="text-xs text-slate-500 font-medium ml-9">Auto Solar Copilot </p>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto px-2 py-4 space-y-4">
+            
+            <!-- Part 1: Core Architecture -->
+            <div>
+                <button onclick="toggleGroup('group-1', 'icon-1')" class="w-full flex justify-between items-center px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 rounded-md transition-colors">
+                    <span>Part 1: Core Architecture</span>
+                    <svg id="icon-1" class="dropdown-icon w-4 h-4 collapsed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="group-1" class="group-content mt-1 collapsed">
+                    <button onclick="switchTab('tab-1', this)" class="menu-btn active">
+                        <span class="mr-3 text-lg opacity-70">🏗️</span> 1. สถาปัตยกรรมระบบหลัก
+                    </button>
+                    <button onclick="switchTab('tab-2', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">⚡</span> 2. แบบจำลองพลังงาน & สมการ
+                    </button>
+                    <button onclick="switchTab('tab-3', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🌐</span> 3. API ข้อมูลสภาพแวดล้อม
+                    </button>
+                    <button onclick="switchTab('tab-4', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🏆</span> 4. กรณีศึกษาและเปรียบเทียบ
+                    </button>
+                    <button onclick="switchTab('tab-5', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">📈</span> 5. แบบจำลองทางการเงิน (ROI)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Part 2: Developer Report -->
+            <div>
+                <button onclick="toggleGroup('group-2', 'icon-2')" class="w-full flex justify-between items-center px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 rounded-md transition-colors border-t border-slate-100 pt-4">
+                    <span>Part 2: Developer Report</span>
+                    <svg id="icon-2" class="dropdown-icon w-4 h-4 collapsed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="group-2" class="group-content mt-1 collapsed">
+                    <button onclick="switchTab('tab-6', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">💻</span> 6. โครงสร้าง Data Pipeline
+                    </button>
+                    <button onclick="switchTab('tab-7', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">⛅</span> 7. แบบจำลองรังสี (Meteo)
+                    </button>
+                    <button onclick="switchTab('tab-8', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🌡️</span> 8. อุณหภูมิเซลล์ (Thermal)
+                    </button>
+                    <button onclick="switchTab('tab-9', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🔻</span> 9. ความสูญเสียในระบบ (Losses)
+                    </button>
+                    <button onclick="switchTab('tab-10', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🔋</span> 10. จัดการแบตเตอรี่ (Battery)
+                    </button>
+                    <button onclick="switchTab('tab-11', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">💰</span> 11. เศรษฐศาสตร์ (Financial DCF)
+                    </button>
+                    <button onclick="switchTab('tab-12', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🌿</span> 12. สิ่งแวดล้อมและมาตรฐาน
+                    </button>
+                    <button onclick="switchTab('tab-13', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">📊</span> 13. เปรียบเทียบอุตสาหกรรม
+                    </button>
+                </div>
+            </div>
+
+            <!-- Part 3: Calculation Logic -->
+            <div>
+                <button onclick="toggleGroup('group-3', 'icon-3')" class="w-full flex justify-between items-center px-3 py-2 text-xs font-bold text-orange-600 uppercase tracking-wider hover:bg-orange-50 rounded-md transition-colors border-t border-slate-100 pt-4">
+                    <span>Part 3: Calculation Logic</span>
+                    <svg id="icon-3" class="dropdown-icon w-4 h-4 collapsed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="group-3" class="group-content mt-1 collapsed">
+                    <button onclick="switchTab('tab-14', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🛑</span> 14. ขีดจำกัดแรงดันระบบ
+                    </button>
+                    <button onclick="switchTab('tab-15', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">❄️</span> 15. แบบจำลองอุณหภูมิ
+                    </button>
+                    <button onclick="switchTab('tab-16', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">⛓️</span> 16. ตรรกะการจัดสตริง
+                    </button>
+                    <button onclick="switchTab('tab-17', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🛡️</span> 17. การป้องกันกระแสเกิน
+                    </button>
+                    <button onclick="switchTab('tab-18', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">⚖️</span> 18. อัตราส่วน DC/AC
+                    </button>
+                    <button onclick="switchTab('tab-19', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">📏</span> 19. ขนาดท่อและรางสายไฟ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Part 4: Engineering & Auto-BOM Engine (NEW) -->
+            <div>
+                <button onclick="toggleGroup('group-4', 'icon-4')" class="w-full flex justify-between items-center px-3 py-2 text-xs font-bold text-emerald-600 uppercase tracking-wider hover:bg-emerald-50 rounded-md transition-colors border-t border-slate-100 pt-4">
+                    <span>Part 4: Eng. & Auto-BOM</span>
+                    <svg id="icon-4" class="dropdown-icon w-4 h-4 collapsed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="group-4" class="group-content mt-1 collapsed">
+                    <button onclick="switchTab('tab-20', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🧭</span> 20. พิกัดดาราศาสตร์ (AOI)
+                    </button>
+                    <button onclick="switchTab('tab-21', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🗺️</span> 21. อัลกอริทึม Web-GIS
+                    </button>
+                    <button onclick="switchTab('tab-22', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🔌</span> 22. มาตรฐานสายไฟ/V-Drop
+                    </button>
+                    <button onclick="switchTab('tab-23', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">🏗️</span> 23. โครงสร้างจับยึด & บันได
+                    </button>
+                    <button onclick="switchTab('tab-24', this)" class="menu-btn">
+                        <span class="mr-3 text-lg opacity-70">💦</span> 24. ระบบล้างแผงอัตโนมัติ
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-y-auto p-8 relative scroll-smooth bg-slate-50" id="content-container">
+        <div class="max-w-4xl mx-auto pb-12">
+            
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">Auto Solar Copilot Documentation</h1>
+                <p class="text-lg text-slate-500 mt-2">คู่มือการพัฒนาและสถาปัตยกรรมระบบ (Developer & Architecture Manual)</p>
+            </div>
+
+            <!-- TAB 1-5 (PART 1) -->
+            <div id="tab-1" class="tab-content active">
+                <div class="content-card">
+                    <h2>1. สถาปัตยกรรมระบบ (System Overview)</h2>
+                    <p><strong>Auto Solar Copilot</strong> เป็นเครื่องมือซอฟต์แวร์วิศวกรรมบนเว็บ (Web-based Engineering Tool) ที่ถูกออกแบบมาเพื่อการออกแบบระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์บนหลังคา (Solar Rooftop) และระบบติดตั้งบนพื้นดิน</p>
+                    <p>ระบบไม่ได้เป็นเพียงเครื่องมือวาดแผนที่ (Drawing Tool) แต่ผสานการทำงานของระบบสารสนเทศภูมิศาสตร์ (GIS) ผ่านไลบรารี Leaflet เข้ากับเอนจินคณิตศาสตร์วิศวกรรมไฟฟ้าแบบเรียลไทม์ ทำให้ผู้ใช้สามารถประเมินพื้นที่จริง วาดแผงโซลาร์เซลล์ และตรวจสอบความปลอดภัยทางไฟฟ้าได้ในหน้าจอเดียว</p>
+                    
+                    <h3>จุดเด่นของสถาปัตยกรรม (Architectural Highlights)</h3>
+                    <ul>
+                        <li><strong>Hybrid Web-GIS:</strong> ใช้ Leaflet (JavaScript Library แบบ Open-source สำหรับการพัฒนาแผนที่แบบโต้ตอบ (Interactive Web Map)) นำพิกัดตำแหน่งของอาคาร,พื้นที่ มาวาดภาพจำลอง (Polygon Rendering) และจัดการด้วย SVG/Canvas เพื่อให้แผนที่คงสัดส่วนเดิม</li>
+                        <li><strong>EIT Sizing Engine:</strong> ฝัง (รหัสเทียม (Pseudocode))มาตรฐานวิศวกรรมสถานแห่งประเทศไทย (วสท.) ไว้ในระบบคณิตศาสตร์ของโปรแกรม เพื่อควบคุมแรงดันกระแสตรงไม่ให้เกินขีดจำกัด</li>
+                        <li><strong>Zero-Loss Data Binding:</strong> โครงสร้าง Database รูปแบบ JSON (DB1 และ DB2) ที่ทำให้สามารถทำเข้า-ส่งออก (Import/Export) โปรเจกต์ได้ 100% โดยที่พารามิเตอร์ไม่สูญหาย วางแผนเมื่อต้องนำระบบไปพัฒนาต่อในรูปแบบ Client-Server </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="tab-2" class="tab-content">
+                <div class="content-card">
+                    <h2>2. แบบจำลองด้านพลังงาน (Energy Models & Equations)</h2>
+                    <p>การคำนวณในโปรแกรมนี้ถูกออกแบบโดยอ้างอิงมาตรฐานวิศวกรรมสากล (IEC 62548) และมาตรฐาน วสท. ของประเทศไทย เพื่อป้องกันความเสียหายแก่อินเวอร์เตอร์และลดความเสี่ยงการเกิดเพลิงไหม้</p>
+                    
+                    <h3>2.1 แบบจำลองการจัดสตริง (String Sizing Model)</h3>
+                    <p>การหาจำนวนแผงสูงสุดและต่ำสุดต่อสตริง โปรแกรมไม่ได้ใช้แรงดันสภาวะ STC (25&deg;C) มาหารตรงๆ แต่ใช้ <strong>ค่าสัมประสิทธิ์อุณหภูมิ (Temperature Coefficient)</strong> ในการจำลองแรงดันที่เปลี่ยนแปลงไปตามสภาพอากาศของประเทศไทย:</p>
+                    <div class="math-box">
+                        <span class="text-slate-500 text-sm">// สมการหาจำนวนแผงสูงสุด (อุณหภูมิต่ำ T_min = 15&deg;C)</span><br><br>
+                        V<sub>OC_cold</sub> = V<sub>OC_STC</sub> &times; [ 1 + ( &gamma;<sub>v</sub> / 100 ) &times; (T<sub>min</sub> - 25) ]<br><br>
+                        Max_Panels = Floor( V<sub>max_system</sub> / V<sub>OC_cold</sub> )
+                    </div>
+                    <div class="math-box">
+                        <span class="text-slate-500 text-sm">// สมการหาจำนวนแผงต่ำสุด (อุณหภูมิสูง T_max = 70&deg;C)</span><br><br>
+                        V<sub>MP_hot</sub> = V<sub>MP_STC</sub> &times; [ 1 + ( &gamma;<sub>v</sub> / 100 ) &times; (T<sub>max</sub> - 25) ]<br><br>
+                        Min_Panels = Ceil( V<sub>min_MPPT</sub> / V<sub>MP_hot</sub> )
+                    </div>
+
+                    <h3>2.2 แบบจำลอง Optimizer Voltage Clamping</h3>
+                    <p>เมื่อระบบตรวจพบการใช้งาน Power Optimizer โปรแกรมจะข้ามการประเมินอุณหภูมิแผง และเปลี่ยนไปใช้เงื่อนไขคุมแรงดันและกำลังไฟฟ้าของ Optimizer (Voltage Clamping) ทำให้สามารถต่อสตริงได้ยาวขึ้น</p>
+                    <div class="math-box">
+                        Max_Panels = Min( Floor(V<sub>max_INV</sub> / V<sub>max_OPT_output</sub>) , Floor(P<sub>max_StringLimit</sub> / P<sub>max_PV</sub>) )
+                    </div>
+
+                    <h3>2.3 แบบจำลองอุณหภูมิแผงโซลาร์เซลล์ (Sandia Model โดย  David L. King)</h3>
+                    <p>โปรแกรมใช้โมเดลของห้องปฏิบัติการ Sandia National Laboratories เพื่อประเมินอุณหภูมิแผงจริง (T<sub>cell</sub>) ซึ่งคำนึงถึงความเข้มแสงและความเร็วลม ทำให้ประเมินการสูญเสียในสภาวะการทำงานปกติได้แม่นยำกว่า</p>
+                    <div class="math-box">
+                        T<sub>cell</sub> = T<sub>amb</sub> + GHI &times; e<sup>(a + b &times; WS)</sup>
+                    </div>
+					<p>แบบจำลองประสิทธิภาพไฟฟ้า (Sandia Array Performance Model: SAPM): คำนวณหาค่ากระแสไฟ (Short-circuit current) และแรงดันไฟฟ้า (Open-circuit voltage) (T<sub>cell</sub>)  คำนวณหาค่ากระแสไฟ (Short-circuit current) และแรงดันไฟฟ้า (Open-circuit voltage) ออกมาเป็นจุดทำงานต่าง ๆ บนกราฟ I-V Curve เพื่อหาพลังงานไฟฟ้ากระแสตรง (DC Power) ที่แผงผลิตได้ </p>
+                </div>
+            </div>
+
+            <div id="tab-3" class="tab-content">
+                <div class="content-card">
+                    <h2>3. ข้อมูลสภาพแวดล้อมและ API (Meteo Data APIs)</h2>
+                    <p>ข้อมูลสภาพแวดล้อม (Meteo Data) เป็นหัวใจสำคัญในการจำลองการผลิตไฟฟ้า (Energy Yield) โปรแกรมออกแบบสถาปัตยกรรมให้รองรับ API 3 แหล่ง ซึ่งเป็นมาตรฐานอุตสาหกรรมสากล:</p>
+                    
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full border text-left text-sm">
+                            <thead class="bg-slate-100 border-b-2 border-slate-200">
+                                <tr>
+                                    <th class="p-3">แหล่งข้อมูล API</th>
+                                    <th class="p-3">ความละเอียด</th>
+                                    <th class="p-3">เหตุผลในการเลือกนำมาใช้งาน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b bg-white">
+                                    <td class="p-3 font-semibold">PVGIS (JRC Europe)</td>
+                                    <td class="p-3">รายชั่วโมง (TMY)</td>
+                                    <td class="p-3">เป็น API ที่น่าเชื่อถือระดับโลก <strong>ใช้งานได้ฟรี 100% ไม่มี API Key</strong> ถูกตั้งเป็น Default Engine</td>
+                                </tr>
+                                <tr class="border-b bg-slate-50">
+                                    <td class="p-3 font-semibold">NASA POWER</td>
+                                    <td class="p-3">รายชั่วโมง (Satellite)</td>
+                                    <td class="p-3">ครอบคลุมพื้นที่ทั่วโลกแบบ 100% แม้อยู่ในพื้นที่ห่างไกลหรือกลางทะเล</td>
+                                </tr>
+                                <tr class="bg-white">
+                                    <td class="p-3 font-semibold">Meteonorm</td>
+                                    <td class="p-3">รายชั่วโมง (Interpolation)</td>
+                                    <td class="p-3">ถือเป็นมาตรฐานทองคำ (Gold Standard) ในการออกเอกสารกู้เงินธนาคาร</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-4" class="tab-content">
+                <div class="content-card">
+                    <h2>4. กรณีศึกษาและซอฟต์แวร์เปรียบเทียบ (Industry Benchmarking)</h2>
+                    <p>เพื่อระบุตำแหน่ง (Positioning) ของโปรแกรม Auto Solar Copilot ในตลาดซอฟต์แวร์วิศวกรรม นี่คือผลการวิเคราะห์เปรียบเทียบกับโปรแกรมชั้นนำ:</p>
+                    
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full border text-left text-sm">
+                            <thead class="bg-slate-100 border-b-2 border-slate-200">
+                                <tr>
+                                    <th class="p-3 w-1/4">ชื่อโปรแกรม</th>
+                                    <th class="p-3 w-1/4">ประเภทสิทธิการใช้</th>
+                                    <th class="p-3">การวิเคราะห์และเปรียบเทียบ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b bg-white">
+                                    <td class="p-3 font-semibold">PVsyst</td>
+                                    <td class="p-3">มีค่าใช้จ่าย (License สูง)</td>
+                                    <td class="p-3">มาตรฐานอันดับ 1 ของโลกด้านความแม่นยำ <em>แต่มีจุดด้อยคือ UI ใช้งานยาก</em></td>
+                                </tr>
+                                <tr class="border-b bg-slate-50">
+                                    <td class="p-3 font-semibold">HelioScope</td>
+                                    <td class="p-3">มีค่าใช้จ่าย (รายเดือน)</td>
+                                    <td class="p-3">จุดแข็งคือการวาดแผนที่ 3D บนดาวเทียม แต่เอนเอียงไปทางงานขาย (Sales) มากกว่าวิศวกรรมลึก</td>
+                                </tr>
+                                <tr class="border-b bg-white">
+                                    <td class="p-3 font-semibold">SAM (NREL)</td>
+                                    <td class="p-3">ฟรี (Open Source)</td>
+                                    <td class="p-3">เครื่องมือฟรีที่ดีที่สุดด้านสมการคณิตศาสตร์ <em>แต่จุดด้อยคือเป็นฟอร์มให้กรอกตัวเลขแบบดั้งเดิม</em></td>
+                                </tr>
+                                <tr class="bg-blue-50">
+                                    <td class="p-3 font-bold text-blue-800">Auto Solar Copilot</td>
+                                    <td class="p-3 font-semibold">ซอฟต์แวร์ภายใน (In-house)</td>
+                                    <td class="p-3"><strong>จุดแข็งเด็ดขาด:</strong> ผสานความลื่นไหลของ Web-GIS เข้ากับการประเมินมาตรฐาน วสท. แบบเรียลไทม์</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-5" class="tab-content">
+                <div class="content-card">
+                    <h2>5. แบบจำลองทางการเงิน (Financial & ROI Model)</h2>
+                    <p>ในการอัปเกรดจากเครื่องมือทางวิศวกรรมสู่ "เครื่องมือประเมินการลงทุน" ระบบสถาปัตยกรรมจะถูกขยายให้รองรับการคำนวณด้านกระแสเงินสด (Cash Flow) โดยมีสมการชี้วัดทางการเงิน ดังนี้:</p>
+
+                    <h3>5.1 โครงสร้างต้นทุนและรายได้</h3>
+                    <ul>
+                        <li><strong>CAPEX (ต้นทุนเริ่มต้น):</strong> คำนวณจาก Total DC Capacity (kWp) &times; ราคาต่อวัตต์</li>
+                        <li><strong>OPEX (ต้นทุนดำเนินงาน):</strong> ครอบคลุมค่า O&M (เช่น 1% ของ CAPEX/ปี) และค่า Inverter Replacement ในปีที่ 10</li>
+                        <li><strong>Revenue (รายได้/ส่วนประหยัด):</strong> แบ่งสัดส่วนระหว่าง Self-Consumption (ทดแทนการซื้อไฟ) และ Grid Export (ขายไฟ)</li>
+                    </ul>
+
+                    <h3>5.2 ดัชนีชี้วัดเพื่อการลงทุน (Financial Metrics)</h3>
+                    
+                    <h4>1. มูลค่าปัจจุบันสุทธิ (Net Present Value : NPV)</h4>
+                    <p>เมทริกซ์หลักที่ใช้บอกว่าโครงการคุ้มค่าการลงทุนหรือไม่ในช่วงระยะเวลา 25 ปี</p>
+                    <div class="math-box">
+                        NPV = &Sigma; [ (R<sub>t</sub> - C<sub>t</sub>) / (1 + d)<sup>t</sup> ] - CAPEX
+                    </div>
+
+                    <h4>2. อัตราผลตอบแทนภายใน (Internal Rate of Return : IRR)</h4>
+                    <p>ใช้อัลกอริทึม (เช่น Newton-Raphson) ในการค้นหาเปอร์เซ็นต์ IRR ที่ทำให้ NPV มีค่าเท่ากับ 0</p>
+
+                    <h4>3. ต้นทุนการผลิตไฟฟ้าต่อหน่วย (Levelized Cost of Energy : LCOE)</h4>
+                    <p>ใช้เปรียบเทียบว่าต้นทุนการสร้างโรงไฟฟ้าตกอยู่ที่กี่บาทต่อ 1 หน่วยไฟฟ้า (บาท/kWh)</p>
+                    <div class="math-box">
+                        LCOE = [ CAPEX + &Sigma; (OPEX<sub>t</sub> / (1 + d)<sup>t</sup>) ] / &Sigma; (E<sub>t</sub> / (1 + d)<sup>t</sup>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6-13 (PART 2) -->
+            <div id="tab-6" class="tab-content">
+                <div class="content-card">
+                    <h2>6. โครงสร้างสถาปัตยกรรมระบบ (Direct-to-Memory)</h2>
+                    <p>Auto Solar Copilot ถูกพัฒนาด้วยแนวคิด <b>"Direct-to-Memory (Client-side Simulation)"</b> ซึ่งประมวลผลทุกอย่างบนเบราว์เซอร์ของผู้ใช้ 100% โดยไม่ต้องพึ่งพาเซิร์ฟเวอร์ (Zero Backend Cost) ส่งผลให้มีความปลอดภัยของข้อมูลสูง (Data Privacy) และประมวลผลได้รวดเร็ว</p>
+                    
+                    <h3>💡 กระบวนการทำงานหลัก (Data Pipeline)</h3>
+                    <ul>
+                        <li><b>Data Ingestion:</b> นำเข้าไฟล์พารามิเตอร์ (.txt/.json) ผ่าน <code>FileReader</code> เข้าสู่หน่วยความจำ (RAM) โดยตรง</li>
+                        <li><b>Regex Sweeper:</b> ใช้ Regular Expression ระดับสูงในการตัดขยะ (เช่น <code>mapGeoJSON</code> ที่ทำให้เครื่องค้าง) และสกัดเฉพาะพารามิเตอร์ของอุปกรณ์</li>
+                        <li><b>DB3 Memory State:</b> จัดเก็บข้อมูลลงโครงสร้างอ็อบเจกต์ใน <code>sessionStorage</code> ทำให้สามารถสลับหน้าจอ (UI Tabs) ไปมาได้โดยข้อมูลไม่สูญหาย</li>
+                        <li><b>Simulation Engine:</b> วิ่งลูปคำนวณ 8,760 ชั่วโมง (Hourly Step) และระดับเดือน เพื่อสร้างแบบจำลองทางคณิตศาสตร์ทั้งหมดก่อนส่งไปวาดกราฟ</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="tab-7" class="tab-content">
+                <div class="content-card">
+                    <h2>7. แบบจำลองสภาพอากาศและรังสีแสงอาทิตย์ (Irradiance)</h2>
+                    <p>การประเมินพลังงานโซล่าร์เซลล์ที่แม่นยำ ต้องเริ่มต้นจากข้อมูลสภาพอากาศที่เชื่อถือได้ ในโค้ด V8.0 มีการเรียกใช้ PVGIS API <code>/api/v5_2/seriescalc</code> เพื่อดึงข้อมูลรายชั่วโมง (Hourly Data) มาทำการจำลอง</p>
+
+                    <h3>🌐 แหล่งข้อมูล API ที่ใช้งาน</h3>
+                    <ul>
+                        <li><b>PVGIS (EU JRC)</b> <span class="badge badge-blue">Primary</span> : API หลักที่ใช้ดึงค่า GHI (Global Horizontal Irradiance) </li>
+                        <li><b>FallBack Mechanism:</b> กรณี API เรียกไม่ได้ (CORS/Offline) ระบบจะนำค่า <code>yearlyGHI_kWh_m2</code> จากไฟล์ DB2 (ค่าตั้งต้น 1,850 kWh/m²) มาเกลี่ยและจำลองแสงแบบ Sine Wave แทน</li>
+                    </ul>
+
+                    <h3>📐 แบบจำลองการแปลงรังสี (Transposition Model)</h3>
+                    <p>ระบบสกัดค่ารังสีในรูปแบบ DNI, DHI จากสมการความกดอากาศ (Airmass) และมุมดวงอาทิตย์ เพื่อหาความเข้มแสงตกกระทหน้าแผง (POA)</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// สูตรการดึงค่าแสงตรงหน้าแผง (Beam) และ แสงกระจาย (Diffuse) จาก V8.0</span><br>
+                        let airmass = 1 / Math.cos(zenith);<br>
+                        DNI = 1367 * Math.pow(0.7, Math.pow(airmass, 0.678));<br>
+                        DHI = 0.3 * (1367 - DNI) * Math.sin(altitude);<br>
+                        GHI = DNI * Math.sin(altitude) + DHI;<br><br>
+                        <span class="math-comment">// หักลบมุมตกกระทบแผง (POA)</span><br>
+                        poaBeam = DNI * cosAOI;<br>
+                        poaDiff = DHI * (1 + Math.cos(pTilt)) / 2;<br>
+                        poaRef = GHI * 0.2 * (1 - Math.cos(pTilt)) / 2;<br>
+                        POA_Total = poaBeam + poaDiff + poaRef;
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-8" class="tab-content">
+                <div class="content-card">
+                    <h2>8. แบบจำลองอุณหภูมิเซลล์ (Thermal Model)</h2>
+                    <p>อุณหภูมิมีผลผกผันกับประสิทธิภาพของแผงโซล่าร์เซลล์ โปรแกรมจึงเลือกใช้แบบจำลองของ <b>Sandia National Laboratories</b> ที่มีความแม่นยำสูง</p>
+                    
+                    <h3>🔥 King Sandia Thermal Model (Code Implementation)</h3>
+                    <p>ตามโค้ด V8.0 การสูญเสียจากอุณหภูมิจะถูกคำนวณในทุกชั่วโมง (Loop 8760) โดยอ้างอิงสัมประสิทธิ์ความร้อน `tc_pmax` จาก DB2</p>
+                    
+                    <div class="math-box-dark">
+                        <span class="math-comment">// ดึงค่า Tamb (อุณหภูมิอากาศ) แยกรายเดือน</span><br>
+                        let Tamb_dist = [26, 27, 29, 31, 30, 29, 28, 28, 27, 27, 27, 26];<br>
+                        let Tamb = Tamb_dist[m];<br><br>
+                        <span class="math-comment">// คำนวณ T_cell ตามสูตร Sandia (e^(-3.56 + -0.075 * 1.5))</span><br>
+                        let tCell = Tamb + (poaTotal * Math.exp(-3.56 + -0.075 * 1.5));<br><br>
+                        <span class="math-comment">// หักลบประสิทธิภาพแผงเมื่ออุณหภูมิเกิน STC (25°C)</span><br>
+                        let tempLoss = (tCell > 25) ? (tCell - 25) * Math.abs(tc_pmax/100) : 0;<br>
+                        let dc = polyCap * (poaTotal/1000) * (1 - tempLoss);
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-9" class="tab-content">
+                <div class="content-card">
+                    <h2>9. แบบจำลองความสูญเสียในระบบ (System Loss Model)</h2>
+                    <p>การแสดงผลแบบ Cascade/Waterfall Diagram เป็นมาตรฐานสากลอิงตามแบบจำลองของ <b>PVSYST</b> ช่วยให้วิศวกรเห็นจุดคอขวด (Bottleneck) ของพลังงานที่หายไปได้อย่างรวดเร็ว</p>
+                    
+                    <h3>🔻 องค์ประกอบความสูญเสียหลัก</h3>
+                    <ul>
+                        <li><b>Soiling Loss :</b> ความสูญเสียจากฝุ่นละอองเกาะหน้าแผง (ตั้งค่าเริ่มต้นอิงตามประเทศไทยที่ 3-5%)</li>
+                        <li><b>LID (Light Induced Degradation) :</b> การเสื่อมสภาพในปีแรกเมื่อแผงสัมผัสกับแสงอาทิตย์ (ประมาณ 1-2%)</li>
+                        <li><b>Wiring Ohmic Loss :</b> ความต้านทานและการสูญเสียในสายไฟเคเบิล DC/AC</li>
+                        <li><b>Inverter Loss :</b> หักลบจากค่าประสิทธิภาพเฉลี่ยของ Inverter (เช่น 100% - 98.5% = 1.5% Loss)</li>
+                    </ul>
+                    <p>ผลรวมของการหักลบทั้งหมดจะสะท้อนออกมาเป็นค่า <b>Performance Ratio (PR)</b> สุทธิของระบบ</p>
+                </div>
+            </div>
+
+            <div id="tab-10" class="tab-content">
+                <div class="content-card">
+                    <h2>10. แบบจำลองการจัดการแบตเตอรี่ (Battery Dispatch Algorithm)</h2>
+                    <p>โปรแกรมใช้สถาปัตยกรรม <b>Rule-based Heuristic Dispatch</b> จำลองการทำงานแบบรายชั่วโมง ซึ่งอ้างอิงจากโค้ด V8.0 ฟังก์ชัน `updateChartjsDailyInteractive()`</p>
+                    
+                    <h3>⚡ ตรรกะสมการรายชั่วโมง (Hourly Logic)</h3>
+                    <p>ตัวระบบจะควบคุมการคลายประจุ (Discharge) ไม่ให้ต่ำกว่า 25% (Min SoC) เพื่อยืดอายุรอบไซเคิล (Cycle Life) ของแบตเตอรี่ และแบ่งเวลาการคลายประจุตาม Time of Use (TOU)</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// กำหนดความจุขั้นต่ำ (25%) และตรวจสอบเงื่อนไขเวลาคลายประจุ</span><br>
+                        let minSoC = totalBatCap * 0.25;<br>
+                        let canDischarge = (h < 9 && canDisBefore) || (h >= 15 && canDisAfter);<br><br>
+                        <span class="math-comment">// พลังงานเหลือ (PV > Load) : นำไป Charge</span><br>
+                        if(d.pv > d.load) {<br>
+                        &nbsp;&nbsp;let surplus = d.pv - d.load;<br>
+                        &nbsp;&nbsp;let chargePwr = Math.min(surplus, invKw);<br>
+                        &nbsp;&nbsp;if(currentSoC + chargePwr <= totalBatCap) currentSoC += chargePwr;<br>
+                        }<br>
+                        <span class="math-comment">// พลังงานขาด (PV < Load) : นำมา Discharge</span><br>
+                        else if (d.pv < d.load && canDischarge) {<br>
+                        &nbsp;&nbsp;let deficit = d.load - d.pv;<br>
+                        &nbsp;&nbsp;let disPwr = Math.min(deficit, invKw);<br>
+                        &nbsp;&nbsp;if(currentSoC - disPwr >= minSoC) currentSoC -= disPwr;<br>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-11" class="tab-content">
+                <div class="content-card">
+                    <h2>11. แบบจำลองทางเศรษฐศาสตร์ (DCF Financial Models)</h2>
+                    <p>ระบบใช้แบบจำลอง <b>Discounted Cash Flow (DCF)</b> เพื่อหาระยะเวลาคืนทุน (Payback Period) และกำไรสะสมตลอดอายุ 25 ปี อิงจากฟังก์ชัน `runSimulationEngine()` ใน V8.0</p>
+                    
+                    <h3>💰 สมการ DCF และปัจจัยเชิงซ้อน</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// คำนวณ Degradation ของแผง (ปีที่ 1 เสื่อมเยอะกว่า ปีต่อไปเสื่อมคงที่)</span><br>
+                        if(y===1) { currentDegRate = 1 - (deg1/100); }<br>
+                        else { currentDegRate -= (deg2/100); }<br><br>
+
+                        <span class="math-comment">// คำนวณอัตราเงินเฟ้อค่าไฟ (Tariff Inflation)</span><br>
+                        let currentTariff = tariff * Math.pow(1 + (tariffInf/100), y-1);<br>
+                        let savings = (totalEGrid * currentDegRate) * currentTariff;<br><br>
+
+                        <span class="math-comment">// คำนวณ Net Cash Flow และหาจุดตัด Payback</span><br>
+                        let omCost = (pnom * 1000 * om) * Math.pow(1 + (infOM/100), y-1);<br>
+                        let netFlow = savings - omCost;<br>
+                        let dcf = netFlow / Math.pow(1 + (dr/100), y);<br>
+                        cumulative += dcf;
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-12" class="tab-content">
+                <div class="content-card">
+                    <h2>12. แบบจำลองด้านสิ่งแวดล้อม & มาตรฐานอุตสาหกรรม</h2>
+                    <p>รายงานที่สร้างขึ้นรองรับการนำไปใช้ประกอบแผน ESG และ Carbon Neutrality อ้างอิงแหล่งประเมินจากฟังก์ชัน `renderDashboard()` ใน V8.0</p>
+                    
+                    <h3>🌿 การประเมินคาร์บอน (Environmental Impact Limits)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// 1. TGO (ไทย) : ลดการปล่อยก๊าซเรือนกระจก (Scope 2)</span><br>
+                        CO2_Tons = (totalEnergy * 0.475) / 1000;<br><br>
+                        
+                        <span class="math-comment">// 2. กรมการเปลี่ยนแปลงสภาพภูมิอากาศ : เทียบเท่าการปลูกต้นไม้</span><br>
+                        Trees_Planted = (totalEnergy * 0.475) / 9;<br><br>
+
+                        <span class="math-comment">// 3. US EPA : เทียบเท่าลดการใช้ถ่านหิน (Standard Coal)</span><br>
+                        Coal_Tons = (totalEnergy * 0.4) / 1000;<br><br>
+
+                        <span class="math-comment">// 4. สนพ. (EPPO) : เทียบเท่าประหยัดน้ำมันเตา/ดีเซล</span><br>
+                        Oil_Liters = totalEnergy * 0.25;
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-13" class="tab-content">
+                <div class="content-card">
+                    <h2>13. การเปรียบเทียบเชิงเทคนิคกับซอฟต์แวร์ตลาด (Technical Benchmarking)</h2>
+                    
+                    <div class="overflow-x-auto mt-6">
+                        <table class="w-full border text-left text-sm">
+                            <thead class="bg-blue-50 border-b-2 border-blue-200">
+                                <tr>
+                                    <th class="p-3 w-1/4">โปรแกรม (Software)</th>
+                                    <th class="p-3 w-1/4">จุดเด่น / ค่าใช้จ่าย</th>
+                                    <th class="p-3 w-1/2">เปรียบเทียบเชิงสถาปัตยกรรมกับAuto Solar Copilot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b bg-white">
+                                    <td class="p-3 font-bold text-slate-800">PVsyst (สวิตเซอร์แลนด์)</td>
+                                    <td class="p-3 text-slate-600">เชิงพาณิชย์ (หลักแสนบาท)</td>
+                                    <td class="p-3 text-slate-600">Auto Solar Copilotได้รับอิทธิพลโดยตรงจาก PVsyst โดยเฉพาะการนำเสนอ <b>Waterfall Loss Diagram</b> และการใช้แบบจำลอง <b>Perez + Sandia Thermal</b></td>
+                                </tr>
+                                <tr class="border-b bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-800">SAM (NREL, สหรัฐอเมริกา)</td>
+                                    <td class="p-3 text-slate-600">ฟรี (Open Source)</td>
+                                    <td class="p-3 text-slate-600">โมเดล <b>Discounted Cash Flow (DCF)</b> และ <b>Rule-based Battery Dispatch (Hourly)</b> ของโปรแกรม Auto Solar Copilot  ใช้แนวคิดเดียวกับแกนหลักของ NREL SAM</td>
+                                </tr>
+                                <tr class="border-b bg-white">
+                                    <td class="p-3 font-bold text-slate-800">Aurora Solar</td>
+                                    <td class="p-3 text-slate-600">เชิงพาณิชย์ (SaaS)</td>
+                                    <td class="p-3 text-slate-600">Aurora เน้นที่ 3D Model แต่โปรแกรมของ Auto Solar Copilot เน้นเรื่องความรวดเร็วในการสกัด Data (Direct-to-Memory) ให้ประเมินเคสการลงทุนได้ทันที</td>
+                                </tr>
+                                <tr class="bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-800">PVGIS / PVWatts</td>
+                                    <td class="p-3 text-slate-600">ฟรี (Web Tool เบื้องต้น)</td>
+                                    <td class="p-3 text-slate-600"> Auto Solar Copilot ดึงข้อดีของ PVGIS มาใช้เป็น API หลังบ้าน แต่เติมเต็มความซับซ้อนด้วยระบบ Battery ESS, TOU Tariff และกราฟสถิติ Probability</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 14-19 (PART 3: CALCULATION LOGIC) -->
+            <div id="tab-14" class="tab-content">
+                <div class="content-card">
+                    <h2>14. ขีดจำกัดความปลอดภัยของระบบ (System Voltage Limits)</h2>
+                    <p>อ้างอิงมาตรฐาน วสท. ส่วนที่ 3 ประเด็นด้านความปลอดภัย เพื่อป้องกันการเกิดประกายไฟฟ้าอาร์ก (Arc Flash) และการเกิดเพลิงไหม้ ระบบสารสนเทศจะต้องตรวจสอบและจำกัดแรงดันไฟฟ้ากระแสตรงสูงสุด (Max DC Voltage) ไม่ให้เกินพิกัดตามประเภทของอาคารอย่างเด็ดขาด</p>
+                    
+                    <h3>ตรรกะการคำนวณ (Logic Condition)</h3>
+                    <ul>
+                        <li><strong>อาคารพักอาศัย (Residential):</strong> V<sub>sys_limit</sub> = 1,000 Vdc</li>
+                        <li><strong>อาคารธุรกิจ/โรงงาน (Commercial/Industrial):</strong> V<sub>sys_limit</sub> = 1,500 Vdc</li>
+                    </ul>
+
+                    <div class="math-box-dark">
+                        <span class="math-comment">// Pseudocode จาก V10.0 ฟังก์ชัน calcInvString()</span><br>
+                        let sysMaxVoltage = (buildingType === '1000') ? 1000 : 1500;<br>
+                        let effective_Max_DC = Math.min(Inverter_Max_DC_Input, sysMaxVoltage);
+                    </div>
+                    <p><strong>การประยุกต์ใช้:</strong> นักพัฒนาต้องนำค่า <code>effective_Max_DC</code> ไปใช้เป็นตัวตั้งในการคำนวณจำนวนแผงสูงสุดในทุกสมการถัดไป ห้ามใช้สเปกของ Inverter เดี่ยวๆ</p>
+                </div>
+            </div>
+
+            <div id="tab-15" class="tab-content">
+                <div class="content-card">
+                    <h2>15. แบบจำลองอุณหภูมิกับแรงดันแผง (Temp-Voltage Sizing)</h2>
+                    <p>อ้างอิงมาตรฐาน วสท. ส่วนที่ 4.2 แรงดันของแผงโซลาร์เซลล์จะแปรผกผันกับอุณหภูมิ การคำนวณจำนวนแผงที่เหมาะสมต้องใช้สมการ <strong>การชดเชยอุณหภูมิ (Temperature Compensation)</strong> เสมอ</p>
+
+                    <h3>15.1 การหาแรงดันสูงสุดในอุณหภูมิต่ำ (Max Array Voltage at Coldest Temp)</h3>
+                    <p>เพื่อป้องกันแรงดันทะลุเพดาน Inverter ในช่วงที่อากาศเย็นจัด</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// สูตรจาก V10.0 (T_min_cold = 15°C, T_stc = 25°C)</span><br>
+                        let vocCold = pvVoc * (1 + (pvTempVoc / 100) * (15 - 25));
+                    </div>
+
+                    <h3>15.2 การหาแรงดันทำงานต่ำสุดในอุณหภูมิสูง (Min Array Voltage at Hottest Temp)</h3>
+                    <p>เพื่อป้องกันแรงดันตกลงจนต่ำกว่าจุดเริ่มทำงานของ Inverter (Min MPPT)</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// สูตรจาก V10.0 (T_max_hot = 70°C, T_stc = 25°C)</span><br>
+                        let vmpHot = pvVmp * (1 + (pvTempVoc / 100) * (70 - 25));
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-16" class="tab-content">
+                <div class="content-card">
+                    <h2>16. ตรรกะการจัดสตริง (String Sizing Logic)</h2>
+                    <p>การหาขอบเขตจำนวนแผง (Range: Min-Max) ต่อ 1 สตริง แบ่งตามลักษณะฮาร์ดแวร์ที่เลือกใช้</p>
+
+                    <h3>16.1 กรณีระบบปกติ (Traditional String Inverter)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// จำนวนแผงสูงสุด (ป้องกัน Overvoltage ใช้ฟังก์ชันปัดเศษลง)</span><br>
+                        let maxStr = Math.floor( effectiveMaxDC / vocCold );<br><br>
+                        <span class="math-comment">// จำนวนแผงต่ำสุด (ป้องกัน Inverter ดับ ใช้ฟังก์ชันปัดเศษขึ้น)</span><br>
+                        let minStr = Math.ceil( invMinMPPT / vmpHot );
+                    </div>
+
+                    <h3>16.2 กรณีใช้ Optimizer (Long String Design)</h3>
+                    <p>วงจร Buck/Boost ในตัว Optimizer จะทำหน้าที่ล็อคแรงดันออก (Voltage Clamping) ไม่ให้เกินสเปก ทำให้ลอจิกการคำนวณอุณหภูมิถูกยกเลิก</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// โค้ดจาก V10.0 เมื่อเลือกใช้งาน Optimizer</span><br>
+                        let optMaxOutputVoltage = 80;<br>
+                        let maxPowerPerStringLimit = 10000;<br>
+                        let powerLimitedMaxStr = Math.floor(maxPowerPerStringLimit / pvPmax);<br><br>
+                        
+                        <span class="math-comment">// กรณี Ratio 1:1</span><br>
+                        let voltLimitedMax = Math.floor(effectiveMaxDC / optMaxOutputVoltage);<br>
+                        maxStr = Math.min(voltLimitedMax, powerLimitedMaxStr);
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-17" class="tab-content">
+                <div class="content-card">
+                    <h2>17. การป้องกันกระแสเกิน (Overcurrent Protection & Fuses)</h2>
+                    <p>อ้างอิง วสท. ส่วนที่ 3.3.3 หากมีการนำสตริงมาต่อขนานกัน (Parallel) ในพอร์ต MPPT เดียวกันมากกว่า 2 สตริง อาจเกิดกระแสไหลย้อนกลับไปทำลายแผงโซลาร์เซลล์ได้</p>
+                    
+                    <h3>17.1 ตรรกะการตรวจสอบฟิวส์สตริง (String Fuse Validation)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// โค้ด V10.0 : ตรวจจับ Inputs_per_MPPT จากสเปก Inverter</span><br>
+                        let inps = rawData["Inputs_per_MPPT"];<br>
+                        let fuseWarn = (inps > 2); <br><br>
+                        if (fuseWarn) {<br>
+                        &nbsp;&nbsp;showWarning("ต้องติดตั้ง String Fuses ป้องกันกระแสไหลย้อนกลับ");<br>
+                        }
+                    </div>
+
+                    <h3>17.2 การหาพิกัดกระแสของเบรกเกอร์ (Breaker Sizing)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// DC Breaker (เผื่อ 1.5 เท่าของกระแสลัดวงจร) และปัดขึ้นทีละ 5</span><br>
+                        let dcBreakerAmp = Math.ceil(stringImp * 1.5 / 5) * 5;<br>
+                        if (dcBreakerAmp < 15) dcBreakerAmp = 15; <span class="math-comment">// ขั้นต่ำ</span><br><br>
+                        
+                        <span class="math-comment">// AC Breaker (เผื่อ 1.25 เท่าของกระแสใช้งานสูงสุด)</span><br>
+                        let acBreakerAmp = Math.ceil((maxAcCurrent * 1.25) / 5) * 5;<br>
+                        if (acBreakerAmp < 10) acBreakerAmp = 10;
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-18" class="tab-content">
+                <div class="content-card">
+                    <h2>18. อัตราส่วนกำลังไฟฟ้า (DC/AC Sizing Ratio)</h2>
+                    <p>ดัชนีชี้วัดความคุ้มค่าทางเศรษฐศาสตร์และการใช้งานประสิทธิภาพ Inverter (ป้องกัน Clipping Loss ที่รุนแรง)</p>
+                    
+                    <div class="math-box-dark">
+                        Ratio = (Total_Panels * P_MOD_STC_kW) / Total_Inverter_AC_kW;
+                    </div>
+
+                    <h3>เงื่อนไขการแจ้งเตือน (Status Triggers)</h3>
+                    <ul>
+                        <li><strong>Ratio < 1.20 :</strong> ⚠️ ต่ำกว่าเกณฑ์ - Inverter ใหญ่เกินไป สิ้นเปลืองงบประมาณ ควรเพิ่มแผง</li>
+                        <li><strong>1.20 &le; Ratio &le; 1.40 :</strong> ✅ ปกติ (Optimal) - เป็นช่วงที่ วสท. และผู้ผลิตแนะนำว่าคุ้มค่าที่สุด</li>
+                        <li><strong>Ratio > 1.40 :</strong> 🔴 สูงกว่าเกณฑ์ - แผงเยอะเกินไป Inverter จะตัดการทำงานทิ้งในช่วงเที่ยง (Clipping) เสียพลังงานทิ้งฟรี</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="tab-19" class="tab-content">
+                <div class="content-card">
+                    <h2>19. การคำนวณขนาดท่อร้อยสายและรางเคเบิล (Conduit & Wireway Sizing)</h2>
+                    <p>อ้างอิงมาตรฐาน วสท. หมวดที่ 5 การร้อยสายไฟ (PV Cable) ลงในท่อหรือรางจะต้องมีพื้นที่ว่าง (Free Space) เพื่อระบายอากาศตามกฎเกณฑ์ดังต่อไปนี้</p>
+                    
+                    <h3>19.1 พื้นที่หน้าตัดรวม (Total Wire Area)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// ตัวอย่างจากโค้ด V10.0 : หาพื้นที่หน้าตัดสายรวมฉนวน</span><br>
+                        <span class="math-comment">// สาย 4 sq.mm (OD~23), สาย 6 sq.mm (OD~28)</span><br>
+                        let dcCableOdArea = (dcCableSize === 4) ? 23 : 28;<br>
+                        let gndCableOdArea = (gndCableSize === 10) ? 28 : (gndCableSize === 16) ? 39 : 55;<br><br>
+                        let totalDcWireArea = (numStrings * 2 * dcCableOdArea) + gndCableOdArea;
+                    </div>
+
+                    <h3>19.2 กฎ 40% (Conduit) และ 20% (Wireway)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// 1. กรณีท่อร้อยสาย (Conduit) ใช้เกณฑ์ 40%</span><br>
+                        let reqConduitArea = totalDcWireArea / 0.40;<br>
+                        if (reqConduitArea <= 196) conduitResult = "ท่อโลหะ/อโลหะ 1/2 นิ้ว";<br>
+                        else if (reqConduitArea <= 343) conduitResult = "ท่อโลหะ/อโลหะ 3/4 นิ้ว";<br><br>
+                        
+                        <span class="math-comment">// 2. กรณีรางมิดชิด (Wireway) ใช้เกณฑ์ 20%</span><br>
+                        let reqWirewayArea = totalDcWireArea / 0.20;<br>
+                        if (reqWirewayArea <= 2500) conduitResult = "ราง Wireway 50x50 มม.";<br>
+                        else if (reqWirewayArea <= 3750) conduitResult = "ราง Wireway 75x50 มม.";
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 20-24 (PART 4: ENGINEERING & AUTO-BOM ENGINE) -->
+            <div id="tab-20" class="tab-content">
+                <div class="content-card">
+                    <h2>20. เรขาคณิตของแสงอาทิตย์และมุมตกกระทบ (Solar Geometry & Angle of Incidence;AOI)</h2>
+                    <p>เอนจินของโปรแกรมไม่ได้ทำงานแค่บนแผนที่ราบแบบ 2D แต่มีการดึงไลบรารี <code>suncalc.js</code> มาเพื่อหาตำแหน่งดวงอาทิตย์สัมพัทธ์กับที่ตั้งโครงการในทุกชั่วโมง</p>
+                    
+                    <h3>20.1 การหาพิกัดดวงอาทิตย์ (Sun Position)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// ดึงข้อมูล Zenith และ Azimuth ของดวงอาทิตย์ (V8.0)</span><br>
+                        let sunPos = SunCalc.getPosition(date, lat, lon);<br>
+                        let zenith = (Math.PI/2) - sunPos.altitude;<br>
+                        let sunAzi = sunPos.azimuth + Math.PI; <span class="math-comment">// ปรับเทียบทิศเหนือ</span>
+                    </div>
+
+                    <h3>20.2 การหามุมตกกระทบหน้าแผง (Angle of Incidence: AOI)</h3>
+                    <p>ระบบนำทิศทางของดวงอาทิตย์มาหักลบกับทิศการเอียงของหลังคา (Roof Slope / Azimuth) ด้วยคณิตศาสตร์ตรีโกณมิติเชิงทรงกลม</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// pTilt = ความเอียงหลังคา, pAzi = ทิศหันหลังคา</span><br>
+                        let cosAOI = Math.cos(zenith)*Math.cos(pTilt) + Math.sin(zenith)*Math.sin(pTilt)*Math.cos(sunAzi - pAzi);<br>
+                        if (cosAOI < 0) cosAOI = 0;<br>
+                        let aoiDeg = Math.acos(cosAOI) * 180 / Math.PI;<br><br>
+                        <span class="math-comment">// แปลงมุมที่ตกกระทบเบี้ยวให้กลายเป็นเปอร์เซ็นต์ Loss (AOI Efficiency)</span><br>
+                        let aoiEff = Math.max(0, 100 - (aoiDeg/90)*100);
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-21" class="tab-content">
+                <div class="content-card">
+                    <h2>21. อัลกอริทึมวาดแผงบนแผนที่ (Web-GIS Grid Layout)</h2>
+                    <p>Auto Solar Copilot ใช้ไลบรารี <code>Turf.js</code> เข้ามาจัดการพื้นที่ Polygon บนแผนที่ Leaflet เพื่อเปลี่ยนหลังคาที่ผู้ใช้วาดให้เป็นตารางเรียงแผงแบบสลับฟันปลา (Snake Pattern) อัตโนมัติ</p>
+
+                    <h3>21.1 การสร้างระยะเว้นขอบ (Keepout & Buffer Offsets)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// หดขอบหลังคาเข้ามาด้านใน (Inner Edge Gap) ด้วยค่าติดลบ</span><br>
+                        const bufferedRoof = turf.buffer(roofGeojson, -innerEdgeGapM, {units: 'meters'});<br><br>
+                        <span class="math-comment">// ขยายพื้นที่กีดขวาง (Obstacles / Walkway) ดันแผงออกด้วยค่าบวก</span><br>
+                        const expandedKeepout = turf.buffer(ko, keepoutGapM, {units: 'meters'});
+                    </div>
+
+                    <h3>21.2 การสร้างตารางแผง (Grid Generation Loop)</h3>
+                    <p>ระบบจะสร้างกล่อง Bounding Box คลุมพื้นที่ทั้งหมด แล้วเดินลูปเช็คทีละแผงว่าจุดกึ่งกลางของแผง (Centroid) ตกอยู่ในขอบเขตหลังคาที่ยอมรับได้หรือไม่ (Point-in-Polygon)</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// Loop แกน X (คอลัมน์) และ แกน Y (แถว)</span><br>
+                        while (currentX < bbox[2]) {<br>
+                        &nbsp;&nbsp;while (currentY < bbox[3]) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;let checkPoly = turf.polygon([...]);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;if (turf.booleanPointInPolygon(turf.center(checkPoly), rotatedRoof)) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;colPanels.push(realWorldCheckPanel);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;currentY += stepY; <span class="math-comment">// ขยับแนวตั้ง (บวก Walkway ถ้ายาวครบกำหนด)</span><br>
+                        &nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;if (colIndex % 2 !== 0) colPanels.reverse(); <span class="math-comment">// สลับ Snake Pattern</span><br>
+                        &nbsp;&nbsp;panels = panels.concat(colPanels);<br>
+                        &nbsp;&nbsp;currentX += stepX; <span class="math-comment">// ขยับแนวนอน</span><br>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-22" class="tab-content">
+                <div class="content-card">
+                    <h2>22. มาตรฐานการคุมแรงดันตก (Cable & Voltage Drop Rules)</h2>
+                    <p>เพื่อป้องกันพลังงานสูญเสียเป็นความร้อนในสายเคเบิล ระบบจะคำนวณย้อนกลับ (Reverse Calculation) จากค่า Voltage Drop ที่ยอมรับได้ เพื่อหาความยาวสายสูงสุดที่ลากได้ หรือบังคับอัปไซส์สาย</p>
+
+                    <h3>22.1 กฎ DC Voltage Drop (ไม่เกิน 1%)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// สมการหาสายไฟ DC จาก V10.0 (ใช้สายทองแดง ความต้านทานจำเพาะ 0.0216)</span><br>
+                        <span class="math-comment">// Limit_DC_Length = (Area * V_Drop_Limit * Vmp) / (2 * Imp * 0.0216)</span><br>
+                        let maxDcLengthAllowed = Math.floor((6 * 0.01 * stringVmp) / (2 * stringImp * 0.0216));<br><br>
+                        if (dcLength > maxDcLengthAllowed) {<br>
+                        &nbsp;&nbsp;showWarning("สาย DC ยาวเกินไป บังคับลดระยะเพื่อคุม V-Drop 1%");<br>
+                        &nbsp;&nbsp;dcLength = maxDcLengthAllowed;<br>
+                        }
+                    </div>
+
+                    <h3>22.2 กฎ AC Voltage Drop (ไม่เกิน 3%)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// สมการหาสายไฟ AC (acFactor: 1 Phase=2, 3 Phase=1.732)</span><br>
+                        let maxAcLengthAllowed = Math.floor((16 * (0.03 * acVolts)) / (acFactor * maxAcCurrent * 0.0216));
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-23" class="tab-content">
+                <div class="content-card">
+                    <h2>23. โครงสร้างจับยึด & ความปลอดภัยหลังคา (Mounting & Access BOM)</h2>
+                    <p>ข้อมูลชิ้นส่วนโครงสร้างและระบบความปลอดภัยในการขึ้นลงหลังคา (Roof Access Safety) เป็นส่วนสำคัญของ BOQ ซึ่งโปรแกรมสามารถประเมินได้จากตรรกะต่อไปนี้</p>
+
+                    <h3>23.1 การคำนวณโครงสร้างจับยึด (Mounting Hardware)</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// คำนวณจำนวนราง (Rail) จากความกว้างแผงรวมและช่องไฟ</span><br>
+                        let railQty = Math.ceil(totalRailLengthM / stdRailLength);<br><br>
+                        <span class="math-comment">// คำนวณข้อต่อราง (Rail Splice) เผื่อเศษ 20% หากรอยตัดเหลือน้อย</span><br>
+                        let railSpliceQty = railQty - (totalSegments * 2);<br>
+                        if (railSpliceQty <= 0) railSpliceQty = Math.ceil(railQty * 0.20);<br><br>
+                        <span class="math-comment">// ขายึด (L-Feet / Roof Hook) ตามระยะ Span (เช่น 1.2 เมตร)</span><br>
+                        let lFeetQty = Math.ceil(totalRailLengthM / spanDist);
+                    </div>
+
+                    <h3>23.2 มาตรฐานความปลอดภัยการขึ้นลงหลังคา (Roof Access & Safety Standards)</h3>
+                    <p>อ้างอิงตามมาตรฐาน OSHA และกฎกระทรวงความปลอดภัยฯ ของไทย หากหลังคามีความสูง (Roof Height) แตกต่างจากพื้น จะต้องประเมินบันไดและอุปกรณ์ป้องกันตกลงใน BOM ทันที</p>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// 1. บันไดเซอร์วิสแนวดิ่ง (Vertical Fixed Ladder)</span><br>
+                        if (Roof_Height > 3) {<br>
+                        &nbsp;&nbsp;Ladder_Length_m = Roof_Height + 1.0; <span class="math-comment">// เผื่อราวจับเหนือหลังคา 1 เมตร</span><br>
+                        }<br><br>
+                        
+                        <span class="math-comment">// 2. กรงป้องกันตก (Safety Cage)</span><br>
+                        <span class="math-comment">// บังคับติดกรงหากบันไดสูงเกิน 6 เมตร โดยกรงจะเริ่มจากระยะ 2.5m จากพื้น</span><br>
+                        if (Roof_Height > 6) {<br>
+                        &nbsp;&nbsp;Cage_Length_m = Roof_Height - 2.5;<br>
+                        }<br><br>
+
+                        <span class="math-comment">// 3. ชานพัก (Landing Platform)</span><br>
+                        <span class="math-comment">// หากต้องปีนต่อเนื่องยาวเกิน 6 เมตร ต้องมีชานพักพักเหนื่อย</span><br>
+                        if (Roof_Height > 6) {<br>
+                        &nbsp;&nbsp;Landing_Platforms_Qty = Math.floor(Roof_Height / 6);<br>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-24" class="tab-content">
+                <div class="content-card">
+                    <h2>24. ระบบล้างแผงอัตโนมัติ (Cleaning System Sizing)</h2>
+                    <p>ระบบท่อน้ำสำหรับฉีดล้างหน้าแผงแบบเดินท่อถาวร (Sprinkler) จะถูกประเมินขนาดปั๊มและระยะท่อโดยอ้างอิงความยาวรางแผงโซลาร์เซลล์</p>
+
+                    <h3>24.1 การหาระยะท่อและก๊อกน้ำล</h3>
+                    <div class="math-box-dark">
+                        <span class="math-comment">// 1. ก๊อกน้ำล้างแผง (Water Tap): เกรดอุตสาหกรรม (ทุก 10 เมตร)</span><br>
+                        tapQty = Math.ceil(totalRailLengthM / 10);<br><br>
+                        
+                        <span class="math-comment">// 2. ท่อไมโคร PE บนหลังคา: เดินขนานตามแนวราง เผื่อเลี้ยว 10%</span><br>
+                        let pePipeLength = Math.ceil(totalRailLengthM * 1.1);<br><br>
+                        
+                        <span class="math-comment">// 3. ท่อเมนน้ำ UPVC: วิ่งแนวดิ่งลงปั๊ม เผื่อ 20%</span><br>
+                        let mainPipeLength = Math.ceil(pipeDistDown * 1.2);
+                    </div>
+
+                    <h3>24.2 การเลือกขนาดปั๊มน้ำแรงดันสูง (Pump Sizing)</h3>
+                    <p>เอนจินจะประเมินพิกัดปั๊มตามปริมาณแผงที่ติดตั้ง เพื่อรักษาแรงดันหัวฉีดปลายสายไม่ให้ตก</p>
+                    <div class="math-box-dark">
+                        let pumpSpec = "1.0 HP (750W)";<br>
+                        if (totalPanels > 100) pumpSpec = "5.0 HP (3-Phase)";<br>
+                        else if (totalPanels > 50) pumpSpec = "3.0 HP (2200W)";<br>
+                        else if (totalPanels > 20) pumpSpec = "2.0 HP (1500W)";
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-slate-400 text-sm mt-8 pb-4">
+                &copy; 2026 Auto Solar Copilot - Integrated Developer Documentation. Peerapong pattarapunchai,PhD.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleGroup(groupId, iconId) {
+            const group = document.getElementById(groupId);
+            const icon = document.getElementById(iconId);
+            
+            if (group.classList.contains('collapsed')) {
+                group.classList.remove('collapsed');
+                icon.classList.remove('collapsed');
+            } else {
+                group.classList.add('collapsed');
+                icon.classList.add('collapsed');
+            }
+        }
+
+        function switchTab(tabId, element) {
+            // ซ่อนเนื้อหาทั้งหมด
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // ลบ Active ออกจากเมนูทั้งหมด
+            const buttons = document.querySelectorAll('.menu-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // แสดงเนื้อหาและไฮไลต์เมนูที่ถูกคลิก
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            
+            // สั่งเลื่อนขึ้นบนสุดอย่างนุ่มนวล
+            document.getElementById('content-container').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
