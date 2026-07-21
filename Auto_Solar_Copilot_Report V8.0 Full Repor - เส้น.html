@@ -127,6 +127,14 @@
         object-fit: contain !important; /* รักษาสัดส่วนภาพไม่ให้บิดเบี้ยว */
         margin: 0 auto !important;
     }
+    /* 🌟 ป้องกันหน้าสุดท้ายเป็นกระดาษเปล่า 🌟 */
+    #report-preview-area > div:last-child,
+    .pdf-page:last-child, 
+    .pdf-page-landscape:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        margin-bottom: 0 !important;
+    }
     /* ------------------------------------------- */
         /* ยกเลิกการบีบกว้าง แต่ใช้การย่อสเกลลง 85% แทน กราฟจะไม่โดนตัดขอบ */
         .svg-container .apexcharts-canvas {
