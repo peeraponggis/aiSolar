@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Inventive - Solar PV Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; color: #334155; line-height: 1.6; }
+        .step-container { border-left: 4px solid #3b82f6; }
+        .highlight { color: #ea580c; font-weight: bold; }
+        .btn-ref { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 600; color: #1e293b;}
+        
+        /* Smooth scrolling for anchor links */
+        html { scroll-behavior: smooth; }
+        
+        /* Hide scrollbar for sidebar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-gray-100">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-gray-900 text-white flex flex-col h-full shadow-2xl z-20">
+        <div class="p-6 border-b border-gray-800 text-center relative flex flex-col items-center justify-center">
+            <!-- 🌟 โลโก้แบบใหม่ จัดตำแหน่งและขนาดให้เหมือนรูปภาพ 🌟 -->
+            <img src="pilogo.png" alt="Pro Inventive Logo" class="absolute top-3 right-3 w-10 h-10 object-contain">
+            
+            <h2 class="text-3xl font-bold text-blue-400 mt-2">Pro Inventive</h2>
+            <p class="text-sm text-gray-400 mt-1">Solar PV Engineering Platform</p>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto no-scrollbar py-6">
+            <ul class="space-y-2 px-4">
+                
+                <!-- Menu 1: อธิบายการใช้งาน (Accordion) -->
+                <li>
+                    <button onclick="toggleAccordion('menu1-content', 'menu1-icon')" class="w-full flex justify-between items-center px-4 py-3 text-sm font-semibold rounded-lg bg-gray-800 hover:bg-gray-700 transition">
+                        <span class="flex items-center gap-2">📖 1. อธิบายการใช้งาน</span>
+                        <svg id="menu1-icon" class="w-4 h-4 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <!-- Sub-menus -->
+                    <ul id="menu1-content" class="mt-2 space-y-1 px-4 text-sm text-gray-400 hidden">
+                        <li><a href="#workflow" class="block py-2 px-4 hover:text-white hover:bg-gray-700 rounded transition border-l-2 border-transparent hover:border-blue-400">Workflow 3 Step</a></li>
+                        <li><a href="#equipment-params" class="block py-2 px-4 hover:text-white hover:bg-gray-700 rounded transition border-l-2 border-transparent hover:border-blue-400">คำอธิบายพารามิเตอร์อุปกรณ์</a></li>
+                        <li><a href="#pv-module" class="block py-2 pl-8 pr-4 hover:text-white hover:bg-gray-700 rounded transition">1.1 แผงโซล่าร์เซลล์ (PV Module)</a></li>
+                        <li><a href="#inverter" class="block py-2 pl-8 pr-4 hover:text-white hover:bg-gray-700 rounded transition">1.2 อินเวอร์เตอร์ (Inverter)</a></li>
+                        <li><a href="#optimizer" class="block py-2 pl-8 pr-4 hover:text-white hover:bg-gray-700 rounded transition">1.3 Optimizer / MLPE</a></li>
+                        <li><a href="#battery-ess" class="block py-2 pl-8 pr-4 hover:text-white hover:bg-gray-700 rounded transition">1.4 ระบบกักเก็บพลังงาน (Battery ESS)</a></li>
+                        <li><a href="#ev-charger" class="block py-2 pl-8 pr-4 hover:text-white hover:bg-gray-700 rounded transition">1.5 เครื่องชาร์จรถยนต์ไฟฟ้า (EV Charger)</a></li>
+                    </ul>
+                </li>
+
+                <!-- Menu 2: Electricity Analysis -->
+                <li>
+                    <a href="ระบบวิเคราะห์ค่าไฟฟ้า PEA & AMR Dashboard (PROINVENTIVE).html" target="_blank" class="w-full flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-gray-800 transition">
+                        <span class="flex items-center gap-2">⚡ 2. Electricity Analysis</span>
+                        <svg class="w-4 h-4 ml-auto opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </li>
+
+                <!-- Menu 3: ASP Design -->
+                <li>
+                    <a href="Auto_Solar_Copilot_V10.0 EIT Standard - AMR.html" target="_blank" class="w-full flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-gray-800 transition">
+                        <span class="flex items-center gap-2">☀️ 3. ASP Design</span>
+                        <svg class="w-4 h-4 ml-auto opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </li>
+
+                <!-- Menu 4: ASP Report -->
+                <li>
+                    <a href="Auto_Solar_Copilot_Report V9.0 Full Report - Executive Summary.html" target="_blank" class="w-full flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-gray-800 transition">
+                        <span class="flex items-center gap-2">📊 4. ASP Report</span>
+                        <svg class="w-4 h-4 ml-auto opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </li>
+				
+				<!-- Menu 5: Download -->
+				<li>
+					<a href="bank_datasheets.rar" download class="w-full flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-gray-800 transition text-green-400 hover:text-green-300">
+						<span class="flex items-center gap-2">📥 5. Download bank_datasheets</span>
+						<!-- ไอคอนดาวน์โหลด -->
+						<svg class="w-4 h-4 ml-auto opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+						</svg>
+					</a>
+				</li>
+
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-12 relative" id="main-content">
+        <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden pb-10">
+            
+            <!-- Header -->
+            <div id="workflow" class="bg-blue-700 text-white p-6 text-center pt-10 relative">
+                <!-- <img src="Screenshot_2025-07-29_105904-removebg-preview.png" alt="Logo" class="absolute top-4 right-6 w-16 h-16 object-contain"> -->
+                <h1 class="text-2xl font-bold">ระบบจำลองและวิเคราะห์พลังงานแสงอาทิตย์</h1>
+                <p class="text-sm mt-2 opacity-90">Solar PV Engineering & Financial Workflow Manual</p>
+            </div>
+
+            <div class="p-8 space-y-10">
+                
+                <!-- Program 1 -->
+                <section class="step-container pl-6 scroll-mt-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-blue-600 text-white w-8 h-8 flex justify-center items-center rounded-full font-bold">1</div>
+                        <h2 class="text-xl font-bold text-gray-800">ระบบวิเคราะห์ค่าไฟฟ้า PEA & AMR Dashboard</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4 text-sm"><strong>วัตถุประสงค์:</strong> เพื่อวิเคราะห์ค่าไฟฟ้า (บิลปกติ/TOU/AMR) และสร้างพฤติกรรมการใช้ไฟ 24 ชั่วโมง (Load Profile) สำหรับประเมินขนาดแผงโซลาร์เซลล์เบื้องต้น</p>
+                    
+                    <ol class="list-decimal list-inside space-y-3 text-sm">
+                        <li>เปิดเมนูด้านซ้าย <span class="font-semibold text-blue-600">⚡ 2. Electricity Analysis</span></li>
+                        <li>ที่กล่องตั้งค่าด้านบน ให้ระบุ <strong>ชื่อผู้ใช้ไฟฟ้า/โครงการ</strong>, <strong>ค่า Ft</strong> และ <strong>VAT</strong></li>
+                        <li>เลือกแท็บประเภทผู้ใช้ไฟ (เมนู 1-8 สำหรับบิลค่าไฟปกติ/TOU หรือ แท็บ 9 สำหรับอัปโหลดไฟล์ AMR/Excel จากการไฟฟ้า)</li>
+                        <li>กรอกข้อมูลหน่วยการใช้ไฟ หรือทำการประมวลผลไฟล์ AMR แล้วกดปุ่ม <span class="btn-ref">คำนวณค่าไฟฟ้า</span> / <span class="btn-ref">ประมวลผล</span></li>
+                        <li>เลื่อนลงมาที่หมวด <strong>ประเมินกำลังผลิต Solar PV & Battery Operation</strong> ระบบจะแนะนำขนาดแผงที่เหมาะสม (kWp)</li>
+                        <li>ในหัวข้อ <em>ปรับแต่งพฤติกรรมการใช้ไฟรายชั่วโมง</em> คุณสามารถแก้ไขตัวเลขในช่องตาราง 24 ชั่วโมง โดยดูให้ผลรวมด้านล่างเป็น <span class="text-green-600 font-bold">100% (±5%)</span></li>
+                        <li class="bg-orange-50 p-3 rounded border border-orange-200 mt-2">
+                            <strong class="text-orange-700">📌 วิธีการ Export DB0:</strong> <br>
+                            เมื่อกราฟรายวันแสดงผลและผลรวม Load Profile ได้ 100% แล้ว ให้กดปุ่ม <span class="btn-ref bg-orange-600 text-white border-none">Export DB0 (.txt)</span> ที่อยู่มุมขวาล่างของตาราง ระบบจะดาวน์โหลดไฟล์ DB0 นำไปใช้ในโปรแกรมต่อไป
+                        </li>
+                    </ol>
+                </section>
+
+                <hr class="border-gray-200">
+
+                <!-- Program 2 -->
+                <section class="step-container pl-6 border-green-500 scroll-mt-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-green-600 text-white w-8 h-8 flex justify-center items-center rounded-full font-bold">2</div>
+                        <h2 class="text-xl font-bold text-gray-800">ASC: Auto Solar Copilot (V10.0 EIT Standard)</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4 text-sm"><strong>วัตถุประสงค์:</strong> เพื่อจัดวาง Layout บนแผนที่ดาวเทียม, คำนวณการจัด String ตามมาตรฐาน วสท., และถอดรายการวัสดุอุปกรณ์ (BOM)</p>
+
+                    <ol class="list-decimal list-inside space-y-3 text-sm">
+                        <li>เปิดเมนูด้านซ้าย <span class="font-semibold text-green-600">☀️ 3. ASP Design</span></li>
+                        <li><strong>ขั้นตอนที่ 1:</strong> ตั้งชื่อโครงการ และค้นหาพิกัด Lat/Long (สามารถนำเข้าแผนที่โดรนได้)</li>
+                        <li><strong>ขั้นตอนที่ 2:</strong> 
+                            <ul class="list-disc list-inside ml-6 mt-1 text-gray-600">
+                                <li>เลือกประเภทอาคาร (1000V หรือ 1500V) เลือกแบรนด์แผง PV และ Inverter</li>
+                                <li><span class="highlight">สำคัญ:</span> ให้กดปุ่ม <span class="btn-ref bg-blue-600 text-white border-none">2.1 อัปโหลดไฟล์ DB0</span> แล้วเลือกไฟล์ <code>.txt</code> ที่ได้จากโปรแกรมที่ 1 เพื่อลิงก์ข้อมูลเข้าด้วยกัน</li>
+                            </ul>
+                        </li>
+                        <li><strong>ขั้นตอนที่ 3:</strong> ใช้เมาส์วาดขอบเขตหลังคา 🟠 / พื้นที่กีดขวาง 🔴 บนแผนที่ พร้อมตั้งค่ามุมเอียง (Slope) และระยะเว้นทางเดิน</li>
+                        <li><strong>ขั้นตอนที่ 4:</strong> ระบบจะคำนวณ DC/AC Ratio และ Max/Min String ให้อัตโนมัติ ปรับแถบสไลเดอร์ให้ได้จำนวนแผงตามที่ DB0 แนะนำ
+                            <div class="bg-blue-50 p-3 rounded border border-blue-200 mt-2 ml-4">
+                                <strong class="text-blue-700">📌 วิธีการ Export DB1:</strong><br>
+                                ในขั้นตอนที่ 4 ให้กดปุ่ม <span class="btn-ref bg-blue-600 text-white border-none">1. บันทึกข้อมูลแผนที่ (Save to db1)</span> ระบบจะเซฟพิกัดและ Layout ทั้งหมดลงเครื่องทันที
+                            </div>
+                        </li>
+                        <li><strong>ขั้นตอนที่ 5-6:</strong> ตั้งค่าระยะสายไฟจากหลังคาลง MDB และกดปุ่ม <span class="btn-ref">คำนวณตารางวัสดุอุปกรณ์ (BOM)</span> (สามารถเช็ค SLD และ Wiring ได้ในขั้นที่ 6)</li>
+                        <li><strong>ขั้นตอนที่ 7:</strong> เลือกระบบสภาพอากาศ (เช่น PVGIS) และปรับค่า % ความสูญเสียต่างๆ (Soiling/Wiring)
+                            <div class="bg-indigo-50 p-3 rounded border border-indigo-200 mt-2 ml-4">
+                                <strong class="text-indigo-700">📌 วิธีการ Export DB2:</strong><br>
+                                ในขั้นตอนที่ 7 ให้กดปุ่ม <span class="btn-ref bg-indigo-600 text-white border-none">2. บันทึกพารามิเตอร์ (Save to db2)</span> ระบบจะคำนวณ I-V Curve บันทึกไฟล์พารามิเตอร์ (DB2) และ <span class="highlight">ถ่ายภาพแผนที่ดาวเทียม</span> เป็นสกุล .png ให้อัตโนมัติ
+                            </div>
+                        </li>
+                    </ol>
+                </section>
+
+                <hr class="border-gray-200">
+
+                <!-- Program 3 -->
+                <section class="step-container pl-6 border-purple-500 scroll-mt-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-purple-600 text-white w-8 h-8 flex justify-center items-center rounded-full font-bold">3</div>
+                        <h2 class="text-xl font-bold text-gray-800">ASC: Auto Solar Copilot Report (V8.0)</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4 text-sm"><strong>วัตถุประสงค์:</strong> เพื่อรับข้อมูลทั้งหมดมาจำลองพลังงานรายชั่วโมง (8760 Hourly), วิเคราะห์จุดคุ้มทุนทางการเงิน และออกรายงานสรุปผู้บริหาร</p>
+
+                    <ol class="list-decimal list-inside space-y-3 text-sm">
+                        <li>เปิดเมนูด้านซ้าย <span class="font-semibold text-purple-600">📊 4. ASP Report</span></li>
+                        <li>ที่แถบเมนูด้านขวาบน กดปุ่ม <span class="btn-ref bg-gray-100">Choose File (Import DB2/DB3)</span> แล้วอัปโหลดไฟล์ DB2 <code>.txt</code> ที่ได้จากโปรแกรมที่ 2</li>
+                        <li>(ทางเลือก) กด <span class="btn-ref bg-blue-50">Choose File (Image Proj.)</span> เพื่ออัปโหลดรูปแผนที่ .png ที่เซฟมาจากโปรแกรมที่ 2</li>
+                        <li><strong>เมนู 1. ตั้งค่าระบบ (Setup):</strong> ตรวจสอบว่าพิกัด, สเปกแผง, อินเวอร์เตอร์, และพารามิเตอร์ถูกดึงมาครบถ้วน</li>
+                        <li><strong>เมนู 2. วิเคราะห์ระบบ (Simulation):</strong> ตรวจสอบตารางพฤติกรรมการใช้ไฟ (Load Profile) ว่ามีข้อมูลเข้ามาจากการลิงก์ DB0 เรียบร้อยแล้ว</li>
+                        <li><strong>เมนู 3. การเงิน (Finance):</strong> กรอกต้นทุนการติดตั้ง <span class="highlight">CAPEX (บาท/วัตต์)</span>, อัตราคิดลด (Discount Rate), ค่าบำรุงรักษา O&M</li>
+                        <li>เมื่อตั้งค่าเสร็จสิ้น ให้กดปุ่มสีเขียวขนาดใหญ่ <span class="btn-ref bg-green-600 text-white border-none">▶ ประมวลผลและสร้างรายงาน (Run Simulation)</span></li>
+                        <li>ระบบจะพาย้ายไปที่ <strong>เมนู 4. Dashboard</strong> เพื่อดูกราฟ 15 รูปแบบ รวมไปถึงตารางวิเคราะห์การเงิน (Payback, IRR, NPV) และบทสรุปผู้บริหาร</li>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 mt-4 space-y-3">
+                            <strong class="text-purple-800 text-base">📌 การ Export ในขั้นตอนสุดท้าย:</strong>
+                            <ul class="list-disc list-inside ml-4 space-y-2">
+                                <li><strong>การบันทึกสถานะการทำงาน (Export DB3):</strong> ที่แถบเมนูด้านบน กดปุ่ม <span class="btn-ref bg-indigo-600 text-white border-none">Export DB3</span> ระบบจะเซฟข้อมูลทั้งหมด (รวมการตั้งค่าหน้าจอและกราฟ) เป็นไฟล์ DB3 เพื่อนำมาโหลดกู้คืน (Resume) ในครั้งถัดไปได้</li>
+                                <li><strong>การสร้างเอกสารรายงาน (Export PDF):</strong> ที่แถบเมนูด้านบน กดปุ่ม <span class="btn-ref bg-gray-800 text-white border-none">Export PDF</span> ระบบจะจัดหน้ากระดาษ ซ่อนเมนู และเรียกคำสั่ง Print เพื่อบันทึกเป็น PDF ส่งนำเสนอผู้บริหารได้ทันที</li>
+                            </ul>
+                        </div>
+                    </ol>
+                </section>
+            
+                <!-- Equipment Parameters -->
+                <hr class="border-gray-200">
+                <section id="equipment-params" class="step-container pl-6 border-indigo-500 pt-6 scroll-mt-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">คำอธิบายพารามิเตอร์ของอุปกรณ์ (Equipment Parameters)</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4 text-sm">การจัดเตรียมไฟล์ TXT สำหรับอุปกรณ์ประเภทต่างๆ เพื่อใช้นำเข้าสู่ระบบ ASC</p>
+
+                    <!-- PV Module -->
+                    <div id="pv-module" class="mt-8 scroll-mt-10">
+                        <h3 class="text-lg font-bold text-blue-700">1.1 แผงโซล่าร์เซลล์ (PV Module)</h3>
+                        <p class="text-sm text-gray-600 mb-2">เน้นค่าไฟฟ้าสภาวะมาตรฐาน STC, NMOT และสัมประสิทธิ์อุณหภูมิ</p>
+                        <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm overflow-x-auto shadow-inner">
+<pre class="text-xs text-gray-800"><code>[GENERAL_INFO]
+Manufacturer = ""          # ผู้ผลิต / แบรนด์ (เช่น AIKO Solar, Jinko Solar)
+Model_Name = ""            # ชื่อรุ่นของแผงโซล่าร์เซลล์
+Cell_Type = ""             # ประเภทเซลล์ (เช่น N-type ABC, TOPCon, Mono-PERC)
+
+[STC_PARAMETERS]
+# สภาวะมาตรฐาน (Standard Test Conditions: Irradiance 1000 W/m², Cell Temp 25°C, AM 1.5)
+Pmax_Wp = 0.0              # Nominal Power: กำลังผลิตสูงสุด (วัตต์)
+Voc_V = 0.0                # Open-Circuit Voltage: แรงดันเปิดวงจร (โวลต์) -> สำคัญมากในการคิด String Sizing หน้าหนาว
+Isc_A = 0.0                # Short-Circuit Current: กระแสลัดวงจร (แอมป์)
+Vmp_V = 0.0                # Max Power Voltage: แรงดันที่กำลังผลิตสูงสุด (โวลต์)
+Imp_A = 0.0                # Max Power Current: กระแสที่กำลังผลิตสูงสุด (แอมป์)
+Module_Efficiency_Pct = 0.0 # ประสิทธิภาพของแผงโซล่าร์เซลล์ (%)
+
+[NMOT_PARAMETERS]
+# สภาวะใช้งานจริง (Nominal Module Operating Temperature: Irradiance 800 W/m², Ambient Temp 20°C, Wind 1 m/s)
+Pmax_NMOT_W = 0.0          # กำลังผลิตสูงสุดที่สภาวะใช้งานจริง (วัตต์)
+Voc_NMOT_V = 0.0           # แรงดันเปิดวงจรที่สภาวะใช้งานจริง (โวลต์)
+Isc_NMOT_A = 0.0           # กระแสลัดวงจรที่สภาวะใช้งานจริง (แอมป์)
+Vmp_NMOT_V = 0.0           # แรงดันที่กำลังผลิตสูงสุดที่สภาวะใช้งานจริง (โวลต์)
+Imp_NMOT_A = 0.0           # กระแสที่กำลังผลิตสูงสุดที่สภาวะใช้งานจริง (แอมป์)
+
+[TEMPERATURE_COEFFICIENTS]
+# ค่าสัมประสิทธิ์อุณหภูมิ (ใช้คำนวณการลดทอนของแรงดันและกำลังผลิตเมื่อแผงร้อนขึ้น)
+Tk_Isc_Pct_Per_C = 0.0     # Alpha (α): สัมประสิทธิ์กระแสลัดวงจร (%/°C) [ค่าเป็นบวก]
+Tk_Voc_Pct_Per_C = 0.0     # Beta (β): สัมประสิทธิ์แรงดันเปิดวงจร (%/°C) [ค่าเป็นลบ] -> ใช้หาแรงดันสูงสุดในหน้าหนาว
+Tk_Pmax_Pct_Per_C = 0.0    # Gamma (γ): สัมประสิทธิ์กำลังผลิตสูงสุด (%/°C) [ค่าเป็นลบ] -> ใช้คิดค่า Thermal Loss
+NOCT_Value_C = 45.0        # อุณหภูมิใช้งานปกติของเซลล์ (°C)
+
+[MECHANICAL_SPEC]
+Length_mm = 0              # ความยาวของแผง (มิลลิเมตร)
+Width_mm = 0               # ความกว้างของแผง (มิลลิเมตร)
+Thickness_mm = 0           # ความหนาของกรอบแผง (มิลลิเมตร)
+Weight_kg = 0.0            # น้ำหนักของแผง (กิโลกรัม)
+Is_Bifacial = False        # แผงสองหน้าหรือไม่ (True/False)
+Bifaciality_Factor = 0.0   # อัตราส่วนการผลิตไฟฝั่งด้านหลังแผง (เช่น 0.70 หรือ 0.80 เพื่อคิด Albedo Gain)</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Inverter -->
+                    <div id="inverter" class="mt-8 scroll-mt-10">
+                        <h3 class="text-lg font-bold text-orange-600">1.2 อินเวอร์เตอร์ (Inverter)</h3>
+                        <p class="text-sm text-gray-600 mb-2">ปรับปรุงและเพิ่มพารามิเตอร์เชิงลึกสำหรับ Hybrid Inverter</p>
+                        <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm overflow-x-auto shadow-inner">
+<pre class="text-xs text-gray-800"><code>[GENERAL_INFO]
+Manufacturer = ""                     # ผู้ผลิต / แบรนด์ (เช่น Huawei, SolarEdge, Sigenergy, Deye)
+Model_Name = ""                       # ชื่อรุ่นอินเวอร์เตอร์
+Inverter_Type = ""                    # ประเภทอินเวอร์เตอร์ (On-Grid / Hybrid / Off-Grid)
+
+[DC_INPUT_PARAMETERS]
+# พารามิเตอร์ฝั่งขาเข้ากระแสตรงจากแผงโซล่าร์เซลล์
+Max_DC_Input_Voltage_V = 0            # แรงดันขาเข้า DC สูงสุดที่รับได้ (โวลต์) -> แรงดัน String ห้ามเกินค่านีเด็ดขาด
+Start_Input_Voltage_V = 0             # แรงดันเริ่มต้นทำงานของอินเวอร์เตอร์ (โวลต์)
+MPPT_Voltage_Min_V = 0                # ช่วงแรงดัน MPPT ต่ำสุด (โวลต์)
+MPPT_Voltage_Max_V = 0                # ช่วงแรงดัน MPPT สูงสุด (โวลต์)
+Full_Power_MPPT_Min_V = 0             # ช่วงแรงดัน MPPT ต่ำสุดที่อินเวอร์เตอร์จ่ายกำลังไฟได้เต็มประสิทธิภาพ (โวลต์)
+Max_Input_Current_MPPT_A = 0.0        # กระแสขาเข้าสูงสุดต่อ 1 MPPT (แอมป์) -> ต้องสอดคล้องกับ Imp ของแผง
+Max_Isc_Current_MPPT_A = 0.0          # กระแสลัดวงจรสูงสุดต่อ 1 MPPT (แอมป์) -> ต้องสอดคล้องกับ Isc ของแผง
+Number_of_MPPTs = 0                   # Jumlah ช่องจับสัญญาณ MPPT อิสระ (ช่อง)
+Inputs_per_MPPT = 0                   # จำนวน String ขาเข้าต่อ 1 MPPT (ช่อง)
+
+[AC_OUTPUT_GRID_CONNECTED]
+# พารามิเตอร์ฝั่งขาออกกระแสสลับเมื่อเชื่อมต่อกับระบบสายส่ง (Grid-tied Mode)
+Rated_AC_Output_Power_kW = 0.0        # กำลังไฟฟ้าขาออกพิกัดต่อเนื่องไปยังการไฟฟ้า (กิโลวัตต์)
+Max_AC_Apparent_Power_kVA = 0.0       # กำลังไฟฟ้าปรากฏสูงสุดฝั่ง AC (กิโลโวลต์-แอมป์ / kVA)
+Nominal_AC_Voltage_V = 400            # แรงดันไฟฟ้าฝั่ง AC พิกัด (เช่น 220V 1 เฟส, 400V 3 เฟส)
+Phase_Type = ""                       # ระบบไฟฟ้า (1-Phase / 3-Phase)
+Nominal_Frequency_Hz = 50             # ความถี่พิกัดของระบบไฟฟ้า (Hz)
+Max_AC_Output_Current_A = 0.0         # กระแสไฟฟ้าขาออกพิกัดสูงสุดไปยังการไฟฟ้า (แอมป์)
+Power_Factor_Range = "0.8lag-0.8lead" # ช่วงการปรับค่าตัวประกอบกำลังไฟฟ้า
+
+[EFFICIENCY_LOSS]
+Max_Efficiency_Pct = 0.0              # ประсิทธิภาพสูงสุดของอินเวอร์เตอร์ (%)
+Euro_CEC_Efficiency_Pct = 0.0         # ประสิทธิภาพเฉลี่ยตามมาตรฐานยุโรปหรือ CEC (%)
+Night_Consumption_W = 0.0             # กำลังไฟฟ้าที่อินเวอร์เตอร์กินไฟเองในเวลากลางคืนเพื่อเลี้ยงระบบ (วัตต์)
+
+[HYBRID_DC_BATTERY_INTERFACE]
+# [เพิ่มเติมส่วนไฮบริด] พารามิเตอร์การเชื่อมต่อฝั่งระบบกักเก็บพลังงานกระแสตรง (DC-coupled Battery Input)
+Compatible_Battery_Type = ""           # ประเภทแบตเตอรี่ที่รองรับ (เช่น LiFePO4, Lithium-ion)
+Battery_Voltage_Range_Min_V = 0       # แรงดันฝั่งแบตเตอรี่ต่ำสุดที่อินเวอร์เตอร์เริ่มทำงานได้ (โวลต์)
+Battery_Voltage_Range_Max_V = 0       # แรงดันฝั่งแบตเตอรี่สูงสุดที่อินเวอร์เตอร์รับได้ (โวลต์)
+Nominal_Battery_Voltage_V = 0         # แรงดันระบบแบตเตอรี่พิกัด (เช่น 48V แบตต่ำ, 400V/600V แบตแรงดันสูง)
+Max_Charge_Power_kW = 0.0             # กำลังไฟฟ้าในการชาร์จเข้าแบตเตอรี่สูงสุด (กิโลวัตต์)
+Max_Discharge_Power_kW = 0.0          # กำลังไฟฟ้าในการจ่ายออกจากแบตเตอรี่สูงสุด (กิโลวัตต์)
+Max_Charge_Current_A = 0.0            # กระแสชาร์จแบตเตอรี่สูงสุดทางฝั่ง DC (แอมป์)
+Max_Discharge_Current_A = 0.0         # กระแสจ่ายไฟแบตเตอรี่สูงสุดทางฝั่ง DC (แอมป์)
+BMS_Communication_Protocol = ""       # โปรโตคอลสื่อสารกับระบบจัดการแบตเตอรี่ (เช่น CAN, RS485)
+
+[HYBRID_AC_BACKUP_EPS_OUTPUT]
+# [เพิ่มเติมส่วนไฮบริด] พารามิเตอร์ฝั่งจ่ายไฟสำรองฉุกเฉินเมื่อไฟฟ้าดับ (Off-Grid / EPS / Backup Load Mode)
+Backup_Rated_Power_kW = 0.0           # กำลังไฟฟ้าต่อเนื่องพิกัดเมื่อทำงานแบบออฟกริด/ไฟสำรอง (กิโลวัตต์)
+Backup_Max_Apparent_Power_kVA = 0.0    # กำลังไฟฟ้าปรากฏสูงสุดฝั่งไฟสำรอง (kVA)
+Backup_Peak_Power_Duration_Sec = 0    # ระยะเวลาที่ทนกำลังไฟพีคได้สำหรับการสตาร์ทมอเตอร์ (วินาที เช่น 10s, 60s)
+Backup_Switchover_Time_ms = 0         # ระยะเวลาในการสลับมาจ่ายไฟสำรองเมื่อไฟการไฟฟ้าดับ (มิลลิวินาที เช่น <10ms สำหรับ UPS)
+Backup_Nominal_AC_Voltage_V = 0       # แรงดันพิกัดฝั่งโหลดสำรอง (โวลต์ เช่น 230V หรือ 400V)
+Backup_THDV_Pct = 0.0                 # ค่าความเพี้ยนรวมของสัญญาณแรงดันฮาร์มอนิกฝั่งโหลดสำรอง (%) [ปกติ <3%]
+Max_Bypass_Current_A = 0.0            # กระแสไฟฟ้าสูงสุดที่ยอมให้ไหลผ่านอินเวอร์เตอร์จาก Grid ตรงไปยังโหลดสำรอง (แอมป์)
+
+[HYBRID_ENERGY_MANAGEMENT_CONTROL]
+# [เพิ่มเติมส่วนไฮบริด] ตรรกะการควบคุมและจำลองประสิทธิภาพระบบจัดการพลังงานภายใน
+Max_Battery_to_Load_Efficiency_Pct = 0.0 # ประสิทธิภาพสูงสุดของการแปลงไฟจาก แบตเตอรี่ -> โหลดใช้งาน (%)
+Max_PV_to_Battery_Efficiency_Pct = 0.0   # ประสิทธิภาพสูงสุดของการแปลงไฟจาก แผงโซล่าร์ -> ชาร์จแบตเตอรี่ (%)
+Supported_Operation_Modes = ""           # โหมดการทำงานที่โปรแกรมใช้วิเคราะห์ (เช่น Self-Consumption, TOU, Peak Shaving, Backup)
+External_Meter_CT_Compatible = True      # รองรับการต่อ Smart Meter / CT เพื่อทำระบบกันย้อนและวัดโหลดแบบ Real-time
+Unbalanced_Load_Support = False          # รองรับการจ่ายไฟเฟสไม่สมดุลสำหรับอินเวอร์เตอร์ 3 เฟส (True/False)</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Optimizer -->
+                    <div id="optimizer" class="mt-8 scroll-mt-10">
+                        <h3 class="text-lg font-bold text-green-700">1.3 อุปกรณ์เพิ่มประสิทธิภาพระดับแผง (Optimizer / MLPE)</h3>
+                        <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm overflow-x-auto shadow-inner">
+<pre class="text-xs text-gray-800"><code>[GENERAL_INFO]
+Manufacturer = ""          # ผู้ผลิต / แบรนด์ (เช่น SolarEdge, Tigo, Huawei)
+Model_Name = ""            # ชื่อรุ่นของ Optimizer
+
+[INPUT_PARAMETERS]
+# พารามิเตอร์ฝั่งเชื่อมต่อกับแผงโซล่าร์เซลล์ (Input จากโมดูล)
+Max_Input_Power_W = 0       # กำลังแผงสูงสุดที่รองรับได้ (วัตต์) -> กำลัง Pmax ของแผงต้องไม่เกินค่านี
+Max_Input_Voltage_Voc_V = 0 # แรงดันแผงสูงสุดที่รองรับได้ (โวลต์) -> Voc ของแผงที่อุณหภูมิต่ำสุดต้องไม่เกินค่านี
+MPPT_Operating_Min_V = 0.0  # ช่วงแรงดันทำงาน MPPT ต่ำสุด (โวลต์)
+MPPT_Operating_Max_V = 0.0  # ช่วงแรงดันทำงาน MPPT สูงสุด (โวลต์)
+Max_Input_Current_Isc_A = 0.0 # กระแสลัดวงจรสูงสุดของแผงที่รองรับได้ (แอมป์) -> Isc ของแผงห้ามเกินค่านี
+
+[OUTPUT_PARAMETERS]
+# พารามิเตอร์ฝั่งเชื่อมต่อเป็นวงจรรวมใน String (Output ไปยังอินเวอร์เตอร์)
+Max_Output_Voltage_V = 0    # แรงดันขาออกสูงสุดจากตัว Optimizer (โวลต์)
+Max_Output_Current_A = 0.0  # กระแสขาออกสูงสุดจากตัว Optimizer (แอมป์)
+# หมายเหตุ: ซอฟต์แวร์ใช้คำนวณเพื่อจำกัดความยาว String ตามข้อกำหนดผู้ผลิต (เช่น กฎ 750V / 10,000W ของ SolarEdge)
+
+[EFFICIENCY]
+Max_Efficiency_Pct = 0.0       # ประสิทธิภาพการแปลงกำลังสูงสุด (%)
+Weighted_Efficiency_Pct = 0.0  # ประสิทธิภาพเฉลี่ยถ่วงน้ำหนักตามมาตรฐาน (%)</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Battery ESS -->
+                    <div id="battery-ess" class="mt-8 scroll-mt-10">
+                        <h3 class="text-lg font-bold text-indigo-700">1.4 ระบบกักเก็บพลังงาน/แบตเตอรี่ (Battery ESS)</h3>
+                        <p class="text-sm text-gray-600 mb-2">เน้นคำนวณ Self-Consumption, Peak Shaving, Degradation</p>
+                        <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm overflow-x-auto shadow-inner">
+<pre class="text-xs text-gray-800"><code>[GENERAL_INFO]
+Manufacturer = ""          # ผู้ผลิต / แบรนด์ (เช่น Sigenergy, BYD, Huawei)
+Model_Name = ""            # ชื่อรุ่นของระบบแบตเตอรี่
+Battery_Chemistry = ""     # ชนิดเคมีของแบตเตอรี่ (เช่น LiFePO4, NMC)
+
+[CAPACITY_VOLTAGE]
+Nominal_Capacity_kWh = 0.0 # ความจุรวมของพลังงานตามสเปกโรงงาน (กิโลวัตต์-ชั่วโมง)
+Nominal_Capacity_Ah = 0.0  # ความจุรวมของกระแสไฟฟ้า (แอมป์-ชั่วโมง)
+Usable_Capacity_kWh = 0.0  # ความจุไฟฟ้าที่สามารถดึงออกมาใช้งานได้จริง (กิโลวัตต์-ชั่วโมง)
+Nominal_Voltage_V = 0.0    # แรงดันไฟฟ้ากระแสตรงพิกัด (โวลต์)
+Operating_Voltage_Min_V = 0.0 # แรงดันไฟฟ้าทำงานต่ำสุด (โวลต์)
+Operating_Voltage_Max_V = 0.0 # แรงดันไฟฟ้าทำงานสูงสุด (โวลต์)
+
+[OPERATIONAL_LIMITS]
+Max_Continuous_Charge_Power_kw = 0.0   # กำลังไฟฟ้าในการชาร์จเข้าต่อเนื่องสูงสุด (กิโลวัตต์)
+Max_Continuous_Discharge_Power_kw = 0.0 # กำลังไฟฟ้าในการจ่ายออกต่อเนื่องสูงสุด (กิโลวัตต์)
+C_Rating = ""                          # พิกัดการชาร์จ/จ่ายกระแสไฟสัมพันธ์กับความจุ (เช่น 0.5C / 1C)
+Recommended_DoD_Pct = 90.0             # Depth of Discharge: เปอร์เซ็นต์ความลึกในการจ่ายไฟที่แนะนำ (%)
+
+[EFFICIENCY_LIFECYCLE]
+Round_Trip_Efficiency_Pct = 0.0 # ประสิทธิภาพการชาร์จและจ่ายไฟวนกลับรวมพลังงานสูญเสีย (%) [ปกติ 90-95%]
+Expected_Cycle_Life = 6000     # จำนวนรอบการชาร์จ/จ่ายไฟที่คาดหวังตลอดอายุการใช้งาน (รอบ)
+Guaranteed_DoD_Condition_Pct = 0.0 # เงื่อนไขระดับ % DoD ที่ใช้ทดสอบจำนวนรอบรับประกัน (เช่น @ 80% หรือ 100% DoD)
+# หมายเหตุ: ซอฟต์แวร์นำจำนวนรอบและประสิทธิภาพไปคำนวณแบบจำลองการเสื่อมสภาพของแบตเตอรี่ (Battery Aging Simulation)</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- EV Charger -->
+                    <div id="ev-charger" class="mt-8 scroll-mt-10">
+                        <h3 class="text-lg font-bold text-purple-700">1.5 เครื่องชาร์จรถยนต์ไฟฟ้า (EV Charger)</h3>
+                        <p class="text-sm text-gray-600 mb-2">เน้นคำนวณ Solar Self-Consumption, Dynamic Load Balancing และ ESS Co-optimization</p>
+                        <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm overflow-x-auto shadow-inner">
+<pre class="text-xs text-gray-800"><code>[GENERAL_INFO]
+Manufacturer = ""                     # ผู้ผลิต / แบรนด์ (เช่น Huawei, Wallbox, Delta, Schneider)
+Model_Name = ""                       # ชื่อรุ่นของ EV Charger
+Charger_Type = ""                     # ประเภทเครื่องชาร์จ (AC Charger / DC Fast Charger)
+Number_of_Outputs = 1                 # จำนวนหัวชาร์จที่มีในเครื่อง (พอร์ต)
+
+[ELECTRICAL_SPECIFICATIONS]
+# พารามิเตอร์ทางไฟฟ้าฝั่งขาเข้า (Input จากระบบไฟฟ้าอาคาร / อินเวอร์เตอร์)
+Nominal_Voltage_V = 0.0               # แรงดันไฟฟ้าพิกัด (โวลต์ เช่น 230V หรือ 400V)
+Phase_Type = ""                       # ระบบเฟสไฟฟ้า (Single Phase / Three Phase)
+Max_Current_Per_Phase_A = 0.0          # กระแสไฟฟ้าสูงสุดต่อเฟส (แอมป์ เช่น 16A, 32A)
+Max_Output_Power_kW = 0.0             # กำลังไฟฟ้าชาร์จสูงสุด (กิโลวัตต์ เช่น 7.4 kW, 11 kW, 22 kW, 50 kW)
+Grid_Frequency_Hz = 50.0              # ความถี่ไฟฟ้าพิกัด (เฮิรตซ์)
+
+[SMART_SOLAR_INTEGRATION]
+# พารามิเตอร์สำหรับการจัดการพลังงานร่วมกับระบบโซล่าร์เซลล์ (Energy Management System - EMS)
+Dynamic_Load_Balancing_Support = False # รองรับการปรับกระแสชาร์จตามโหลดที่เหลือของอาคารแบบ Real-time (True/False)
+Solar_Eco_Mode_Support = False         # รองรับโหมดชาร์จจากพลังงานแสงอาทิตย์ส่วนเกินเท่านั้น / Solar-Only Charging (True/False)
+Min_Current_to_Start_A = 6.0          # กระแสไฟฟ้าต่ำสุดที่เครื่องต้องการเพื่อเริ่มชาร์จ (แอมป์ - มาตรฐาน AC อยู่ที่ 6A)
+# หมายเหตุ: ถ้า 1-Phase 6A ~ 1.38 kW | ถ้า 3-Phase 6A ~ 4.14 kW (ใช้คำนวณว่าแดดต้องแรงแค่ไหนระบบถึงจะเริ่มปล่อยไฟชาร์จ)
+Phase_Switching_Support = False       # รองรับการสลับเฟสอัตโนมัติ 1-Phase / 3-Phase เพื่อให้ชาร์จโซล่าร์วัตต์ต่ำได้ (True/False)
+Communication_Protocol = ""            # โปรโตคอลการสื่อสาร (เช่น OCPP 1.6J, OCPP 2.0.1, Modbus TCP)
+Meter_Integration_Type = ""           # รูปแบบการเชื่อมต่อวัดค่าพลังงาน (เช่น Direct CT, Modbus Meter, EMS Server)
+
+[OPERATIONAL_PROFILE]
+# พฤติกรรมและข้อจำกัดการใช้งานจริง เพื่อใช้ออกแบบขนาดกิโลวัตต์ (kWp) ของแผง และความจุ (kWh) ของแบตเตอรี่
+Typical_Charging_Window_Start = ""    # ช่วงเวลาที่เริ่มชาร์จรถเป็นประจำ (เช่น 09:00 หรือ 22:00)
+Typical_Charging_Window_End = ""      # ช่วงเวลาที่ชาร์จเสร็จสิ้น (เช่น 16:00 หรือ 06:00)
+Estimated_Daily_Energy_Demand_kWh = 0.0 # พลังงานไฟฟ้าที่คาดว่าจะใช้ชาร์จรถต่อวัน (กิโลวัตต์-ชั่วโมง)
+Simultaneous_Use_Factor_Pct = 100.0   # สัมประสิทธิ์การใช้งานพร้อมกัน กรณีมีเครื่องชาร์จหลายเครื่อง (%)</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+            
+            <div class="bg-gray-100 p-4 text-center text-xs text-gray-500 border-t mx-8 rounded-lg mb-8">
+                Generated Workflow Guide | ASC Design System | PROINVENTIVE CO.,LTD.
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleAccordion(contentId, iconId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(iconId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+    </script>
+</body>
+</html>
