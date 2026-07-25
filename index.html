@@ -465,73 +465,47 @@
             return result;
         }
 
-        // === ฟังก์ชันบันทึกการเข้าสู่ระบบ ===
+        // === นำ URL จาก Google Apps Script มาใส่ตรงนี้ ===
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzvXVhA4G-m8cISy3_sM_Q7giIpfb-Plu4QIupXX4TpR9oYvvizNIKwBoahn2j-MXCP9w/exec';
+
+        // === ฟังก์ชันบันทึกการเข้าสู่ระบบ (ส่งไป Google Sheets) ===
         function recordLogin(email) {
             currentEmail = email;
             loginTime = new Date();
+            currentSessionId = "session_" + Date.now();
             
-            if (isFirebaseReady) {
-                // เก็บลง Firebase
-                const sessionsRef = db.ref('user_sessions');
-                const newSession = sessionsRef.push();
-                currentSessionId = newSession.key;
-                
-                newSession.set({
+            // โหลดข้อมูลเดิมมาแสดงก่อนให้ดูลื่นไหล
+            loadStats();
+            
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "login",
+                    sessionId: currentSessionId,
                     email: email,
-                    loginTime: loginTime.getTime(),
-                    loginTimeStr: formatTime(loginTime),
-                    logoutTime: null,
-                    logoutTimeStr: "กำลังใช้งาน...",
-                    duration: "-",
-                    status: "online"
-                });
-                
-                // โหลดข้อมูลสถิติมาแสดง
-                loadStats();
-                
-            } else {
-                // เก็บลง LocalStorage (กรณีไม่มี Firebase)
-                currentSessionId = "session_" + Date.now();
-                let sessions = JSON.parse(localStorage.getItem('solar_sessions') || '[]');
-                
-                sessions.push({
-                    id: currentSessionId,
-                    email: email,
-                    loginTime: loginTime.getTime(),
-                    loginTimeStr: formatTime(loginTime),
-                    logoutTime: null,
-                    logoutTimeStr: "กำลังใช้งาน...",
-                    duration: "-",
-                    status: "online"
-                });
-                
-                localStorage.setItem('solar_sessions', JSON.stringify(sessions));
-                renderLocalStats();
-            }
+                    loginTimeStr: formatTime(loginTime)
+                })
+            }).then(response => {
+                console.log("บันทึก Login สำเร็จ");
+                loadStats(); // โหลดข้อมูลอัปเดตจากชีต
+            }).catch(error => console.error('Error!', error.message));
         }
 
-        // === ฟังก์ชันบันทึกการออกจากระบบ ===
+        // === ฟังก์ชันบันทึกการออกจากระบบ (อัปเดต Google Sheets) ===
         function logout() {
             const logoutTime = new Date();
             const duration = calculateDuration(loginTime, logoutTime);
             
-            if (isFirebaseReady && currentSessionId) {
-                db.ref('user_sessions/' + currentSessionId).update({
-                    logoutTime: logoutTime.getTime(),
-                    logoutTimeStr: formatTime(logoutTime),
-                    duration: duration,
-                    status: "offline"
-                });
-            } else if (currentSessionId) {
-                let sessions = JSON.parse(localStorage.getItem('solar_sessions') || '[]');
-                let sessionIndex = sessions.findIndex(s => s.id === currentSessionId);
-                if (sessionIndex !== -1) {
-                    sessions[sessionIndex].logoutTime = logoutTime.getTime();
-                    sessions[sessionIndex].logoutTimeStr = formatTime(logoutTime);
-                    sessions[sessionIndex].duration = duration;
-                    sessions[sessionIndex].status = "offline";
-                    localStorage.setItem('solar_sessions', JSON.stringify(sessions));
-                }
+            if (currentSessionId) {
+                fetch(scriptURL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "logout",
+                        sessionId: currentSessionId,
+                        logoutTimeStr: formatTime(logoutTime),
+                        duration: duration
+                    })
+                }).then(response => console.log("บันทึก Logout สำเร็จ"));
             }
 
             // กลับไปหน้า Login
@@ -546,34 +520,18 @@
             currentEmail = null;
         }
 
-        // === ดักจับตอนผู้ใช้ปิดแท็บหรือปิดเบราว์เซอร์ ===
-        window.addEventListener('beforeunload', function (e) {
-            if (currentSessionId) {
-                logout(); // บันทึกเวลาออกเมื่อปิดเว็บ
-            }
-        });
-
-        // === โหลดสถิติจาก Firebase มาแสดงบนตาราง ===
+        // === โหลดสถิติจาก Google Sheets มาแสดง ===
         function loadStats() {
-            if (!isFirebaseReady) return;
+            document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="4" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
             
-            const sessionsRef = db.ref('user_sessions');
-            sessionsRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                let total = 0;
-                let active = 0;
-                let tableHtml = '';
-                
-                if (data) {
-                    // แปลง Object เป็น Array และเรียงลำดับจากล่าสุดไปเก่า
-                    const sessionsArray = Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    })).sort((a, b) => b.loginTime - a.loginTime);
+            fetch(scriptURL)
+                .then(response => response.json())
+                .then(data => {
+                    let total = data.length;
+                    let active = 0;
+                    let tableHtml = '';
                     
-                    total = sessionsArray.length;
-                    
-                    sessionsArray.forEach(session => {
+                    data.forEach(session => {
                         if (session.status === "online") active++;
                         
                         let rowStyle = session.status === "online" ? "color: #4CAF50;" : "";
@@ -588,41 +546,29 @@
                             </tr>
                         `;
                     });
-                }
-                
-                document.getElementById('totalVisits').innerText = total;
-                document.getElementById('activeUsers').innerText = active;
-                document.getElementById('statsTableBody').innerHTML = tableHtml;
-            });
+                    
+                    document.getElementById('totalVisits').innerText = total;
+                    document.getElementById('activeUsers').innerText = active;
+                    document.getElementById('statsTableBody').innerHTML = tableHtml;
+                })
+                .catch(error => console.error('Error fetching data:', error));
         }
 
-        // === โหลดสถิติจาก LocalStorage (กรณีไม่ได้ต่อเน็ต/ไม่มี Firebase) ===
-        function renderLocalStats() {
-            let sessions = JSON.parse(localStorage.getItem('solar_sessions') || '[]');
-            sessions.sort((a, b) => b.loginTime - a.loginTime); // เรียงจากล่าสุด
-            
-            let total = sessions.length;
-            let active = sessions.filter(s => s.status === "online").length;
-            let tableHtml = '';
-            
-            sessions.forEach(session => {
-                let rowStyle = session.status === "online" ? "color: #4CAF50;" : "";
-                let durationTxt = session.status === "online" ? "กำลังใช้งาน..." : session.duration;
-                
-                tableHtml += `
-                    <tr style="${rowStyle}">
-                        <td>${session.email}</td>
-                        <td>${session.loginTimeStr}</td>
-                        <td>${session.logoutTimeStr}</td>
-                        <td>${durationTxt}</td>
-                    </tr>
-                `;
-            });
-            
-            document.getElementById('totalVisits').innerText = total;
-            document.getElementById('activeUsers').innerText = active;
-            document.getElementById('statsTableBody').innerHTML = tableHtml;
-        }
+        // โหลดข้อมูลสถิติเป็นระยะๆ (ทุกๆ 30 วินาที) เผื่อมีคนอื่นเข้าใช้งาน
+        setInterval(loadStats, 30000);
+
+        // === ดักจับตอนผู้ใช้ปิดแท็บหรือปิดเบราว์เซอร์ ===
+        window.addEventListener('beforeunload', function (e) {
+            if (currentSessionId) {
+                let blob = new Blob([JSON.stringify({
+                    action: "logout",
+                    sessionId: currentSessionId,
+                    logoutTimeStr: formatTime(new Date()),
+                    duration: calculateDuration(loginTime, new Date())
+                })], {type : 'application/json'});
+                navigator.sendBeacon(scriptURL, blob);
+            }
+        });
 
     </script>
 
