@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solar Web Programs Demo Edition.</title>
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -16,6 +20,7 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
+            flex-direction: column;
         }
         .container {
             width: 100%;
@@ -24,6 +29,7 @@
             padding: 30px 40px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
         }
         .text-center {
             text-align: center;
@@ -113,6 +119,56 @@
             transform: translateX(5px);
             color: #90caf9;
         }
+
+        /* ตารางสถิติผู้เข้าชม */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .stats-table th, .stats-table td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: left;
+        }
+        .stats-table th {
+            background-color: #333;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .stats-table tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+        .stats-table tr:hover {
+            background-color: #444;
+        }
+        .stats-summary {
+            display: flex;
+            justify-content: space-between;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stats-box {
+            text-align: center;
+            flex: 1;
+        }
+        .stats-box h3 {
+            margin: 0 0 5px 0;
+            color: #999;
+            font-size: 14px;
+        }
+        .stats-box p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #statsContainer {
+            max-width: 800px;
+        }
     </style>
 </head>
 <body>
@@ -139,9 +195,74 @@
 			 <li><a href="9 step.pdf" target="_blank">เอกสารประกอบการบรรยาย 1</a></li>
    			 <li><a href="Sale HandBook 08-08-2024.pdf" target="_blank">เอกสารประกอบการบรรยาย 2</a></li>
         </ul>
+        <button onclick="logout()" style="background-color: #ff5252; margin-top: 20px;">ออกจากระบบ</button>
+    </div>
+
+    <!-- ส่วนแสดงสถิติผู้เข้าชม -->
+    <div id="statsContainer" class="container" style="display: none;">
+        <h2>📊 สถิติการเข้าใช้งานระบบ</h2>
+        <div class="stats-summary">
+            <div class="stats-box">
+                <h3>ผู้เข้าชมทั้งหมด</h3>
+                <p id="totalVisits">0</p>
+            </div>
+            <div class="stats-box">
+                <h3>กำลังออนไลน์</h3>
+                <p id="activeUsers">0</p>
+            </div>
+        </div>
+        
+        <!-- ซ่อนตารางรายละเอียดไว้ก่อน ให้ดูได้เฉพาะแอดมินหรือเมื่อคลิก -->
+        <button id="adminBtn" onclick="toggleDetails()" style="background-color: #333; color: #999; display: none;">แสดง/ซ่อน รายละเอียดการเข้าใช้งาน</button>
+        
+        <div id="detailsTable" style="display: none; max-height: 300px; overflow-y: auto; margin-top: 15px;">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>ผู้ใช้งาน (Email)</th>
+                        <th>เวลาเข้า (Login)</th>
+                        <th>เวลาออก (Logout)</th>
+                        <th>ระยะเวลาที่ใช้งาน</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody">
+                    <!-- ข้อมูลจะถูกเพิ่มที่นี่ผ่าน JavaScript -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        // === การตั้งค่า Firebase ===
+        // ⚠️ คุณต้องนำ Config จาก Firebase Console มาใส่ตรงนี้
+        // วิธีทำ: 1. สร้างโปรเจกต์ที่ firebase.google.com -> 2. เปิด Realtime Database (ตั้งกฎให้อ่านเขียนได้ชั่วคราว) -> 3. เอา Config มาใส่
+        const firebaseConfig = {
+            // apiKey: "YOUR_API_KEY",
+            // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            // databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            // projectId: "YOUR_PROJECT_ID",
+            // storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            // messagingSenderId: "YOUR_SENDER_ID",
+            // appId: "YOUR_APP_ID"
+        };
+        
+        // ทดสอบว่ามีการใส่ Config หรือยัง
+        let db = null;
+        let isFirebaseReady = false;
+        if (firebaseConfig.apiKey) {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            isFirebaseReady = true;
+            console.log("Firebase Initialized");
+        } else {
+            console.warn("ยังไม่ได้ตั้งค่า Firebase ข้อมูลสถิติจะจำลองชั่วคราวบนเบราว์เซอร์เท่านั้น");
+        }
+
+        // ตัวแปรสำหรับเก็บข้อมูลเซสชันปัจจุบัน
+        let currentSessionId = null;
+        let currentEmail = null;
+        let loginTime = null;
+
         // รายชื่อผู้ใช้งานที่อนุญาตและรหัสผ่าน
         const allowedUsers = {
             "pholjanseesuwan@gmail.com": "pholjanseesuwan",
@@ -287,9 +408,22 @@
 
             // ตรวจสอบข้อมูล
             if (allowedUsers[emailInput] && allowedUsers[emailInput] === passwordInput) {
-                // ถ้าถูก ให้ซ่อนฟอร์ม login และแสดงหน้ารายการโปรแกรมทันที
+                // ถ้าถูก
                 document.getElementById("loginForm").style.display = "none";
                 document.getElementById("programList").style.display = "block";
+                document.getElementById("statsContainer").style.display = "block";
+                
+                // บันทึกการเข้าใช้งาน
+                recordLogin(emailInput);
+                
+                // --- ตรวจสอบสิทธิ์แสดงปุ่ม Admin (lpee เท่านั้น) ---
+                if (emailInput === "lpee") {
+                    document.getElementById("adminBtn").style.display = "inline-block";
+                } else {
+                    document.getElementById("adminBtn").style.display = "none";
+                    document.getElementById("detailsTable").style.display = "none"; // บังคับปิดตารางเสมอถ้าไม่ใช่แอดมิน
+                }
+                
             } else {
                 // ถ้าผิด ให้แสดงข้อความเตือน
                 errorMsg.style.display = "block";
@@ -303,6 +437,195 @@
                 checkLogin();
             }
         });
+
+        function toggleDetails() {
+            const details = document.getElementById("detailsTable");
+            if (details.style.display === "none") {
+                details.style.display = "block";
+            } else {
+                details.style.display = "none";
+            }
+        }
+
+        function formatTime(date) {
+            return date.toLocaleString('th-TH', { 
+                year: 'numeric', month: '2-digit', day: '2-digit', 
+                hour: '2-digit', minute:'2-digit', second:'2-digit' 
+            });
+        }
+
+        function calculateDuration(startTime, endTime) {
+            let diff = endTime - startTime; // มิลลิวินาที
+            let seconds = Math.floor((diff / 1000) % 60);
+            let minutes = Math.floor((diff / (1000 * 60)) % 60);
+            let hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            
+            let result = "";
+            if (hours > 0) result += hours + " ชม. ";
+            if (minutes > 0) result += minutes + " นาที ";
+            result += seconds + " วินาที";
+            return result;
+        }
+
+        // === ฟังก์ชันบันทึกการเข้าสู่ระบบ ===
+        function recordLogin(email) {
+            currentEmail = email;
+            loginTime = new Date();
+            
+            if (isFirebaseReady) {
+                // เก็บลง Firebase
+                const sessionsRef = db.ref('user_sessions');
+                const newSession = sessionsRef.push();
+                currentSessionId = newSession.key;
+                
+                newSession.set({
+                    email: email,
+                    loginTime: loginTime.getTime(),
+                    loginTimeStr: formatTime(loginTime),
+                    logoutTime: null,
+                    logoutTimeStr: "กำลังใช้งาน...",
+                    duration: "-",
+                    status: "online"
+                });
+                
+                // โหลดข้อมูลสถิติมาแสดง
+                loadStats();
+                
+            } else {
+                // เก็บลง LocalStorage (กรณีไม่มี Firebase)
+                currentSessionId = "session_" + Date.now();
+                let sessions = JSON.parse(localStorage.getItem('solar_sessions') || '[]');
+                
+                sessions.push({
+                    id: currentSessionId,
+                    email: email,
+                    loginTime: loginTime.getTime(),
+                    loginTimeStr: formatTime(loginTime),
+                    logoutTime: null,
+                    logoutTimeStr: "กำลังใช้งาน...",
+                    duration: "-",
+                    status: "online"
+                });
+                
+                localStorage.setItem('solar_sessions', JSON.stringify(sessions));
+                renderLocalStats();
+            }
+        }
+
+        // === ฟังก์ชันบันทึกการออกจากระบบ ===
+        function logout() {
+            const logoutTime = new Date();
+            const duration = calculateDuration(loginTime, logoutTime);
+            
+            if (isFirebaseReady && currentSessionId) {
+                db.ref('user_sessions/' + currentSessionId).update({
+                    logoutTime: logoutTime.getTime(),
+                    logoutTimeStr: formatTime(logoutTime),
+                    duration: duration,
+                    status: "offline"
+                });
+            } else if (currentSessionId) {
+                let sessions = JSON.parse(localStorage.getItem('solar_sessions') || '[]');
+                let sessionIndex = sessions.findIndex(s => s.id === currentSessionId);
+                if (sessionIndex !== -1) {
+                    sessions[sessionIndex].logoutTime = logoutTime.getTime();
+                    sessions[sessionIndex].logoutTimeStr = formatTime(logoutTime);
+                    sessions[sessionIndex].duration = duration;
+                    sessions[sessionIndex].status = "offline";
+                    localStorage.setItem('solar_sessions', JSON.stringify(sessions));
+                }
+            }
+
+            // กลับไปหน้า Login
+            document.getElementById("programList").style.display = "none";
+            document.getElementById("statsContainer").style.display = "none";
+            document.getElementById("loginForm").style.display = "block";
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("errorMessage").style.display = "none";
+            
+            currentSessionId = null;
+            currentEmail = null;
+        }
+
+        // === ดักจับตอนผู้ใช้ปิดแท็บหรือปิดเบราว์เซอร์ ===
+        window.addEventListener('beforeunload', function (e) {
+            if (currentSessionId) {
+                logout(); // บันทึกเวลาออกเมื่อปิดเว็บ
+            }
+        });
+
+        // === โหลดสถิติจาก Firebase มาแสดงบนตาราง ===
+        function loadStats() {
+            if (!isFirebaseReady) return;
+            
+            const sessionsRef = db.ref('user_sessions');
+            sessionsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                let total = 0;
+                let active = 0;
+                let tableHtml = '';
+                
+                if (data) {
+                    // แปลง Object เป็น Array และเรียงลำดับจากล่าสุดไปเก่า
+                    const sessionsArray = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).sort((a, b) => b.loginTime - a.loginTime);
+                    
+                    total = sessionsArray.length;
+                    
+                    sessionsArray.forEach(session => {
+                        if (session.status === "online") active++;
+                        
+                        let rowStyle = session.status === "online" ? "color: #4CAF50;" : "";
+                        let durationTxt = session.status === "online" ? "กำลังใช้งาน..." : session.duration;
+                        
+                        tableHtml += `
+                            <tr style="${rowStyle}">
+                                <td>${session.email}</td>
+                                <td>${session.loginTimeStr}</td>
+                                <td>${session.logoutTimeStr}</td>
+                                <td>${durationTxt}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                document.getElementById('totalVisits').innerText = total;
+                document.getElementById('activeUsers').innerText = active;
+                document.getElementById('statsTableBody').innerHTML = tableHtml;
+            });
+        }
+
+        // === โหลดสถิติจาก LocalStorage (กรณีไม่ได้ต่อเน็ต/ไม่มี Firebase) ===
+        function renderLocalStats() {
+            let sessions = JSON.parse(localStorage.getItem('solar_sessions') || '[]');
+            sessions.sort((a, b) => b.loginTime - a.loginTime); // เรียงจากล่าสุด
+            
+            let total = sessions.length;
+            let active = sessions.filter(s => s.status === "online").length;
+            let tableHtml = '';
+            
+            sessions.forEach(session => {
+                let rowStyle = session.status === "online" ? "color: #4CAF50;" : "";
+                let durationTxt = session.status === "online" ? "กำลังใช้งาน..." : session.duration;
+                
+                tableHtml += `
+                    <tr style="${rowStyle}">
+                        <td>${session.email}</td>
+                        <td>${session.loginTimeStr}</td>
+                        <td>${session.logoutTimeStr}</td>
+                        <td>${durationTxt}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('totalVisits').innerText = total;
+            document.getElementById('activeUsers').innerText = active;
+            document.getElementById('statsTableBody').innerHTML = tableHtml;
+        }
+
     </script>
 
 </body>
