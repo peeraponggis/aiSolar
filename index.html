@@ -163,6 +163,16 @@
         #statsContainer {
             max-width: 800px;
         }
+        .debug-info {
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #999;
+            border-radius: 4px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -225,6 +235,7 @@
                     <!-- ข้อมูลจะถูกเพิ่มที่นี่ผ่าน JavaScript -->
                 </tbody>
             </table>
+            <div class="debug-info" id="debugInfo"></div>
         </div>
     </div>
 
@@ -372,7 +383,10 @@
         let currentSessionId = null;
         let currentEmail = null;
         let heartbeatInterval = null;
-         const scriptURL = 'https://script.google.com/macros/s/AKfycbxFG1oIvuH48isCD3bGyMdOWiI67FcbQkqueZzaNIM7e50AaHGKa4tHb1a_Y6H8M0_YAQ/exec'; 
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxFG1oIvuH48isCD3bGyMdOWiI67FcbQkqueZzaNIM7e50AaHGKa4tHb1a_Y6H8M0_YAQ/exec';
+        
+        // ตัวเลือกสำหรับ Debug Mode (เปิด/ปิด)
+        const DEBUG_MODE = true;
 
         function checkLogin() {
             const emailInput = document.getElementById("email").value.trim().toLowerCase();
@@ -410,7 +424,7 @@
             localStorage.setItem("userEmail", currentEmail); 
             localStorage.setItem("mainSessionId", currentSessionId); 
             
-            document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #64b5f6;">กำลังซิงค์ข้อมูลกับฐานข้อมูล... (รอประมาณ 2 วินาที)</td></tr>';
+            document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #64b5f6;">กำลังซิงค์ข้อมูลกับฐานข้อมูล...</td></tr>';
             
             fetch(scriptURL, {
                 method: 'POST',
@@ -423,6 +437,7 @@
                 startHeartbeat(); 
             }).catch(error => {
                 console.error('Error on POST:', error.message);
+                logDebug('POST Login Error: ' + error.message);
             }).finally(() => {
                 // บังคับโหลดข้อมูลอัปเดตเสมอ เพื่อลบข้อความค้าง ไม่ว่าระบบจะ POST สำเร็จหรือไม่
                 setTimeout(() => {
@@ -451,8 +466,8 @@
         // 3. ออกจากระบบ
         function logout() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-			localStorage.removeItem("userEmail"); // <--- เพิ่มบรรทัดนี้
-            localStorage.removeItem("mainSessionId"); // <--- เพิ่มบรรทัดนี้
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("mainSessionId");
 
             if (currentSessionId) {
                 fetch(scriptURL, {
@@ -473,14 +488,39 @@
             currentEmail = null;
         }
 
-        // 4. โหลด Dashboard จากเซิร์ฟเวอร์ (อัปเกรดแจ้งเตือน Error)
+        // Function สำหรับแสดง Debug Info
+        function logDebug(message) {
+            if (DEBUG_MODE) {
+                console.log('[DEBUG]', message);
+                const debugEl = document.getElementById('debugInfo');
+                if (debugEl) {
+                    debugEl.style.display = 'block';
+                    debugEl.innerHTML += message + '<br>';
+                }
+            }
+        }
+
+        // 4. โหลด Dashboard จากเซิร์ฟเวอร์ (อัปเกรดแจ้งเตือน Error + Retry)
         function loadStats() {
-            fetch(scriptURL)
+            logDebug('Fetching from: ' + scriptURL);
+            
+            // เพิ่ม Timeout (15 วินาที)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            
+            fetch(scriptURL, { signal: controller.signal })
                 .then(response => {
-                    if (!response.ok) throw new Error("Network issue");
+                    clearTimeout(timeoutId);
+                    logDebug('Response status: ' + response.status);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error ${response.status}`);
+                    }
                     return response.json();
                 })
                 .then(data => {
+                    logDebug('Data received successfully');
+                    
                     // แปะตัวเลขบน Dashboard
                     document.getElementById('totalToday').innerText = data.totalToday || 0;
                     document.getElementById('onlineToday').innerText = data.onlineToday || 0;
@@ -508,10 +548,24 @@
                     }
                 })
                 .catch(error => {
+                    clearTimeout(timeoutId);
                     console.error('Error fetching data:', error);
+                    logDebug('Error: ' + error.message);
+                    
                     if (currentEmail === "lpee") {
-                        // หากมี Error จากฐานข้อมูล จะไม่ค้าง แต่แจ้งเตือนแทน
-                        document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #ff5252;">โหลดข้อมูลไม่สำเร็จ (ลองรีเฟรชหน้าเว็บ หรือตรวจสอบสิทธิ์ Google Script)</td></tr>';
+                        document.getElementById('statsTableBody').innerHTML = `
+                            <tr>
+                                <td colspan="3" class="text-center" style="color: #ff5252;">
+                                    ⚠️ โหลดข้อมูลไม่สำเร็จ<br>
+                                    (${error.name}: ${error.message})<br>
+                                    <small>ลองรีเฟรชหน้าเว็บ หรือตรวจสอบ:<br>
+                                    1. Google Script URL ถูกต้องหรือไม่<br>
+                                    2. Google Script ยังสามารถใช้งานได้หรือไม่<br>
+                                    3. เน็ตการเชื่อมต่ออินเทอร์เน็ต
+                                    </small>
+                                </td>
+                            </tr>
+                        `;
                     }
                 });
         }
