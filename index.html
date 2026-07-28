@@ -4,15 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solar Web Programs Demo Edition.</title>
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212; /* พื้นหลังสีดำ */
-            color: #e0e0e0; /* สีตัวอักษรโทนสว่าง */
+            background-color: #121212; 
+            color: #e0e0e0; 
             margin: 0;
             padding: 40px;
             display: flex;
@@ -25,7 +21,7 @@
         .container {
             width: 100%;
             max-width: 600px;
-            background: #1e1e1e; /* พื้นหลังกล่องข้อความเทาเข้ม */
+            background: #1e1e1e; 
             padding: 30px 40px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -44,7 +40,6 @@
             padding-bottom: 15px;
             text-align: center;
         }
-        /* ฟอร์มล็อกอิน */
         input[type="email"], input[type="password"] {
             width: 100%;
             padding: 14px 20px;
@@ -87,7 +82,6 @@
             display: none;
             text-align: center;
         }
-        /* รายการโปรแกรม */
         .link-list {
             list-style: none;
             padding: 0;
@@ -101,7 +95,7 @@
             align-items: center;
             padding: 15px 20px;
             text-decoration: none;
-            color: #64b5f6; /* ลิงก์สีฟ้าสว่างสำหรับ Dark Mode */
+            color: #64b5f6; 
             background-color: #2a2a2a;
             border: 1px solid #444;
             border-radius: 5px;
@@ -119,8 +113,6 @@
             transform: translateX(5px);
             color: #90caf9;
         }
-
-        /* ตารางสถิติผู้เข้าชม */
         .stats-table {
             width: 100%;
             border-collapse: collapse;
@@ -145,7 +137,8 @@
         }
         .stats-summary {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
             background-color: #333;
             padding: 15px;
             border-radius: 8px;
@@ -154,6 +147,7 @@
         .stats-box {
             text-align: center;
             flex: 1;
+            min-width: 100px;
         }
         .stats-box h3 {
             margin: 0 0 5px 0;
@@ -196,31 +190,35 @@
         <button onclick="logout()" style="background-color: #ff5252; margin-top: 20px;">ออกจากระบบ</button>
     </div>
 
-    <!-- ส่วนแสดงสถิติผู้เข้าชม -->
     <div id="statsContainer" class="container" style="display: none;">
-        <h2>📊 สถิติการเข้าใช้งานระบบ</h2>
+        <h2>📊 Solar Web Apps Statistics</h2>
         <div class="stats-summary">
             <div class="stats-box">
-                <h3>ผู้เข้าชมทั้งหมด</h3>
-                <p id="totalVisits">0</p>
+                <h3>Online Now</h3>
+                <p id="onlineToday">0</p>
             </div>
             <div class="stats-box">
-                <h3>กำลังออนไลน์</h3>
-                <p id="activeUsers">0</p>
+                <h3>Today's Login</h3>
+                <p id="totalToday">0</p>
+            </div>
+            <div class="stats-box">
+                <h3>Today's Users</h3>
+                <p id="uniqueUsers">0</p>
+            </div>
+            <div class="stats-box">
+                <h3>Average Time</h3>
+                <p><span id="avgTime">0</span> นาที</p>
             </div>
         </div>
         
-        <!-- ซ่อนตารางรายละเอียดไว้ก่อน ให้ดูได้เฉพาะแอดมินหรือเมื่อคลิก -->
-        <button id="adminBtn" onclick="toggleDetails()" style="background-color: #333; color: #999; display: none;">แสดง/ซ่อน รายละเอียดการเข้าใช้งาน</button>
-        
+        <!-- ซ่อนตารางรายละเอียดไว้ก่อน ให้ดูได้เฉพาะ user = lpee -->
         <div id="detailsTable" style="display: none; max-height: 300px; overflow-y: auto; margin-top: 15px;">
             <table class="stats-table">
                 <thead>
                     <tr>
-                        <th>ผู้ใช้งาน (Email)</th>
-                        <th>เวลาเข้า (Login)</th>
-                        <th>เวลาออก (Logout)</th>
-                        <th>ระยะเวลาที่ใช้งาน</th>
+                        <th>Email</th>
+                        <th>Login</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody id="statsTableBody">
@@ -231,37 +229,6 @@
     </div>
 
     <script>
-        // === การตั้งค่า Firebase ===
-        // ⚠️ คุณต้องนำ Config จาก Firebase Console มาใส่ตรงนี้
-        // วิธีทำ: 1. สร้างโปรเจกต์ที่ firebase.google.com -> 2. เปิด Realtime Database (ตั้งกฎให้อ่านเขียนได้ชั่วคราว) -> 3. เอา Config มาใส่
-        const firebaseConfig = {
-            // apiKey: "YOUR_API_KEY",
-            // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            // databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            // projectId: "YOUR_PROJECT_ID",
-            // storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            // messagingSenderId: "YOUR_SENDER_ID",
-            // appId: "YOUR_APP_ID"
-        };
-        
-        // ทดสอบว่ามีการใส่ Config หรือยัง
-        let db = null;
-        let isFirebaseReady = false;
-        if (firebaseConfig.apiKey) {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-            isFirebaseReady = true;
-            console.log("Firebase Initialized");
-        } else {
-            console.warn("ยังไม่ได้ตั้งค่า Firebase ข้อมูลสถิติจะจำลองชั่วคราวบนเบราว์เซอร์เท่านั้น");
-        }
-
-        // ตัวแปรสำหรับเก็บข้อมูลเซสชันปัจจุบัน
-        let currentSessionId = null;
-        let currentEmail = null;
-        let loginTime = null;
-
-        // รายชื่อผู้ใช้งานที่อนุญาตและรหัสผ่าน
         const allowedUsers = {
             "pholjanseesuwan@gmail.com": "pholjanseesuwan",
             "jameskittisak813@gmail.com": "jameskittisak813",
@@ -401,37 +368,34 @@
             "lpee": "1234",
             "pat": "1234"
         };
+        
+        let currentSessionId = null;
+        let currentEmail = null;
+        let heartbeatInterval = null;
+         const scriptURL = 'https://script.google.com/macros/s/AKfycbxFG1oIvuH48isCD3bGyMdOWiI67FcbQkqueZzaNIM7e50AaHGKa4tHb1a_Y6H8M0_YAQ/exec'; 
 
         function checkLogin() {
             const emailInput = document.getElementById("email").value.trim().toLowerCase();
             const passwordInput = document.getElementById("password").value;
             const errorMsg = document.getElementById("errorMessage");
 
-            // ตรวจสอบข้อมูล
             if (allowedUsers[emailInput] && allowedUsers[emailInput] === passwordInput) {
-                // ถ้าถูก
                 document.getElementById("loginForm").style.display = "none";
                 document.getElementById("programList").style.display = "block";
                 document.getElementById("statsContainer").style.display = "block";
                 
-                // บันทึกการเข้าใช้งาน
-                recordLogin(emailInput);
-                
-                // --- ตรวจสอบสิทธิ์แสดงปุ่ม Admin (lpee เท่านั้น) ---
+                // ตรวจสอบสิทธิ์แสดง Dashboard เฉพาะ lpee
                 if (emailInput === "lpee") {
-                    document.getElementById("adminBtn").style.display = "inline-block";
-                } else {
-                    document.getElementById("adminBtn").style.display = "none";
-                    document.getElementById("detailsTable").style.display = "none"; // บังคับปิดตารางเสมอถ้าไม่ใช่แอดมิน
+                    document.getElementById("detailsTable").style.display = "block";
                 }
                 
+                recordLogin(emailInput);
             } else {
-                // ถ้าผิด ให้แสดงข้อความเตือน
                 errorMsg.style.display = "block";
             }
         }
 
-        // เพิ่มการกด Enter เพื่อ Login
+        // กด Enter เพื่อ Login
         document.getElementById("password").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -439,141 +403,133 @@
             }
         });
 
-        function toggleDetails() {
-            const details = document.getElementById("detailsTable");
-            if (details.style.display === "none") {
-                details.style.display = "block";
-            } else {
-                details.style.display = "none";
-            }
-        }
-
-        function formatTime(date) {
-            return date.toLocaleString('th-TH', { 
-                year: 'numeric', month: '2-digit', day: '2-digit', 
-                hour: '2-digit', minute:'2-digit', second:'2-digit' 
-            });
-        }
-
-        function calculateDuration(startTime, endTime) {
-            let diff = endTime - startTime; // มิลลิวินาที
-            let seconds = Math.floor((diff / 1000) % 60);
-            let minutes = Math.floor((diff / (1000 * 60)) % 60);
-            let hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            
-            let result = "";
-            if (hours > 0) result += hours + " ชม. ";
-            if (minutes > 0) result += minutes + " นาที ";
-            result += seconds + " วินาที";
-            return result;
-        }
-
-        // === นำ URL จาก Google Apps Script มาใส่ตรงนี้ ===
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzvXVhA4G-m8cISy3_sM_Q7giIpfb-Plu4QIupXX4TpR9oYvvizNIKwBoahn2j-MXCP9w/exec';
-
-        // === ฟังก์ชันบันทึกการเข้าสู่ระบบ (ส่งไป Google Sheets) ===
+        // 1. บันทึกเข้าสู่ระบบ (อัปเกรดป้องกันเว็บค้าง)
         function recordLogin(email) {
             currentEmail = email;
-            loginTime = new Date();
             currentSessionId = "session_" + Date.now();
+            localStorage.setItem("userEmail", currentEmail); 
+            localStorage.setItem("mainSessionId", currentSessionId); 
             
-            // โหลดข้อมูลเดิมมาแสดงก่อนให้ดูลื่นไหล
-            loadStats();
+            document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #64b5f6;">กำลังซิงค์ข้อมูลกับฐานข้อมูล... (รอประมาณ 2 วินาที)</td></tr>';
             
             fetch(scriptURL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: "login",
                     sessionId: currentSessionId,
-                    email: email,
-                    loginTimeStr: formatTime(loginTime)
+                    email: email
                 })
-            }).then(response => {
-                console.log("บันทึก Login สำเร็จ");
-                loadStats(); // โหลดข้อมูลอัปเดตจากชีต
-            }).catch(error => console.error('Error!', error.message));
+            }).then(() => {
+                startHeartbeat(); 
+            }).catch(error => {
+                console.error('Error on POST:', error.message);
+            }).finally(() => {
+                // บังคับโหลดข้อมูลอัปเดตเสมอ เพื่อลบข้อความค้าง ไม่ว่าระบบจะ POST สำเร็จหรือไม่
+                setTimeout(() => {
+                    loadStats(); 
+                }, 2000);
+            });
         }
 
-        // === ฟังก์ชันบันทึกการออกจากระบบ (อัปเดต Google Sheets) ===
-        function logout() {
-            const logoutTime = new Date();
-            const duration = calculateDuration(loginTime, logoutTime);
+        // 2. ระบบ Heartbeat ทุกๆ 30 วินาที
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
             
+            heartbeatInterval = setInterval(() => {
+                if (currentSessionId) {
+                    fetch(scriptURL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "heartbeat",
+                            sessionId: currentSessionId
+                        })
+                    }).catch(err => console.log("Heartbeat failed", err));
+                }
+            }, 30000); 
+        }
+
+        // 3. ออกจากระบบ
+        function logout() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+			localStorage.removeItem("userEmail"); // <--- เพิ่มบรรทัดนี้
+            localStorage.removeItem("mainSessionId"); // <--- เพิ่มบรรทัดนี้
+
             if (currentSessionId) {
                 fetch(scriptURL, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: "logout",
-                        sessionId: currentSessionId,
-                        logoutTimeStr: formatTime(logoutTime),
-                        duration: duration
+                        sessionId: currentSessionId
                     })
-                }).then(response => console.log("บันทึก Logout สำเร็จ"));
+                });
             }
 
-            // กลับไปหน้า Login
             document.getElementById("programList").style.display = "none";
             document.getElementById("statsContainer").style.display = "none";
+            document.getElementById("detailsTable").style.display = "none";
             document.getElementById("loginForm").style.display = "block";
-            document.getElementById("email").value = "";
-            document.getElementById("password").value = "";
-            document.getElementById("errorMessage").style.display = "none";
             
             currentSessionId = null;
             currentEmail = null;
         }
 
-        // === โหลดสถิติจาก Google Sheets มาแสดง ===
+        // 4. โหลด Dashboard จากเซิร์ฟเวอร์ (อัปเกรดแจ้งเตือน Error)
         function loadStats() {
-            document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="4" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
-            
             fetch(scriptURL)
-                .then(response => response.json())
-                .then(data => {
-                    let total = data.length;
-                    let active = 0;
-                    let tableHtml = '';
-                    
-                    data.forEach(session => {
-                        if (session.status === "online") active++;
-                        
-                        let rowStyle = session.status === "online" ? "color: #4CAF50;" : "";
-                        let durationTxt = session.status === "online" ? "กำลังใช้งาน..." : session.duration;
-                        
-                        tableHtml += `
-                            <tr style="${rowStyle}">
-                                <td>${session.email}</td>
-                                <td>${session.loginTimeStr}</td>
-                                <td>${session.logoutTimeStr}</td>
-                                <td>${durationTxt}</td>
-                            </tr>
-                        `;
-                    });
-                    
-                    document.getElementById('totalVisits').innerText = total;
-                    document.getElementById('activeUsers').innerText = active;
-                    document.getElementById('statsTableBody').innerHTML = tableHtml;
+                .then(response => {
+                    if (!response.ok) throw new Error("Network issue");
+                    return response.json();
                 })
-                .catch(error => console.error('Error fetching data:', error));
+                .then(data => {
+                    // แปะตัวเลขบน Dashboard
+                    document.getElementById('totalToday').innerText = data.totalToday || 0;
+                    document.getElementById('onlineToday').innerText = data.onlineToday || 0;
+                    document.getElementById('uniqueUsers').innerText = data.uniqueUsers || 0;
+                    document.getElementById('avgTime').innerText = data.avgTimeMinutes || 0;
+                    
+                    // สร้างตารางเฉพาะ user ที่มีสิทธิ์เห็น (lpee)
+                    if (currentEmail === "lpee") {
+                        let tableHtml = '';
+                        if (data.rows && data.rows.length > 0) {
+                            data.rows.forEach(row => {
+                                let rowStyle = row.isOnline ? "color: #4CAF50;" : "color: #999;";
+                                tableHtml += `
+                                    <tr style="${rowStyle}">
+                                        <td>${row.email}</td>
+                                        <td>${row.login}</td>
+                                        <td>${row.status}</td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            tableHtml = '<tr><td colspan="3" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
+                        }
+                        document.getElementById('statsTableBody').innerHTML = tableHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    if (currentEmail === "lpee") {
+                        // หากมี Error จากฐานข้อมูล จะไม่ค้าง แต่แจ้งเตือนแทน
+                        document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #ff5252;">โหลดข้อมูลไม่สำเร็จ (ลองรีเฟรชหน้าเว็บ หรือตรวจสอบสิทธิ์ Google Script)</td></tr>';
+                    }
+                });
         }
 
-        // โหลดข้อมูลสถิติเป็นระยะๆ (ทุกๆ 30 วินาที) เผื่อมีคนอื่นเข้าใช้งาน
+        // รีเฟรช Dashboard ทุก 30 วินาที
         setInterval(loadStats, 30000);
 
-        // === ดักจับตอนผู้ใช้ปิดแท็บหรือปิดเบราว์เซอร์ ===
+        // ดักจับการปิดเบราว์เซอร์
         window.addEventListener('beforeunload', function (e) {
             if (currentSessionId) {
                 let blob = new Blob([JSON.stringify({
                     action: "logout",
-                    sessionId: currentSessionId,
-                    logoutTimeStr: formatTime(new Date()),
-                    duration: calculateDuration(loginTime, new Date())
+                    sessionId: currentSessionId
                 })], {type : 'application/json'});
                 navigator.sendBeacon(scriptURL, blob);
             }
         });
-
     </script>
-
+	
 </body>
 </html>
