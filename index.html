@@ -163,16 +163,6 @@
         #statsContainer {
             max-width: 800px;
         }
-        .debug-info {
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 12px;
-            color: #999;
-            border-radius: 4px;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -221,7 +211,6 @@
             </div>
         </div>
         
-        <!-- ซ่อนตารางรายละเอียดไว้ก่อน ให้ดูได้เฉพาะ user = lpee -->
         <div id="detailsTable" style="display: none; max-height: 300px; overflow-y: auto; margin-top: 15px;">
             <table class="stats-table">
                 <thead>
@@ -232,14 +221,13 @@
                     </tr>
                 </thead>
                 <tbody id="statsTableBody">
-                    <!-- ข้อมูลจะถูกเพิ่มที่นี่ผ่าน JavaScript -->
                 </tbody>
             </table>
-            <div class="debug-info" id="debugInfo"></div>
         </div>
     </div>
 
     <script>
+        // แก้ไขเรื่องตัวพิมพ์ใหญ่-เล็ก และอีเมลที่ซ้ำกันออกเรียบร้อยแล้ว
         const allowedUsers = {
             "pholjanseesuwan@gmail.com": "pholjanseesuwan",
             "jameskittisak813@gmail.com": "jameskittisak813",
@@ -258,7 +246,7 @@
             "plaiiwinwars@gmail.com": "plaiiwinwars",
             "phol18531@gmail.com": "phol18531",
             "solarengineer9@gmail.com": "solarengineer9",
-            "phoonsak.r@gmail.com": "phoonsak.r",
+            "phoonsak.r@gmail.com": "wVP^nxlKUI",
             "porza12420@hotmail.com": "porza12420",
             "nimithr10@gmail.com": "nimithr10",
             "mantrasmend.energy@hotmail.com": "mantrasmend.energy",
@@ -338,7 +326,7 @@
             "wachiraphong1929@gmail.com": "Wachiraphong1929",
             "nuinithigorn@gmail.com": "Nuinithigorn",
             "anutrcafe@gmail.com": "anutrcafe",
-            "chai6444@gmail.com": "chai6444",
+            "chai6444@gmail.com": "9RQRUusjNV",
             "aerth_up@gmail.com": "aerth_up",
             "konnichiwa.yuujyoo@gmail.com": "konnichiwa.yuujyoo",
             "nattawut18k@gmail.com": "nattawut18k",
@@ -355,26 +343,21 @@
             "safecpe99@gmail.com": "safecpe99",
             "yokomo_team@hotmail.com": "yokomo_team",
             "maxsupajit@gmail.com": "maxsupajit",
-            "stg.energy2015@gmail.com": "stg.energy2015",
+            "stg.energy2015@gmail.com": "#s#!IpSEmh",
             "sm0610603003@gmail.com": "sm0610603003",
-            "chairuj.ka@gmail.com": "chairuj.ka",
+            "chairuj.ka@gmail.com": "b0lhVCskyu",
             "parinya.is@gmail.com": "parinya.is",
             "waraxxx98@gmail.com": "2^6^TFrBTj",
             "pranpipat55@gmail.com": "AIcFqgyvcg",
-            "Aec.rooftop@gmail.com": "ymQacAMVtC",
+            "aec.rooftop@gmail.com": "ymQacAMVtC",
             "onnetjoy@gmail.com": "i2WTzDl@%r",
-            "chai6444@gmail.com": "9RQRUusjNV",
-            "beliefgroups@gmail.com": "s8p%VoP^*J",
-            "stg.energy2015@gmail.com": "#s#!IpSEmh",
+            "beliefgroups@gmail.com": "fWeRAAk$MC",
             "surakarn232@gmail.com": "bukA%oGpRR",
             "songsri.en@gmail.com": "7Ykne@O3sE",
-            "chairuj.ka@gmail.com": "b0lhVCskyu",
-            "SupachaiMulachiwa@gmail.com": "7fzDPI2las",
-            "Pongsakorn.kongng@gmail.com": "2ohZcYVa8l",
-            "Supaporn.ruekudom@gmail.com": "EUHcLpZ9MI",
+            "supachaimulachiwa@gmail.com": "7fzDPI2las",
+            "pongsakorn.kongng@gmail.com": "2ohZcYVa8l",
+            "supaporn.ruekudom@gmail.com": "EUHcLpZ9MI",
             "thunderinno.office@gmail.com": "93JQzX#lPy",
-            "beliefgroups@gmail.com":"fWeRAAk$MC",
-            "phoonsak.r@gmail.com":"wVP^nxlKUI",
             "supet": "1234",
             "lpee": "1234",
             "pat": "1234"
@@ -383,10 +366,7 @@
         let currentSessionId = null;
         let currentEmail = null;
         let heartbeatInterval = null;
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwKYV1hUDNPnzbnJ5e3AteV3zofZp6fK87se_EmKbIz4qffwfLvUCmxSSKnx9yhxL0yyQ/exec'; 
-        
-        // ตัวเลือกสำหรับ Debug Mode (เปิด/ปิด)
-        const DEBUG_MODE = true;
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyhwiDXLGHxLmwKdl_Uds4fiOnb8J_qqEJ618pKBU0Bp-G6GbTBtRB5jcH-00YsDkEQ/exec'; 
 
         function checkLogin() {
             const emailInput = document.getElementById("email").value.trim().toLowerCase();
@@ -398,7 +378,6 @@
                 document.getElementById("programList").style.display = "block";
                 document.getElementById("statsContainer").style.display = "block";
                 
-                // ตรวจสอบสิทธิ์แสดง Dashboard เฉพาะ lpee
                 if (emailInput === "lpee") {
                     document.getElementById("detailsTable").style.display = "block";
                 }
@@ -409,7 +388,6 @@
             }
         }
 
-        // กด Enter เพื่อ Login
         document.getElementById("password").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -417,7 +395,6 @@
             }
         });
 
-        // 1. บันทึกเข้าสู่ระบบ (อัปเกรดป้องกันเว็บค้าง)
         function recordLogin(email) {
             currentEmail = email;
             currentSessionId = "session_" + Date.now();
@@ -426,8 +403,10 @@
             
             document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #64b5f6;">กำลังซิงค์ข้อมูลกับฐานข้อมูล...</td></tr>';
             
+            // นำ mode: 'no-cors' ออกเพื่อให้ส่งข้อมูลได้สมบูรณ์ และใช้แค่ text/plain เลี่ยง preflight
             fetch(scriptURL, {
                 method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action: "login",
                     sessionId: currentSessionId,
@@ -436,17 +415,14 @@
             }).then(() => {
                 startHeartbeat(); 
             }).catch(error => {
-                console.error('Error on POST:', error.message);
-                logDebug('POST Login Error: ' + error.message);
+                console.error('Error on POST:', error);
             }).finally(() => {
-                // บังคับโหลดข้อมูลอัปเดตเสมอ เพื่อลบข้อความค้าง ไม่ว่าระบบจะ POST สำเร็จหรือไม่
                 setTimeout(() => {
                     loadStats(); 
                 }, 2000);
             });
         }
 
-        // 2. ระบบ Heartbeat ทุกๆ 30 วินาที
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
             
@@ -454,6 +430,7 @@
                 if (currentSessionId) {
                     fetch(scriptURL, {
                         method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({
                             action: "heartbeat",
                             sessionId: currentSessionId
@@ -463,7 +440,6 @@
             }, 30000); 
         }
 
-        // 3. ออกจากระบบ
         function logout() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
             localStorage.removeItem("userEmail");
@@ -472,6 +448,7 @@
             if (currentSessionId) {
                 fetch(scriptURL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
                         action: "logout",
                         sessionId: currentSessionId
@@ -488,102 +465,67 @@
             currentEmail = null;
         }
 
-        // Function สำหรับแสดง Debug Info
-        function logDebug(message) {
-            if (DEBUG_MODE) {
-                console.log('[DEBUG]', message);
-                const debugEl = document.getElementById('debugInfo');
-                if (debugEl) {
-                    debugEl.style.display = 'block';
-                    debugEl.innerHTML += message + '<br>';
-                }
-            }
-        }
-
-        // 4. โหลด Dashboard จากเซิร์ฟเวอร์ (อัปเกรดแจ้งเตือน Error + Retry)
         function loadStats() {
-            logDebug('Fetching from: ' + scriptURL);
+            if (!currentEmail) return;
             
-            // เพิ่ม Timeout (15 วินาที)
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
-            
-            fetch(scriptURL, { signal: controller.signal })
+            const noCacheURL = scriptURL + "?t=" + new Date().getTime();
+
+            fetch(noCacheURL)
                 .then(response => {
-                    clearTimeout(timeoutId);
-                    logDebug('Response status: ' + response.status);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP Error ${response.status}`);
-                    }
-                    return response.json();
+                    if (!response.ok) throw new Error("Network issue");
+                    return response.text(); // รับค่าเป็น Text ก่อนเพื่อป้องกัน JSON แตกและระบบค้าง
                 })
-                .then(data => {
-                    logDebug('Data received successfully');
-                    
-                    // แปะตัวเลขบน Dashboard
-                    document.getElementById('totalToday').innerText = data.totalToday || 0;
-                    document.getElementById('onlineToday').innerText = data.onlineToday || 0;
-                    document.getElementById('uniqueUsers').innerText = data.uniqueUsers || 0;
-                    document.getElementById('avgTime').innerText = data.avgTimeMinutes || 0;
-                    
-                    // สร้างตารางเฉพาะ user ที่มีสิทธิ์เห็น (lpee)
-                    if (currentEmail === "lpee") {
-                        let tableHtml = '';
-                        if (data.rows && data.rows.length > 0) {
-                            data.rows.forEach(row => {
-                                let rowStyle = row.isOnline ? "color: #4CAF50;" : "color: #999;";
-                                tableHtml += `
-                                    <tr style="${rowStyle}">
-                                        <td>${row.email}</td>
-                                        <td>${row.login}</td>
-                                        <td>${row.status}</td>
-                                    </tr>
-                                `;
-                            });
-                        } else {
-                            tableHtml = '<tr><td colspan="3" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text); // แปลง text เป็น JSON ด้วยตัวเอง
+                        document.getElementById('totalToday').innerText = data.totalToday || 0;
+                        document.getElementById('onlineToday').innerText = data.onlineToday || 0;
+                        document.getElementById('uniqueUsers').innerText = data.uniqueUsers || 0;
+                        document.getElementById('avgTime').innerText = data.avgTimeMinutes || 0;
+                        
+                        if (currentEmail === "lpee") {
+                            let tableHtml = '';
+                            if (data.rows && data.rows.length > 0) {
+                                data.rows.forEach(row => {
+                                    let rowStyle = row.isOnline ? "color: #4CAF50;" : "color: #999;";
+                                    tableHtml += `
+                                        <tr style="${rowStyle}">
+                                            <td>${row.email}</td>
+                                            <td>${row.login}</td>
+                                            <td>${row.status}</td>
+                                        </tr>
+                                    `;
+                                });
+                            } else {
+                                tableHtml = '<tr><td colspan="3" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
+                            }
+                            document.getElementById('statsTableBody').innerHTML = tableHtml;
                         }
-                        document.getElementById('statsTableBody').innerHTML = tableHtml;
+                    } catch (e) {
+                        console.error('JSON Parse error:', e);
+                        throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON ที่ถูกต้อง");
                     }
                 })
                 .catch(error => {
-                    clearTimeout(timeoutId);
                     console.error('Error fetching data:', error);
-                    logDebug('Error: ' + error.message);
-                    
+                    // สำคัญมาก: หากโหลดล้มเหลว ต้องลบคำว่า "กำลังซิงค์..." ออกและแสดงข้อความแจ้งเตือนแทน
                     if (currentEmail === "lpee") {
-                        document.getElementById('statsTableBody').innerHTML = `
-                            <tr>
-                                <td colspan="3" class="text-center" style="color: #ff5252;">
-                                    ⚠️ โหลดข้อมูลไม่สำเร็จ<br>
-                                    (${error.name}: ${error.message})<br>
-                                    <small>ลองรีเฟรชหน้าเว็บ หรือตรวจสอบ:<br>
-                                    1. Google Script URL ถูกต้องหรือไม่<br>
-                                    2. Google Script ยังสามารถใช้งานได้หรือไม่<br>
-                                    3. เน็ตการเชื่อมต่ออินเทอร์เน็ต
-                                    </small>
-                                </td>
-                            </tr>
-                        `;
+                        document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #ff5252;">เชื่อมต่อฐานข้อมูลล้มเหลว (ข้อมูลไม่พร้อมใช้งาน โปรดตรวจสอบ Apps Script)</td></tr>';
                     }
                 });
         }
 
-        // รีเฟรช Dashboard ทุก 30 วินาที
         setInterval(loadStats, 30000);
 
-        // ดักจับการปิดเบราว์เซอร์
         window.addEventListener('beforeunload', function (e) {
             if (currentSessionId) {
                 let blob = new Blob([JSON.stringify({
                     action: "logout",
                     sessionId: currentSessionId
-                })], {type : 'application/json'});
+                })], {type : 'text/plain'});
                 navigator.sendBeacon(scriptURL, blob);
             }
         });
     </script>
-	
 </body>
 </html>
