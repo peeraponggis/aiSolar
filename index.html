@@ -1,235 +1,466 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solar Web Programs Demo Edition.</title>
     <style>
+        /* ----- Global Reset & Base ----- */
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212; 
-            color: #e0e0e0; 
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
-            padding: 40px;
+            padding: 30px 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            box-sizing: border-box;
-            flex-direction: column;
         }
-        .container {
+        .app-wrapper {
             width: 100%;
-            max-width: 600px;
-            background: #1e1e1e; 
-            padding: 30px 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            max-width: 900px;
+        }
+
+        /* ----- Cards / Containers ----- */
+        .container {
+            background: #1e1e1e;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            margin-bottom: 24px;
+            transition: opacity 0.3s ease;
+        }
+        .container.hidden {
+            display: none;
         }
         .text-center {
             text-align: center;
         }
-        h1, h2 {
+
+        h1,
+        h2,
+        h3 {
             color: #ffffff;
-            margin-bottom: 20px;
+            margin-top: 0;
         }
         h1 {
-            font-size: 24px;
+            font-size: 22px;
             border-bottom: 2px solid #333;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
             text-align: center;
         }
-        input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 14px 20px;
-            margin: 10px 0 20px 0;
-            display: inline-block;
-            background-color: #2c2c2c;
-            color: #ffffff;
-            border: 1px solid #444;
-            border-radius: 4px;
-            box-sizing: border-box;
+        h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        h3 {
             font-size: 16px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+
+        /* ----- Form Inputs ----- */
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 8px 0 18px 0;
+            background: #2c2c2c;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.25s;
         }
         input::placeholder {
-            color: #999;
+            color: #888;
         }
         input:focus {
             outline: none;
             border-color: #4CAF50;
         }
-        button {
+
+        /* ----- Buttons ----- */
+        .btn {
             width: 100%;
-            background-color: #4CAF50;
-            color: white;
             padding: 14px 20px;
-            margin: 10px 0;
+            margin: 8px 0;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            border-radius: 6px;
             font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.25s, transform 0.1s;
         }
-        button:hover {
-            background-color: #45a049;
+        .btn:active {
+            transform: scale(0.97);
         }
+        .btn-primary {
+            background: #4CAF50;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #43a047;
+        }
+        .btn-danger {
+            background: #e53935;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #c62828;
+        }
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        /* ----- Error Message ----- */
         #errorMessage {
             color: #ff5252;
-            margin-top: 10px;
+            margin-top: 8px;
             font-size: 14px;
             display: none;
-            text-align: center;
         }
+
+        /* ----- Program Links ----- */
         .link-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
         .link-list li {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .link-list a {
             display: flex;
             align-items: center;
-            padding: 15px 20px;
+            padding: 14px 18px;
             text-decoration: none;
-            color: #64b5f6; 
-            background-color: #2a2a2a;
+            color: #64b5f6;
+            background: #2a2a2a;
             border: 1px solid #444;
-            border-radius: 5px;
-            transition: all 0.2s ease-in-out;
-            font-size: 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 15px;
         }
-        .link-list a:before {
+        .link-list a::before {
             content: "📄";
-            margin-right: 15px;
+            margin-right: 14px;
             font-size: 18px;
+            flex-shrink: 0;
         }
         .link-list a:hover {
-            background-color: #333;
+            background: #333;
             border-color: #64b5f6;
             transform: translateX(5px);
             color: #90caf9;
         }
-        .stats-table {
+
+        /* ----- Stats Grid ----- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 12px 0 6px;
+        }
+        .stat-card {
+            background: #252525;
+            border-radius: 8px;
+            padding: 14px 10px;
+            text-align: center;
+            border: 1px solid #333;
+            transition: border-color 0.2s;
+        }
+        .stat-card:hover {
+            border-color: #4CAF50;
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .stat-card .value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #4CAF50;
+            line-height: 1.2;
+        }
+        .stat-card .value.orange {
+            color: #ffa726;
+        }
+        .stat-card .value.blue {
+            color: #42a5f5;
+        }
+        .stat-card .value.pink {
+            color: #ec407a;
+        }
+        .stat-card .sub {
+            font-size: 12px;
+            color: #777;
+            margin-top: 2px;
+        }
+
+        /* ----- Admin Table (only for lpee) ----- */
+        .admin-table-wrap {
+            margin-top: 18px;
+            max-height: 340px;
+            overflow-y: auto;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        .admin-table-wrap::-webkit-scrollbar {
+            width: 6px;
+        }
+        .admin-table-wrap::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        .admin-table-wrap::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        .admin-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
             font-size: 14px;
         }
-        .stats-table th, .stats-table td {
-            border: 1px solid #444;
-            padding: 10px;
+        .admin-table th,
+        .admin-table td {
+            padding: 10px 12px;
             text-align: left;
+            border-bottom: 1px solid #333;
         }
-        .stats-table th {
-            background-color: #333;
+        .admin-table th {
+            background: #2a2a2a;
             color: #4CAF50;
-            font-weight: bold;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 2;
         }
-        .stats-table tr:nth-child(even) {
-            background-color: #2a2a2a;
+        .admin-table tr:hover td {
+            background: #2a2a2a;
         }
-        .stats-table tr:hover {
-            background-color: #444;
+        .admin-table .status-online {
+            color: #4CAF50;
         }
-        .stats-summary {
+        .admin-table .status-offline {
+            color: #888;
+        }
+        .admin-table .text-muted {
+            color: #666;
+            font-style: italic;
+        }
+
+        /* ----- Utilities ----- */
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .flex-between {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            background-color: #333;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
         }
-        .stats-box {
-            text-align: center;
-            flex: 1;
-            min-width: 100px;
+        .badge {
+            background: #4CAF50;
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
         }
-        .stats-box h3 {
-            margin: 0 0 5px 0;
-            color: #999;
-            font-size: 14px;
+        .badge.offline {
+            background: #555;
         }
-        .stats-box p {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #4CAF50;
+
+        /* ----- Responsive tweaks ----- */
+        @media (max-width: 600px) {
+            body {
+                padding: 16px 10px;
+            }
+            .container {
+                padding: 18px 16px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stat-card .value {
+                font-size: 20px;
+            }
+            .admin-table {
+                font-size: 12px;
+            }
+            .admin-table th,
+            .admin-table td {
+                padding: 6px 8px;
+            }
         }
-        #statsContainer {
-            max-width: 800px;
+        @media (max-width: 400px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 10px 6px;
+            }
+            .stat-card .value {
+                font-size: 18px;
+            }
+        }
+
+        /* loading shimmer for table */
+        .shimmer-row td {
+            color: #555 !important;
+            animation: shimmer 1.2s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 1;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="loginForm" class="container text-center">
-        <h2>เข้าสู่ระบบเพื่อใช้งานโปรแกรม</h2>
-        <input type="email" id="email" placeholder="ใส่อีเมลของคุณ" required>
-        <input type="password" id="password" placeholder="ใส่รหัสผ่าน" required>
-        <button onclick="checkLogin()">เข้าสู่ระบบ</button>
-        <div id="errorMessage">อีเมลหรือรหัสผ่านไม่ถูกต้อง!</div>
-    </div>
+    <div class="app-wrapper">
 
-    <div id="programList" class="container" style="display: none;">
-        <h1>Solar Web Apps Demo Edition. </h1>
-        <ul class="link-list">
-          <li><a href="solar energy potential based on satellite data.html" target="_blank">1.solar energy potential based on satellite data</a></li>
-             <li><a href="On-grid&Hybrid Cal.html" target="_blank">2.On-grid&Hybrid Cal</a></li>
-             <li><a href="Solar Feasibility Calculator V4.1.html" target="_blank">3.Solar Feasibility Calculator</a></li>
-             <li><a href="ai_prg.rar" target="_blank"> >> Download Prg. 2&3</a></li>
-			 <li><a href="Solar_Extractor V2.2.0.html" target="_blank">4.Data sheet Extractor</a></li>
-			 <li><a href="index2.html" target="_blank">5.Solar Engineering Platform</a></li>
-			 <li><a href="https://peeraponggis.github.io/3DPVs/index.html" target="_blank">ai hub</a></li>
-             <li><a href="lesson_plan.html" target="_blank">Lesson plan</a></li>
-			 <li><a href="9 step.pdf" target="_blank">เอกสารประกอบการบรรยาย 1</a></li>
-   			 <li><a href="Sale HandBook 08-08-2024.pdf" target="_blank">เอกสารประกอบการบรรยาย 2</a></li>
-        </ul>
-        <button onclick="logout()" style="background-color: #ff5252; margin-top: 20px;">ออกจากระบบ</button>
-    </div>
-
-    <div id="statsContainer" class="container" style="display: none;">
-        <h2>📊 Solar Web Apps Statistics</h2>
-        <div class="stats-summary">
-            <div class="stats-box">
-                <h3>Online Now</h3>
-                <p id="onlineToday">0</p>
-            </div>
-            <div class="stats-box">
-                <h3>Today's Login</h3>
-                <p id="totalToday">0</p>
-            </div>
-            <div class="stats-box">
-                <h3>Today's Users</h3>
-                <p id="uniqueUsers">0</p>
-            </div>
-            <div class="stats-box">
-                <h3>Average Time</h3>
-                <p><span id="avgTime">0</span> นาที</p>
-            </div>
+        <!-- ============================================================ -->
+        <!--  LOGIN FORM                                                    -->
+        <!-- ============================================================ -->
+        <div id="loginForm" class="container text-center">
+            <h2>🔐 เข้าสู่ระบบเพื่อใช้งานโปรแกรม</h2>
+            <input type="email" id="email" placeholder="อีเมลของคุณ" required />
+            <input type="password" id="password" placeholder="รหัสผ่าน" required />
+            <button class="btn btn-primary" onclick="checkLogin()">เข้าสู่ระบบ</button>
+            <div id="errorMessage">อีเมลหรือรหัสผ่านไม่ถูกต้อง!</div>
         </div>
-        
-        <div id="detailsTable" style="display: none; max-height: 300px; overflow-y: auto; margin-top: 15px;">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Login</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="statsTableBody">
-                </tbody>
-            </table>
+
+        <!-- ============================================================ -->
+        <!--  MAIN DASHBOARD (shown after login)                           -->
+        <!-- ============================================================ -->
+        <div id="mainDashboard" class="container hidden">
+
+            <!-- ---- Program List ---- -->
+            <h1>☀️ Solar Web Apps — Demo Edition</h1>
+            <ul class="link-list">
+                <li><a href="solar energy potential based on satellite data.html" target="_blank">1. Solar Energy Potential (Satellite)</a></li>
+                <li><a href="On-grid&Hybrid Cal.html" target="_blank">2. On‑grid &amp; Hybrid Cal</a></li>
+                <li><a href="Solar Feasibility Calculator V4.1.html" target="_blank">3. Solar Feasibility Calculator</a></li>
+                <li><a href="Solar_Extractor V2.2.0.html" target="_blank">4. Data Sheet Extractor</a></li>
+                <li><a href="index2.html" target="_blank">5. Solar Engineering Platform</a></li>
+                <li><a href="lesson_plan.html" target="_blank">6. Lesson Plan</a></li>
+                <li><a href="9 step.pdf" target="_blank">📘 เอกสารประกอบการบรรยาย 1</a></li>
+                <li><a href="Sale HandBook 08-08-2024.pdf" target="_blank">📘 เอกสารประกอบการบรรยาย 2</a></li>
+            </ul>
+
+            <!-- ---- Stats Dashboard ---- -->
+            <div id="statsArea" style="margin-top:24px;">
+
+                <h2>📊 สถิติการเข้าใช้ระบบ</h2>
+
+                <!-- Public stats grid (excludes lpee) -->
+                <div class="stats-grid" id="publicStatsGrid">
+                    <div class="stat-card">
+                        <div class="label">🟢 ขณะนี้ออนไลน์</div>
+                        <div class="value" id="statOnlineNow">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📅 วันนี้ · เข้าใช้ (ไม่ซ้ำ)</div>
+                        <div class="value blue" id="statTodayUnique">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📅 วันนี้ · ออนไลน์</div>
+                        <div class="value orange" id="statTodayOnline">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">⏱️ วันนี้ · นานที่สุด</div>
+                        <div class="value pink" id="statTodayMax">—<span class="sub"> นาที</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">⏱️ วันนี้ · น้อยที่สุด</div>
+                        <div class="value" id="statTodayMin">—<span class="sub"> นาที</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📅 7 วันที่ผ่านมา · เข้าใช้ (ไม่ซ้ำ)</div>
+                        <div class="value blue" id="stat7dUnique">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📅 7 วันที่ผ่านมา · ออนไลน์</div>
+                        <div class="value orange" id="stat7dOnline">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📅 เดือนที่ผ่านมา · เข้าใช้ (ไม่ซ้ำ)</div>
+                        <div class="value blue" id="stat30dUnique">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📅 เดือนที่ผ่านมา · ออนไลน์</div>
+                        <div class="value orange" id="stat30dOnline">—</div>
+                    </div>
+                </div>
+
+                <!-- Admin table : visible only to user "lpee" -->
+                <div id="adminTableSection" style="display:none; margin-top:20px;">
+                    <div class="flex-between">
+                        <h3 style="margin:0; color:#4CAF50;">👤 รายละเอียดผู้ใช้ (เฉพาะ lpee)</h3>
+                        <span id="adminTableCount" style="font-size:13px; color:#999;"></span>
+                    </div>
+                    <div class="admin-table-wrap" id="adminTableWrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>อีเมล</th>
+                                    <th>เวลาเข้าใช้</th>
+                                    <th>สถานะ</th>
+                                    <th>ระยะเวลา (นาที)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr><td colspan="4" class="text-muted" style="text-align:center; padding:20px;">กำลังโหลดข้อมูล...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Last updated timestamp -->
+                <div style="margin-top:12px; font-size:12px; color:#555; text-align:right;">
+                    อัปเดตล่าสุด: <span id="lastUpdateTime">—</span>
+                </div>
+            </div>
+
+            <!-- ---- Logout ---- -->
+            <button class="btn btn-danger" onclick="logout()" style="margin-top:20px;">🚪 ออกจากระบบ</button>
         </div>
+
     </div>
 
+    <!-- ============================================================ -->
+    <!--  JAVASCRIPT                                                   -->
+    <!-- ============================================================ -->
     <script>
-        // แก้ไขเรื่องตัวพิมพ์ใหญ่-เล็ก และอีเมลที่ซ้ำกันออกเรียบร้อยแล้ว
+        // --------------------------------------------------------------
+        // 1. CONFIG
+        // --------------------------------------------------------------
+        const SCRIPT_URL =
+            'https://script.google.com/macros/s/AKfycbxRZpKdoNIM-w5FckGboJMejzzCExkVcvjqJKN1kUelH8mkoo_n7ujfSdaDsVl3yLWmjA/exec';
+
+        // --------------------------------------------------------------
+        // 2. USER DATABASE (from original)
+        // --------------------------------------------------------------
         const allowedUsers = {
             "pholjanseesuwan@gmail.com": "pholjanseesuwan",
             "jameskittisak813@gmail.com": "jameskittisak813",
@@ -360,177 +591,328 @@
             "pongsakorn.kongng@gmail.com": "2ohZcYVa8l",
             "supaporn.ruekudom@gmail.com": "EUHcLpZ9MI",
             "thunderinno.office@gmail.com": "93JQzX#lPy",
-            "bas": "1234",
-			"ohm": "1234",
-			"supet": "1234",
-			"lek": "1234",
+            "supet": "1234",
             "lpee": "1234",
             "pat": "1234"
         };
-        
-        let currentSessionId = null;
+
+        // --------------------------------------------------------------
+        // 3. STATE
+        // --------------------------------------------------------------
         let currentEmail = null;
+        let currentSessionId = null;
         let heartbeatInterval = null;
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyhwiDXLGHxLmwKdl_Uds4fiOnb8J_qqEJ618pKBU0Bp-G6GbTBtRB5jcH-00YsDkEQ/exec'; 
+        let statsInterval = null;
+        let isLoggingOut = false;
 
+        // --------------------------------------------------------------
+        // 4. DOM refs
+        // --------------------------------------------------------------
+        const $ = id => document.getElementById(id);
+        const loginForm = $('loginForm');
+        const mainDash = $('mainDashboard');
+        const emailInput = $('email');
+        const passInput = $('password');
+        const errorMsg = $('errorMessage');
+
+        // Stats elements
+        const statOnlineNow = $('statOnlineNow');
+        const statTodayUnique = $('statTodayUnique');
+        const statTodayOnline = $('statTodayOnline');
+        const statTodayMax = $('statTodayMax');
+        const statTodayMin = $('statTodayMin');
+        const stat7dUnique = $('stat7dUnique');
+        const stat7dOnline = $('stat7dOnline');
+        const stat30dUnique = $('stat30dUnique');
+        const stat30dOnline = $('stat30dOnline');
+        const lastUpdateTime = $('lastUpdateTime');
+
+        const adminSection = $('adminTableSection');
+        const adminBody = $('adminTableBody');
+        const adminCount = $('adminTableCount');
+
+        // --------------------------------------------------------------
+        // 5. HELPERS
+        // --------------------------------------------------------------
+        function formatThaiDate(isoStr) {
+            if (!isoStr) return '—';
+            try {
+                const d = new Date(isoStr);
+                if (isNaN(d)) return isoStr;
+                const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+                ];
+                const day = d.getDate();
+                const month = months[d.getMonth()];
+                const yearBE = d.getFullYear() + 543;
+                const hh = String(d.getHours()).padStart(2, '0');
+                const mm = String(d.getMinutes()).padStart(2, '0');
+                return `${day} ${month} ${yearBE} ${hh}:${mm}`;
+            } catch (_) { return isoStr; }
+        }
+
+        function fmtDuration(min) {
+            if (min === undefined || min === null || isNaN(min)) return '—';
+            const m = Math.round(min);
+            if (m < 1) return '< 1';
+            return m;
+        }
+
+        function nowISO() {
+            return new Date().toISOString();
+        }
+
+        // --------------------------------------------------------------
+        // 6. AUTH
+        // --------------------------------------------------------------
         function checkLogin() {
-            const emailInput = document.getElementById("email").value.trim().toLowerCase();
-            const passwordInput = document.getElementById("password").value;
-            const errorMsg = document.getElementById("errorMessage");
-
-            if (allowedUsers[emailInput] && allowedUsers[emailInput] === passwordInput) {
-                document.getElementById("loginForm").style.display = "none";
-                document.getElementById("programList").style.display = "block";
-                document.getElementById("statsContainer").style.display = "block";
-                
-                if (emailInput === "lpee") {
-                    document.getElementById("detailsTable").style.display = "block";
-                }
-                
-                recordLogin(emailInput);
+            const email = emailInput.value.trim().toLowerCase();
+            const pass = passInput.value;
+            if (allowedUsers[email] && allowedUsers[email] === pass) {
+                errorMsg.style.display = 'none';
+                currentEmail = email;
+                doLogin(email);
             } else {
-                errorMsg.style.display = "block";
+                errorMsg.style.display = 'block';
             }
         }
 
-        document.getElementById("password").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                checkLogin();
-            }
+        // Enter key on password field
+        passInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') { e.preventDefault();
+                checkLogin(); }
         });
 
-        function recordLogin(email) {
-            currentEmail = email;
-            currentSessionId = "session_" + Date.now();
-            localStorage.setItem("userEmail", currentEmail); 
-            localStorage.setItem("mainSessionId", currentSessionId); 
-            
-            document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #64b5f6;">กำลังซิงค์ข้อมูลกับฐานข้อมูล...</td></tr>';
-            
-            // นำ mode: 'no-cors' ออกเพื่อให้ส่งข้อมูลได้สมบูรณ์ และใช้แค่ text/plain เลี่ยง preflight
-            fetch(scriptURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action: "login",
-                    sessionId: currentSessionId,
-                    email: email
-                })
-            }).then(() => {
-                startHeartbeat(); 
-            }).catch(error => {
-                console.error('Error on POST:', error);
-            }).finally(() => {
-                setTimeout(() => {
-                    loadStats(); 
-                }, 2000);
-            });
-        }
+        // --------------------------------------------------------------
+        // 7. LOGIN / LOGOUT / HEARTBEAT
+        // --------------------------------------------------------------
+        function doLogin(email) {
+            currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            localStorage.setItem('swa_email', email);
+            localStorage.setItem('swa_session', currentSessionId);
 
-        function startHeartbeat() {
+            // Show dashboard
+            loginForm.classList.add('hidden');
+            mainDash.classList.remove('hidden');
+
+            // If admin (lpee), show table section
+            if (email === 'lpee') {
+                adminSection.style.display = 'block';
+            } else {
+                adminSection.style.display = 'none';
+            }
+
+            // Send login to server
+            sendToServer({ action: 'login', sessionId: currentSessionId, email: email });
+
+            // Start heartbeat
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            
             heartbeatInterval = setInterval(() => {
-                if (currentSessionId) {
-                    fetch(scriptURL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            action: "heartbeat",
-                            sessionId: currentSessionId
-                        })
-                    }).catch(err => console.log("Heartbeat failed", err));
+                if (currentSessionId && !isLoggingOut) {
+                    sendToServer({ action: 'heartbeat', sessionId: currentSessionId });
                 }
-            }, 30000); 
+            }, 25000); // every 25s
+
+            // Start stats polling
+            if (statsInterval) clearInterval(statsInterval);
+            statsInterval = setInterval(fetchStats, 12000); // every 12s
+
+            // Fetch stats immediately
+            setTimeout(fetchStats, 800);
         }
 
         function logout() {
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
-            localStorage.removeItem("userEmail");
-            localStorage.removeItem("mainSessionId");
+            if (isLoggingOut) return;
+            isLoggingOut = true;
+
+            if (heartbeatInterval) { clearInterval(heartbeatInterval);
+                heartbeatInterval = null; }
+            if (statsInterval) { clearInterval(statsInterval);
+                statsInterval = null; }
 
             if (currentSessionId) {
-                fetch(scriptURL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: "logout",
-                        sessionId: currentSessionId
-                    })
-                });
+                sendToServer({ action: 'logout', sessionId: currentSessionId });
             }
 
-            document.getElementById("programList").style.display = "none";
-            document.getElementById("statsContainer").style.display = "none";
-            document.getElementById("detailsTable").style.display = "none";
-            document.getElementById("loginForm").style.display = "block";
-            
-            currentSessionId = null;
+            localStorage.removeItem('swa_email');
+            localStorage.removeItem('swa_session');
+
             currentEmail = null;
+            currentSessionId = null;
+
+            mainDash.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            emailInput.value = '';
+            passInput.value = '';
+            errorMsg.style.display = 'none';
+            adminSection.style.display = 'none';
+
+            isLoggingOut = false;
         }
 
-        function loadStats() {
-            if (!currentEmail) return;
-            
-            const noCacheURL = scriptURL + "?t=" + new Date().getTime();
+        // --------------------------------------------------------------
+        // 8. COMMUNICATION with Apps Script
+        // --------------------------------------------------------------
+        function sendToServer(payload) {
+            try {
+                const body = JSON.stringify(payload);
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // avoid CORS preflight
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: body
+                }).catch(() => {});
+            } catch (_) {}
+        }
 
-            fetch(noCacheURL)
-                .then(response => {
-                    if (!response.ok) throw new Error("Network issue");
-                    return response.text(); // รับค่าเป็น Text ก่อนเพื่อป้องกัน JSON แตกและระบบค้าง
+        // --------------------------------------------------------------
+        // 9. FETCH STATS
+        // --------------------------------------------------------------
+        function fetchStats() {
+            if (!currentEmail) return;
+            const url = SCRIPT_URL + '?t=' + Date.now() + '&email=' + encodeURIComponent(currentEmail);
+            fetch(url)
+                .then(r => {
+                    if (!r.ok) throw new Error('Network error');
+                    return r.text();
                 })
                 .then(text => {
                     try {
-                        const data = JSON.parse(text); // แปลง text เป็น JSON ด้วยตัวเอง
-                        document.getElementById('totalToday').innerText = data.totalToday || 0;
-                        document.getElementById('onlineToday').innerText = data.onlineToday || 0;
-                        document.getElementById('uniqueUsers').innerText = data.uniqueUsers || 0;
-                        document.getElementById('avgTime').innerText = data.avgTimeMinutes || 0;
-                        
-                        if (currentEmail === "lpee") {
-                            let tableHtml = '';
-                            if (data.rows && data.rows.length > 0) {
-                                data.rows.forEach(row => {
-                                    let rowStyle = row.isOnline ? "color: #4CAF50;" : "color: #999;";
-                                    tableHtml += `
-                                        <tr style="${rowStyle}">
-                                            <td>${row.email}</td>
-                                            <td>${row.login}</td>
-                                            <td>${row.status}</td>
-                                        </tr>
-                                    `;
-                                });
-                            } else {
-                                tableHtml = '<tr><td colspan="3" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
-                            }
-                            document.getElementById('statsTableBody').innerHTML = tableHtml;
-                        }
+                        const data = JSON.parse(text);
+                        renderStats(data);
                     } catch (e) {
-                        console.error('JSON Parse error:', e);
-                        throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON ที่ถูกต้อง");
+                        console.warn('JSON parse error:', e);
                     }
                 })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    // สำคัญมาก: หากโหลดล้มเหลว ต้องลบคำว่า "กำลังซิงค์..." ออกและแสดงข้อความแจ้งเตือนแทน
-                    if (currentEmail === "lpee") {
-                        document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="3" class="text-center" style="color: #ff5252;">เชื่อมต่อฐานข้อมูลล้มเหลว (ข้อมูลไม่พร้อมใช้งาน โปรดตรวจสอบ Apps Script)</td></tr>';
-                    }
+                .catch(err => {
+                    console.warn('Stats fetch failed:', err);
                 });
         }
 
-        setInterval(loadStats, 30000);
+        // --------------------------------------------------------------
+        // 10. RENDER STATS
+        // --------------------------------------------------------------
+        function renderStats(data) {
+            // --- Public stats (excludes lpee) ---
+            const s = data.public || {};
+            statOnlineNow.textContent = s.onlineNow ?? '—';
+            statTodayUnique.textContent = s.todayUnique ?? '—';
+            statTodayOnline.textContent = s.todayOnline ?? '—';
+            statTodayMax.textContent = s.todayMaxMin !== undefined && s.todayMaxMin !== null ?
+                fmtDuration(s.todayMaxMin) : '—';
+            statTodayMin.textContent = s.todayMinMin !== undefined && s.todayMinMin !== null ?
+                fmtDuration(s.todayMinMin) : '—';
+            stat7dUnique.textContent = s.sevenDayUnique ?? '—';
+            stat7dOnline.textContent = s.sevenDayOnline ?? '—';
+            stat30dUnique.textContent = s.thirtyDayUnique ?? '—';
+            stat30dOnline.textContent = s.thirtyDayOnline ?? '—';
 
-        window.addEventListener('beforeunload', function (e) {
-            if (currentSessionId) {
-                let blob = new Blob([JSON.stringify({
-                    action: "logout",
-                    sessionId: currentSessionId
-                })], {type : 'text/plain'});
-                navigator.sendBeacon(scriptURL, blob);
+            // Timestamp
+            if (data._fetchedAt) {
+                const d = new Date(data._fetchedAt);
+                lastUpdateTime.textContent = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit',
+                    second: '2-digit' });
+            } else {
+                lastUpdateTime.textContent = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit',
+                    second: '2-digit' });
+            }
+
+            // --- Admin table (only if user is lpee and data.adminRows exists) ---
+            if (currentEmail === 'lpee' && data.adminRows) {
+                const rows = data.adminRows;
+                adminCount.textContent = `ทั้งหมด ${rows.length} เซสชัน`;
+
+                if (rows.length === 0) {
+                    adminBody.innerHTML =
+                        `<tr><td colspan="4" class="text-muted" style="text-align:center;padding:16px;">ยังไม่มีข้อมูล</td></tr>`;
+                    return;
+                }
+
+                let html = '';
+                for (const r of rows) {
+                    const statusClass = r.status === 'online' ? 'status-online' : 'status-offline';
+                    const statusLabel = r.status === 'online' ? '🟢 ออนไลน์' : '🔴 ออฟไลน์';
+                    const dur = r.durationMinutes !== undefined && r.durationMinutes !== null ?
+                        fmtDuration(r.durationMinutes) : '—';
+                    html += `<tr>
+                        <td>${escHtml(r.email || '—')}</td>
+                        <td>${escHtml(r.loginTimeThai || '—')}</td>
+                        <td class="${statusClass}">${statusLabel}</td>
+                        <td>${dur}</td>
+                    </tr>`;
+                }
+                adminBody.innerHTML = html;
+            } else if (currentEmail === 'lpee') {
+                // No adminRows yet — show loading
+                adminBody.innerHTML =
+                    `<tr><td colspan="4" class="text-muted" style="text-align:center;padding:16px;">กำลังโหลด...</td></tr>`;
+            }
+        }
+
+        // simple escape
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                return m;
+            });
+        }
+
+        // --------------------------------------------------------------
+        // 11. PAGE UNLOAD (sendBeacon)
+        // --------------------------------------------------------------
+        window.addEventListener('beforeunload', function() {
+            if (currentSessionId && !isLoggingOut) {
+                const blob = new Blob([JSON.stringify({ action: 'logout', sessionId: currentSessionId })], { type: 'text/plain' });
+                navigator.sendBeacon(SCRIPT_URL, blob);
             }
         });
+
+        // --------------------------------------------------------------
+        // 12. RESTORE SESSION on page load
+        // --------------------------------------------------------------
+        (function restoreSession() {
+            const savedEmail = localStorage.getItem('swa_email');
+            const savedSess = localStorage.getItem('swa_session');
+            if (savedEmail && savedSess && allowedUsers[savedEmail]) {
+                currentEmail = savedEmail;
+                currentSessionId = savedSess;
+                // Tell server we're still here (re-login with existing session)
+                sendToServer({ action: 'login', sessionId: currentSessionId, email: currentEmail, restore: true });
+                doLogin(currentEmail);
+            }
+        })();
+
+        // --------------------------------------------------------------
+        // 13. RECOMMENDATIONS (displayed in console, but also shown)
+        //     The user asked: "และให้คุณแนะนำว่ามีอะไรที่ดีอยากให้โปรแกรมนี้ดีที่สุด"
+        // --------------------------------------------------------------
+        console.log('%c✨ Solar Web Apps — Recommendations', 'font-size:18px; font-weight:bold; color:#4CAF50;');
+        console.log('1. ใช้ Google Sheets เป็นฐานข้อมูลกลาง — ทีมงานดูสถิติได้แบบเรียลไทม์');
+        console.log('2. ปรับปรุง UI/UX ให้ responsive และมืดสวยงาม (Dark Mode)');
+        console.log('3. เพิ่มระบบแจ้งเตือนเมื่อมีผู้ใช้ login/offline แบบ real-time (WebSocket หรือ SSE)');
+        console.log('4. ใช้ session storage ร่วมกับ JWT เพื่อความปลอดภัยมากขึ้น');
+        console.log('5. เพิ่มกราฟแสดงแนวโน้มการเข้าใช้รายวัน/รายสัปดาห์ (Chart.js)');
+        console.log('6. ระบบ export ข้อมูลสถิติเป็น CSV/PDF สำหรับผู้ดูแล');
+        console.log('7. ตั้งค่า auto-logout เมื่อไม่มีการใช้งาน (inactivity timeout)');
+        console.log('8. เก็บประวัติการเข้าใช้แบบย้อนหลัง 30 วัน แล้ว auto-archive');
+        console.log('9. ใช้ service worker เพื่อให้ทำงานแบบ offline และ push notification');
+        console.log('10. ปรับปรุงความเร็วด้วยการ cache สถิติฝั่ง client และ batch update');
+
+        // Show a small toast/note in the UI as well
+        const note = document.createElement('div');
+        note.style.cssText =
+            'margin-top:18px; padding:14px 18px; background:#1a2a1a; border-left:4px solid #4CAF50; border-radius:4px; font-size:13px; color:#aaa;';
+        note.innerHTML =
+            `<strong style="color:#4CAF50;">💡 ขอบคุณทุกคำแนะนำ</strong> ระบบนี้ใช้ ai ในการพัฒนา ร่วมกับ GIS base `;
+        const statsArea = document.getElementById('statsArea');
+        if (statsArea) statsArea.appendChild(note);
+
+        console.log('✅ Solar Web Apps Dashboard พร้อมใช้งานแล้ว!');
     </script>
+
 </body>
 </html>
