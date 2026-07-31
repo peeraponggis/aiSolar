@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>aiSolar Technology Insights</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --accent: #38bdf8;
+            --text-main: #334155;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Prompt, Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            background-color: var(--bg-dark);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .menu-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        .menu-item {
+            padding: 16px 24px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            font-size: 1.05rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-item::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background-color: var(--sidebar-hover);
+            padding-left: 30px;
+        }
+
+        .menu-item.active {
+            background-color: var(--sidebar-hover);
+            border-left: 4px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .menu-item.active::before {
+            background-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Content Area Styling */
+        .content-area {
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .image-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 35px;
+            background-color: #f8fafc;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.5s ease;
+        }
+        
+        .image-container img:hover {
+            transform: scale(1.02);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--bg-dark);
+            margin-bottom: 20px;
+            border-left: 6px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .description {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: #475569;
+            text-align: justify;
+            margin-bottom: 30px;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tag {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .detail-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            border-top: 4px solid var(--sidebar-bg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .detail-card h3 {
+            font-size: 1.2rem;
+            color: var(--bg-dark);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-card h3::before {
+            content: '⯈';
+            color: var(--accent);
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        .detail-card p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #64748b;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Tech Insights</h2>
+            <p>AI & Solar Energy Architecture</p>
+        </div>
+        <div class="menu-container">
+            <div class="menu-item active" onclick="showSection('sec1', this)">1. ธุรกิจโซลาร์เซลล์เชิงลึก 5 มิติ</div>
+            <div class="menu-item" onclick="showSection('sec2', this)">2. การติดตั้งระบบ</div>
+            <div class="menu-item" onclick="showSection('sec3', this)">3. วิศวกรรมการออกแบบ</div>
+            <div class="menu-item" onclick="showSection('sec4', this)">4. พารามิเตอร์และการประมวลผล</div>
+            <div class="menu-item" onclick="showSection('sec5', this)">5. สถาปัตยกรรม AI และ Web App</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+
+        <!-- Section 1 -->
+        <div id="sec1" class="content-section active">
+            <h1>5 มิติแห่งธุรกิจโซลาร์เซลล์ (Solar Business 5 Dimensions)</h1>
+            <div class="tech-tags">
+                <span class="tag">Macro-Environmental Mapping</span>
+                <span class="tag">Techno-Economic</span>
+                <span class="tag">Grid Parity</span>
+            </div>
+            <div class="image-container">
+                <img src="img/365768.jpg" alt="5 ปัจจัยเชิงลึกธุรกิจโซลาร์เซลล์">
+            </div>
+            <div class="description">
+                ภาพแผนผังนี้แสดงถึง <strong>Macro-architecture (สถาปัตยกรรมระดับมหภาค)</strong> ของระบบนิเวศธุรกิจโซลาร์เซลล์ ซึ่งถูกจำแนกออกเป็น 5 มิติสำคัญ (Deep Dive) ที่มีความซับซ้อนและเกี่ยวโยงกันอย่างมีนัยสำคัญต่อความอยู่รอดและการขยายตัว (Scalability) ขององค์กรในยุค Energy Transition การบูรณาการโครงสร้างเหล่านี้เปรียบเสมือนการเทรนโมเดล AI ที่ต้องอาศัยชุดข้อมูล (Dataset) จากหลายมิติเพื่อหาค่า Optimal point
+            </div>
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h3>Policy & Legal Framework (นโยบายและกฎหมาย)</h3>
+                    <p>กำหนดเงื่อนไขขอบเขตการทำงาน (Boundary Conditions) ตั้งแต่เรื่อง Net Metering vs Net Billing, การขออนุญาต Zoning, ไปจนถึงแรงจูงใจทางภาษี (BOI) และความตกลงปารีส (Paris Agreement) ซึ่งทำหน้าที่เป็น Regulatory Algorithm ควบคุมทิศทางตลาด</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Technological & Economic (เทคโนโลยีและต้นทุน)</h3>
+                    <p>ขับเคลื่อนด้วยนวัตกรรมฮาร์ดแวร์ระดับไมโคร เช่น โครงสร้างเซลล์ N-Type, TOPCon ที่เพิ่ม Quantum Efficiency สูงสุด รวมถึงระบบกักเก็บพลังงานอัจฉริยะ (Smart Battery ESS) โดยแปรผันตรงกับสมการ Capital Expenditure (CapEx) เพื่อคำนวณต้นทุนต่อวัตต์ (Cost per Watt)</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Market, Social & Environmental (ตลาดและโครงสร้างพื้นฐาน)</h3>
+                    <p>ครอบคลุมตั้งแต่จุดคุ้มทุน (Grid Parity), กลไกราคาคาร์บอนข้ามพรมแดน (CBAM), ความปลอดภัย (Rapid Shutdown) ไปจนถึงโครงสร้าง Smart Grid ที่ใช้เซ็นเซอร์ IoT ตรวจวัดฝุ่นและลมแบบ Real-time ผสานระบบ Floating Solar และมาตรการรีไซเคิลใน Supply Chain อย่างครบวงจร</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div id="sec2" class="content-section">
+            <h1>การติดตั้งระบบ (Installation Operational Workflow)</h1>
+            <div class="tech-tags">
+                <span class="tag">Deployment Pipeline</span>
+                <span class="tag">Site Telemetry</span>
+                <span class="tag">QA / O&M</span>
+            </div>
+            <div class="image-container">
+                <img src="img/1.jpg" alt="งานติดตั้งระบบโซลาร์เซลล์">
+            </div>
+            <div class="description">
+                สถาปัตยกรรมขั้นตอนการทำงาน (Workflow Architecture) ในการ Deploy ระบบโซลาร์เซลล์สู่ภาคสนาม (Production Environment) ประกอบด้วย 5 โมดูลหลักที่ทำงานสอดประสานกันแบบ Pipeline ตั้งแต่การเก็บข้อมูลดิบ ไปจนถึงการบำรุงรักษาระยะยาว ซึ่งกระบวนการนี้ต้องการความแม่นยำทางวิศวกรรมระดับสูง คล้ายคลึงกับกระบวนการ CI/CD (Continuous Integration / Continuous Deployment) ในงานพัฒนาซอฟต์แวร์
+            </div>
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h3>01 สำรวจหน้างาน (Site Telemetry Acquisition)</h3>
+                    <p>การลงพื้นที่เพื่อดึงข้อมูลเชิงพื้นที่ (Spatial Data) และปัจจัยทางกายภาพต่างๆ เข้าสู่ระบบ เป็นเสมือนการ Data Collection เฟสแรก เพื่อใช้เป็น Input ในการสร้างแบบจำลอง</p>
+                </div>
+                <div class="detail-card">
+                    <h3>02 งานออกแบบระบบ (Topological System Design)</h3>
+                    <p>นำ Data ที่ได้มาผ่านกระบวนการจำลองผล ประเมินพารามิเตอร์ด้านวิศวกรรมเพื่อหา Configuration ที่ให้ประสิทธิภาพการผลิตไฟฟ้าสูงสุด (Optimization) ภายใต้ข้อจำกัดทางกายภาพ</p>
+                </div>
+                <div class="detail-card">
+                    <h3>03-05 ติดตั้ง, ตรวจวัด, และบริการ (Deployment & Post-Deployment)</h3>
+                    <p>คือกระบวนการ Execute นำระบบขึ้นสู่สถานะใช้งานจริง (Go-Live) ตามด้วยการรันโปรโตคอลตรวจสอบคุณภาพ (Quality Assurance) ขั้นสุดท้าย และเข้าสู่เฟส O&M (Operations & Maintenance) เพื่อเฝ้าระวังและแก้ไขบั๊กของระบบ (System Degradation) ในระยะยาว</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div id="sec3" class="content-section">
+            <h1>วิศวกรรมการออกแบบ(Digital Twin & Engineering Simulation)</h1>
+            <div class="tech-tags">
+                <span class="tag">Digital Twin</span>
+                <span class="tag">Predictive Analytics</span>
+                <span class="tag">Techno-Economic Modeling</span>
+            </div>
+            <div class="image-container">
+                <img src="img/2.jpg" alt="งานออกแบบระบบ">
+            </div>
+            <div class="description">
+                นี่คือกระบวนการสร้าง <strong>Digital Twin (ฝาแฝดดิจิทัล)</strong> เพื่อจำลองสถานการณ์ทางวิศวกรรมและการเงินก่อนการลงมือสร้างจริง เป็นเฟสของการรันอัลกอริทึมที่ซับซ้อนเพื่อประเมิน Feasibility (ความเป็นไปได้) อย่างรอบด้าน ลดความเสี่ยงในการดำเนินโครงการให้เหลือศูนย์ (Zero-Risk Tolerance) ผ่าน 5 Node การประมวลผลหลัก
+            </div>
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h3>01 & 02 Engineering & Economic Simulation</h3>
+                    <p>การรันโมเดลประเมินประสิทธิภาพฮาร์ดแวร์ อ้างอิงตามมาตรฐานสภาวิศวกร (วสท.) พร้อมกับการจำลองผลตอบแทนทางเศรษฐศาสตร์ (ROI, LCOE) เพื่อหาความคุ้มค่าระดับทศนิยม</p>
+                </div>
+                <div class="detail-card">
+                    <h3>03 วิเคราะห์ค่าไฟฟ้า (Load Profile Analytics)</h3>
+                    <p>ใช้เทคนิค Data Analytics ในการวิเคราะห์พฤติกรรมการใช้ไฟฟ้า (Load Profile) เชิงลึก เพื่อทำ Predictive Modeling คาดการณ์ความต้องการพลังงาน (Energy Demand Forecasting)</p>
+                </div>
+                <div class="detail-card">
+                    <h3>04 & 05 System Modeling & Reporting</h3>
+                    <p>สร้างแบบจำลองโครงข่ายความปลอดภัยของอุปกรณ์ทั้งหมด และแปลงผลลัพธ์ (Output) จากแบบจำลองทั้งหมดออกมาเป็นรายงานวิศวกรรมทางการ (Engineering Reports) ทั้งด้านเทคนิคและประเมินการลงทุน</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div id="sec4" class="content-section">
+            <h1>พารามิเตอร์และการประมวลผลระบบ (PV System Parameters & Economic Matrix)</h1>
+            <div class="tech-tags">
+                <span class="tag">Irradiance Modeling</span>
+                <span class="tag">Degradation Matrix</span>
+                <span class="tag">Stochastic Profiling</span>
+            </div>
+            <div class="image-container">
+                <img src="img/3.jpg" alt="Workflow Process Solar System">
+            </div>
+            <div class="description">
+                แสดงสถาปัตยกรรมข้อมูลเบื้องหลังการออกแบบ Solar PV System ซึ่งขับเคลื่อนด้วย Dataset เชิงลึกและสูตรคำนวณทางฟิสิกส์-คณิตศาสตร์ที่ซับซ้อน (Complex Computational Matrix) แผนภาพนี้คือแกนกลางของสมองกลในการคำนวณประสิทธิภาพ (Yield) ตั้งแต่ค่าความเข้มแสงอาทิตย์ไปจนถึงค่าเสื่อมสภาพของเซลล์
+            </div>
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h3>Environmental Inputs (ตัวแปรด้านสภาพแวดล้อม)</h3>
+                    <p>ต้องประมวลผลพารามิเตอร์เชิงพื้นที่ เช่น พิกัดทางภูมิศาสตร์, ค่ารังสีรวมแนวราบ (GHI), รังสีสะท้อนชนิดกระจาย (Diffuse Radiation), และอุณหภูมิแผงขณะใช้งานจริง ซึ่งล้วนเป็น Dynamic Variables ที่ส่งผลต่ออัตราการผลิตพลังงานแบบ Real-time รวมถึงการวิเคราะห์ Sun Path และค่าสูญเสียจากการบังแสง (Shading Loss)</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Data Specs & Standards (พารามิเตอร์ฮาร์ดแวร์)</h3>
+                    <p>ดึงชุดข้อมูลจาก Data sheet (I-V Curve, Voltage Matrix) มาทำการแมปกับ Load Profiles ถึง 8 ประเภท (รวมถึง TOU/TOD และข้อมูลจาก Smart Meter AMR/AMI) โดยมีอัลกอริทึมตรวจสอบความสอดคล้องกับมาตรฐาน วสท. ไฟฟ้าและโซลาร์เซลล์อย่างเคร่งครัด</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Financial Engineering Matrix (โมเดลการเงิน)</h3>
+                    <p>จำลองกระแสเงินสดเชิงลึกผ่านตัวแปร Economic: CapEx, O&M, อัตราเงินเฟ้อ, ค่า WACC (Weighting Average Cost of Capital) พร้อมบวกปัจจัยการเสื่อมสภาพ (Degradation) รายปี (ปีที่ 1 ถึง 30) และรอบการเปลี่ยน Inverter เพื่อหาระยะเวลาคืนทุนที่แท้จริง</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div id="sec5" class="content-section">
+            <h1>สถาปัตยกรรม AI และการสร้าง Web App อัตโนมัติ (Generative AI & Web Dev Automation)</h1>
+            <div class="tech-tags">
+                <span class="tag">LLM Architecture</span>
+                <span class="tag">AI Code Generation</span>
+                <span class="tag">RAG Framework</span>
+            </div>
+            <div class="image-container">
+                <img src="img/4.jpg" alt="การทำงานของ AI และระบบเว็บไซต์">
+            </div>
+            <div class="description">
+                แสดงการเปลี่ยนผ่าน (Paradigm Shift) จากสถาปัตยกรรมการพัฒนาซอฟต์แวร์แบบดั้งเดิม (Traditional Client-Server Architecture) ไปสู่ยุค <strong>Generative AI Driven Architecture</strong> ที่โมเดลปัญญาประดิษฐ์ (Large Language Models - LLMs) เข้ามาทำหน้าที่เป็นผู้ประมวลผลและสร้างสรรค์โค้ด (Code Synthesis) แบบ End-to-End
+            </div>
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h3>AI Core Technologies</h3>
+                    <p>ระบบขับเคลื่อนด้วยเทคโนโลยีแกนกลางอันทรงพลัง ได้แก่ Machine Learning (ML), Deep Learning, Generative AI และ LLM ซึ่งรับ Input ผ่านทาง Prompts และใช้เทคนิค AI-RAG (Retrieval-Augmented Generation) ในการประมวลผลอัลกอริทึมเพื่อตอบสนองต่อคำสั่ง</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Traditional vs AI-Driven Workflow</h3>
+                    <p>ภาพบนแสดง Flow เดิมที่มนุษย์ต้องเขียนโค้ด (HTML/Java/PHP/Python) ส่งไปยัง Server (Database, CSS, JS) เพื่อเรนเดอร์ลง Browser แต่ภาพล่างแสดงการก้าวกระโดดโดยใช้ AI อัจฉริยะประมวลผลและ Gen สร้าง <code>Single page HTML (HTML+CSS+JavaScript)</code> ออกมาสำเร็จรูป ส่งตรงสู่ Browser ได้ทันที เป็นการทำ Automation ข้ามขั้นตอน Server-side rendering แบบเดิม ลดระยะเวลา Development Cycle ลงอย่างมหาศาล</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showSection(sectionId, element) {
+            // ซ่อน section ทั้งหมด
+            document.querySelectorAll('.content-section').forEach(function(section) {
+                section.classList.remove('active');
+            });
+            // แสดง section ที่เลือก
+            document.getElementById(sectionId).classList.add('active');
+
+            // เอา active class ออกจากเมนูทั้งหมด
+            document.querySelectorAll('.menu-item').forEach(function(item) {
+                item.classList.remove('active');
+            });
+            // ใส่ active class ให้เมนูที่คลิก
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>
