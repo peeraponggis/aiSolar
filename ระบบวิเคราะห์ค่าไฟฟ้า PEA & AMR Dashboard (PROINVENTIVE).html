@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบวิเคราะห์ค่าไฟฟ้า PEA & AMR Dashboard</title>
+    
+    <!-- Tailwind CSS (สำหรับ Tab 9 AMR) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- External Libs สำหรับ AMR -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- External Libs สำหรับ Export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+		/* กราฟและ AI Analysis */
+.pv-chart-container { position: relative; height: 300px; width: 100%; margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+.ai-analysis-box { margin-top: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px; font-size: 14px; line-height: 1.6; color: #166534; display: flex; gap: 15px; }
+.ai-icon { font-size: 24px; color: #10b981; }
+.pv-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+.pv-card { padding: 15px; border-radius: 8px; text-align: center; border: 1px solid; }
+.card-ongrid { background: #e0f2fe; border-color: #bae6fd; }
+.card-hybrid { background: #fef3c7; border-color: #fde68a; }
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        
+        /* Base styles สำหรับเมนู 1-8 ป้องกัน Tailwind Override */
+        body { font-family: 'Sarabun', Tahoma, Geneva, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; line-height: 1.6; }
+        .calc-container { max-width: 1250px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .pea-title { color: #1565c0; text-align: center; margin-bottom: 20px; font-size: 24px; font-weight: bold; }
+        .pea-subtitle { color: #1565c0; font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid #e3f2fd; padding-bottom: 5px; }
+        
+        .global-settings { background: #e3f2fd; padding: 15px 20px; border-radius: 8px; display: flex; gap: 20px; align-items: center; margin-bottom: 20px; border: 1px solid #bbdefb; flex-wrap: wrap; font-size: 15px; }
+        .global-settings label { font-weight: bold; color: #0d47a1; }
+        .global-settings input { padding: 8px; border: 1px solid #90caf9; border-radius: 4px; width: 140px; font-size: 15px; font-family: inherit; }
+
+        .tabs-header { display: flex; flex-wrap: wrap; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px; background: #fff; position: sticky; top: 0; z-index: 10; }
+        .tab-btn { background: none; border: none; padding: 12px 15px; cursor: pointer; font-size: 15px; border-bottom: 3px solid transparent; transition: 0.3s; margin-bottom: -2px; font-family: inherit; font-weight: 500;}
+        .tab-btn:hover { color: #1976d2; background-color: #f8f9fa; }
+        .tab-btn.active { color: #1976d2; border-bottom: 3px solid #1976d2; font-weight: bold; }
+        .tab-btn.amr-tab { color: #059669; }
+        .tab-btn.amr-tab.active { border-bottom: 3px solid #059669; }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .mode-selector { margin-bottom: 15px; padding: 10px; background: #fff3e0; border-radius: 5px; border: 1px solid #ffe0b2; font-size: 15px;}
+        .mode-selector label { margin-right: 20px; font-weight: bold; cursor: pointer; color: #e65100; }
+        
+        .calculator { background: #fafafa; padding: 20px; border-radius: 8px; border: 1px solid #eeeeee; }
+        .calc-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        .calc-row label { width: 250px; font-weight: 500; font-size: 15px;}
+        .calc-row input, .calc-row select { padding: 8px; width: 160px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-family: inherit;}
+        
+        button.calc-btn { padding: 10px 20px; background: #1565c0; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; width: 100%; max-width: 250px; }
+        button.calc-btn:hover { background: #0d47a1; }
+        
+        .result-box { margin-top: 20px; background: #e8f5e9; padding: 15px; border-left: 5px solid #2e7d32; border-radius: 4px; font-size: 15px;}
+        .result-box p { margin: 5px 0; }
+        .total-price { font-size: 1.3em; font-weight: bold; color: #c62828; margin-top: 10px !important; border-top: 1px dashed #a5d6a7; padding-top: 10px; }
+        .note { font-size: 0.85em; color: #666; margin-top: 10px; }
+        
+        .tou-inputs { display: none; }
+        .custom-rate-input { width: 120px !important; background: #fff8e1; }
+
+        /* PV & Load Profile Section */
+        .pv-section { margin-top: 25px; background: #f8fafc; padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; display: none; }
+        .pv-section h3 { color: #0369a1; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .pv-flex { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .pv-result { font-weight: bold; color: #16a34a; font-size: 18px; padding: 10px; background: #dcfce7; border-radius: 5px; }
+        
+        .lp-container { margin-top: 20px; }
+        .lp-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; margin-top: 10px; }
+        @media (max-width: 768px) { .lp-grid { grid-template-columns: repeat(6, 1fr); } }
+        .lp-item { text-align: center; background: #fff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 4px; }
+        .lp-item label { display: block; font-size: 12px; margin-bottom: 3px; color: #475569; font-weight: bold; }
+        .lp-item input { width: 100%; padding: 4px; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 13px; font-family: inherit;}
+        
+        .export-btn { background: #ea580c; color: white; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 15px; transition: 0.2s; margin-top: 15px; }
+        .export-btn:hover { background: #c2410c; }
+        .pdf-btn { background: #b91c1c; color: white; font-weight: bold; padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 15px; transition: 0.2s; margin-top: 15px; }
+        .pdf-btn:hover { background: #7f1d1d; }
+        .print-btn { background: #475569; color: white; font-weight: bold; padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 15px; transition: 0.2s; margin-top: 15px; }
+        .print-btn:hover { background: #1e293b; }
+
+        /* === แผงแสดง/แก้ไขตัวคูณอัตราค่าไฟ (Rate Editor) === */
+        .rate-panel { margin: 15px 0; border: 1px solid #fcd34d; border-radius: 8px; background: #fffbeb; }
+        .rate-panel > summary { cursor: pointer; padding: 10px 15px; font-weight: bold; color: #92400e; font-size: 15px; list-style: none; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .rate-panel > summary::-webkit-details-marker { display: none; }
+        .rate-panel > summary::before { content: '▶'; font-size: 11px; transition: 0.2s; }
+        .rate-panel[open] > summary::before { transform: rotate(90deg); }
+        .rate-panel-body { padding: 5px 15px 15px 15px; border-top: 1px dashed #fcd34d; }
+        .rate-badge { background: #dc2626; color: #fff; border-radius: 10px; padding: 1px 9px; font-size: 12px; font-weight: bold; }
+        .rate-badge.clean { background: #16a34a; }
+        .rate-group-title { font-size: 14px; font-weight: bold; color: #78350f; margin: 12px 0 6px 0; border-bottom: 1px solid #fde68a; padding-bottom: 3px; }
+        .rate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+        .rate-item { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #fde68a; border-radius: 5px; padding: 6px 9px; font-size: 13px; }
+        .rate-item .rate-label { flex: 1; color: #334155; }
+        .rate-item input { width: 95px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: right; font-family: inherit; font-size: 13px; }
+        .rate-item input.rate-modified { background: #fef08a; border-color: #ca8a04; font-weight: bold; }
+        .rate-item .rate-unit { width: 78px; color: #64748b; font-size: 11px; }
+        .rate-item .rate-default { width: 92px; color: #94a3b8; font-size: 11px; text-align: right; }
+        .rate-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .rate-actions button { padding: 6px 13px; border: 1px solid #d97706; background: #fff; color: #b45309; border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold; }
+        .rate-actions button:hover { background: #fef3c7; }
+        .rate-actions a { font-size: 12px; color: #1d4ed8; }
+        .rate-note { font-size: 12px; color: #92400e; margin: 8px 0 0 0; }
+        .rate-toggle-all { font-size: 13px; font-weight: normal; color: #78350f; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+        .warn-box { background: #fef2f2; border-left: 4px solid #dc2626; color: #991b1b; padding: 8px 12px; border-radius: 4px; font-size: 14px; margin-top: 10px; }
+
+        /* Overlay ระหว่างสร้าง PDF */
+        #pdfOverlay { position: fixed; inset: 0; background: rgba(15,23,42,0.72); color: #fff; z-index: 9999; display: none; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; font-family: 'Sarabun', sans-serif; }
+        /* ที่พักสำหรับ render รายงานก่อนแปลงเป็นภาพ */
+        #pdfStage { position: fixed; left: -12000px; top: 0; width: 794px; background: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="calc-container">
+    <div class="pea-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>วิเคราะห์ค่าไฟฟ้าเพื่อการประเมินกำลังการผลิตสูงสุด PV-kWp สำหรับ ส่ง DB0 ไปนำเข้า ASC Design</span>
+        <button id="btnExitSystem" onclick="if(confirm('คุณต้องการออกจากระบบ ใช่หรือไม่?')) window.close();" style="background-color: #ef4444; color: white; border: none; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: flex; align-items: center; gap: 5px;">
+            🚪 ออกจากระบบ (Exit)
+        </button>
+    </div>
+    <div class="global-settings">
+        <div>
+            <label>ชื่อผู้ใช้ไฟฟ้า / โครงการ:</label>
+            <input type="text" id="global_name" value="ลุงพี" placeholder="ระบุชื่อ..." style="width: 250px;">
+        </div>
+        <div>
+            <label>ค่า Ft (บาท/หน่วย):</label>
+            <input type="number" id="global_ft" value="0.1623" step="0.0001">
+        </div>
+        <div>
+            <label>VAT (%):</label>
+            <input type="number" id="global_vat" value="7" step="1" style="width: 80px;">
+        </div>
+    </div>
+
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="openTab(event, 't1')">1. บ้าน</button>
+        <button class="tab-btn" onclick="openTab(event, 't2')">2. กิจการเล็ก</button>
+        <button class="tab-btn" onclick="openTab(event, 't3')">3. กิจการกลาง</button>
+        <button class="tab-btn" onclick="openTab(event, 't4')">4. กิจการใหญ่</button>
+        <button class="tab-btn" onclick="openTab(event, 't5')">5. เฉพาะอย่าง</button>
+        <button class="tab-btn" onclick="openTab(event, 't6')">6. ไม่แสวงหากำไร</button>
+        <button class="tab-btn" onclick="openTab(event, 't7')">7. เกษตร</button>
+        <button class="tab-btn" onclick="openTab(event, 't8')">8. ชั่วคราว</button>
+        <button class="tab-btn amr-tab" onclick="openTab(event, 't9')">9. Meter AMR / AMI</button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- แท็บ 1-8: PEA Calculator (เพิ่มระบบประเมิน PV) -->
+    <!-- ============================================== -->
+    <div id="t1" class="tab-content active">
+        <div class="pea-subtitle">1. บ้านอยู่อาศัย</div>
+        <div class="mode-selector">
+            <label><input type="radio" name="m1" value="normal" checked onchange="toggleMode(1)"> 1.1 อัตราปกติ</label>
+            <label><input type="radio" name="m1" value="tou" onchange="toggleMode(1)"> 1.2 อัตรา TOU</label>
+        </div>
+        <div class="calculator">
+            <div id="n1" class="normal-inputs">
+                <div class="calc-row"><label>ปริมาณการใช้ไฟฟ้า (หน่วย):</label><input type="number" id="u1" min="0"></div>
+            </div>
+            <div id="tou1" class="tou-inputs">
+                <div class="calc-row">
+                    <label>ระดับแรงดัน:</label>
+                    <select id="v1" onchange="renderRatePanel(1)">
+                        <option value="low">ต่ำกว่า 22 kV</option>
+                        <option value="med">22 - 33 kV</option>
+                    </select>
+                </div>
+                <div class="calc-row"><label>หน่วยช่วง Peak (09:00-22:00):</label><input type="number" id="p1" min="0"></div>
+                <div class="calc-row"><label>หน่วยช่วง Off-Peak:</label><input type="number" id="op1" min="0"></div>
+            </div>
+            <div id="rate_panel_1"></div>
+            <button class="calc-btn" onclick="calcPEA(1)">คำนวณค่าไฟฟ้า</button>
+            <div id="res1"></div>
+            <div id="pv_section_1" class="pv-section"></div>
+        </div>
+    </div>
+
+    <div id="t2" class="tab-content">
+        <div class="pea-subtitle">2. กิจการขนาดเล็ก (ไม่ถึง 30 kW)</div>
+        <div class="mode-selector">
+            <label><input type="radio" name="m2" value="normal" checked onchange="toggleMode(2)"> 2.1 อัตราปกติ</label>
+            <label><input type="radio" name="m2" value="tou" onchange="toggleMode(2)"> 2.2 อัตรา TOU</label>
+        </div>
+        <div class="calculator">
+            <div id="n2" class="normal-inputs">
+                <div class="calc-row">
+                    <label>ระดับแรงดัน:</label>
+                    <select id="v2n" onchange="renderRatePanel(2)">
+                        <option value="low">ต่ำกว่า 22 kV (อัตราขั้นบันได)</option>
+                        <option value="med">22 - 33 kV (อัตราเดียว)</option>
+                    </select>
+                </div>
+                <div class="calc-row"><label>ปริมาณการใช้ไฟฟ้า (หน่วย):</label><input type="number" id="u2" min="0"></div>
+            </div>
+            <div id="tou2" class="tou-inputs">
+                <div class="calc-row">
+                    <label>ระดับแรงดัน:</label>
+                    <select id="v2" onchange="renderRatePanel(2)">
+                        <option value="low">ต่ำกว่า 22 kV</option>
+                        <option value="med">22 - 33 kV</option>
+                    </select>
+                </div>
+                <div class="calc-row"><label>หน่วยช่วง Peak:</label><input type="number" id="p2" min="0"></div>
+                <div class="calc-row"><label>หน่วยช่วง Off-Peak:</label><input type="number" id="op2" min="0"></div>
+            </div>
+            <div id="rate_panel_2"></div>
+            <button class="calc-btn" onclick="calcPEA(2)">คำนวณค่าไฟฟ้า</button>
+            <div id="res2"></div>
+            <div id="pv_section_2" class="pv-section"></div>
+        </div>
+    </div>
+
+    <div id="t3" class="tab-content">
+        <div class="pea-subtitle">3. กิจการขนาดกลาง (30 - 999 kW)</div>
+        <div class="mode-selector">
+            <label><input type="radio" name="m3" value="normal" checked onchange="toggleMode(3)"> 3.1 อัตราปกติ</label>
+            <label><input type="radio" name="m3" value="tou" onchange="toggleMode(3)"> 3.2 อัตรา TOU</label>
+        </div>
+        <div class="calculator">
+            <div class="calc-row">
+                <label>ระดับแรงดัน:</label>
+                <select id="v3" onchange="renderRatePanel(3)">
+                    <option value="low">ต่ำกว่า 22 kV</option>
+                    <option value="med">22 - 33 kV</option>
+                    <option value="high">ตั้งแต่ 69 kV ขึ้นไป</option>
+                </select>
+            </div>
+            <div id="n3" class="normal-inputs">
+                <div class="calc-row"><label>ความต้องการพลังไฟฟ้า (kW):</label><input type="number" id="kw3" min="0"></div>
+                <div class="calc-row"><label>ปริมาณการใช้ไฟฟ้า (หน่วย):</label><input type="number" id="u3" min="0"></div>
+            </div>
+            <div id="tou3" class="tou-inputs">
+                <div class="calc-row"><label>ความต้องการพลังไฟฟ้า Peak (kW):</label><input type="number" id="kw3_tou" min="0"></div>
+                <div class="calc-row"><label>หน่วยช่วง Peak:</label><input type="number" id="p3" min="0"></div>
+                <div class="calc-row"><label>หน่วยช่วง Off-Peak:</label><input type="number" id="op3" min="0"></div>
+            </div>
+            <div id="rate_panel_3"></div>
+            <button class="calc-btn" onclick="calcPEA(3)">คำนวณค่าไฟฟ้า</button>
+            <div id="res3"></div>
+            <div id="pv_section_3" class="pv-section"></div>
+        </div>
+    </div>
+
+    <div id="t4" class="tab-content">
+        <div class="pea-subtitle">4. กิจการขนาดใหญ่ (> 1000 kW)</div>
+        <div class="mode-selector">
+            <label><input type="radio" name="m4" value="tod" checked onchange="toggleMode(4)"> 4.1 อัตรา TOD</label>
+            <label><input type="radio" name="m4" value="tou" onchange="toggleMode(4)"> 4.2 อัตรา TOU</label>
+        </div>
+        <div class="calculator">
+            <div class="calc-row">
+                <label>ระดับแรงดัน:</label>
+                <select id="v4" onchange="updateType4Rates()">
+                    <option value="low">ต่ำกว่า 22 kV</option>
+                    <option value="med">22 - 33 kV</option>
+                    <option value="high">ตั้งแต่ 69 kV ขึ้นไป</option>
+                </select>
+            </div>
+            <p class="note" style="color:#d84315;">* อัตราค่าบริการและหน่วย จะถูกปรับตามระดับแรงดันอัตโนมัติ (แก้ไขด้วยตนเองได้ในช่องสีเหลือง)</p>
+            
+            <div id="n4" class="normal-inputs">
+                <div class="calc-row">
+                    <label>Demand Peak 18:30-21:30 (kW):</label>
+                    <input type="number" id="kw4_peak" placeholder="กิโลวัตต์">
+                    <input type="number" id="r4_dp" class="custom-rate-input" value="332.71" oninput="syncType4RateToConfig()">
+                </div>
+                <div class="calc-row">
+                    <label>Demand Partial 08:00-18:30 (kW):</label>
+                    <input type="number" id="kw4_partial" placeholder="กิโลวัตต์">
+                    <input type="number" id="r4_dpart" class="custom-rate-input" value="68.22" oninput="syncType4RateToConfig()">
+                </div>
+                <p class="note" style="color:#b91c1c; margin-top:-8px;">* ตามหลักเกณฑ์ กฟภ. ค่าความต้องการพลังไฟฟ้าช่วง Partial คิดเฉพาะ<b>ส่วนที่เกินช่วง Peak</b> — ระบบจะคิด max(0, Partial − Peak) ให้อัตโนมัติ</p>
+                <div class="calc-row">
+                    <label>ปริมาณพลังงานทั้งหมด (หน่วย):</label>
+                    <input type="number" id="u4" placeholder="หน่วย">
+                    <input type="number" id="r4_en" class="custom-rate-input" value="3.1751" oninput="syncType4RateToConfig()">
+                </div>
+            </div>
+
+            <div id="tou4" class="tou-inputs">
+                <div class="calc-row">
+                    <label>Demand Peak (kW):</label>
+                    <input type="number" id="kw4_tou" placeholder="กิโลวัตต์">
+                    <input type="number" id="r4_dtou" class="custom-rate-input" value="210.00" oninput="syncType4RateToConfig()">
+                </div>
+                <div class="calc-row">
+                    <label>หน่วยช่วง Peak:</label>
+                    <input type="number" id="p4" placeholder="หน่วย">
+                    <input type="number" id="r4_ep" class="custom-rate-input" value="4.3297" oninput="syncType4RateToConfig()">
+                </div>
+                <div class="calc-row">
+                    <label>หน่วยช่วง Off-Peak:</label>
+                    <input type="number" id="op4" placeholder="หน่วย">
+                    <input type="number" id="r4_eop" class="custom-rate-input" value="2.6369" oninput="syncType4RateToConfig()">
+                </div>
+            </div>
+            <div class="calc-row"><label>ค่าบริการรายเดือน (บาท):</label><input type="number" id="r4_srv" class="custom-rate-input" value="312.24" oninput="syncType4RateToConfig()"></div>
+
+            <div id="rate_panel_4"></div>
+            <button class="calc-btn" onclick="calcPEA(4)">คำนวณค่าไฟฟ้า</button>
+            <div id="res4"></div>
+            <div id="pv_section_4" class="pv-section"></div>
+        </div>
+    </div>
+
+    <!-- กิจการประเภท 5, 6, 7, 8 ใช้โครงสร้างเดียวกัน -> ย่อเพื่อความกระชับ แต่ฟังก์ชันทำงานครบ -->
+    <div id="t5" class="tab-content"><div class="pea-subtitle">5. กิจการเฉพาะอย่าง</div><div class="mode-selector"><label><input type="radio" name="m5" value="normal" onchange="toggleMode(5)"> 5.2 ยังไม่ติด TOU</label><label><input type="radio" name="m5" value="tou" checked onchange="toggleMode(5)"> 5.1 อัตรา TOU</label></div><div class="calculator"><div class="calc-row"><label>ระดับแรงดัน:</label><select id="v5" onchange="renderRatePanel(5)"><option value="low">ต่ำกว่า 22 kV</option><option value="med">22 - 33 kV</option><option value="high">ตั้งแต่ 69 kV ขึ้นไป</option></select></div><div id="n5" class="normal-inputs" style="display:none;"><div class="calc-row"><label>Demand (kW):</label><input type="number" id="kw5"></div><div class="calc-row"><label>พลังงาน (หน่วย):</label><input type="number" id="u5"></div></div><div id="tou5" class="tou-inputs" style="display:block;"><div class="calc-row"><label>Demand Peak (kW):</label><input type="number" id="kw5_tou"></div><div class="calc-row"><label>Peak (หน่วย):</label><input type="number" id="p5"></div><div class="calc-row"><label>Off-Peak (หน่วย):</label><input type="number" id="op5"></div></div><div id="rate_panel_5"></div><button class="calc-btn" onclick="calcPEA(5)">คำนวณค่าไฟฟ้า</button><div id="res5"></div><div id="pv_section_5" class="pv-section"></div></div></div>
+
+    <div id="t6" class="tab-content"><div class="pea-subtitle">6. องค์กรที่ไม่แสวงหากำไร</div><div class="mode-selector"><label><input type="radio" name="m6" value="normal" checked onchange="toggleMode(6)"> 6.1 อัตราปกติ</label><label><input type="radio" name="m6" value="tou" onchange="toggleMode(6)"> 6.2 อัตรา TOU</label></div><div class="calculator"><div class="calc-row"><label>ระดับแรงดัน:</label><select id="v6" onchange="renderRatePanel(6)"><option value="low">ต่ำกว่า 22 kV</option><option value="med">22 - 33 kV</option><option value="high">ตั้งแต่ 69 kV ขึ้นไป</option></select></div><div id="n6" class="normal-inputs"><div class="calc-row"><label>พลังงาน (หน่วย):</label><input type="number" id="u6"></div></div><div id="tou6" class="tou-inputs"><div class="calc-row"><label>Demand Peak (kW):</label><input type="number" id="kw6_tou"></div><div class="calc-row"><label>Peak (หน่วย):</label><input type="number" id="p6"></div><div class="calc-row"><label>Off-Peak (หน่วย):</label><input type="number" id="op6"></div></div><div id="rate_panel_6"></div><button class="calc-btn" onclick="calcPEA(6)">คำนวณค่าไฟฟ้า</button><div id="res6"></div><div id="pv_section_6" class="pv-section"></div></div></div>
+
+    <div id="t7" class="tab-content"><div class="pea-subtitle">7. สูบน้ำเพื่อการเกษตร</div><div class="mode-selector"><label><input type="radio" name="m7" value="normal" checked onchange="toggleMode(7)"> 7.1 อัตราปกติ</label><label><input type="radio" name="m7" value="tou" onchange="toggleMode(7)"> 7.2 อัตรา TOU</label></div><div class="calculator"><div id="n7" class="normal-inputs"><div class="calc-row"><label>พลังงาน (หน่วย):</label><input type="number" id="u7"></div></div><div id="tou7" class="tou-inputs"><div class="calc-row"><label>ระดับแรงดัน:</label><select id="v7" onchange="renderRatePanel(7)"><option value="low">ต่ำกว่า 22 kV</option><option value="med">22 - 33 kV</option></select></div><div class="calc-row"><label>Demand Peak (kW):</label><input type="number" id="kw7_tou"></div><div class="calc-row"><label>Peak (หน่วย):</label><input type="number" id="p7"></div><div class="calc-row"><label>Off-Peak (หน่วย):</label><input type="number" id="op7"></div></div><div id="rate_panel_7"></div><button class="calc-btn" onclick="calcPEA(7)">คำนวณค่าไฟฟ้า</button><div id="res7"></div><div id="pv_section_7" class="pv-section"></div></div></div>
+
+    <div id="t8" class="tab-content"><div class="pea-subtitle">8. ไฟฟ้าชั่วคราว</div><div class="calculator"><div class="calc-row"><label>พลังงาน (หน่วย):</label><input type="number" id="u8"></div><div id="rate_panel_8"></div><button class="calc-btn" onclick="calcPEA(8)">คำนวณค่าไฟฟ้า</button><div id="res8"></div><div id="pv_section_8" class="pv-section"></div></div></div>
+
+    <!-- ============================================== -->
+    <!-- แท็บ 9: AMR / AMI Dashboard (ดึงจาก Source 3) -->
+    <!-- ============================================== -->
+    <div id="t9" class="tab-content">
+        <!-- เราจะสวมครอบ Tailwind เข้าไปในส่วนนี้ -->
+        <div class="tailwind-wrapper text-gray-800" style="margin-top: 15px;">
+            <div id="userInfoPanel" class="bg-white rounded-lg shadow p-5 border-l-4 border-indigo-500 mb-6 hidden">
+                <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2">ข้อมูลผู้ใช้ไฟฟ้าจากไฟล์ AMR</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div><span class="text-gray-500">บัญชีผู้ใช้ไฟ:</span> <span id="info_account" class="font-semibold text-blue-700">-</span></div>
+                    <div class="md:col-span-2"><span class="text-gray-500">ชื่อผู้ใช้ไฟ:</span> <span id="info_name" class="font-semibold text-blue-700">-</span></div>
+                    <div><span class="text-gray-500">หมายเลขมิเตอร์:</span> <span id="info_meter" class="font-semibold">-</span></div>
+                    <div><span class="text-gray-500">Tariff:</span> <span id="info_tariff" class="font-semibold">-</span></div>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow p-6 border-t-4 border-indigo-500">
+                    <h2 class="text-xl font-bold mb-4">นำเข้าข้อมูลรายเดือน (CSV/TXT)</h2>
+                    <input type="file" id="monthlyFiles" accept=".csv, .txt" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 border border-gray-300 rounded-md p-2">
+                    <button onclick="processMonthly()" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded shadow">ประมวลผล (CSV)</button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6 border-t-4 border-pink-500">
+                    <h2 class="text-xl font-bold mb-4">นำเข้าข้อมูลรายเดือน (Excel)</h2>
+                    <input type="file" id="monthlySheetFiles" accept=".xlsx, .xls" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 border border-gray-300 rounded-md p-2">
+                    <button onclick="processMonthlySheets()" class="mt-4 bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded shadow transition">ประมวลผล (Excel)</button>
+                </div>
+            </div>
+
+            <div id="monthlyResults" class="hidden space-y-6 mt-6">
+                <!-- Data Summary Tables from AMR -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-bold mb-4 text-indigo-800">สรุปการใช้ไฟฟ้า ทั้งปี (จาก AMR)</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex justify-between border-b pb-1"><span>Rate A (Peak 09.00-22.00):</span> <span id="sum_A" class="font-semibold">0 kWh</span></li>
+                            <li class="flex justify-between border-b pb-1"><span>Rate B (Off Peak 22.15-08.45):</span> <span id="sum_B" class="font-semibold">0 kWh</span></li>
+                            <li class="flex justify-between border-b pb-1"><span>Rate C (Holiday 24 ช.ม.):</span> <span id="sum_C" class="font-semibold">0 kWh</span></li>
+                            <li class="flex justify-between border-b pb-1 text-blue-600"><span>Rate A (Peak 09.00-15.00 น.):</span> <span id="sum_A_9_15" class="font-semibold">0 kWh</span></li>
+                            <li class="flex justify-between border-b pb-1 text-blue-600"><span>Rate C (Holiday 09.00-15.00 น.):</span> <span id="sum_C_9_15" class="font-semibold">0 kWh</span></li>
+                        </ul>
+                        <div class="mt-4 flex gap-4">
+                            <div><label class="text-xs">Rate A (บาท):</label><input type="number" id="amr_peakRate" value="4.1839" class="w-full border p-1 rounded text-sm text-red-600 font-bold"></div>
+                            <div><label class="text-xs">Rate B/C (บาท):</label><input type="number" id="amr_offPeakRate" value="2.6037" class="w-full border p-1 rounded text-sm text-red-600 font-bold"></div>
+                            <button onclick="updateMonthlyUI()" class="bg-yellow-500 text-white px-3 rounded text-sm font-bold shadow self-end py-2">คำนวณใหม่</button>
+                        </div>
+                        <div id="rate_panel_9"></div>
+                    </div>
+                    
+                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg shadow p-6">
+                        <h3 class="text-lg font-bold text-green-800 mb-4">ประเมินกำลังผลิต Solar PV (วิเคราะห์จากช่วง 09:00-15:00)</h3>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-white p-3 rounded shadow-sm"><p class="text-xs text-gray-500">ผลรวมการใช้ไฟกลางวัน</p><p id="amr_solar_kwh" class="font-bold text-lg text-blue-600">0 kWh</p></div>
+                            <div class="bg-white p-3 rounded shadow-sm border border-green-500"><p class="text-xs text-green-700">กำลังผลิตที่แนะนำสูงสุด</p><p id="amr_solar_kwp" class="font-bold text-2xl text-green-700">0 kWp</p></div>
+                        </div>
+                        <p id="amr_psh_note" class="text-xs text-red-500 mt-3">* PSH = 4.3 และ Performance Ratio = 0.75 สำหรับการประเมินเบื้องต้น</p>
+                    </div>
+                </div>
+
+                <!-- AMR Load Profile Export UI -->
+                <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 border-b pb-2">พฤติกรรมการใช้ไฟรายชั่วโมง (24h Load Profile) & ส่งออก DB0</h3>
+                    <p class="text-sm text-gray-500 mt-2">ระบบจะดึงสัดส่วนการใช้ไฟกลางวัน (08:00-17:00) จากข้อมูล AMR มากระจายลงตารางอัตโนมัติ คุณสามารถปรับแก้ให้ได้รวม 100% (±5%) ก่อนบันทึก</p>
+                    
+                    <div id="load_profile_9" class="grid grid-cols-6 md:grid-cols-12 gap-2 mt-4">
+                        <!-- Inputs generated by JS -->
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-6 pt-4 border-t">
+                        <div class="text-lg"><strong>ผลรวม: <span id="load_sum_9" class="text-blue-600">0</span>%</strong></div>
+                        <div class="flex gap-3 flex-wrap">
+                            <button onclick="exportDB0(9)" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-5 rounded shadow-lg">Export DB0 (.txt)</button>
+                            <button onclick="exportPDF(9)" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-5 rounded shadow-lg">📄 Export PDF</button>
+                            <button onclick="printReport(9)" class="bg-slate-600 hover:bg-slate-800 text-white font-bold py-2 px-5 rounded shadow-lg">🖨️ พิมพ์รายงาน</button>
+                        </div>
+                    </div>
+					<!-- 🟢 เริ่ม: กราฟ 24h Daily Operation และ AI Analysis -->
+                <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mt-6">
+                    <h3 class="text-lg font-bold text-gray-800 border-b pb-2 mb-2">กราฟจำลองการทำงานเฉลี่ยรายวัน (24h Daily Operation)</h3>
+                    <p class="text-sm mb-4 text-gray-600">
+                        * หมายเหตุ: <span class="text-red-600 font-bold">Rate A (Peak 09-15)</span> และ <span class="text-red-600 font-bold">Rate C (Holiday 09-15)</span> (เส้นประ) คือช่วงที่นำมาวิเคราะห์ร่วมกับ Solar PV
+                    </p>
+                    
+                    <div style="position: relative; height: 400px; width: 100%;">
+                        <canvas id="amrDaily24hChart"></canvas>
+                    </div>
+
+                    <!-- 🌟 กล่อง AI Analysis ใต้กราฟ -->
+                    <div id="aiAnalysisContainer" class="mt-8 p-5 bg-gradient-to-r from-blue-50 to-emerald-50 rounded-lg border border-blue-200 shadow-sm hidden">
+                        <h4 class="text-lg font-bold text-blue-900 mb-3 flex items-center">
+                            <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">Pee</span> 
+                            Analysis: วิเคราะห์ความคุ้มค่าจากการติดตั้ง Solar PV
+                        </h4>
+                        <ul class="list-disc list-inside text-gray-700 space-y-2 text-md ml-2" id="aiAnalysisText">
+                            <!-- ข้อความ AI จะเข้ามาแสดงตรงนี้ -->
+                        </ul>
+                        <p id="aiRateNote" class="text-xs text-gray-500 mt-4 pt-2 border-t border-blue-100">
+                            * หมายเหตุ: ประเมินการประหยัดเงินจากอัตราค่าไฟที่กรอกไว้ด้านบน ยังไม่รวม Ft และ VAT
+                        </p>
+                    </div>
+                </div>
+                <!-- 🟢 จบ: กราฟ 24h และ AI Analysis -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pdfOverlay">⏳ กำลังสร้างรายงาน PDF ... กรุณารอสักครู่</div>
+<div id="pdfStage"></div>
+
+<!-- ============================================== -->
+<!-- สคริปต์ควบคุมการทำงานทั้งหมด -->
+<!-- ============================================== -->
+<script>
+    // === 1. ระบบจัดการ Tab & UI ===
+    function openTab(evt, tabName) {
+        document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    function toggleMode(type) {
+        const checkedVal = document.querySelector(`input[name="m${type}"]:checked`).value;
+        const isTou = (checkedVal !== "normal" && checkedVal !== "tod");
+        const normalDiv = document.getElementById(`n${type}`);
+        const touDiv = document.getElementById(`tou${type}`);
+        if(normalDiv) normalDiv.style.display = isTou ? 'none' : 'block';
+        if(touDiv) touDiv.style.display = isTou ? 'block' : 'none';
+        
+        // Hide PV result on mode change
+        document.getElementById(`pv_section_${type}`).style.display = 'none';
+
+        // อัปเดตแผงตัวคูณให้แสดงเฉพาะอัตราของโหมดที่เลือกอยู่
+        renderRatePanel(type);
+    }
+
+    // ==================================================================
+    // === 2. ฐานข้อมูลอัตราค่าไฟฟ้า / ตัวคูณทั้งหมด (แหล่งข้อมูลเดียว) ===
+    // ==================================================================
+    // อ้างอิงโครงสร้างอัตราค่าไฟฟ้าของ กฟภ.
+    // ⚠️ ผู้ใช้แก้ไขทุกค่าได้ผ่านแผง "⚙️ ตัวคูณ & อัตราค่าไฟที่ใช้คำนวณ" ในแต่ละแท็บ
+    //    ค่าที่แก้จะถูกบันทึกลง localStorage และใช้ต่อเนื่องทุกครั้งที่เปิดหน้านี้
+    //
+    // รูปแบบ tiers: [[จำนวนหน่วยในขั้น, อัตราบาท/หน่วย], ..., [null, อัตราส่วนที่เกิน]]
+    const DEFAULT_RATES = {
+        // TOU กลาง — ใช้ร่วมกันโดยประเภท 3.2 / 4.2 / 5.1 / 6.2 / 7.2
+        touShared: {
+            low:  { d: 210.00, p: 4.3297, op: 2.6369, s: 312.24 },
+            med:  { d: 132.93, p: 4.1839, op: 2.6037, s: 312.24 },
+            high: { d:  74.14, p: 4.1025, op: 2.5849, s: 312.24 }
+        },
+        t1: {
+            normal: {
+                under150: { s: 8.19,  tiers: [[15, 2.3488], [10, 2.9882], [10, 3.2405],
+                                              [65, 3.6237], [50, 3.7171], [250, 4.2218], [null, 4.4217]] },
+                over150:  { s: 24.62, tiers: [[150, 3.2484], [250, 4.2218], [null, 4.4217]] }
+            },
+            // ประเภท 1.2 ไม่มีค่าความต้องการพลังไฟฟ้า (Demand) จึงมีเฉพาะอัตราพลังงาน
+            tou: { low: { p: 5.7982, op: 2.6369, s: 24.62 },
+                   med: { p: 4.1839, op: 2.6037, s: 312.24 } }
+        },
+        t2: {
+            normal: { low: { s: 33.29,  tiers: [[150, 3.2484], [250, 4.2218], [null, 4.4217]] },
+                      med: { s: 312.24, flat: 3.9086 } },
+            tou:    { low: { p: 5.7982, op: 2.6369, s: 33.29 },
+                      med: { p: 4.1839, op: 2.6037, s: 312.24 } }
+        },
+        t3: { normal: { low:  { d: 221.50, e: 3.1751, s: 312.24 },
+                        med:  { d: 196.26, e: 3.1471, s: 312.24 },
+                        high: { d: 175.70, e: 3.1097, s: 312.24 } } },
+        t4: { tod: { low:  { dP: 332.71, dPart: 68.22, e: 3.1751, s: 312.24 },
+                     med:  { dP: 285.05, dPart: 58.88, e: 3.1471, s: 312.24 },
+                     high: { dP: 224.30, dPart: 29.91, e: 3.1097, s: 312.24 } } },
+        t5: { normal: { low:  { d: 276.64, e: 3.1751, s: 312.24 },
+                        med:  { d: 256.07, e: 3.1471, s: 312.24 },
+                        high: { d: 220.56, e: 3.1097, s: 312.24 } } },
+        t6: { normal: { low:  { s: 20.00,  tiers: [[10, 2.8013], [null, 3.8919]] },
+                        med:  { s: 312.24, flat: 3.5849 },
+                        high: { s: 312.24, flat: 3.4149 } } },
+        t7: { normal: { s: 115.16, tiers: [[100, 2.0889], [null, 3.2405]] },
+              touService: 204.07 },   // อัตรา Demand/พลังงานใช้ร่วมกับ touShared
+        t8: { flat: 6.8025, s: 0 },
+        amr: { peak: 4.1839, offPeak: 2.6037, s: 312.24 },
+        pv:  { psh: 4.3, pr: 0.75, cRate: 0.5, inverterEff: 0.95,
+               dayStart: 8, dayEnd: 16, eveStart: 17, eveEnd: 21 }
+    };
+
+    const RATE_STORAGE_KEY = 'pea_rates_v1';
+
+    function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // deep-merge: เอาค่าที่ผู้ใช้เคยเซฟไว้ทับลงบนค่ามาตรฐาน
+    // (ค่าที่เพิ่มใหม่ในอนาคตจะไม่หายไปกับ config เก่า)
+    function deepMerge(base, override) {
+        if (!override || typeof override !== 'object') return base;
+        for (let k in override) {
+            if (!Object.prototype.hasOwnProperty.call(override, k)) continue;
+            if (!Object.prototype.hasOwnProperty.call(base, k)) continue; // ทิ้งคีย์ที่ไม่รู้จัก
+            let bv = base[k], ov = override[k];
+            if (Array.isArray(bv) && Array.isArray(ov)) base[k] = ov;
+            else if (bv && typeof bv === 'object' && ov && typeof ov === 'object') deepMerge(bv, ov);
+            else if (typeof ov === typeof bv) base[k] = ov;
+        }
+        return base;
+    }
+
+    function loadRates() {
+        let rates = deepClone(DEFAULT_RATES);
+        try {
+            let saved = localStorage.getItem(RATE_STORAGE_KEY);
+            if (saved) deepMerge(rates, JSON.parse(saved));
+        } catch (e) { console.warn('อ่านค่าอัตราที่บันทึกไว้ไม่สำเร็จ ใช้ค่ามาตรฐานแทน', e); }
+        return rates;
+    }
+
+    function saveRates() {
+        try { localStorage.setItem(RATE_STORAGE_KEY, JSON.stringify(PEA_RATES)); }
+        catch (e) { console.warn('บันทึกอัตราลง localStorage ไม่สำเร็จ', e); }
+    }
+
+    let PEA_RATES = loadRates();
+    window.PEA_RATES = PEA_RATES;
+
+    // --- helper สำหรับเข้าถึงค่าตาม path เช่น "t3.normal.med.d" หรือ "t1.normal.under150.tiers.0.1" ---
+    function getByPath(obj, path) {
+        return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+    }
+    function setByPath(obj, path, val) {
+        let keys = path.split('.');
+        let last = keys.pop();
+        let target = keys.reduce((o, k) => (o == null ? undefined : o[k]), obj);
+        if (target) target[last] = val;
+    }
+
+    // คำนวณค่าพลังงานแบบขั้นบันได
+    // tiers: [[จำนวนหน่วยในขั้น, อัตรา], ..., [null, อัตราส่วนเกิน]]
+    function applyTiers(units, tiers) {
+        let cost = 0, rem = units;
+        for (let i = 0; i < tiers.length; i++) {
+            if (rem <= 0) break;
+            let span = tiers[i][0], rate = tiers[i][1];
+            let take = (span === null || span === undefined) ? rem : Math.min(rem, span);
+            cost += take * rate;
+            rem -= take;
+        }
+        return cost;
+    }
+
+    // อัปเดตค่า TOD/TOU อัตโนมัติเมื่อเปลี่ยนแรงดันของกิจการขนาดใหญ่ (Type 4)
+    // อ่านจาก PEA_RATES เพื่อไม่ให้ตัวเลขซ้ำซ้อนกับ config
+    function updateType4Rates() {
+        let sel = document.getElementById('v4');
+        if (!sel) return;
+        let v = sel.value;
+        let tod = PEA_RATES.t4.tod[v];
+        let tou = PEA_RATES.touShared[v];
+        document.getElementById('r4_dp').value    = tod.dP;
+        document.getElementById('r4_dpart').value = tod.dPart;
+        document.getElementById('r4_en').value    = tod.e;
+        document.getElementById('r4_srv').value   = tod.s;
+        document.getElementById('r4_dtou').value  = tou.d;
+        document.getElementById('r4_ep').value    = tou.p;
+        document.getElementById('r4_eop').value   = tou.op;
+        if (typeof renderRatePanel === 'function') renderRatePanel(4);
+    }
+
+    // เมื่อผู้ใช้แก้ช่องอัตราสีเหลืองของประเภท 4 ให้เขียนกลับเข้า PEA_RATES ด้วย
+    // จะได้เป็นแหล่งข้อมูลเดียวกับแท็บอื่นและถูกบันทึกลง localStorage
+    function syncType4RateToConfig() {
+        let sel = document.getElementById('v4');
+        if (!sel) return;
+        let v = sel.value;
+        const num = id => parseFloat(document.getElementById(id).value) || 0;
+        PEA_RATES.t4.tod[v].dP    = num('r4_dp');
+        PEA_RATES.t4.tod[v].dPart = num('r4_dpart');
+        PEA_RATES.t4.tod[v].e     = num('r4_en');
+        PEA_RATES.t4.tod[v].s     = num('r4_srv');
+        PEA_RATES.touShared[v].d  = num('r4_dtou');
+        PEA_RATES.touShared[v].p  = num('r4_ep');
+        PEA_RATES.touShared[v].op = num('r4_eop');
+        saveRates();
+    }
+
+    // ตัวแปรเก็บผลลัพธ์ล่าสุดสำหรับการ Export DB0 / PDF
+    window.lastCalcData = {};
+
+    // === 3. ฟังก์ชันคำนวณบิล PEA หลัก ===
+    const VOLT_LABEL = { low: 'ต่ำกว่า 22 kV', med: '22 - 33 kV', high: 'ตั้งแต่ 69 kV ขึ้นไป' };
+
+    function getMode(type) {
+        let el = document.querySelector(`input[name="m${type}"]:checked`);
+        return el ? el.value : 'normal';
+    }
+    function num(id) {
+        let el = document.getElementById(id);
+        return el ? (parseFloat(el.value) || 0) : 0;
+    }
+    function volt(id) {
+        let el = document.getElementById(id);
+        let v = el ? el.value : '';
+        // กันกรณี select หายไปหรือค่าไม่ตรงกับที่รู้จัก จะได้ไม่คำนวณด้วย rate ที่เป็น undefined
+        return (v === 'low' || v === 'med' || v === 'high') ? v : 'low';
+    }
+
+    function calcPEA(type) {
+        const ft = parseFloat(document.getElementById('global_ft').value) || 0;
+        const vatRate = parseFloat(document.getElementById('global_vat').value) || 0;
+        const R = PEA_RATES;
+
+        let units = 0, baseCost = 0, serviceFee = 0, demandCost = 0;
+        let rateDesc = '';       // คำอธิบายอัตราที่ใช้ (ข้อความล้วน)
+        let demandLabel = 'ค่าความต้องการพลังไฟฟ้า (Demand)';
+        let extraNote = '';      // หมายเหตุพิเศษ เช่น กฎ TOD Partial
+        let mode = getMode(type);
+
+        if (type === 1) {
+            if (mode === 'normal') {
+                units = num('u1');
+                let r = (units <= 150) ? R.t1.normal.under150 : R.t1.normal.over150;
+                baseCost = applyTiers(units, r.tiers);
+                serviceFee = r.s;
+                rateDesc = `ประเภท 1.1 บ้านอยู่อาศัย อัตราปกติ (${units <= 150 ? 'ไม่เกิน' : 'เกิน'} 150 หน่วย/เดือน)`;
+            } else { // TOU
+                let v = volt('v1');
+                let p = num('p1'), op = num('op1');
+                let r = R.t1.tou[v] || R.t1.tou.low;
+                units = p + op;
+                baseCost = (p * r.p) + (op * r.op);
+                serviceFee = r.s;
+                rateDesc = `ประเภท 1.2 บ้านอยู่อาศัย TOU (${VOLT_LABEL[v]}) — Peak ${r.p} / Off-Peak ${r.op} บาท/หน่วย`;
+            }
+        }
+        else if (type === 2) {
+            if (mode === 'normal') {
+                let v = volt('v2n');
+                units = num('u2');
+                let r = R.t2.normal[v] || R.t2.normal.low;
+                baseCost = (r.flat !== undefined) ? units * r.flat : applyTiers(units, r.tiers);
+                serviceFee = r.s;
+                rateDesc = `ประเภท 2.1 กิจการขนาดเล็ก อัตราปกติ (${VOLT_LABEL[v]})`
+                         + (r.flat !== undefined ? ` — อัตราเดียว ${r.flat} บาท/หน่วย` : ' — อัตราขั้นบันได');
+            } else { // TOU
+                let v = volt('v2');
+                let p = num('p2'), op = num('op2');
+                let r = R.t2.tou[v] || R.t2.tou.low;
+                units = p + op;
+                baseCost = (p * r.p) + (op * r.op);
+                serviceFee = r.s;
+                rateDesc = `ประเภท 2.2 กิจการขนาดเล็ก TOU (${VOLT_LABEL[v]}) — Peak ${r.p} / Off-Peak ${r.op} บาท/หน่วย`;
+            }
+        }
+        else if (type === 3 || type === 5 || type === 6) {
+            let v = volt(`v${type}`);
+            if (mode === 'normal') {
+                let kw = num(`kw${type}`);
+                units = num(`u${type}`);
+
+                if (type === 3 || type === 5) {
+                    let r = R[`t${type}`].normal[v];
+                    demandCost = kw * r.d;
+                    baseCost = units * r.e;
+                    serviceFee = r.s;
+                    rateDesc = `ประเภท ${type === 3 ? '3.1 กิจการขนาดกลาง' : '5.2 กิจการเฉพาะอย่าง (ยังไม่ติด TOU)'}`
+                             + ` (${VOLT_LABEL[v]}) — Demand ${r.d} บาท/kW, พลังงาน ${r.e} บาท/หน่วย`;
+                } else { // type 6
+                    let r = R.t6.normal[v];
+                    baseCost = (r.flat !== undefined) ? units * r.flat : applyTiers(units, r.tiers);
+                    serviceFee = r.s;
+                    rateDesc = `ประเภท 6.1 องค์กรที่ไม่แสวงหากำไร อัตราปกติ (${VOLT_LABEL[v]})`
+                             + (r.flat !== undefined ? ` — อัตราเดียว ${r.flat} บาท/หน่วย` : ' — อัตราขั้นบันได');
+                }
+            } else { // TOU
+                let kw = num(`kw${type}_tou`);
+                let p = num(`p${type}`), op = num(`op${type}`);
+                let r = R.touShared[v];
+                units = p + op;
+                demandCost = kw * r.d;
+                baseCost = (p * r.p) + (op * r.op);
+                serviceFee = r.s;
+                demandLabel = 'ค่าความต้องการพลังไฟฟ้า ช่วง Peak (Demand)';
+                rateDesc = `ประเภท ${type}.${type === 5 ? '1' : '2'} อัตรา TOU (${VOLT_LABEL[v]})`
+                         + ` — Demand ${r.d} บาท/kW, Peak ${r.p} / Off-Peak ${r.op} บาท/หน่วย`;
+            }
+        }
+        else if (type === 4) {
+            let v = volt('v4');
+            serviceFee = num('r4_srv');
+            if (mode === 'tod') {
+                let kwP    = num('kw4_peak');
+                let rP     = num('r4_dp');
+                let kwPart = num('kw4_partial');
+                let rPart  = num('r4_dpart');
+                let rEn    = num('r4_en');
+                units = num('u4');
+
+                // ⚠️ กฎ กฟภ.: ค่าความต้องการพลังไฟฟ้าช่วง Partial คิดเฉพาะส่วนที่เกินช่วง Peak
+                let billablePartial = Math.max(0, kwPart - kwP);
+                demandCost = (kwP * rP) + (billablePartial * rPart);
+                baseCost = units * rEn;
+                demandLabel = 'ค่าความต้องการพลังไฟฟ้า (Peak + Partial ส่วนเกิน)';
+                extraNote = `Peak ${kwP.toLocaleString('th-TH')} kW × ${rP} + Partial ส่วนเกิน `
+                          + `${billablePartial.toLocaleString('th-TH')} kW × ${rPart}`
+                          + (kwPart > 0 && billablePartial === 0 ? ' (Partial ไม่เกิน Peak จึงไม่คิดค่าความต้องการฯ)' : '');
+                rateDesc = `ประเภท 4.1 กิจการขนาดใหญ่ อัตรา TOD (${VOLT_LABEL[v]}) — พลังงาน ${rEn} บาท/หน่วย`;
+            } else { // TOU
+                let kwT  = num('kw4_tou');
+                let rDt  = num('r4_dtou');
+                let p    = num('p4'),  rEp  = num('r4_ep');
+                let op   = num('op4'), rEop = num('r4_eop');
+
+                units = p + op;
+                demandCost = kwT * rDt;
+                baseCost = (p * rEp) + (op * rEop);
+                demandLabel = 'ค่าความต้องการพลังไฟฟ้า ช่วง Peak (Demand)';
+                rateDesc = `ประเภท 4.2 กิจการขนาดใหญ่ อัตรา TOU (${VOLT_LABEL[v]})`
+                         + ` — Demand ${rDt} บาท/kW, Peak ${rEp} / Off-Peak ${rEop} บาท/หน่วย`;
+            }
+        }
+        else if (type === 7) {
+            if (mode === 'normal') {
+                units = num('u7');
+                baseCost = applyTiers(units, R.t7.normal.tiers);
+                serviceFee = R.t7.normal.s;
+                rateDesc = 'ประเภท 7.1 สูบน้ำเพื่อการเกษตร อัตราปกติ (อัตราขั้นบันได)';
+            } else { // TOU
+                let v = volt('v7');
+                let kw = num('kw7_tou');
+                let p = num('p7'), op = num('op7');
+                let r = R.touShared[v];
+                units = p + op;
+                demandCost = kw * r.d;
+                baseCost = (p * r.p) + (op * r.op);
+                serviceFee = R.t7.touService;
+                demandLabel = 'ค่าความต้องการพลังไฟฟ้า ช่วง Peak (Demand)';
+                rateDesc = `ประเภท 7.2 สูบน้ำเพื่อการเกษตร TOU (${VOLT_LABEL[v]})`
+                         + ` — Demand ${r.d} บาท/kW, Peak ${r.p} / Off-Peak ${r.op} บาท/หน่วย`;
+            }
+        }
+        else if (type === 8) {
+            units = num('u8');
+            baseCost = units * R.t8.flat;
+            serviceFee = R.t8.s;
+            rateDesc = `ประเภท 8 ไฟฟ้าชั่วคราว — อัตราเดียว ${R.t8.flat} บาท/หน่วย (ไม่มีค่าบริการรายเดือน)`;
+        }
+
+        // === รวมยอด ===
+        let ftTotal = units * ft;
+        let totalBeforeVat = demandCost + baseCost + serviceFee + ftTotal;
+        let vatTotal = totalBeforeVat * (vatRate / 100);
+        let grandTotal = totalBeforeVat + vatTotal;
+
+        const baht = n => n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        // แสดงค่าความต้องการพลังไฟฟ้าเป็นบรรทัดของตัวเอง เมื่อประเภทนั้นมีการคิด Demand
+        // ประเภท 3/4/5 คิด Demand ทั้งสองโหมด ส่วน 6/7 คิดเฉพาะโหมด TOU
+        let hasDemand = (type === 3 || type === 4 || type === 5)
+                     || ((type === 6 || type === 7) && mode !== 'normal');
+        let demandRow = hasDemand
+            ? `<p>${demandLabel}: ${baht(demandCost)} บาท${extraNote ? `<br><span style="font-size:0.85em;color:#555;">↳ ${extraNote}</span>` : ''}</p>`
+            : '';
+        // ประเภทที่มี Demand แต่ยังไม่รวมค่าไฟขั้นต่ำ/Power Factor
+        let minChargeNote = (type === 3 || type === 4 || type === 5)
+            ? `<p class="note">* ยังไม่รวม <b>ค่าไฟฟ้าขั้นต่ำ</b> (70% ของค่าความต้องการพลังไฟฟ้าสูงสุดใน 12 เดือนที่ผ่านมา) และ <b>ค่าเพาเวอร์แฟกเตอร์</b> — โปรดตรวจสอบกับใบแจ้งค่าไฟจริง</p>`
+            : '';
+
+        document.getElementById(`res${type}`).innerHTML = `
+            <div class="result-box">
+                <p><b>อัตราที่ใช้:</b> ${rateDesc}</p>
+                <p>ปริมาณการใช้ไฟฟ้า: ${units.toLocaleString('th-TH', {maximumFractionDigits: 2})} หน่วย</p>
+                ${demandRow}
+                <p>ค่าพลังงานไฟฟ้า (Energy): ${baht(baseCost)} บาท</p>
+                <p>ค่าบริการรายเดือน: ${baht(serviceFee)} บาท</p>
+                <p>ค่า Ft (${ft} บาท/หน่วย × ${units.toLocaleString('th-TH', {maximumFractionDigits: 2})} หน่วย): ${baht(ftTotal)} บาท</p>
+                <p>รวมเงินก่อนภาษี: ${baht(totalBeforeVat)} บาท</p>
+                <p>ภาษีมูลค่าเพิ่ม (${vatRate}%): ${baht(vatTotal)} บาท</p>
+                <p class="total-price">รวมเงินค่าไฟฟ้าทั้งสิ้น: ${baht(grandTotal)} บาท</p>
+                ${minChargeNote}
+            </div>
+        `;
+
+        // 🌟 บันทึกตัวแปรสำหรับส่งออก DB0 / PDF (ทศนิยม 4 ตำแหน่ง)
+        window.lastCalcData[type] = {
+            totalUnits: units,
+            grandTotalBaht: grandTotal,
+            ftRate: ft.toFixed(4),
+            vatPercent: vatRate.toFixed(4),
+            rateDescription: rateDesc,
+            demandLabel: demandLabel,
+            demandCost: demandCost.toFixed(4),
+            demandNote: extraNote,
+            hasDemand: hasDemand,
+            energyCost: baseCost.toFixed(4),
+            serviceFee: serviceFee.toFixed(4),
+            ftTotalCost: ftTotal.toFixed(4),
+            totalBeforeVat: totalBeforeVat.toFixed(4),
+            vatAmount: vatTotal.toFixed(4)
+        };
+
+        // สร้างและแสดงกล่องวิเคราะห์ PV
+        renderPVSection(type);
+    }
+
+// === 4. ฟังก์ชันประเมิน Solar PV, Battery และ 24h Load Profile ===
+    // ตรวจสอบตัวแปรเก็บกราฟไม่ให้เกิด Error
+    if (typeof pvCharts === 'undefined') { var pvCharts = {}; }
+
+    function renderPVSection(type) {
+        let pvDiv = document.getElementById(`pv_section_${type}`);
+        pvDiv.style.display = 'block';
+        let initialDayPct = 65;
+        const P = PEA_RATES.pv;
+        const hh = h => String(h).padStart(2, '0') + ':00';
+
+        // ลำดับที่ 1: พฤติกรรมการใช้ไฟรายชั่วโมง -> ลำดับที่ 2: ผลประเมิน -> ลำดับที่ 3: กราฟและ AI
+        pvDiv.innerHTML = `
+            <h3><i class="fa-solid fa-solar-panel"></i> ประเมินกำลังผลิต Solar PV & Battery Operation</h3>
+
+            <!-- 1. พฤติกรรมการใช้ไฟรายชั่วโมง -->
+            <div class="pv-flex" style="margin-bottom: 5px;">
+                <label>กระจาย % การใช้ไฟฟ้าช่วงกลางวันคร่าวๆ (${hh(P.dayStart)} - ${hh(P.dayEnd + 1)} น.):</label>
+                <input type="number" id="day_pct_${type}" value="${initialDayPct}" min="0" max="100" style="width:70px; text-align:center; padding:5px; border:1px solid #ccc; border-radius:4px;"> %
+                <button class="export-btn" style="margin-top:0; background:#0284c7;" onclick="calcPV(${type})">กระจาย % ลงตาราง</button>
+            </div>
+
+            <div class="lp-container" style="margin-top:0; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed #cbd5e1;">
+                <h4 style="margin: 0 0 10px 0; color:#333; font-weight:bold;">1. ปรับแต่งพฤติกรรมการใช้ไฟรายชั่วโมง (% / ชม.) - <span style="color:#d97706; font-size:13px;">ตัวเลขในตารางนี้จะถูกนำไปคำนวณกราฟและ PV</span></h4>
+                <div id="load_profile_${type}" class="lp-grid"></div>
+                <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div style="font-size:16px;"><strong>ผลรวม: <span id="load_sum_${type}" style="color:green;">100</span>%</strong> (เกณฑ์ 95% - 105%)</div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="export-btn" onclick="exportDB0(${type})">Export DB0 (.txt)</button>
+                        <button class="pdf-btn" onclick="exportPDF(${type})">📄 Export PDF</button>
+                        <button class="print-btn" onclick="printReport(${type})">🖨️ พิมพ์รายงาน</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ประเมินกำลังผลิต Solar PV & Battery -->
+            <h4 style="margin: 0 0 10px 0; color:#333; font-weight:bold;">2. ขนาดติดตั้งที่แนะนำ (คำนวณจากตารางด้านบน)</h4>
+            <div class="pv-result-grid">
+                <div class="pv-card card-ongrid">
+                    <div style="color:#0369a1; font-weight:bold; font-size:16px;">ระบบ On-Grid (เฉพาะกลางวัน)</div>
+                    <div id="res_ongrid_${type}" style="font-size:22px; font-weight:bold; color:#0c4a6e; margin-top:5px;">- kWp</div>
+                </div>
+                <div class="pv-card card-hybrid">
+                    <div style="color:#b45309; font-weight:bold; font-size:16px;">ระบบ Hybrid + Battery</div>
+                    <div id="res_hybrid_${type}" style="font-size:22px; font-weight:bold; color:#78350f; margin-top:5px;">- kWp / - kWh</div>
+                </div>
+            </div>
+            <div id="pv_warn_${type}"></div>
+
+            <!-- 3. ค่าคงที่การประเมิน PV (แก้ไขได้) -->
+            <div id="pv_const_panel_${type}"></div>
+
+            <!-- 4. กราฟและการวิเคราะห์ AI -->
+            <h4 style="margin: 15px 0 0 0; color:#333; font-weight:bold;">3. กราฟจำลองการทำงาน (Daily Operation)</h4>
+            <div class="pv-chart-container">
+                <canvas id="pvChart_${type}"></canvas>
+            </div>
+
+            <div id="ai_analysis_${type}" class="ai-analysis-box">
+                <div class="ai-icon"><i class="fa-solid fa-robot"></i></div>
+                <div id="ai_text_${type}">กำลังประมวลผลการวิเคราะห์ AI...</div>
+            </div>
+        `;
+
+        renderPVConstPanel(type);
+        calcPV(type);
+    }
+
+    // === 5. ระบบ Export DB0 (.txt) ===
+    function exportDB0(type) {
+        let sum = parseFloat(document.getElementById(`load_sum_${type}`).innerText);
+        if(sum < 95 || sum > 105) {
+            alert("กรุณาปรับสัดส่วน 24h ให้รวมกันได้ 100% (±5%) ก่อนทำการ Export");
+            return;
+        }
+
+        let custName = document.getElementById('global_name').value.trim() || 'Unknown';
+        
+        // ดึง 24h Profile
+        let inputs = document.querySelectorAll(`.lp_input_${type}`);
+        let profile24h = [];
+        inputs.forEach(inp => profile24h.push(parseFloat(inp.value) || 0));
+
+        // 🌟 เพิ่มตรรกะกวาดข้อมูลพลังงานให้ครบถ้วนทั้งฝั่ง AMR และฝั่งอัตราปกติ/TOU (แท็บ 1-8)
+        let energyExport = {};
+
+        if (type === 9) {
+            // ของฝั่ง AMR
+            let bd = window.amrBillingDetails || {};
+            
+            // ดึงข้อความผลรวมการใช้ไฟกลางวัน และลบตัวหนังสือออกให้เหลือแต่ตัวเลข
+            let solarKwhRaw = document.getElementById('amr_solar_kwh') ? document.getElementById('amr_solar_kwh').innerText.replace(/[^\d\.]/g, '') : "0";
+            let solarKwhParsed = parseFloat(solarKwhRaw || 0).toFixed(4);
+
+            energyExport = {
+                totalKwhPerYear: window.amrGrandTotalKwh || 0,
+                totalBahtPerYear: window.amrGrandTotalBaht || 0,
+                
+                // 🌟 ข้อมูลลูกค้า AMR
+                accountNumber: amrUserInfo.account || "-",
+                meterNumber: amrUserInfo.meter || "-",
+                tariff: amrUserInfo.tariff || "-",
+                
+                // 🌟 สรุปการใช้ไฟฟ้า ทั้งปี (จาก AMR) ทศนิยม 4 ตำแหน่ง
+                amr_RateA_Peak_kWh: (amrMonthlyData.sumA || 0).toFixed(4),
+                amr_RateB_OffPeak_kWh: (amrMonthlyData.sumB || 0).toFixed(4),
+                amr_RateC_Holiday_kWh: (amrMonthlyData.sumC || 0).toFixed(4),
+                amr_RateA_9to15_kWh: (amrMonthlyData.sumA915 || 0).toFixed(4),
+                amr_RateC_9to15_kWh: (amrMonthlyData.sumC915 || 0).toFixed(4),
+                
+                // 🌟 ประเมินกำลังผลิต Solar PV (วิเคราะห์จากช่วง 09:00-15:00)
+                daytimeLoad_09to15_kWh: solarKwhParsed,
+                recommendedSolarKwP: document.getElementById('amr_solar_kwp') ? document.getElementById('amr_solar_kwp').innerText : "0 kWp",
+
+                // 🌟 ฟิลด์ค่าไฟ (ทศนิยม 4 ตำแหน่ง)
+                ftRate_BahtPerUnit: bd.ftRate || "0.0000",
+                vatPercent: bd.vatPercent || "0.0000",
+                rateDescription: bd.rateDescription || "-",
+                energyCost_Baht: bd.energyCost || "0.0000",
+                serviceFee_Baht: bd.serviceFee || "0.0000",
+                ftTotalCost_Baht: bd.ftTotalCost || "0.0000",
+                totalBeforeVat_Baht: bd.totalBeforeVat || "0.0000",
+                vatAmount_Baht: bd.vatAmount || "0.0000",
+                grandTotal_Baht: bd.grandTotalBaht || "0.0000"
+            };
+        } else {
+            // ของฝั่ง 1-8 (อัตราปกติ / TOU)
+            let modeInput = document.querySelector(`input[name="m${type}"]:checked`);
+            let currentMode = modeInput ? modeInput.value : 'normal'; 
+            
+            let ongridRes = document.getElementById(`res_ongrid_${type}`) ? document.getElementById(`res_ongrid_${type}`).innerText : "0 kWp";
+            let hybridRes = document.getElementById(`res_hybrid_${type}`) ? document.getElementById(`res_hybrid_${type}`).innerText : "0 kWp / แบตฯ 0 kWh";
+            
+            let bd = (window.lastCalcData && window.lastCalcData[type]) ? window.lastCalcData[type] : {};
+            let totalU = bd.totalUnits || 0;
+            let totalB = bd.grandTotalBaht || 0;
+
+            energyExport = {
+                rateType: currentMode,
+                totalUnitsPerMonth: totalU,
+                grandTotalBahtPerMonth: totalB,
+                pvOnGrid_Recommended: ongridRes,
+                pvHybrid_Recommended: hybridRes,
+                
+                // 🌟 เพิ่มฟิลด์ค่าไฟ (ทศนิยม 4 ตำแหน่ง)
+                ftRate_BahtPerUnit: bd.ftRate || "0.0000",
+                vatPercent: bd.vatPercent || "0.0000",
+                rateDescription: bd.rateDescription || "-",
+                demandCost_Baht: bd.demandCost || "0.0000",
+                energyCost_Baht: bd.energyCost || "0.0000",
+                serviceFee_Baht: bd.serviceFee || "0.0000",
+                ftTotalCost_Baht: bd.ftTotalCost || "0.0000",
+                totalBeforeVat_Baht: bd.totalBeforeVat || "0.0000",
+                vatAmount_Baht: bd.vatAmount || "0.0000",
+                grandTotal_Baht: (typeof totalB === 'number') ? totalB.toFixed(4) : "0.0000"
+            };
+        }
+
+        let dataToExport = {
+            metadata: {
+                format: "DB0",
+                customerName: custName,
+                timestamp: new Date().toISOString(),
+                sourceTab: type === 9 ? "AMR_Analysis" : `PEA_Calculator_Type_${type}`
+            },
+            energyData: energyExport,
+            loadProfile24h_Percent: profile24h
+        };
+
+        let jsonStr = JSON.stringify(dataToExport, null, 2);
+        let blob = new Blob([jsonStr], { type: "text/plain;charset=utf-8" });
+        
+        let dateStr = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+        let filename = `DB0_${custName.replace(/\s+/g, '_')}_${dateStr}.txt`;
+
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+
+    // ==============================================
+    // 6. ฟังก์ชัน AMR Analysis (ดึงลอจิกจาก Source 3)
+    // ==============================================
+    let amrMonthlyData = { sumA: 0, sumB: 0, sumC: 0, sumA915: 0, sumC915: 0, allValues: [], uniqueDays: new Set() };
+    let amrUserInfo = { account: '', name: '', meter: '', tariff: '' };
+
+    async function parseFileToRows(file) {
+        const buffer = await file.arrayBuffer();
+        const view = new Uint8Array(buffer);
+        let text = "";
+        if (view.length >= 2 && view[0] === 0xFF && view[1] === 0xFE) text = new TextDecoder("utf-16le").decode(buffer);
+        else if (view.length >= 3 && view[0] === 0xEF && view[1] === 0xBB && view[2] === 0xBF) text = new TextDecoder("utf-8").decode(buffer.slice(3));
+        else {
+            try { text = new TextDecoder("utf-8", {fatal: true}).decode(buffer); }
+            catch (e) { text = new TextDecoder("windows-874").decode(buffer); }
+        }
+
+        let rows = [];
+        if (text.toLowerCase().includes("<table")) {
+            let doc = new DOMParser().parseFromString(text, 'text/html');
+            doc.querySelectorAll('tr').forEach(tr => {
+                let rowData = [];
+                tr.querySelectorAll('td, th').forEach(td => rowData.push(td.textContent.replace(/ /g, ' ').trim()));
+                if (rowData.length > 0) rows.push(rowData);
+            });
+        } else {
+            rows = Papa.parse(text, { skipEmptyLines: true }).data;
+        }
+        return rows;
+    }
+
+    function extractAMRUserInfo(rows) {
+        for(let i = 0; i < Math.min(15, rows.length); i++) {
+            if(!rows[i]) continue;
+            for(let j = 0; j < rows[i].length; j++) {
+                let cell = String(rows[i][j]).trim();
+                if(cell.includes('บัญชีผู้ใช้ไฟ')) { amrUserInfo.account = cell.replace(/บัญชีผู้ใช้ไฟ(ฟ้า)?/g, '').replace(/[:]/g, '').trim() || String(rows[i][j+1] || '').replace(/^:/, '').trim(); }
+                if(cell.includes('ชื่อผู้ใช้ไฟ')) { amrUserInfo.name = cell.replace(/ชื่อผู้ใช้ไฟ(ฟ้า)?/g, '').replace(/[:]/g, '').trim() || String(rows[i][j+1] || '').replace(/^:/, '').trim(); document.getElementById('global_name').value = amrUserInfo.name; }
+                if(cell.includes('หมายเลขมิเตอร์')) { amrUserInfo.meter = cell.replace('หมายเลขมิเตอร์', '').replace(/[:]/g, '').trim() || String(rows[i][j+1] || '').replace(/^:/, '').trim(); }
+                if(cell.includes('Tariff')) { amrUserInfo.tariff = cell.replace('Tariff', '').replace(/[:]/g, '').trim() || String(rows[i][j+1] || '').replace(/^:/, '').trim(); }
+            }
+        }
+        document.getElementById('userInfoPanel').classList.remove('hidden');
+        document.getElementById('info_account').innerText = amrUserInfo.account || '-';
+        document.getElementById('info_name').innerText = amrUserInfo.name || '-';
+        document.getElementById('info_meter').innerText = amrUserInfo.meter || '-';
+        document.getElementById('info_tariff').innerText = amrUserInfo.tariff || '-';
+    }
+
+    async function processMonthly() {
+        const fileInput = document.getElementById('monthlyFiles');
+        if (fileInput.files.length === 0) return alert('เลือกไฟล์ CSV หรือ TXT ก่อนครับ');
+        await parseAMRFiles(Array.from(fileInput.files), 'csv');
+    }
+
+    async function processMonthlySheets() {
+        const fileInput = document.getElementById('monthlySheetFiles');
+        if (fileInput.files.length === 0) return alert('เลือกไฟล์ Excel ก่อนครับ');
+        await parseAMRFiles(Array.from(fileInput.files), 'excel');
+    }
+
+async function parseAMRFiles(files, type) {
+        // 🌟 แก้ไขเพิ่ม dailyMap เพื่อเก็บค่าแยกรายวัน
+        amrMonthlyData = { sumA: 0, sumB: 0, sumC: 0, sumA915: 0, sumC915: 0, allValues: [], uniqueDays: new Set(), dailyMap: new Map() };
+        let userExtracted = false;
+
+        for (let file of files) {
+            let rows = [];
+            if(type === 'csv') {
+                rows = await parseFileToRows(file);
+            } else {
+                let data = new Uint8Array(await file.arrayBuffer());
+                let workbook = XLSX.read(data, { type: 'array' });
+                rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
+            }
+            
+            if(!userExtracted) { extractAMRUserInfo(rows); userExtracted = true; }
+            
+            let dataStartIdx = -1;
+            for (let i = 0; i < Math.min(15, rows.length); i++) {
+                if (rows[i] && rows[i].some(cell => String(cell).toUpperCase().includes('RATE A'))) { dataStartIdx = i + 1; break; }
+            }
+            
+            if (dataStartIdx !== -1) {
+                for (let i = dataStartIdx; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.length >= 5 && String(row[0]).trim() !== '' && String(row[0]).trim() !== 'รวม') {
+                        let dtStr = String(row[0]).trim();
+                        let rateA = parseFloat(String(row[1]).replace(/,/g, '')) || 0;
+                        let rateB = parseFloat(String(row[2]).replace(/,/g, '')) || 0;
+                        let rateC = parseFloat(String(row[3]).replace(/,/g, '')) || 0;
+                        let total = parseFloat(String(row[4]).replace(/,/g, '')) || (rateA+rateB+rateC);
+
+                        amrMonthlyData.sumA += rateA; amrMonthlyData.sumB += rateB; amrMonthlyData.sumC += rateC;
+                        amrMonthlyData.allValues.push(total);
+
+                        let parts = dtStr.split(' ');
+                        if (parts.length >= 2) {
+                            let date = parts[0];
+                            amrMonthlyData.uniqueDays.add(date);
+                            
+                            // 🌟 เก็บยอดแยกรายวัน
+                            if(!amrMonthlyData.dailyMap.has(date)) {
+                                amrMonthlyData.dailyMap.set(date, { a:0, b:0, c:0, a915:0, c915:0 });
+                            }
+                            let dayObj = amrMonthlyData.dailyMap.get(date);
+                            
+                            dayObj.a += rateA;
+                            dayObj.b += rateB;
+                            dayObj.c += rateC;
+
+                            let hr = parseInt(parts[1].split(/[.:]/)[0], 10);
+                            if (hr >= 9 && hr < 15) { 
+                                amrMonthlyData.sumA915 += rateA; 
+                                amrMonthlyData.sumC915 += rateC; 
+                                dayObj.a915 += rateA;
+                                dayObj.c915 += rateC;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        updateMonthlyUI();
+        document.getElementById('monthlyResults').classList.remove('hidden');
+    }
+
+    function updateMonthlyUI() {
+        document.getElementById('sum_A').innerText = amrMonthlyData.sumA.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWh';
+        document.getElementById('sum_B').innerText = amrMonthlyData.sumB.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWh';
+        document.getElementById('sum_C').innerText = amrMonthlyData.sumC.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWh';
+        document.getElementById('sum_A_9_15').innerText = amrMonthlyData.sumA915.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWh';
+        document.getElementById('sum_C_9_15').innerText = amrMonthlyData.sumC915.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWh';
+
+        // 🌟 คำนวณยอดเงินรวมและรายละเอียดบิลเพื่อใช้เก็บใน DB0 (ทศนิยม 4 ตำแหน่ง)
+        // อัตราในช่องกรอกคือแหล่งข้อมูลหลัก และถูก sync กลับเข้า PEA_RATES.amr เพื่อบันทึกไว้
+        let pRate = parseFloat(document.getElementById('amr_peakRate').value) || PEA_RATES.amr.peak;
+        let opRate = parseFloat(document.getElementById('amr_offPeakRate').value) || PEA_RATES.amr.offPeak;
+        PEA_RATES.amr.peak = pRate;
+        PEA_RATES.amr.offPeak = opRate;
+        saveRates();
+        let ft = parseFloat(document.getElementById('global_ft').value) || 0;
+        let vatRate = parseFloat(document.getElementById('global_vat').value) || 0;
+
+        let units = amrMonthlyData.sumA + amrMonthlyData.sumB + amrMonthlyData.sumC;
+        let baseCost = (amrMonthlyData.sumA * pRate) + (amrMonthlyData.sumB * opRate) + (amrMonthlyData.sumC * opRate);
+        let serviceFee = PEA_RATES.amr.s; // ค่าบริการรายเดือนสำหรับ AMR TOU (แก้ไขได้ในแผงตัวคูณ)
+        let ftTotal = units * ft;
+        let totalBeforeVat = baseCost + serviceFee + ftTotal;
+        let vatTotal = totalBeforeVat * (vatRate / 100);
+        let grandTotal = totalBeforeVat + vatTotal;
+
+        window.amrGrandTotalKwh = units;
+        window.amrGrandTotalBaht = grandTotal;
+
+        // 🌟 บันทึกรายละเอียดบิล AMR ลงตัวแปร
+        window.amrBillingDetails = {
+            ftRate: ft.toFixed(4),
+            vatPercent: vatRate.toFixed(4),
+            rateDescription: "Meter AMR / AMI TOU",
+            energyCost: baseCost.toFixed(4),
+            serviceFee: serviceFee.toFixed(4),
+            ftTotalCost: ftTotal.toFixed(4),
+            totalBeforeVat: totalBeforeVat.toFixed(4),
+            vatAmount: vatTotal.toFixed(4),
+            grandTotalBaht: grandTotal.toFixed(4)
+        };
+        // คำนวณ Solar 09:00 - 15:00
+        const daysCount = amrMonthlyData.uniqueDays.size || 1;
+        let total_kwh_915 = amrMonthlyData.sumA915 + amrMonthlyData.sumC915;
+        let kwp_total = (total_kwh_915 / daysCount) / (PEA_RATES.pv.psh * PEA_RATES.pv.pr);
+
+        document.getElementById('amr_solar_kwh').innerText = total_kwh_915.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWh';
+        document.getElementById('amr_solar_kwp').innerText = kwp_total.toLocaleString(undefined, {maximumFractionDigits:2}) + ' kWp';
+
+        // สร้าง 24h Load Profile ของ AMR (คำนวณสัดส่วนกลางวันจริงจาก AMR)
+        let totalAll = amrMonthlyData.sumA + amrMonthlyData.sumB + amrMonthlyData.sumC;
+        let dayPct = totalAll > 0 ? (total_kwh_915 / totalAll) * 100 : 65; // ใช้ 09:00-15:00 เป็นตัวแทนกลางวัน
+        
+        // ขยายเป็นช่วงกลางวันทำงานปกติ (08:00 - 17:00 = 10 ชม.) เพื่อให้ Profile สมจริง
+        let dayVal = dayPct / 10; 
+        let nightVal = (100 - dayPct) / 14;
+
+        // ปัดทศนิยมแล้วยกเศษใส่ชั่วโมงที่สูงสุด เพื่อให้ผลรวมเป็น 100.00% พอดี
+        let vals9 = [];
+        for(let i=0; i<24; i++) vals9.push(Math.round(((i >= 8 && i <= 17) ? dayVal : nightVal) * 100) / 100);
+        let diff9 = Math.round((100 - vals9.reduce((a, b) => a + b, 0)) * 100) / 100;
+        if (diff9 !== 0) {
+            let pi = vals9.indexOf(Math.max(...vals9));
+            vals9[pi] = Math.round((vals9[pi] + diff9) * 100) / 100;
+        }
+
+        let lpGrid = document.getElementById('load_profile_9');
+        let html9 = '';
+        for(let i=0; i<24; i++) {
+            html9 += `
+                <div class="text-center bg-gray-50 p-1 border rounded">
+                    <label class="block text-xs font-bold text-gray-500">${String(i).padStart(2, '0')}:00</label>
+                    <input type="number" class="lp_input_9 w-full text-center border rounded py-1 text-sm" value="${vals9[i].toFixed(2)}" step="0.1" oninput="updateLpSum(9)">
+                </div>
+            `;
+        }
+        lpGrid.innerHTML = html9;
+        updateLpSum(9);
+
+        // แสดง PSH / PR ที่ใช้จริงใต้ผลลัพธ์ และแผงตัวคูณของแท็บ 9
+        let pshNote = document.getElementById('amr_psh_note');
+        if (pshNote) pshNote.innerHTML = `* PSH = ${PEA_RATES.pv.psh} และ Performance Ratio = ${PEA_RATES.pv.pr} (แก้ไขได้ในแผงตัวคูณด้านซ้าย)`;
+        renderRatePanel(9);
+
+        // 🌟 เรียกใช้งานกราฟ 24h
+        drawAMRDaily24hChart();
+    } // (ปีกกาปิดของฟังก์ชัน updateMonthlyUI เดิม)
+
+    // 🌟 ฟังก์ชันวาดกราฟ 24h แยกเส้นตาม Rate A, B, C
+function drawAMRDaily24hChart() {
+        if (typeof Chart === 'undefined') return;
+
+        let days = amrMonthlyData.uniqueDays.size || 1;
+
+        // ช่วงเวลาตามโครงสร้าง TOU ของ กฟภ.
+        //   Rate A (Peak)     09:00-22:00 = 13 ชม. โดยแยกช่วง 09:00-15:00 (6 ชม.) ออกไปวิเคราะห์ PV
+        //                     -> ส่วนที่เหลือคือ 15:00-22:00 = 7 ชม.
+        //   Rate B (Off Peak) 22:00-09:00 = 11 ชม.
+        //   Rate C (Holiday)  24 ชม. โดยแยกช่วง 09:00-15:00 (6 ชม.) -> ส่วนที่เหลือ 18 ชม.
+        let avgA_hr    = (amrMonthlyData.sumA - amrMonthlyData.sumA915) / days / 7;
+        let avgA915_hr = amrMonthlyData.sumA915 / days / 6;
+        let avgB_hr    = amrMonthlyData.sumB / days / 11;
+        let avgC_hr    = (amrMonthlyData.sumC - amrMonthlyData.sumC915) / days / 18;
+        let avgC915_hr = amrMonthlyData.sumC915 / days / 6;
+
+        const psh = PEA_RATES.pv.psh, pr = PEA_RATES.pv.pr;
+        let total_kwh_915 = amrMonthlyData.sumA915 + amrMonthlyData.sumC915;
+        let kwp_total = (total_kwh_915 / days) / (psh * pr);
+        const pvDist = [0,0,0,0,0,0, 0, 0.05, 0.10, 0.15, 0.18, 0.20, 0.20, 0.18, 0.15, 0.10, 0.05, 0, 0,0,0,0,0,0];
+        let pvSum = pvDist.reduce((a,b)=>a+b,0);
+        // พลังงานที่ผลิตได้จริงต่อวัน = kWp × PSH × PR
+        let dailyPvKwh = kwp_total * psh * pr;
+        let pvFactor = pvSum > 0 ? (dailyPvKwh / pvSum) : 0;
+        let d_PV = pvDist.map(v => v * pvFactor);
+
+        let labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+        let d_A = [], d_A915 = [], d_B = [], d_C = [], d_C915 = [];
+
+        for(let i=0; i<24; i++) {
+            // เส้น Rate A แสดงเฉพาะ 15:00-21:00 เพื่อไม่ให้ทับเส้น A(09-15) ที่แยกออกมา
+            d_A.push((i >= 15 && i <= 21) ? avgA_hr : null);
+            d_A915.push((i >= 9 && i <= 14) ? avgA915_hr : null);
+            // Off Peak 22:00-09:00 = ชม. 22, 23, 0-8 (รวม 11 ชม. ตรงกับตัวหาร)
+            d_B.push((i >= 22 || i < 9) ? avgB_hr : null);
+            // Rate C ส่วนที่เหลือ 18 ชม. (เว้นช่วง 09-15 ที่มีเส้น C(09-15) แยกอยู่แล้ว)
+            d_C.push((i >= 9 && i <= 14) ? null : avgC_hr);
+            d_C915.push((i >= 9 && i <= 14) ? avgC915_hr : null);
+        }
+
+        if(window.amr24hChart) window.amr24hChart.destroy();
+        let canvas = document.getElementById('amrDaily24hChart');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        window.amr24hChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'PV ที่ผลิตได้', data: d_PV, borderColor: '#16a34a', backgroundColor: 'rgba(34, 197, 94, 0.15)', fill: true, tension: 0.4 },
+                    { label: 'Rate A (Peak 15-22)', data: d_A, borderColor: '#991b1b', backgroundColor: 'rgba(153, 27, 27, 0.05)', fill: true, tension: 0.4 },
+                    { label: 'Rate A (Peak 09-15)', data: d_A915, borderColor: '#991b1b', borderDash: [5, 5], backgroundColor: 'transparent', fill: false, tension: 0.4 },
+                    { label: 'Rate B (Off Peak)', data: d_B, borderColor: '#6b7280', backgroundColor: 'rgba(107, 114, 128, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'Rate C (Holiday 24 ชม.)', data: d_C, borderColor: '#0284c7', backgroundColor: 'transparent', fill: false, tension: 0.4 },
+                    { label: 'Rate C (Holiday 09-15)', data: d_C915, borderColor: '#0284c7', borderDash: [5, 5], backgroundColor: 'transparent', fill: false, tension: 0.4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { 
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { 
+                            font: { family: 'Sarabun' },
+                            generateLabels: function(chart) {
+                                const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                const labels = original.call(this, chart);
+                                labels.forEach(label => {
+                                    if (label.text === 'Rate A (Peak 09-15)' || label.text === 'Rate C (Holiday 09-15)') {
+                                        label.fontColor = '#dc2626'; 
+                                    }
+                                });
+                                return labels;
+                            }
+                        } 
+                    } 
+                },
+                scales: { y: { title: { display: true, text: 'พลังงานเฉลี่ย (kWh/ชั่วโมง)' }, beginAtZero: true } }
+            }
+        });
+
+        // ==========================================
+        // 🌟 เริ่มส่วนคำนวณ AI Analysis
+        // ==========================================
+        let total_load_kwh = amrMonthlyData.sumA + amrMonthlyData.sumB + amrMonthlyData.sumC;
+        // พลังงานที่ผลิตได้ = kWp × PSH × PR × จำนวนวัน (ต้องคูณ PR ด้วย มิฉะนั้นจะเกินจริง ~33%)
+        let total_pv_kwh = dailyPvKwh * days;
+        let percent_kwh_saved = (total_load_kwh > 0) ? (total_pv_kwh / total_load_kwh) * 100 : 0;
+
+        // ใช้อัตราจากช่องที่ผู้ใช้กรอก ไม่ใช่ค่าคงที่ เพื่อให้ตรงกับบิลที่คำนวณด้านบน
+        let rate_A_price  = parseFloat(document.getElementById('amr_peakRate').value)    || PEA_RATES.amr.peak;
+        let rate_BC_price = parseFloat(document.getElementById('amr_offPeakRate').value) || PEA_RATES.amr.offPeak;
+
+        let original_cost = (amrMonthlyData.sumA * rate_A_price) + (amrMonthlyData.sumB * rate_BC_price) + (amrMonthlyData.sumC * rate_BC_price);
+
+        let ratioA = total_kwh_915 > 0 ? amrMonthlyData.sumA915 / total_kwh_915 : 0;
+        let ratioC = total_kwh_915 > 0 ? amrMonthlyData.sumC915 / total_kwh_915 : 0;
+        let saved_cost = (total_pv_kwh * ratioA * rate_A_price) + (total_pv_kwh * ratioC * rate_BC_price);
+
+        let percent_cost_saved = (original_cost > 0) ? (saved_cost / original_cost) * 100 : 0;
+
+        // เก็บไว้ใช้ในรายงาน PDF
+        window.amrAnalysis = { kwp: kwp_total, days: days, dailyPvKwh: dailyPvKwh,
+                               totalPvKwh: total_pv_kwh, percentKwhSaved: percent_kwh_saved,
+                               savedCost: saved_cost, percentCostSaved: percent_cost_saved,
+                               rateA: rate_A_price, rateBC: rate_BC_price, kwh915: total_kwh_915 };
+
+        let aiContainer = document.getElementById('aiAnalysisContainer');
+        let aiText = document.getElementById('aiAnalysisText');
+        if (aiContainer && aiText) {
+            aiText.innerHTML = `
+                <li><strong>ระบบ Solar PV ที่แนะนำ:</strong> ขนาด <span class="text-blue-700 font-bold">${kwp_total.toFixed(2)} kWp</span> (ปรับสมดุลตามการใช้ไฟช่วง 09:00-15:00 น. เพื่อไม่ให้ไฟย้อน)</li>
+                <li><strong>ลดหน่วยการใช้ไฟ (Energy Saving):</strong> ผลิตไฟช่วยลดโหลดได้รวม <span class="text-emerald-700 font-bold">${total_pv_kwh.toLocaleString('th-TH', {maximumFractionDigits:0})} kWh</span> (${dailyPvKwh.toLocaleString('th-TH', {maximumFractionDigits:1})} kWh/วัน × ${days} วัน) หรือประหยัดพลังงานได้ <span class="text-emerald-700 font-bold text-lg">${percent_kwh_saved.toFixed(1)}%</span> ของการใช้ไฟทั้งหมด</li>
+                <li><strong>ประหยัดค่าใช้จ่าย (Cost Saving):</strong> เน้นตัดโหลดแพงช่วง Peak ทำให้ประหยัดค่าไฟได้ประมาณ <span class="text-emerald-700 font-bold">${saved_cost.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท</span> คิดเป็นการลดบิลค่าไฟได้ถึง <span class="text-emerald-700 font-bold text-lg">${percent_cost_saved.toFixed(1)}%</span></li>
+            `;
+            aiContainer.classList.remove('hidden');
+        }
+        let aiNote = document.getElementById('aiRateNote');
+        if (aiNote) aiNote.innerHTML = `* ประเมินการประหยัดเงินจากอัตราที่กรอกไว้ด้านบน (Peak ${rate_A_price} บาท/kWh และ Off-Peak/Holiday ${rate_BC_price} บาท/kWh) ยังไม่รวม Ft และ VAT`;
+    }
+	// =========================================================
+    // โค้ดชุดใหม่สำหรับ Override แก้ปัญหากราฟและ AI ค้าง
+    // =========================================================
+
+    function calcPV(type) {
+        // 🌟 ป้องกันไม่ให้ไปยุ่งกับระบบของแท็บ 9 (AMR) ซึ่งสร้างตาราง 24 ชม. ด้วยข้อมูลจริง
+        if (type === 9) return;
+
+        if (!window.lastCalcData) window.lastCalcData = {};
+        if (!window.lastCalcData[type]) window.lastCalcData[type] = { totalUnits: 0, grandTotalBaht: 0 };
+
+        const P = PEA_RATES.pv;
+        let dayPctInput = document.getElementById(`day_pct_${type}`);
+        let dayPct = dayPctInput ? (parseFloat(dayPctInput.value) || 65) : 65;
+        let nightPct = 100 - dayPct;
+
+        // ช่วงกลางวันตามค่าที่ตั้งไว้ (ค่ามาตรฐาน 08:00-16:00 = 9 ชม.) ที่เหลือคือ Base Load
+        let dayHours = P.dayEnd - P.dayStart + 1;
+        let nightHours = Math.max(1, 24 - dayHours);
+        let nightVal = nightPct / nightHours;
+
+        // สัดส่วนรูประฆังคว่ำ (Bell Curve) กระจายบนช่วงกลางวัน — normalize ให้รวมกันได้ 1.0 เสมอ
+        // ใช้สูตร gaussian รอบจุดกึ่งกลางของช่วง เพื่อรองรับกรณีผู้ใช้เปลี่ยนความกว้างของช่วงกลางวัน
+        let mid = (P.dayStart + P.dayEnd) / 2;
+        let sigma = Math.max(1, dayHours / 4);
+        let weights = [];
+        for (let h = P.dayStart; h <= P.dayEnd; h++) {
+            weights.push(Math.exp(-Math.pow(h - mid, 2) / (2 * sigma * sigma)));
+        }
+        let wSum = weights.reduce((a, b) => a + b, 0) || 1;
+        weights = weights.map(w => w / wSum);
+
+        let vals = [];
+        for(let i=0; i<24; i++) {
+            vals.push((i >= P.dayStart && i <= P.dayEnd)
+                ? dayPct * weights[i - P.dayStart]   // กระจายค่าตามรูปทรงระฆังคว่ำ
+                : nightVal);                         // เวลาที่เหลือหารเฉลี่ยเป็น Base Load
+        }
+        // ปัดเป็นทศนิยม 2 ตำแหน่งแล้วยกเศษที่หายไปจากการปัดใส่ชั่วโมงที่ใช้ไฟมากที่สุด
+        // เพื่อให้ผลรวมเป็น 100.00% พอดี ไม่ใช่ 99.94%
+        let rounded = vals.map(v => Math.round(v * 100) / 100);
+        let diff = Math.round((100 - rounded.reduce((a, b) => a + b, 0)) * 100) / 100;
+        if (diff !== 0) {
+            let peakIdx = rounded.indexOf(Math.max(...rounded));
+            rounded[peakIdx] = Math.round((rounded[peakIdx] + diff) * 100) / 100;
+        }
+
+        let lpGrid = document.getElementById(`load_profile_${type}`);
+        if(lpGrid) {
+            let inputsHtml = '';
+            for(let i=0; i<24; i++) {
+                inputsHtml += `
+                    <div class="lp-item">
+                        <label>${String(i).padStart(2, '0')}:00</label>
+                        <input type="number" class="lp_input_${type}" value="${rounded[i].toFixed(2)}" step="0.1" oninput="updateLpSum(${type})">
+                    </div>
+                `;
+            }
+            lpGrid.innerHTML = inputsHtml;
+        }
+        updateLpSum(type);
+    }
+
+    function updateLpSum(type) {
+        if (!window.lastCalcData) window.lastCalcData = {};
+        if (!window.lastCalcData[type]) window.lastCalcData[type] = { totalUnits: 0, grandTotalBaht: 0 };
+
+        const P = PEA_RATES.pv;
+        let inputs = document.querySelectorAll(`.lp_input_${type}`);
+        let sum = 0;
+        inputs.forEach(inp => { sum += parseFloat(inp.value) || 0; });
+
+        // อัปเดตผลรวม % (ทำก่อนเสมอ เพราะแท็บ 9 ก็ใช้ตัวเลขนี้ตอน Export)
+        let sumEl = document.getElementById(`load_sum_${type}`);
+        if(sumEl) {
+            sumEl.innerText = sum.toFixed(2);
+            sumEl.style.color = (sum >= 95 && sum <= 105) ? '#16a34a' : '#dc2626';
+        }
+
+        // แท็บ 9 มีระบบประเมิน PV ของตัวเอง (คำนวณจากข้อมูล AMR จริง) จึงไม่ต้องคำนวณต่อ
+        if (type === 9) return;
+
+        let units = window.lastCalcData[type].totalUnits || 0;
+
+        // ยังไม่ได้กดคำนวณค่าไฟ -> ไม่แสดงตัวเลข kWp ที่ไม่มีที่มา
+        if (units <= 0) {
+            let ro = document.getElementById(`res_ongrid_${type}`);
+            let rh = document.getElementById(`res_hybrid_${type}`);
+            if(ro) ro.innerText = '- kWp';
+            if(rh) rh.innerText = '- kWp / - kWh';
+            let warn = document.getElementById(`pv_warn_${type}`);
+            if(warn) warn.innerHTML = `<div class="warn-box">⚠️ กรุณากรอกข้อมูลแล้วกดปุ่ม "คำนวณค่าไฟฟ้า" ก่อน ระบบจึงจะประเมินขนาด Solar PV ได้</div>`;
+            let aiBox0 = document.getElementById(`ai_text_${type}`);
+            if(aiBox0) aiBox0.innerHTML = 'รอข้อมูลปริมาณการใช้ไฟฟ้า — กดปุ่ม "คำนวณค่าไฟฟ้า" เพื่อเริ่มวิเคราะห์';
+            return;
+        }
+        let warnEl = document.getElementById(`pv_warn_${type}`);
+        if(warnEl) warnEl.innerHTML = '';
+
+        let dailyTotalUnits = units / 30;
+        let psh = P.psh, pr = P.pr;
+
+        let mode = getMode(type);
+
+        let loadProfileKwh = [];
+        let dayLoadKwh = 0;
+        let nightLoadKwh_Normal = 0;
+        let nightLoadKwh_TOU = 0;
+
+        inputs.forEach((inp, index) => {
+            let pct = parseFloat(inp.value) || 0;
+            let hrKwh = dailyTotalUnits * (pct / 100);
+            loadProfileKwh.push(hrKwh);
+
+            if (index >= P.dayStart && index <= P.dayEnd) {
+                dayLoadKwh += hrKwh;
+            } else {
+                nightLoadKwh_Normal += hrKwh;
+                if (index >= P.eveStart && index <= P.eveEnd) {
+                    nightLoadKwh_TOU += hrKwh;   // ช่วง Peak ตอนเย็นที่ค่าไฟแพงที่สุด
+                }
+            }
+        });
+
+        // kWp ที่ต้องติดตั้ง = พลังงานที่ต้องการ ÷ (PSH × Performance Ratio)
+        let yieldPerKwp = psh * pr;
+        let kwp_ongrid = dayLoadKwh / yieldPerKwp;
+        let battKwh = (mode === 'tou' || mode === 'tod') ? nightLoadKwh_TOU : nightLoadKwh_Normal;
+        let kwp_hybrid = (dayLoadKwh + battKwh) / yieldPerKwp;
+
+        let resOngrid = document.getElementById(`res_ongrid_${type}`);
+        let resHybrid = document.getElementById(`res_hybrid_${type}`);
+        if(resOngrid) resOngrid.innerText = `${kwp_ongrid.toFixed(2)} kWp`;
+        if(resHybrid) resHybrid.innerText = `${kwp_hybrid.toFixed(2)} kWp / แบตฯ ${battKwh.toFixed(2)} kWh`;
+
+        window.lastCalcData[type].pvKwP_OnGrid = kwp_ongrid.toFixed(2);
+        window.lastCalcData[type].pvKwP_Hybrid = kwp_hybrid.toFixed(2);
+        window.lastCalcData[type].battery_kWh = battKwh.toFixed(2);
+        window.lastCalcData[type].dayLoadKwh = dayLoadKwh.toFixed(2);
+        window.lastCalcData[type].dailyTotalUnits = dailyTotalUnits.toFixed(2);
+        window.lastCalcData[type].loadSumPercent = sum.toFixed(2);
+
+        // 1. ดันข้อความ AI ออกมาแสดงผลทันที ไม่ต้องรอกราฟ (แก้ปัญหา AI ค้าง)
+        let aiBox = document.getElementById(`ai_text_${type}`);
+        if(aiBox) {
+            let ongridText = resOngrid ? resOngrid.innerText : `${kwp_ongrid.toFixed(2)} kWp`;
+            aiBox.innerHTML = generateAIAnalysis(mode, kwp_hybrid, battKwh, dailyTotalUnits, ongridText);
+        }
+
+        // 2. วาดกราฟและดัก Error ไว้
+        try {
+            updatePVChart(type, loadProfileKwh, kwp_hybrid, battKwh);
+        } catch (e) {
+            console.error("กราฟยังไม่สามารถวาดได้:", e);
+        }
+    }
+
+    function updatePVChart(type, loadKwh, kwpHybrid, battMaxCapacity) {
+        if (typeof Chart === 'undefined') return;
+        if (typeof window.pvCharts === 'undefined') window.pvCharts = {};
+
+        const P = PEA_RATES.pv;
+        const pvDist = [0,0,0,0,0,0, 0, 0.05, 0.10, 0.15, 0.18, 0.20, 0.20, 0.18, 0.15, 0.10, 0.05, 0, 0,0,0,0,0,0];
+        let pvSum = pvDist.reduce((a,b)=>a+b,0);
+        // พลังงานที่ผลิตได้จริงต่อวัน = kWp × PSH × PR (ให้ตรงกับสูตรที่ใช้หาขนาด kWp)
+        let dailyPvKwh = kwpHybrid * P.psh * P.pr;
+        let pvFactor = pvSum > 0 ? (dailyPvKwh / pvSum) : 0;
+        let pvProduction = pvDist.map(v => v * pvFactor);
+
+        let batteryFlow = [];
+        let currentBatt = 0;
+
+        // 1. C-Rate = ขีดจำกัดการชาร์จ/ดิสชาร์จต่อชั่วโมง (แก้ไขได้ในแผงค่าคงที่ PV)
+        const cRate = P.cRate;
+        const maxFlowPerHour = battMaxCapacity * cRate;
+
+        // 2. ประสิทธิภาพ Inverter (0.95 = เผื่อ Loss 5% ตอนแปลงไฟ)
+        const inverterEff = P.inverterEff;
+
+        // จำลองกระแสเข้า-ออกของแบตเตอรี่ (+ คือชาร์จ, - คือดิสชาร์จ)
+        for(let i=0; i<24; i++) {
+            let netEnergy = pvProduction[i] - loadKwh[i];
+            let flow = 0;
+            
+            if (netEnergy > 0) {
+                // ช่วงชาร์จ: จำกัดพลังงานสูงสุดไม่เกิน C-Rate
+                let spaceLeft = battMaxCapacity - currentBatt;
+                let actualCharge = Math.min(netEnergy, spaceLeft, maxFlowPerHour);
+                currentBatt += actualCharge;
+                flow = actualCharge; 
+            } else {
+                // ช่วงดิสชาร์จ: คำนวณ Loss ของ Inverter และจำกัดการดึงไฟไม่เกิน C-Rate
+                let neededEnergy = Math.abs(netEnergy);
+                let targetDischarge = neededEnergy / inverterEff; 
+                let actualDischarge = Math.min(targetDischarge, currentBatt, maxFlowPerHour); 
+                currentBatt -= actualDischarge;
+                flow = -actualDischarge; 
+            }
+            batteryFlow.push(flow);
+        }
+
+        const labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+        if(window.pvCharts[type]) window.pvCharts[type].destroy();
+        
+        let canvas = document.getElementById(`pvChart_${type}`);
+        if(!canvas) return; 
+        
+        const ctx = canvas.getContext('2d');
+        window.pvCharts[type] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { 
+                        label: 'Load (การใช้ไฟ kWh)', 
+                        data: loadKwh, 
+                        type: 'line', 
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                        fill: true, 
+                        tension: 0.4,                               
+                        order: 3 
+                    },
+                    { 
+                        label: 'PV Generation (ผลิตโซลาร์ kWh)', 
+                        data: pvProduction, 
+                        type: 'line',
+                        borderColor: '#16a34a',
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)', 
+                        fill: true, 
+                        tension: 0.4,                               
+                        order: 2 
+                    },
+                    { 
+                        label: 'Battery Flow (+ชาร์จ / -ดิสชาร์จ)', 
+                        data: batteryFlow, 
+                        type: 'line',
+                        borderColor: '#fa8202',
+                        backgroundColor: 'rgba(250, 130, 2, 0.2)',
+                        fill: true, 
+                        tension: 0.4,                               
+                        order: 1 
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { 
+                    legend: { position: 'bottom', labels: { font: { family: 'Sarabun' } } }, 
+                    datalabels: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                let val = context.parsed.y;
+                                if (label) { label += ': ' + val.toFixed(2); }
+                                
+                                if (context.datasetIndex === 2) { 
+                                    if (val > 0) label += ' (⚡ ชาร์จเข้าแบต)';
+                                    else if (val < 0) label += ' (🔋 จ่ายไฟจากแบต)';
+                                    else label += ' (⏸️ Standby)';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: { y: { title: { display: true, text: 'พลังงาน (kWh)' } } }
+            }
+        });
+    }
+
+    function generateAIAnalysis(mode, kwpHybrid, battKwh, dailyLoad, ongridText) {
+        const P = PEA_RATES.pv;
+        const hh = h => String(h % 24).padStart(2, '0') + ':00';
+        let dayWindow = `${hh(P.dayStart)} - ${hh(P.dayEnd + 1)} น.`;
+        let eveWindow = `${hh(P.eveStart)} - ${hh(P.eveEnd + 1)} น.`;
+        let nightWindow = `${hh(P.dayEnd + 1)} - ${hh(P.dayStart)} น.`;
+
+        let isTou = (mode === 'tou' || mode === 'tod');
+        let modeText = isTou ? 'อัตราตามช่วงเวลา TOU/TOD' : 'อัตราปกติ (Normal Rate)';
+        let battStrategy = isTou
+            ? `เนื่องจากคุณเลือกใช้ <b>${modeText}</b> ระบบจึงคำนวณดึงพลังงานจากตารางพฤติกรรมของคุณ โดยพบว่าความจุแบตเตอรี่ที่ <b>${battKwh.toFixed(2)} kWh</b> เพียงพอสำหรับการจ่ายไฟชดเชยในช่วงเวลา Peak (${eveWindow}) ที่ค่าไฟมีราคาแพงที่สุด ช่วยให้คุ้มค่าการลงทุนแบตเตอรี่สูงสุด`
+            : `เนื่องจากคุณเลือกใช้ <b>${modeText}</b> ระบบจึงคำนวณดึงพลังงานจากตารางพฤติกรรมของคุณ โดยพบว่าความจุแบตเตอรี่ที่ <b>${battKwh.toFixed(2)} kWh</b> เพียงพอให้ครอบคลุมการใช้ไฟในช่วงเวลากลางคืนทั้งหมด (${nightWindow})`;
+
+        return `
+            <div>
+                <strong>Pee Analysis Insight:</strong><br>
+                จากการวิเคราะห์ 24h Load Profile รวมวันละ ${dailyLoad.toFixed(2)} หน่วย ระบบขอแนะนำแนวทางดังนี้:<br>
+                <ul style="margin-top: 8px; padding-left: 20px;">
+                    <li><b>ทางเลือกที่ 1 (ลงทุนต่ำ):</b> ติดตั้งระบบ On-Grid ขนาด <b>${ongridText}</b> เพื่อครอบคลุมการใช้ไฟช่วงกลางวันทั้งหมด (${dayWindow})</li>
+                    <li><b>ทางเลือกที่ 2 (ครอบคลุมรอบวัน):</b> ติดตั้งระบบ Hybrid ขนาดแผง <b>${kwpHybrid.toFixed(2)} kWp</b> ร่วมกับ Battery <b>${battKwh.toFixed(2)} kWh</b> ${battStrategy}</li>
+                </ul>
+                <i>* คำนวณด้วย PSH ${P.psh} ชม./วัน และ Performance Ratio ${P.pr} — ทดลองปรับแก้ % การใช้ไฟหรือค่าคงที่ด้านบน กราฟและขนาดแนะนำจะเปลี่ยนแบบ Real-time</i>
+            </div>
+        `;
+    }
+
+    // ==================================================================
+    // === 8. แผงแสดง/แก้ไขตัวคูณอัตราค่าไฟ (Rate Editor) ===
+    // ==================================================================
+
+    const UNIT_BAHT_KW   = 'บาท/kW';
+    const UNIT_BAHT_UNIT = 'บาท/หน่วย';
+    const UNIT_BAHT_MTH  = 'บาท/เดือน';
+
+    // สร้าง 1 ช่องกรอก ผูกกับ path ใน PEA_RATES
+    function rateField(label, path, unit) {
+        let cur = getByPath(PEA_RATES, path);
+        let def = getByPath(DEFAULT_RATES, path);
+        let modified = (Number(cur) !== Number(def));
+        let step = unit === UNIT_BAHT_UNIT ? '0.0001' : '0.01';
+        return `<div class="rate-item">
+            <span class="rate-label">${label}</span>
+            <input type="number" step="${step}" value="${cur}" data-rate-path="${path}"
+                   class="${modified ? 'rate-modified' : ''}" oninput="onRateEdit(this)">
+            <span class="rate-unit">${unit}</span>
+            <span class="rate-default">มาตรฐาน ${def}</span>
+        </div>`;
+    }
+
+    // สร้างชุดช่องของอัตราขั้นบันได
+    function tierFields(pathPrefix, tiers) {
+        let html = '', from = 1;
+        for (let i = 0; i < tiers.length; i++) {
+            let span = tiers[i][0];
+            let label = (span === null || span === undefined)
+                ? `หน่วยที่ ${from} ขึ้นไป`
+                : `หน่วยที่ ${from} - ${from + span - 1}`;
+            html += rateField(label, `${pathPrefix}.${i}.1`, UNIT_BAHT_UNIT);
+            if (span !== null && span !== undefined) from += span;
+        }
+        return html;
+    }
+
+    // อัตรา TOU กลาง (ใช้ร่วมกันหลายประเภท) — เตือนผู้ใช้ว่าแก้แล้วกระทบทุกประเภท
+    function sharedTouFields(v) {
+        return `<div class="rate-group-title">อัตรา TOU กลาง — ${VOLT_LABEL[v]}
+                    <span style="font-weight:normal; color:#b45309; font-size:12px;">(ใช้ร่วมกันโดยประเภท 3.2 / 4.2 / 5.1 / 6.2 / 7.2 — แก้ที่นี่จะมีผลทุกประเภท)</span>
+                </div>
+                <div class="rate-grid">
+                    ${rateField('ค่าความต้องการพลังไฟฟ้า (Demand)', `touShared.${v}.d`, UNIT_BAHT_KW)}
+                    ${rateField('ค่าพลังงาน ช่วง Peak', `touShared.${v}.p`, UNIT_BAHT_UNIT)}
+                    ${rateField('ค่าพลังงาน ช่วง Off-Peak', `touShared.${v}.op`, UNIT_BAHT_UNIT)}
+                    ${rateField('ค่าบริการรายเดือน', `touShared.${v}.s`, UNIT_BAHT_MTH)}
+                </div>`;
+    }
+
+    // จำสถานะ checkbox "แสดงทุกแรงดัน" ของแต่ละแท็บไว้
+    window.rateShowAll = window.rateShowAll || {};
+
+    // เลือกระดับแรงดันที่จะแสดงในแผง
+    function voltsFor(type, showAll, currentV) {
+        if (showAll) {
+            let sel = document.getElementById(`v${type}`) || document.getElementById(`v${type}n`);
+            let opts = sel ? Array.from(sel.options).map(o => o.value) : ['low', 'med', 'high'];
+            return opts;
+        }
+        return [currentV];
+    }
+
+    function buildRateBody(type) {
+        const R = PEA_RATES;
+        let mode = getMode(type);
+        let showAll = !!window.rateShowAll[type];
+        let html = '';
+
+        if (type === 1) {
+            if (mode === 'normal') {
+                html += `<div class="rate-group-title">ประเภท 1.1 อัตราปกติ — ไม่เกิน 150 หน่วย/เดือน</div><div class="rate-grid">
+                    ${tierFields('t1.normal.under150.tiers', R.t1.normal.under150.tiers)}
+                    ${rateField('ค่าบริการรายเดือน', 't1.normal.under150.s', UNIT_BAHT_MTH)}</div>`;
+                html += `<div class="rate-group-title">ประเภท 1.1 อัตราปกติ — เกิน 150 หน่วย/เดือน</div><div class="rate-grid">
+                    ${tierFields('t1.normal.over150.tiers', R.t1.normal.over150.tiers)}
+                    ${rateField('ค่าบริการรายเดือน', 't1.normal.over150.s', UNIT_BAHT_MTH)}</div>`;
+            } else {
+                voltsFor(1, showAll, volt('v1')).forEach(v => {
+                    if (!R.t1.tou[v]) return;
+                    html += `<div class="rate-group-title">ประเภท 1.2 บ้านอยู่อาศัย TOU — ${VOLT_LABEL[v]}</div><div class="rate-grid">
+                        ${rateField('ค่าพลังงาน ช่วง Peak', `t1.tou.${v}.p`, UNIT_BAHT_UNIT)}
+                        ${rateField('ค่าพลังงาน ช่วง Off-Peak', `t1.tou.${v}.op`, UNIT_BAHT_UNIT)}
+                        ${rateField('ค่าบริการรายเดือน', `t1.tou.${v}.s`, UNIT_BAHT_MTH)}</div>`;
+                });
+                html += `<p class="rate-note">* ประเภท 1.2 ไม่มีการคิดค่าความต้องการพลังไฟฟ้า (Demand Charge)</p>`;
+            }
+        }
+        else if (type === 2) {
+            if (mode === 'normal') {
+                voltsFor(2, showAll, volt('v2n')).forEach(v => {
+                    let r = R.t2.normal[v]; if (!r) return;
+                    html += `<div class="rate-group-title">ประเภท 2.1 อัตราปกติ — ${VOLT_LABEL[v]}</div><div class="rate-grid">
+                        ${r.flat !== undefined ? rateField('ค่าพลังงาน (อัตราเดียว)', `t2.normal.${v}.flat`, UNIT_BAHT_UNIT)
+                                               : tierFields(`t2.normal.${v}.tiers`, r.tiers)}
+                        ${rateField('ค่าบริการรายเดือน', `t2.normal.${v}.s`, UNIT_BAHT_MTH)}</div>`;
+                });
+            } else {
+                voltsFor(2, showAll, volt('v2')).forEach(v => {
+                    if (!R.t2.tou[v]) return;
+                    html += `<div class="rate-group-title">ประเภท 2.2 กิจการขนาดเล็ก TOU — ${VOLT_LABEL[v]}</div><div class="rate-grid">
+                        ${rateField('ค่าพลังงาน ช่วง Peak', `t2.tou.${v}.p`, UNIT_BAHT_UNIT)}
+                        ${rateField('ค่าพลังงาน ช่วง Off-Peak', `t2.tou.${v}.op`, UNIT_BAHT_UNIT)}
+                        ${rateField('ค่าบริการรายเดือน', `t2.tou.${v}.s`, UNIT_BAHT_MTH)}</div>`;
+                });
+                html += `<p class="rate-note">* ประเภท 2.2 ไม่มีการคิดค่าความต้องการพลังไฟฟ้า (Demand Charge)</p>`;
+            }
+        }
+        else if (type === 3 || type === 5) {
+            let title = type === 3 ? 'ประเภท 3.1 กิจการขนาดกลาง อัตราปกติ' : 'ประเภท 5.2 กิจการเฉพาะอย่าง (ยังไม่ติด TOU)';
+            voltsFor(type, showAll, volt(`v${type}`)).forEach(v => {
+                let r = R[`t${type}`].normal[v]; if (!r) return;
+                html += `<div class="rate-group-title">${title} — ${VOLT_LABEL[v]}</div><div class="rate-grid">
+                    ${rateField('ค่าความต้องการพลังไฟฟ้า (Demand)', `t${type}.normal.${v}.d`, UNIT_BAHT_KW)}
+                    ${rateField('ค่าพลังงาน', `t${type}.normal.${v}.e`, UNIT_BAHT_UNIT)}
+                    ${rateField('ค่าบริการรายเดือน', `t${type}.normal.${v}.s`, UNIT_BAHT_MTH)}</div>`;
+            });
+            voltsFor(type, showAll, volt(`v${type}`)).forEach(v => { html += sharedTouFields(v); });
+        }
+        else if (type === 6) {
+            voltsFor(6, showAll, volt('v6')).forEach(v => {
+                let r = R.t6.normal[v]; if (!r) return;
+                html += `<div class="rate-group-title">ประเภท 6.1 อัตราปกติ — ${VOLT_LABEL[v]}</div><div class="rate-grid">
+                    ${r.flat !== undefined ? rateField('ค่าพลังงาน (อัตราเดียว)', `t6.normal.${v}.flat`, UNIT_BAHT_UNIT)
+                                           : tierFields(`t6.normal.${v}.tiers`, r.tiers)}
+                    ${rateField('ค่าบริการรายเดือน', `t6.normal.${v}.s`, UNIT_BAHT_MTH)}</div>`;
+            });
+            voltsFor(6, showAll, volt('v6')).forEach(v => { html += sharedTouFields(v); });
+        }
+        else if (type === 7) {
+            html += `<div class="rate-group-title">ประเภท 7.1 สูบน้ำเพื่อการเกษตร อัตราปกติ</div><div class="rate-grid">
+                ${tierFields('t7.normal.tiers', R.t7.normal.tiers)}
+                ${rateField('ค่าบริการรายเดือน', 't7.normal.s', UNIT_BAHT_MTH)}</div>`;
+            voltsFor(7, showAll, volt('v7')).forEach(v => { html += sharedTouFields(v); });
+            html += `<div class="rate-group-title">ประเภท 7.2 — ค่าบริการเฉพาะของประเภทนี้</div><div class="rate-grid">
+                ${rateField('ค่าบริการรายเดือน (TOU ประเภท 7.2)', 't7.touService', UNIT_BAHT_MTH)}</div>
+                <p class="rate-note">* ประเภท 7.2 ใช้อัตรา Demand/พลังงานร่วมกับ TOU กลาง แต่ค่าบริการรายเดือนต่างออกไป</p>`;
+        }
+        else if (type === 4) {
+            voltsFor(4, showAll, volt('v4')).forEach(v => {
+                let r = R.t4.tod[v]; if (!r) return;
+                html += `<div class="rate-group-title">ประเภท 4.1 อัตรา TOD — ${VOLT_LABEL[v]}</div><div class="rate-grid">
+                    ${rateField('Demand ช่วง Peak (18:30-21:30)', `t4.tod.${v}.dP`, UNIT_BAHT_KW)}
+                    ${rateField('Demand ช่วง Partial (08:00-18:30)', `t4.tod.${v}.dPart`, UNIT_BAHT_KW)}
+                    ${rateField('ค่าพลังงาน', `t4.tod.${v}.e`, UNIT_BAHT_UNIT)}
+                    ${rateField('ค่าบริการรายเดือน', `t4.tod.${v}.s`, UNIT_BAHT_MTH)}</div>`;
+            });
+            voltsFor(4, showAll, volt('v4')).forEach(v => { html += sharedTouFields(v); });
+            html += `<p class="rate-note">* เมื่อแก้ค่าที่นี่แล้วให้เปลี่ยนระดับแรงดันสลับไปมา 1 ครั้ง เพื่อโหลดค่าใหม่ลงช่องสีเหลืองด้านบน</p>`;
+        }
+        else if (type === 8) {
+            html += `<div class="rate-group-title">ประเภท 8 ไฟฟ้าชั่วคราว</div><div class="rate-grid">
+                ${rateField('ค่าพลังงาน (อัตราเดียว)', 't8.flat', UNIT_BAHT_UNIT)}
+                ${rateField('ค่าบริการรายเดือน', 't8.s', UNIT_BAHT_MTH)}</div>`;
+        }
+        else if (type === 9) {
+            html += `<div class="rate-group-title">อัตราค่าไฟสำหรับ Meter AMR / AMI (TOU)</div><div class="rate-grid">
+                ${rateField('Rate A — Peak', 'amr.peak', UNIT_BAHT_UNIT)}
+                ${rateField('Rate B/C — Off-Peak & Holiday', 'amr.offPeak', UNIT_BAHT_UNIT)}
+                ${rateField('ค่าบริการรายเดือน', 'amr.s', UNIT_BAHT_MTH)}</div>`;
+            html += pvConstFieldsHtml(9);
+        }
+
+        return html;
+    }
+
+    // ช่องค่าคงที่ของการประเมิน PV (ใช้ทั้งในแผงตัวคูณของแท็บ 9 และแผงแยกของแท็บ 1-8)
+    function pvConstFieldsHtml(type) {
+        return `<div class="rate-group-title">ค่าคงที่การประเมิน Solar PV (ใช้ร่วมกันทุกแท็บ)</div>
+            <div class="rate-grid">
+                ${rateField('PSH — ชั่วโมงแสงเต็มที่', 'pv.psh', 'ชม./วัน')}
+                ${rateField('Performance Ratio (PR)', 'pv.pr', '0 - 1')}
+                ${rateField('C-Rate ของแบตเตอรี่', 'pv.cRate', '0.1 - 2.0')}
+                ${rateField('ประสิทธิภาพ Inverter', 'pv.inverterEff', '0 - 1')}
+                ${rateField('ชั่วโมงเริ่มช่วงกลางวัน', 'pv.dayStart', 'ชม. (0-23)')}
+                ${rateField('ชั่วโมงสุดท้ายของกลางวัน', 'pv.dayEnd', 'ชม. (0-23)')}
+                ${rateField('เริ่มช่วง Peak เย็น (TOU)', 'pv.eveStart', 'ชม. (0-23)')}
+                ${rateField('สิ้นสุดช่วง Peak เย็น (TOU)', 'pv.eveEnd', 'ชม. (0-23)')}
+            </div>
+            <p class="rate-note">* kWp ที่แนะนำ = พลังงานที่ต้องการ ÷ (PSH × PR) — ค่าเหล่านี้มีผลกับทุกแท็บรวมถึงแท็บ 9 (AMR)</p>`;
+    }
+
+    // นับจำนวนค่าที่ถูกแก้จากค่ามาตรฐาน (เดินทั้ง object)
+    function countModified(cur, def) {
+        let n = 0;
+        if (cur === null || typeof cur !== 'object') return (Number(cur) !== Number(def)) ? 1 : 0;
+        for (let k in cur) {
+            if (!Object.prototype.hasOwnProperty.call(cur, k)) continue;
+            if (!def || !(k in def)) continue;
+            n += countModified(cur[k], def[k]);
+        }
+        return n;
+    }
+
+    // ระหว่างที่ผู้ใช้กำลังพิมพ์ในช่องอัตรา ห้าม re-render แผง มิฉะนั้นช่องจะเสีย focus กลางคัน
+    let suppressRatePanelRender = false;
+
+    function renderRatePanel(type) {
+        if (suppressRatePanelRender) return;
+        let host = document.getElementById(`rate_panel_${type}`);
+        if (!host) return;
+        let wasOpen = host.querySelector('details') ? host.querySelector('details').open : false;
+        let modCount = countModified(PEA_RATES, DEFAULT_RATES);
+        let showAll = !!window.rateShowAll[type];
+        // แท็บ 8 ไม่มีระดับแรงดันให้เลือก จึงไม่ต้องแสดง checkbox
+        let showAllBox = (type === 8 || type === 9) ? '' : `
+            <label class="rate-toggle-all" onclick="event.stopPropagation();">
+                <input type="checkbox" ${showAll ? 'checked' : ''} onchange="window.rateShowAll[${type}]=this.checked; renderRatePanel(${type});">
+                แสดงทุกระดับแรงดัน
+            </label>`;
+
+        host.innerHTML = `
+            <details class="rate-panel" ${wasOpen ? 'open' : ''}>
+                <summary>
+                    ⚙️ ตัวคูณ &amp; อัตราค่าไฟที่ใช้คำนวณ (คลิกเพื่อดู/แก้ไข)
+                    <span class="rate-badge ${modCount ? '' : 'clean'}">${modCount ? modCount + ' ค่าถูกแก้ไข' : 'ใช้ค่ามาตรฐาน'}</span>
+                    ${showAllBox}
+                </summary>
+                <div class="rate-panel-body">
+                    ${buildRateBody(type)}
+                    <div class="rate-actions">
+                        <button onclick="resetRatesAll()">↺ คืนค่ามาตรฐานทั้งหมด</button>
+                        <a href="https://www.pea.co.th/" target="_blank" rel="noopener">เทียบกับประกาศอัตราค่าไฟฟ้าของ กฟภ. ↗</a>
+                    </div>
+                    <p class="rate-note">ค่าที่แก้ไขจะถูกบันทึกไว้ในเครื่องนี้ (localStorage) และใช้ต่อทุกครั้งที่เปิดหน้านี้ — ช่องพื้นหลังเหลืองคือค่าที่ต่างจากมาตรฐาน</p>
+                </div>
+            </details>`;
+    }
+
+    function onRateEdit(el) {
+        let path = el.dataset.ratePath;
+        let val = parseFloat(el.value);
+        if (isNaN(val)) return;   // ปล่อยให้ผู้ใช้พิมพ์ต่อโดยไม่เขียนค่าว่างทับ
+        setByPath(PEA_RATES, path, val);
+        saveRates();
+
+        let def = getByPath(DEFAULT_RATES, path);
+        el.classList.toggle('rate-modified', Number(val) !== Number(def));
+
+        // อัปเดต badge ทุกแผงที่เปิดอยู่ (ค่าบางตัวใช้ร่วมกันหลายแท็บ)
+        let modCount = countModified(PEA_RATES, DEFAULT_RATES);
+        document.querySelectorAll('.rate-badge').forEach(b => {
+            b.textContent = modCount ? modCount + ' ค่าถูกแก้ไข' : 'ใช้ค่ามาตรฐาน';
+            b.classList.toggle('clean', modCount === 0);
+        });
+
+        // อัตรา AMR ให้ sync กลับไปที่ช่องด้านบนของแท็บ 9 ด้วย
+        if (path === 'amr.peak')    { let e = document.getElementById('amr_peakRate');    if (e) e.value = val; }
+        if (path === 'amr.offPeak') { let e = document.getElementById('amr_offPeakRate'); if (e) e.value = val; }
+
+        // ค่าคงที่ PV และอัตรา AMR มีผลกับผลลัพธ์ทันที จึงคำนวณใหม่เลย
+        // (ล็อกการ re-render แผงไว้ก่อน ไม่งั้นช่องที่กำลังพิมพ์อยู่จะเสีย focus)
+        let liveRecalc = (path.indexOf('pv.') === 0) || (path.indexOf('amr.') === 0);
+        if (liveRecalc) {
+            suppressRatePanelRender = true;
+            try {
+                if (path.indexOf('pv.') === 0) {
+                    for (let t = 1; t <= 8; t++) {
+                        if (document.querySelector(`.lp_input_${t}`)) updateLpSum(t);
+                    }
+                }
+                if (typeof amrMonthlyData !== 'undefined' && amrMonthlyData.uniqueDays && amrMonthlyData.uniqueDays.size > 0) {
+                    updateMonthlyUI();
+                }
+            } finally {
+                suppressRatePanelRender = false;
+            }
+        }
+    }
+
+    function resetRatesAll() {
+        if (!confirm('คืนค่าอัตราค่าไฟและตัวคูณทั้งหมดกลับเป็นค่ามาตรฐาน?\nค่าที่คุณแก้ไขไว้จะถูกลบทิ้ง')) return;
+        PEA_RATES = deepClone(DEFAULT_RATES);
+        window.PEA_RATES = PEA_RATES;
+        try { localStorage.removeItem(RATE_STORAGE_KEY); } catch (e) { /* ไม่มีผลกับการคำนวณ */ }
+        for (let t = 1; t <= 9; t++) renderRatePanel(t);
+        for (let t = 1; t <= 8; t++) {
+            if (document.getElementById(`pv_const_panel_${t}`)) renderPVConstPanel(t);
+            if (document.querySelector(`.lp_input_${t}`)) updateLpSum(t);
+        }
+        let pe = document.getElementById('amr_peakRate');    if (pe) pe.value = PEA_RATES.amr.peak;
+        let oe = document.getElementById('amr_offPeakRate'); if (oe) oe.value = PEA_RATES.amr.offPeak;
+        updateType4Rates();
+        if (typeof amrMonthlyData !== 'undefined' && amrMonthlyData.uniqueDays && amrMonthlyData.uniqueDays.size > 0) updateMonthlyUI();
+        alert('คืนค่ามาตรฐานเรียบร้อยแล้ว — กรุณากดปุ่ม "คำนวณค่าไฟฟ้า" อีกครั้งเพื่ออัปเดตผลลัพธ์');
+    }
+
+    // แผงค่าคงที่ PV ที่แทรกในกล่องประเมิน PV ของแท็บ 1-8
+    function renderPVConstPanel(type) {
+        let host = document.getElementById(`pv_const_panel_${type}`);
+        if (!host) return;
+        let wasOpen = host.querySelector('details') ? host.querySelector('details').open : false;
+        host.innerHTML = `
+            <details class="rate-panel" ${wasOpen ? 'open' : ''}>
+                <summary>⚙️ ค่าคงที่การประเมิน PV (PSH / PR / C-Rate / ช่วงเวลา)</summary>
+                <div class="rate-panel-body">${pvConstFieldsHtml(type)}</div>
+            </details>`;
+    }
+
+    // ==================================================================
+    // === 9. รายงาน PDF / พิมพ์ ===
+    // ==================================================================
+
+    const RPT = {
+        wrap:  'font-family:\'Sarabun\',Tahoma,sans-serif; color:#1e293b; background:#ffffff; padding:28px 30px; width:794px; box-sizing:border-box; font-size:13px; line-height:1.55;',
+        h1:    'font-size:20px; font-weight:bold; color:#0d47a1; margin:0 0 2px 0;',
+        h2:    'font-size:15px; font-weight:bold; color:#1565c0; margin:20px 0 8px 0; border-bottom:2px solid #e3f2fd; padding-bottom:4px;',
+        table: 'width:100%; border-collapse:collapse; font-size:13px;',
+        th:    'text-align:left; background:#eff6ff; color:#1e3a8a; border:1px solid #cbd5e1; padding:6px 9px; font-weight:bold;',
+        td:    'border:1px solid #cbd5e1; padding:6px 9px;',
+        tdR:   'border:1px solid #cbd5e1; padding:6px 9px; text-align:right;',
+        total: 'border:1px solid #cbd5e1; padding:8px 9px; text-align:right; font-size:15px; font-weight:bold; color:#b91c1c; background:#fef2f2;',
+        note:  'font-size:11px; color:#64748b; margin-top:6px;'
+    };
+
+    function fmt(n, d) {
+        let v = (typeof n === 'number') ? n : parseFloat(n);
+        if (isNaN(v)) return '-';
+        return v.toLocaleString('th-TH', { minimumFractionDigits: d === undefined ? 2 : d, maximumFractionDigits: d === undefined ? 2 : d });
+    }
+    function thaiDateTime() {
+        let d = new Date();
+        return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
+             + ' เวลา ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+    }
+    const TYPE_NAME = {
+        1: '1. บ้านอยู่อาศัย', 2: '2. กิจการขนาดเล็ก', 3: '3. กิจการขนาดกลาง', 4: '4. กิจการขนาดใหญ่',
+        5: '5. กิจการเฉพาะอย่าง', 6: '6. องค์กรที่ไม่แสวงหากำไร', 7: '7. สูบน้ำเพื่อการเกษตร',
+        8: '8. ไฟฟ้าชั่วคราว', 9: '9. Meter AMR / AMI'
+    };
+
+    // ตาราง Load Profile 24 ชม. แบ่ง 2 แถว แถวละ 12 ช่อง
+    function loadProfileTableHtml(type) {
+        let inputs = document.querySelectorAll(`.lp_input_${type}`);
+        if (!inputs.length) return '';
+        let vals = Array.from(inputs).map(i => parseFloat(i.value) || 0);
+        let sum = vals.reduce((a, b) => a + b, 0);
+        let block = (start) => {
+            let head = '', body = '';
+            for (let i = start; i < start + 12; i++) {
+                head += `<th style="${RPT.th} text-align:center; font-size:11px; padding:4px;">${String(i).padStart(2,'0')}</th>`;
+                body += `<td style="${RPT.td} text-align:center; font-size:11px; padding:4px;">${vals[i].toFixed(2)}</td>`;
+            }
+            return `<tr>${head}</tr><tr>${body}</tr>`;
+        };
+        return `<table style="${RPT.table}">${block(0)}${block(12)}</table>
+                <p style="${RPT.note}">ผลรวมทั้งวัน = <b style="color:${(sum>=95&&sum<=105)?'#16a34a':'#dc2626'};">${sum.toFixed(2)}%</b> (เกณฑ์ที่ยอมรับ 95% - 105%) — ตัวเลขคือ % ของการใช้ไฟทั้งวันในแต่ละชั่วโมง</p>`;
+    }
+
+    function chartImageHtml(type) {
+        const miss = msg => `<p style="${RPT.note}">(${msg})</p>`;
+        let chart = (type === 9) ? window.amr24hChart : (window.pvCharts && window.pvCharts[type]);
+        if (!chart) return miss('ไม่มีข้อมูลกราฟ');
+        try {
+            let img = chart.toBase64Image('image/png', 1);
+            // ถ้าแท็บถูกซ่อนอยู่ canvas จะมีขนาด 0x0 และได้ data URL ที่ใช้ไม่ได้ ("data:,")
+            if (!img || img.indexOf('data:image/') !== 0 || img.length < 512) {
+                return miss('ไม่สามารถแนบภาพกราฟได้ — กรุณาเปิดแท็บนี้ค้างไว้ขณะสั่งออกรายงาน');
+            }
+            return `<img src="${img}" style="width:100%; border:1px solid #cbd5e1; border-radius:6px;">`;
+        } catch (e) {
+            console.warn('ดึงภาพกราฟไม่สำเร็จ', e);
+            return miss('ไม่สามารถแนบภาพกราฟได้');
+        }
+    }
+
+    function billTableHtml(bd, isAmr) {
+        let rows = '';
+        if (!isAmr && bd.hasDemand) {
+            rows += `<tr><td style="${RPT.td}">${bd.demandLabel || 'ค่าความต้องการพลังไฟฟ้า (Demand)'}`
+                  + (bd.demandNote ? `<br><span style="font-size:11px;color:#64748b;">${bd.demandNote}</span>` : '')
+                  + `</td><td style="${RPT.tdR}">${fmt(bd.demandCost)}</td></tr>`;
+        }
+        rows += `<tr><td style="${RPT.td}">ค่าพลังงานไฟฟ้า (Energy Charge)</td><td style="${RPT.tdR}">${fmt(bd.energyCost)}</td></tr>`;
+        rows += `<tr><td style="${RPT.td}">ค่าบริการรายเดือน (Service Charge)</td><td style="${RPT.tdR}">${fmt(bd.serviceFee)}</td></tr>`;
+        rows += `<tr><td style="${RPT.td}">ค่า Ft (${bd.ftRate} บาท/หน่วย)</td><td style="${RPT.tdR}">${fmt(bd.ftTotalCost)}</td></tr>`;
+        rows += `<tr><td style="${RPT.td}"><b>รวมเงินก่อนภาษีมูลค่าเพิ่ม</b></td><td style="${RPT.tdR}"><b>${fmt(bd.totalBeforeVat)}</b></td></tr>`;
+        rows += `<tr><td style="${RPT.td}">ภาษีมูลค่าเพิ่ม (${parseFloat(bd.vatPercent).toFixed(2)}%)</td><td style="${RPT.tdR}">${fmt(bd.vatAmount)}</td></tr>`;
+        rows += `<tr><td style="${RPT.total} text-align:left;">รวมเงินค่าไฟฟ้าทั้งสิ้น</td><td style="${RPT.total}">${fmt(bd.grandTotalBaht)} บาท</td></tr>`;
+        return `<table style="${RPT.table}">
+                    <tr><th style="${RPT.th}">รายการ</th><th style="${RPT.th} text-align:right; width:180px;">จำนวนเงิน (บาท)</th></tr>
+                    ${rows}
+                </table>`;
+    }
+
+    function buildReportHTML(type) {
+        const custName = (document.getElementById('global_name').value || '-').trim();
+        const isAmr = (type === 9);
+        let bd = isAmr ? (window.amrBillingDetails || {}) : (window.lastCalcData[type] || {});
+        let html = `<div style="${RPT.wrap}">`;
+
+        // 1. หัวรายงาน
+        html += `<div style="border-bottom:3px solid #1565c0; padding-bottom:10px; margin-bottom:14px;">
+            <p style="${RPT.h1}">รายงานวิเคราะห์ค่าไฟฟ้า และประเมินกำลังการผลิต Solar PV</p>
+            <p style="font-size:12px; color:#64748b; margin:0;">PROINVENTIVE — ระบบวิเคราะห์ค่าไฟฟ้า PEA &amp; AMR Dashboard</p>
+        </div>
+        <table style="${RPT.table}">
+            <tr><td style="${RPT.td} width:150px; background:#f8fafc;"><b>ชื่อผู้ใช้ไฟฟ้า / โครงการ</b></td><td style="${RPT.td}">${custName}</td>
+                <td style="${RPT.td} width:110px; background:#f8fafc;"><b>ประเภทผู้ใช้ไฟ</b></td><td style="${RPT.td}">${TYPE_NAME[type]}</td></tr>
+            <tr><td style="${RPT.td} background:#f8fafc;"><b>อัตราที่ใช้คำนวณ</b></td><td style="${RPT.td}" colspan="3">${bd.rateDescription || '-'}</td></tr>
+            <tr><td style="${RPT.td} background:#f8fafc;"><b>วันที่ออกรายงาน</b></td><td style="${RPT.td}" colspan="3">${thaiDateTime()}</td></tr>
+        </table>`;
+
+        // 2. ข้อมูล AMR (เฉพาะแท็บ 9)
+        if (isAmr) {
+            let days = (amrMonthlyData.uniqueDays && amrMonthlyData.uniqueDays.size) || 0;
+            html += `<p style="${RPT.h2}">1. ข้อมูลผู้ใช้ไฟฟ้าและสรุปการใช้ไฟจากมิเตอร์ AMR</p>
+            <table style="${RPT.table}">
+                <tr><td style="${RPT.td} width:150px; background:#f8fafc;"><b>บัญชีผู้ใช้ไฟ</b></td><td style="${RPT.td}">${amrUserInfo.account || '-'}</td>
+                    <td style="${RPT.td} width:110px; background:#f8fafc;"><b>หมายเลขมิเตอร์</b></td><td style="${RPT.td}">${amrUserInfo.meter || '-'}</td></tr>
+                <tr><td style="${RPT.td} background:#f8fafc;"><b>ชื่อผู้ใช้ไฟ</b></td><td style="${RPT.td}">${amrUserInfo.name || '-'}</td>
+                    <td style="${RPT.td} background:#f8fafc;"><b>Tariff</b></td><td style="${RPT.td}">${amrUserInfo.tariff || '-'}</td></tr>
+                <tr><td style="${RPT.td} background:#f8fafc;"><b>จำนวนวันที่มีข้อมูล</b></td><td style="${RPT.td}" colspan="3">${days.toLocaleString('th-TH')} วัน</td></tr>
+            </table>
+            <table style="${RPT.table} margin-top:8px;">
+                <tr><th style="${RPT.th}">ช่วงอัตรา</th><th style="${RPT.th} text-align:right; width:180px;">หน่วยรวม (kWh)</th></tr>
+                <tr><td style="${RPT.td}">Rate A — Peak (09:00-22:00)</td><td style="${RPT.tdR}">${fmt(amrMonthlyData.sumA)}</td></tr>
+                <tr><td style="${RPT.td}">Rate B — Off Peak (22:00-09:00)</td><td style="${RPT.tdR}">${fmt(amrMonthlyData.sumB)}</td></tr>
+                <tr><td style="${RPT.td}">Rate C — Holiday (24 ชม.)</td><td style="${RPT.tdR}">${fmt(amrMonthlyData.sumC)}</td></tr>
+                <tr><td style="${RPT.td} color:#1d4ed8;">Rate A — ช่วง 09:00-15:00 (ใช้วิเคราะห์ PV)</td><td style="${RPT.tdR} color:#1d4ed8;">${fmt(amrMonthlyData.sumA915)}</td></tr>
+                <tr><td style="${RPT.td} color:#1d4ed8;">Rate C — ช่วง 09:00-15:00 (ใช้วิเคราะห์ PV)</td><td style="${RPT.tdR} color:#1d4ed8;">${fmt(amrMonthlyData.sumC915)}</td></tr>
+                <tr><td style="${RPT.td}"><b>รวมหน่วยการใช้ไฟทั้งหมด</b></td><td style="${RPT.tdR}"><b>${fmt(window.amrGrandTotalKwh || 0)}</b></td></tr>
+                <tr><td style="${RPT.td}"><b>รวมหน่วยช่วง 09:00-15:00</b></td><td style="${RPT.tdR}"><b>${fmt(amrMonthlyData.sumA915 + amrMonthlyData.sumC915)}</b></td></tr>
+            </table>`;
+        }
+
+        // 3. บิลค่าไฟแบบละเอียด
+        html += `<p style="${RPT.h2}">${isAmr ? '2' : '1'}. รายละเอียดค่าไฟฟ้า</p>`;
+        if (!isAmr) {
+            html += `<p style="margin:0 0 6px 0;">ปริมาณการใช้ไฟฟ้า: <b>${fmt(bd.totalUnits)}</b> หน่วย/เดือน</p>`;
+        }
+        html += billTableHtml(bd, isAmr);
+        if (type === 3 || type === 4 || type === 5) {
+            html += `<p style="${RPT.note}">* ยังไม่รวมค่าไฟฟ้าขั้นต่ำ (70% ของค่าความต้องการพลังไฟฟ้าสูงสุดใน 12 เดือนที่ผ่านมา) และค่าเพาเวอร์แฟกเตอร์</p>`;
+        }
+
+        // 4. ผลประเมิน PV
+        html += `<p style="${RPT.h2}">${isAmr ? '3' : '2'}. ผลการประเมินกำลังผลิต Solar PV</p>`;
+        if (isAmr) {
+            let a = window.amrAnalysis || {};
+            html += `<table style="${RPT.table}">
+                <tr><th style="${RPT.th}">รายการ</th><th style="${RPT.th} text-align:right; width:220px;">ค่าที่ประเมินได้</th></tr>
+                <tr><td style="${RPT.td}">ผลรวมการใช้ไฟกลางวัน (09:00-15:00)</td><td style="${RPT.tdR}">${fmt(a.kwh915)} kWh</td></tr>
+                <tr><td style="${RPT.td}"><b>กำลังผลิตที่แนะนำสูงสุด</b></td><td style="${RPT.tdR}"><b style="color:#15803d; font-size:15px;">${fmt(a.kwp)} kWp</b></td></tr>
+                <tr><td style="${RPT.td}">พลังงานที่ผลิตได้โดยประมาณ</td><td style="${RPT.tdR}">${fmt(a.dailyPvKwh, 1)} kWh/วัน (รวม ${fmt(a.totalPvKwh, 0)} kWh)</td></tr>
+                <tr><td style="${RPT.td}">สัดส่วนพลังงานที่ทดแทนได้</td><td style="${RPT.tdR}">${fmt(a.percentKwhSaved, 1)}%</td></tr>
+                <tr><td style="${RPT.td}">ประหยัดค่าไฟโดยประมาณ</td><td style="${RPT.tdR}">${fmt(a.savedCost, 0)} บาท (${fmt(a.percentCostSaved, 1)}% ของค่าพลังงาน)</td></tr>
+            </table>
+            <p style="${RPT.note}">คำนวณด้วย PSH ${PEA_RATES.pv.psh} ชม./วัน, Performance Ratio ${PEA_RATES.pv.pr}, อัตรา Peak ${a.rateA} / Off-Peak ${a.rateBC} บาท/หน่วย (ยังไม่รวม Ft และ VAT)</p>`;
+        } else {
+            html += `<table style="${RPT.table}">
+                <tr><th style="${RPT.th}">ทางเลือกระบบ</th><th style="${RPT.th} text-align:right; width:220px;">ขนาดที่แนะนำ</th></tr>
+                <tr><td style="${RPT.td}">ระบบ On-Grid (ครอบคลุมเฉพาะกลางวัน)</td><td style="${RPT.tdR}"><b style="color:#0c4a6e; font-size:15px;">${bd.pvKwP_OnGrid || '-'} kWp</b></td></tr>
+                <tr><td style="${RPT.td}">ระบบ Hybrid + Battery</td><td style="${RPT.tdR}"><b style="color:#78350f; font-size:15px;">${bd.pvKwP_Hybrid || '-'} kWp</b> / แบตเตอรี่ <b>${bd.battery_kWh || '-'} kWh</b></td></tr>
+                <tr><td style="${RPT.td}">การใช้ไฟเฉลี่ยต่อวัน</td><td style="${RPT.tdR}">${bd.dailyTotalUnits || '-'} kWh/วัน</td></tr>
+                <tr><td style="${RPT.td}">การใช้ไฟช่วงกลางวันที่ PV รองรับ</td><td style="${RPT.tdR}">${bd.dayLoadKwh || '-'} kWh/วัน</td></tr>
+            </table>
+            <p style="${RPT.note}">คำนวณด้วย PSH ${PEA_RATES.pv.psh} ชม./วัน, Performance Ratio ${PEA_RATES.pv.pr}, C-Rate ${PEA_RATES.pv.cRate}, ประสิทธิภาพ Inverter ${PEA_RATES.pv.inverterEff} — kWp = พลังงานที่ต้องการ ÷ (PSH × PR)</p>`;
+        }
+
+        // 5. Load Profile 24 ชม.
+        let lpHtml = loadProfileTableHtml(type);
+        if (lpHtml) {
+            html += `<p style="${RPT.h2}">${isAmr ? '4' : '3'}. พฤติกรรมการใช้ไฟรายชั่วโมง (24h Load Profile)</p>${lpHtml}`;
+        }
+
+        // 6. กราฟ
+        html += `<p style="${RPT.h2}">${isAmr ? '5' : '4'}. กราฟจำลองการทำงานเฉลี่ยรายวัน</p>${chartImageHtml(type)}`;
+
+        // 7. บทวิเคราะห์
+        let aiEl = isAmr ? document.getElementById('aiAnalysisText') : document.getElementById(`ai_text_${type}`);
+        if (aiEl && aiEl.innerText.trim()) {
+            html += `<p style="${RPT.h2}">${isAmr ? '6' : '5'}. บทวิเคราะห์และข้อเสนอแนะ</p>
+                     <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:12px 14px; font-size:12.5px; color:#166534;">
+                        ${isAmr ? '<ul style="margin:0; padding-left:18px;">' + aiEl.innerHTML + '</ul>' : aiEl.innerHTML}
+                     </div>`;
+        }
+
+        // 8. ท้ายรายงาน
+        html += `<div style="margin-top:22px; border-top:1px solid #cbd5e1; padding-top:8px;">
+            <p style="${RPT.note}">
+                <b>หมายเหตุ:</b> รายงานนี้เป็นการประเมินเบื้องต้นเพื่อใช้ประกอบการออกแบบระบบ Solar PV เท่านั้น
+                ตัวเลขค่าไฟคำนวณจากอัตราที่ตั้งไว้ในระบบ ณ วันที่ออกรายงาน โปรดตรวจสอบกับใบแจ้งค่าไฟฟ้าจริงและประกาศอัตราค่าไฟฟ้าล่าสุดของ กฟภ. ก่อนนำไปใช้ตัดสินใจลงทุน
+                ${(type >= 3 && type <= 5) ? ' รายงานนี้ยังไม่รวมค่าไฟฟ้าขั้นต่ำและค่าเพาเวอร์แฟกเตอร์' : ''}
+            </p>
+            <p style="${RPT.note}">สร้างโดย PROINVENTIVE — ระบบวิเคราะห์ค่าไฟฟ้า PEA &amp; AMR Dashboard</p>
+        </div>`;
+
+        html += `</div>`;
+        return html;
+    }
+
+    // ตรวจว่ามีผลการคำนวณให้ออกรายงานหรือยัง
+    function reportReady(type) {
+        if (type === 9) {
+            if (!window.amrBillingDetails || !amrMonthlyData.uniqueDays || amrMonthlyData.uniqueDays.size === 0) {
+                alert('ยังไม่มีข้อมูล AMR — กรุณานำเข้าไฟล์และกดประมวลผลก่อนออกรายงาน');
+                return false;
+            }
+            return true;
+        }
+        let bd = window.lastCalcData[type];
+        if (!bd || !(bd.totalUnits > 0)) {
+            alert('ยังไม่มีผลการคำนวณ — กรุณากรอกข้อมูลแล้วกดปุ่ม "คำนวณค่าไฟฟ้า" ก่อนออกรายงาน');
+            return false;
+        }
+        return true;
+    }
+
+    function reportFilename(type, ext) {
+        let name = (document.getElementById('global_name').value || 'Unknown').trim().replace(/\s+/g, '_');
+        let d = new Date();
+        let stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`
+                  + `_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+        return `รายงานค่าไฟ_${name}_ประเภท${type}_${stamp}.${ext}`;
+    }
+
+    // --- 📄 ดาวน์โหลด PDF ทันที (html2canvas + jsPDF) ---
+    async function exportPDF(type) {
+        if (!reportReady(type)) return;
+
+        if (typeof html2canvas === 'undefined' || !window.jspdf) {
+            alert('โหลดไลบรารีสร้าง PDF ไม่สำเร็จ (ต้องต่ออินเทอร์เน็ต)\nกรุณาใช้ปุ่ม "🖨️ พิมพ์รายงาน" แล้วเลือก "Save as PDF" แทน');
+            return;
+        }
+
+        const overlay = document.getElementById('pdfOverlay');
+        const stage = document.getElementById('pdfStage');
+        overlay.style.display = 'flex';
+        try {
+            stage.innerHTML = buildReportHTML(type);
+            // รอให้เบราว์เซอร์ render ภาพกราฟ (data URI) เสร็จก่อนจับภาพ
+            await new Promise(r => setTimeout(r, 150));
+
+            const canvas = await html2canvas(stage.firstElementChild, {
+                scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
+            });
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageW = 210, pageH = 297;
+            const imgH = (canvas.height * pageW) / canvas.width;   // ความสูงรวมเมื่อย่อให้กว้างเท่าหน้า A4
+
+            if (imgH <= pageH) {
+                pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, imgH);
+            } else {
+                // ตัดภาพเป็นหน้าๆ ด้วย canvas ย่อย เพื่อไม่ให้เนื้อหาซ้อนทับกัน
+                const pxPerPage = Math.floor((pageH * canvas.width) / pageW);
+                let y = 0, first = true;
+                while (y < canvas.height) {
+                    let sliceH = Math.min(pxPerPage, canvas.height - y);
+                    let part = document.createElement('canvas');
+                    part.width = canvas.width;
+                    part.height = sliceH;
+                    let pctx = part.getContext('2d');
+                    pctx.fillStyle = '#ffffff';
+                    pctx.fillRect(0, 0, part.width, part.height);
+                    pctx.drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+
+                    if (!first) pdf.addPage();
+                    pdf.addImage(part.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, (sliceH * pageW) / canvas.width);
+                    first = false;
+                    y += sliceH;
+                }
+            }
+            pdf.save(reportFilename(type, 'pdf'));
+        } catch (e) {
+            console.error(e);
+            alert('สร้าง PDF ไม่สำเร็จ: ' + e.message + '\nกรุณาลองใช้ปุ่ม "🖨️ พิมพ์รายงาน" แทน');
+        } finally {
+            stage.innerHTML = '';
+            overlay.style.display = 'none';
+        }
+    }
+
+    // --- 🖨️ เปิดหน้าต่างพิมพ์ (ข้อความคมชัด ค้นหา/คัดลอกได้) ---
+    function printReport(type) {
+        if (!reportReady(type)) return;
+
+        let win = window.open('', '_blank');
+        if (!win) {
+            alert('เบราว์เซอร์บล็อกการเปิดหน้าต่างใหม่ — กรุณาอนุญาต Pop-up ของหน้านี้แล้วลองอีกครั้ง');
+            return;
+        }
+        let body = buildReportHTML(type);
+        win.document.open();
+        win.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+            <title>${reportFilename(type, '').replace(/\.$/, '')}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+            <style>
+                @page { size: A4; margin: 12mm; }
+                body { margin: 0; font-family: 'Sarabun', Tahoma, sans-serif; }
+                /* ให้รายงานยืดเต็มความกว้างกระดาษแทนความกว้างคงที่ 794px */
+                body > div { width: 100% !important; padding: 0 !important; }
+                table { page-break-inside: avoid; }
+                img { page-break-inside: avoid; }
+            </style></head><body>${body}</body></html>`);
+        win.document.close();
+        // รอฟอนต์และภาพกราฟโหลดเสร็จก่อนสั่งพิมพ์
+        // ใช้ทั้ง onload และ setTimeout สำรอง เพราะ document.write อาจทำให้ onload ยิงไปแล้ว
+        let printed = false;
+        const doPrint = () => { if (printed) return; printed = true; win.focus(); win.print(); };
+        win.onload = () => setTimeout(doPrint, 400);
+        setTimeout(doPrint, 1200);
+    }
+
+    // ==================================================================
+    // === 10. เริ่มต้นระบบ ===
+    // ==================================================================
+    document.addEventListener('DOMContentLoaded', function () {
+        updateType4Rates();                      // seed ช่องอัตราของประเภท 4 จาก PEA_RATES
+        for (let t = 1; t <= 9; t++) renderRatePanel(t);
+    });
+</script>
+</body>
+</html>
