@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solar Web Programs Demo Edition.</title>
+    <title>Solar Web Programs Demo Edition</title>
+    	    <!-- เพิ่ม Favicon แก้ไข type ให้ถูกต้อง -->
+    <link rel="icon" href="pilogo.png" type="img/png">
     <style>
         /* ----- Global Reset & Base ----- */
         * {
@@ -156,6 +158,13 @@
             font-size: 18px;
             flex-shrink: 0;
         }
+        
+        /* เพิ่มคลาสสีเพื่อป้องกันการถูก override จาก a:hover ธรรมดา */
+        .link-list a.color-orangered { color: #FF4500 !important; }
+        .link-list a.color-white { color: #FFFFFF !important; }
+        .link-list a.color-yellow { color: #FFFF00 !important; }
+        .link-list a.color-gold { color: #FFD700 !important; }
+
         .link-list a:hover {
             background: #333;
             border-color: #64b5f6;
@@ -362,17 +371,17 @@
                 <li><a href="On-grid&Hybrid Cal.html" target="_blank">🟠 2. On‑grid &amp; Hybrid Cal</a></li>
                 <li><a href="Solar Feasibility Calculator V4.1.html" target="_blank">🟢 3. Solar Feasibility Calculator</a></li>
                 <li><a href="Solar_Extractor V2.2.0.html" target="_blank">🔵 4. Data Sheet Extractor</a></li>
-                <li><a href="ASC Architecture.html" target="_blank">🔵 สถาปัตยกรรมระบบ </a></li>
-                <li><a href="คำอธิบายการใช้งาน ASC.html" target="_blank">✨ คำอธิบายการใช้งาน </a></li>
-                <li><a href="ระบบวิเคราะห์ค่าไฟฟ้า PEA & AMR Dashboard (PROINVENTIVE).html" target="_blank">▶️ 5. วิเคราะห์ค่าไฟฟ้า PEA & AMR</a></li>
-                <li><a href="ASC_V11.1.html" target="_blank">▶️ 6. ASP Design</a></li>
-                <li><a href="Auto_Solar_Copilot_Report V9.6-Appendic.html" target="_blank">▶️ 7. ASP Report</a></li>    
-                <li><a href="solar_ai_dashboard.html" target="_blank">✅ Lesson Plan 1</a></li>
-                <li><a href="lesson_plan.html" target="_blank">✅ Lesson Plan 2</a></li>
-                <li><a href="9 step.pdf" target="_blank">📘 เอกสารประกอบการบรรยาย 1</a></li>
-                <li><a href="Sale HandBook 08-08-2024.pdf" target="_blank">📘 เอกสารประกอบการบรรยาย 2</a></li>
-                <li><a href="ai_prg.rar" target="_blank">⏬ Code Download</a></li>
-                <li><a href="Bank_DataSheet.rar" target="_blank">⏬ Download Datasheets</a></li>
+                <li><a href="ASC Architecture.html" target="_blank" class="color-orangered">🔵 สถาปัตยกรรมระบบ </a></li>
+                <li><a href="คำอธิบายการใช้งาน ASC.html" target="_blank" class="color-orangered">✨ คำอธิบายการใช้งาน </a></li>
+                <li><a href="ระบบวิเคราะห์ค่าไฟฟ้า PEA & AMR Dashboard (PROINVENTIVE).html" target="_blank" class="color-white">▶️ 5. วิเคราะห์ค่าไฟฟ้า PEA & AMR</a></li>
+                <li><a href="ASC_V11.1.html" target="_blank" class="color-white">▶️ 6. ASP Design</a></li>
+                <li><a href="Auto_Solar_Copilot_Report V9.6-Appendic.html" target="_blank" class="color-white">▶️ 7. ASP Report</a></li>    
+                <li><a href="solar_ai_dashboard.html" target="_blank" class="color-yellow">✅ Lesson Plan 1</a></li>
+                <li><a href="lesson_plan.html" target="_blank" class="color-yellow">✅ Lesson Plan 2</a></li>
+                <li><a href="9 step.pdf" target="_blank" class="color-yellow">📘 เอกสารประกอบการบรรยาย 1</a></li>
+                <li><a href="Sale HandBook 08-08-2024.pdf" target="_blank" class="color-yellow">📘 เอกสารประกอบการบรรยาย 2</a></li>
+                <li><a href="ai_prg.rar" target="_blank" class="color-gold">⏬ Code Download</a></li>
+                <li><a href="Bank_DataSheet.rar" target="_blank" class="color-gold">⏬ Download Datasheets</a></li>
             </ul>
                                                             
             <!-- ---- Stats Dashboard ---- -->
