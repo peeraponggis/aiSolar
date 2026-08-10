@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASC:Auto Solar Copilot (V11.1 EIT Standard)</title>
+    <title>ASC:Auto Solar Copilot (V11.0 EIT Standard)</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
@@ -195,7 +195,7 @@
             <!-- 🌟 เริ่ม: ส่วนที่แก้ไขใหม่ กล่อง Header พร้อมปุ่ม Exit 🌟 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
                 <h2 style="font-size: 1.25em; margin: 0; color: #0f172a;">ASC:Auto Solar Copilot (V10.0 EIT Standard)</h2>
-                <button id="btnExitSystem" onclick="if(confirm('คุณต้องการออกจากโปรแกรมและปิดหน้าต่างนี้ใช่หรือไม่?')) window.close();" style="background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85em; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: flex; align-items: center; gap: 5px;">
+                <button id="btnExitSystem" style="background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85em; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: flex; align-items: center; gap: 5px;">
                     <i class="fa-solid fa-door-open"></i> Exit
                 </button>
             </div>
@@ -226,7 +226,7 @@
                     </div>
                     
                     <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>ภาพถ่ายโดรน (Drone Overlay)</span>
+                        <span>Image Overlay</span>
                         <button id="btnAddDroneBtn" style="background: #ea580c; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.9em; cursor: pointer; font-weight: bold; transition: 0.2s;"><i class="fa-solid fa-plus"></i> เพิ่มรูป</button>
                     </div>
                     <div class="form-group smart-db smart-db-drone" id="droneListContainer">
@@ -286,7 +286,7 @@
                             
                             <!-- 🌟 ส่วนที่เพิ่มใหม่: แถบเลือกแรงดัน (LV/MV) และคำนวณ Step-up 🌟 -->
                             <div style="grid-column: 1 / -1; background: #e0e7ff; padding: 10px; border-radius: 6px; border: 1px solid #c7d2fe; margin-bottom: 4px;">
-                                <label style="font-size: 0.85em; color: #3730a3; font-weight: bold;">จุดเชื่อมต่อระบบไฟฟ้า (Interconnection)</label>
+                                <label style="font-size: 0.85em; color: #3730a3; font-weight: bold;">จุดเชื่อมต่อระบบไฟฟ้า (Electrical Tie-in)</label>
                                 <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
                                     <select id="industrialConnection" style="background: white; flex: 1; padding: 6px; border: 1px solid #a5b4fc; border-radius: 4px;" onchange="state.interconnection = this.value; calculateStepUpTransformer(); updatePreviews();">
                                         <option value="LV">เชื่อมต่อแรงต่ำ (Low Voltage 400V เข้า MDB)</option>
@@ -337,7 +337,7 @@
                                 </datalist>
                             </div>
                             <div>
-                                <label style="font-size: 0.8em;">อัตราทดหม้อแปลงกระแส (CT)</label>
+                                <label style="font-size: 0.8em;">อัตราทดกระแส (CT)</label>
                                 <input type="text" id="industrialCtRatio" value="800/5" list="ctRatioList" placeholder="เช่น 800/5" style="background: white;" oninput="state.ctRatio = this.value; updatePreviews();">
                                 <datalist id="ctRatioList">
                                     <option value="250/5"></option>
@@ -375,39 +375,62 @@
                 <div class="accordion-content ">
                     
                     <label style="color: #0369a1; font-weight: bold;">1. เลือกเครื่องมือ Draw Tools</label>
-                    <div class="form-group draw-mode-box">
-                        <div class="radio-item"><input type="radio" id="drawRoof" name="drawMode" value="roof" checked><label for="drawRoof" style="color: #ea580c; font-weight: bold;">🟠 หลังคา</label></div>
-                        <div class="radio-item" style="display: flex; align-items: center; flex-wrap: wrap;">
-							<input type="radio" id="drawKeepout" name="drawMode" value="keepout">
-							<label for="drawKeepout" style="color: #dc2626; font-weight: bold; margin-right: 5px;">🔴 สิ่งกีดขวาง</label>
-							<div style="font-size: 0.8em; color: #475569; display: flex; align-items: center;">
-								สูง <input type="number" id="keepoutHeightM" value="1.0" step="0.1" min="0" style="width: 50px; padding: 2px 4px; margin: 0 4px; border: 1px solid #dc2626; border-radius: 4px; text-align: center;"> ม.
-							</div>
-						</div>
-                        <div class="radio-item" style="display: flex; align-items: center; flex-wrap: wrap;">
-                            <input type="radio" id="drawWalkway" name="drawMode" value="walkway">
-                            <label for="drawWalkway" style="color: #10b981; font-weight: bold; margin-right: 5px;">🟢 ทางเดิน</label>
-                            <div style="font-size: 0.8em; color: #475569; display: flex; align-items: center;">
+                    <div class="form-group draw-mode-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        
+                        <div class="radio-item" style="background: white; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 0; display: flex; align-items: center;">
+                            <input type="radio" id="drawRoof" name="drawMode" value="roof" checked>
+                            <label for="drawRoof" style="color: #ea580c; font-weight: bold; margin: 0; white-space: nowrap;">🟠 หลังคา</label>
+                        </div>
+
+                        <div class="radio-item" style="background: white; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 0; display: flex; align-items: center;">
+                            <input type="radio" id="drawMdb" name="drawMode" value="mdb">
+                            <label for="drawMdb" style="color: #8b5cf6; font-weight: bold; margin: 0; white-space: nowrap;">🟪 วางหมุด MDB / INV</label>
+                        </div>
+
+                        <div class="radio-item" style="background: white; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; width: 100%;">
+                                <input type="radio" id="drawWalkway" name="drawMode" value="walkway">
+                                <label for="drawWalkway" style="color: #10b981; font-weight: bold; margin: 0; white-space: nowrap;">🟢 ทางเดิน</label>
+                            </div>
+                            <div style="font-size: 0.8em; color: #475569; display: flex; align-items: center; margin-top: 6px; padding-left: 20px;">
                                 กว้าง <input type="number" id="manualWalkwayWidth" value="40" step="1" min="10" style="width: 50px; padding: 2px 4px; margin: 0 4px; border: 1px solid #10b981; border-radius: 4px; text-align: center;"> ซม.
                             </div>
                         </div>
-                        <div class="radio-item" style="display: flex; align-items: center; margin-left: 5px;">
-                            <input type="radio" id="drawMdb" name="drawMode" value="mdb">
-                            <label for="drawMdb" style="color: #8b5cf6; font-weight: bold; padding: 2px 6px; background: #f3e8ff; border: 1px solid #d8b4fe; border-radius: 4px;">🟪 วางหมุด MDB / Inverter</label>
+
+                        <div class="radio-item" style="background: white; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; width: 100%;">
+                                <input type="radio" id="drawKeepout" name="drawMode" value="keepout">
+                                <label for="drawKeepout" style="color: #dc2626; font-weight: bold; margin: 0; white-space: nowrap;">🔴 สิ่งกีดขวาง</label>
+                            </div>
+                            <div style="font-size: 0.8em; color: #475569; display: flex; align-items: center; margin-top: 6px; padding-left: 20px;">
+                                สูง <input type="number" id="keepoutHeightM" value="1.0" step="0.1" min="0" style="width: 50px; padding: 2px 4px; margin: 0 4px; border: 1px solid #dc2626; border-radius: 4px; text-align: center;"> ม.
+                            </div>
                         </div>
+
                     </div>
                     <div style="font-size: 0.75em; color: #64748b; margin-top: -6px; margin-bottom: 15px; text-align: center;">
                         <i class="fa-solid fa-info-circle"></i> <b>Snap 90°:</b> ลากเมาส์ใกล้มุมฉาก เส้นจะเป็นประสีส้มเพื่อดูดให้อัตโนมัติ
                     </div>
 
                     <div class="section-header">2. พารามิเตอร์การติดตั้ง (Installation Params)</div>
+					
+					<!-- 🌟 ส่วนใหม่: กำหนดความยาวแต่ละด้านของหลังคาที่เลือก -->
+					<div id="edgeEditorSection" style="display: none; background: #f0fdf4; border: 1px solid #86efac; padding: 12px; border-radius: 6px; margin-top: 10px;">
+						<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+							<label style="font-weight: bold; color: #16a34a;"><i class="fa-solid fa-ruler-combined"></i> ปรับความยาวแต่ละด้าน</label>
+							<button id="btnApplyEdgeChanges" class="btn-search" style="background: #10b981; padding: 4px 12px; font-size: 0.85em;">ปรับระยะ</button>
+						</div>
+						<div id="edgeInputsContainer" style="margin-bottom: 8px; max-height: 200px; overflow-y: auto; padding-right:5px;"></div>
+						<div style="font-size: 0.75em; color: #475569; font-style: italic;">* กรอกตัวเลขแล้วกด "ปรับความยาว" เพื่ออัปเดตรูปทรง (คลิกเลือกหลังคาก่อน)</div>
+					</div>
+					
                     <div class="form-group" style="display: flex; gap: 10px;">
                         <div style="flex: 1;">
-                            <label>มุมเอียงตั้งต้น (Slope / องศา)</label>
+                            <label>Slope / องศา</label>
                             <input type="number" id="sysSlope" value="15" min="0" max="90">
                         </div>
                         <div style="flex: 1;">
-                            <label>มุมทิศบังคับ (Azimuth / องศา)</label>
+                            <label>Azimuth / องศา</label>
                             <input type="number" id="sysAzimuth" value="" min="-180" max="360" placeholder="Auto อ้างอิงทิศเหนือ">
                         </div>
                     </div>
@@ -494,6 +517,16 @@
                         </div>
                     </div>
 
+                    <!-- 🌟 เริ่ม: เพิ่มตัวเลือกการจัดสตริง 🌟 -->
+                    <div class="form-group">
+                        <label>การเดินสายจัดสตริง (Wiring String Grouping)</label>
+                        <div class="radio-group" style="display: flex; gap: 10px;">
+                            <div class="radio-item"><input type="radio" id="strOriVert" name="stringOrientation" value="V" checked><label for="strOriVert">แนวตั้ง (ตามคอลัมน์)</label></div>
+                            <div class="radio-item"><input type="radio" id="strOriHorz" name="stringOrientation" value="H"><label for="strOriHorz">แนวนอน (ตามแถว)</label></div>
+                        </div>
+                    </div>
+                    <!-- 🌟 จบ: เพิ่มตัวเลือกการจัดสตริง 🌟 -->
+
                     <div class="form-group">
                         <label>การเว้นระยะและทางเดิน (Offsets & Walkway)</label>
                         <div style="background: #f8fafc; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
@@ -547,11 +580,11 @@
                     <div class="form-group smart-db smart-db-inv">
                         <label id="lblInv1">4.1 อินเวอร์เตอร์หลัก (INV 1) <span id="estInvSize" style="color:#ea580c; font-weight:bold; font-size:0.9em; margin-left: 5px;"></span></label>
                         <select id="invSelect1" style="background: #f1f5f9; pointer-events: none; color: #0284c7; font-weight: bold;" disabled><option value="">-- อัปโหลดไฟล์ (TXT) --</option></select>
-                        <div class="file-upload-row">อัปโหลด TXT: <input type="file" id="invFile1" accept=".txt"></div>
+                        <div class="file-upload-row">อัปโหลด INV 1: <input type="file" id="invFile1" accept=".txt"></div>
                         
                         <label style="margin-top: 10px;">4.2 อินเวอร์เตอร์เสริม (INV 2) - ตัวเลือก</label>
                         <select id="invSelect2" style="background: #f1f5f9; pointer-events: none; color: #0284c7; font-weight: bold;" disabled><option value="">-- ไม่ใช้ / รออัปโหลด (TXT) --</option></select>
-                        <div class="file-upload-row">อัปโหลด TXT: <input type="file" id="invFile2" accept=".txt"></div>
+                        <div class="file-upload-row">อัปโหลด INV 2: <input type="file" id="invFile2" accept=".txt"></div>
                     </div>
 
                     <div class="section-header">5. เลือกระบบเสริม (ESS / OPT / EVC)</div>
@@ -702,7 +735,7 @@
                             
                             <div class="result-box" style="border-left: 5px solid #16a34a; margin-bottom: 15px;">
                                 <h3 style="font-size: 0.95em; margin-bottom: 8px; color: #16a34a; border-bottom: 1px dashed #bbf7d0; padding-bottom: 4px;">
-                                    <i class="fa-solid fa-list-check"></i> ทบทวนรายการอุปกรณ์หลัก (Equipment Summary)
+                                    <i class="fa-solid fa-list-check"></i>รายการอุปกรณ์หลัก (Equipment Summary)
                                 </h3>
                                 <div style="font-size: 0.8em; color: #475569; line-height: 1.6;">
                                     <div style="display: flex; justify-content: space-between;">
@@ -804,13 +837,28 @@
                                 </div>
                             </div>
                             <!-- จบ: ระบบล้างแผงอัตโนมัติ -->
+
+                            <!-- เริ่ม: บันไดเซอร์วิส -->
+                            <div class="section-header" style="color: #4f46e5; border-bottom-color: #c7d2fe; margin-top: 15px;">พารามิเตอร์บันไดเซอร์วิส (Service Ladder)</div>
+                            <div class="form-group" style="background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.8em; color: #3730a3;">การติดตั้งบันไดขึ้นดาดฟ้า/หลังคา</label>
+                                        <select id="bom-service-ladder" style="border-color: #c7d2fe; background: white; padding: 6px; width: 100%;">
+                                            <option value="auto" selected>คำนวณเพิ่มอัตโนมัติ (อิงตามความสูงอาคาร)</option>
+                                            <option value="none">-- ไม่ติดตั้ง (มีบันได/ทางขึ้นอยู่แล้ว) --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- จบ: บันไดเซอร์วิส -->
+
+                            <!-- ย้ายปุ่มคำนวณมาไว้ล่างสุด -->
                             <div style="margin-top: 15px;">
                                 <button class="btn-save" id="btnCalculateBOM" style="background: linear-gradient(135deg, #0ea5e9, #0284c7); box-shadow: 0 4px 6px rgba(14,165,233,0.2);">
                                     <i class="fa-solid fa-calculator"></i> คำนวณตารางวัสดุอุปกรณ์ (Generate BOM)
                                 </button>
                             </div>
-
-                            
 
                         </div>
                     </div>
@@ -877,7 +925,7 @@
                 <div class="accordion-content" style="background: #f0f9ff; padding-top: 15px;">
                     
                     <div class="form-group">
-                        <label>ข้อมูลสภาพอากาศ(Meteo Data )*เลือกทุกครั้งเพื่อให้ได้ข้อมูลล่าสุด</label>
+                        <label>ข้อมูลสภาพอากาศ(Meteo Data)*เลือกข้อมูลล่าสุด</label>
                         <select id="meteoSource" style="background: white;">
                             <option value="pvgis">PVGIS </option>
                             <option value="nasa">NASA POWER</option>
@@ -897,8 +945,11 @@
 
                     <div class="section-header">Loss Parameters (เงื่อนไขความสูญเสีย)</div>
                     <div class="form-group" style="display: flex; gap: 10px;">
-                        <div style="flex: 1;"><label>Soiling Loss (1-5%) ฝุ่นเกาะ</label><input type="number" id="soilingLoss" value="3" step="1"></div>
-                        <div style="flex: 1;"><label>LID Loss (1-3%) เสื่อมสภาพ</label><input type="number" id="lidLoss" value="1" step="0.1"></div>
+                        <div style="flex: 1;">
+							<label>Soiling Loss (1-5%) ฝุ่นเกาะ</label>
+							<input type="number" id="soilingLoss" value="3" step="1"></div>
+                        <div style="flex: 1;"><label>LID Loss (1-3%) เสื่อมสภาพ</label>
+						<input type="number" id="lidLoss" value="1" step="0.1"></div>
                     </div>
                     <div class="form-group" style="display: flex; gap: 10px;">
                         <div style="flex: 1;"><label>Wiring Ohmic Loss (1-2%)</label><input type="number" id="wiringLoss" value="1" step="0.2"></div>
@@ -910,14 +961,15 @@
                         <div style="font-size: 0.7em; color: #64748b; margin-top: 4px;">* ใส่ข้อมูล Array Curve ประสิทธิภาพ Inverter เพื่อใช้จำลอง Loss จริงแทนค่าเฉลี่ยทื่อๆ</div>
                     </div>
 					<!-- ส่วนที่เพิ่มใหม่: Uncertainties และ Horizon -->
-                    <div class="section-header">Simulation Uncertainties (ประเมินความเสี่ยง P50 P75 P90 P95)</div>
+                    <div class="section-header">ประเมินความเสี่ยง(P50 P75 P90 P95)</div>
+					<div class="section-header">ความแปรปรวนสภาพอากาศ, ความคลาดเคลื่อนอุปกรณ์</div>
                     <div class="form-group" style="display: flex; gap: 10px;">
                         <div style="flex: 1;">
-                            <label>Meteo Variability (3-6%)</label>
+                            <label>Meteo Variability(3-6%)</label>
                             <input type="number" id="uncertMeteo" value="4.0" step="0.1" title="ความแปรปรวนสภาพอากาศ">
                         </div>
                         <div style="flex: 1;">
-                            <label>Equipment Tolerance (±1–±3%)</label>
+                            <label>Equip Tolerance(±1–±3%)</label>
                             <input type="number" id="uncertEquip" value="2.0" step="0.1" title="ความคลาดเคลื่อนอุปกรณ์">
                         </div>
                     </div>
@@ -1016,7 +1068,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet-imageoverlay-rotated@0.2.1/Leaflet.ImageOverlay.Rotated.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
-
+	
+	
     <script>
 	
 	// 🌟 INDUSTRIAL SOLAR ENTERPRISE CONSTANTS (วสท. & IEC 61439-2)
@@ -1126,15 +1179,20 @@ const INDUSTRIAL_SOLAR_CONFIG = {
                             });
                             layer.bindTooltip("คลิกซ้ายเลือกเพื่อปรับตั้งค่าอิสระ<br>คลิกขวาเพื่อสลับแนวแผง", {direction: 'center', className: 'ko-tooltip'});
                         } else if (layer.drawMode === 'keepout') {
-                            layer.setStyle({ color: '#dc2626', weight: 1, fillColor: '#ef4444', fillOpacity: 0.7, dashArray: '4, 4' });
-                            layer.objectHeightM = feature.properties.objectHeightM || 0;
-                        } else if (layer.drawMode === 'walkway') {
-                            layer.setStyle({ color: '#4b5563', weight: 1, fillColor: '#9ca3af', fillOpacity: 0.7, dashArray: 'none' });
-                        } else if (layer.drawMode === 'mdb') {
-                            // 🌟 โหลดหมุด MDB กลับมาแสดงบนแผนที่
-                            layer.bindTooltip("<b>จุดรวมสาย (MDB/INV)</b>", { permanent: true, direction: 'right', className: 'edge-label' });
-                            globalMdbMarker = layer;
-                        }
+                                    layer.setStyle({ color: '#dc2626', weight: 1, fillColor: '#ef4444', fillOpacity: 0.5, dashArray: '4, 4' });
+                                    layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                                } else if (layer.drawMode === 'walkway') {
+                                    layer.setStyle({ color: '#4b5563', weight: 1, fillColor: '#9ca3af', fillOpacity: 0.7, dashArray: 'none' });
+                                    layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                                } else if (layer.drawMode === 'mdb') {
+                                    // 🌟 ดึงข้อมูลหมุด MDB จากไฟล์ DB1 กลับมาแสดง
+                                    layer.bindTooltip("<b>จุดรวมสาย (MDB/INV)</b>", { permanent: true, direction: 'right', className: 'edge-label' });
+                                    
+                                    // 🌟 เพิ่มคำสั่งดักจับการคลิกให้หมุดที่โหลดมาจากไฟล์
+                                    layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                                    
+                                    globalMdbMarker = layer;
+                                }
                         editableItems.addLayer(layer);
                     }
                 });
@@ -1166,7 +1224,8 @@ const INDUSTRIAL_SOLAR_CONFIG = {
             labelItems.clearLayers();
             editableItems.eachLayer(layer => {
                 if(!layer.toGeoJSON) return;
-                const geojson = layer.toGeoJSON();
+                // 🌟 เพิ่ม Precision เป็น 12 เพื่อให้ตัวเลขแม่นยำขึ้น
+                const geojson = layer.toGeoJSON(12);
                 if(geojson.geometry.type !== 'Polygon') return;
                 
                 const areaSqM = turf.area(geojson);
@@ -1180,13 +1239,15 @@ const INDUSTRIAL_SOLAR_CONFIG = {
                     const mid = turf.midpoint(pt1, pt2);
                     if (dist > maxEdgeM) maxEdgeM = dist;
                     
-                    const distLabel = L.divIcon({
+                    // 🌟 เปลี่ยนป้ายให้เป็นแบบโปร่งแสง ไม่มีกรอบ และใช้สีข้อความขอบขาวให้เด่น
+                    const transparentLabel = L.divIcon({
                         className: 'edge-label',
-                        html: `<div style="background:rgba(255,255,255,0.95); border:1px solid #0ea5e9; color:#0369a1; padding:1px 2px; border-radius:2px; font-size:6px; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.2); pointer-events:none; white-space:nowrap; line-height:1;">${dist.toFixed(2)}m</div>`,
-                        iconSize: [20, 10],
-                        iconAnchor: [10, 5]
+                        html: `<div style="background:transparent; color:#0369a1; padding:4px 8px; font-size:14px; font-weight:bold; text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 1px -1px 2px #fff, -1px 1px 2px #fff; pointer-events:none; white-space:nowrap; line-height:1;">${dist.toFixed(2)}m <i class="fa-solid fa-ruler" style="font-size:12px; color:#64748b; margin-left:2px;"></i></div>`,
+                        iconSize: null,
+                        iconAnchor: [25, 10]
                     });
-                    L.marker([mid.geometry.coordinates[1], mid.geometry.coordinates[0]], {icon: distLabel, interactive:false}).addTo(labelItems);
+                    
+                    L.marker([mid.geometry.coordinates[1], mid.geometry.coordinates[0]], {icon: transparentLabel, interactive:true}).addTo(labelItems);
                 }
 
                 const estWidthM = maxEdgeM > 0 ? areaSqM / maxEdgeM : 0;
@@ -1202,15 +1263,20 @@ const INDUSTRIAL_SOLAR_CONFIG = {
         }
 
         window.addEventListener('load', () => {
+			
             document.querySelectorAll('input[type="text"]').forEach(el => {
                 if (el.id === 'projectTextInput') el.value = 'Project : ';
                 else el.value = '';
             });
             document.querySelectorAll('input[type="file"]').forEach(el => el.value = '');
+			document.getElementById('btnApplyEdgeChanges').addEventListener('click', function(e) {
+                e.preventDefault();
+                applyEdgeChanges();
+            });
             
             const keepDefaults = ['sysSlope', 'sysAzimuth', 'rowsPerGroup', 'rowWalkwayGapCm', 'colsPerGroup', 'colWalkwayGapCm', 'innerEdgeGapCm', 'keepoutGapCm', 'droneOpacity', 'soilingLoss', 'lidLoss', 'wiringLoss', 'invEfficiency', 'tempCoeffPmax', 'tempCoeffVoc', 'dcacSlider', 'roofHeightM', 'bifacialAlbedo', 'groundClearanceM', 'keepoutHeightM'];
-            
-            document.querySelectorAll('input[type="number"], input[type="range"]').forEach(el => {
+			
+			document.querySelectorAll('input[type="number"], input[type="range"]').forEach(el => {
                 if (!keepDefaults.includes(el.id)) {
                     if(el.id === 'invQty1') el.value = 1;
                     else el.value = 0;
@@ -1629,38 +1695,62 @@ if (totalPolygons > totalMPPTs && state.optMfg === "-") {
         let isDrawingMode = false;
         let activeRoofLayer = null;
         function setActiveRoofLayer(layer) {
+            // คืนค่าสีเดิมของแต่ละวัตถุตอนที่ยกเลิกการเลือก
             if(activeRoofLayer && editableItems.hasLayer(activeRoofLayer)) {
-                activeRoofLayer.setStyle({ color: '#ea580c', weight: 2 }); // สีเดิม
+                if (activeRoofLayer.setStyle) { // 🌟 ป้องกัน Error สำหรับ Marker (หมุดไม่มีฟังก์ชันเปลี่ยนสี)
+                    if (activeRoofLayer.drawMode === 'keepout') {
+                        activeRoofLayer.setStyle({ color: '#dc2626', weight: 1 });
+                    } else if (activeRoofLayer.drawMode === 'walkway') {
+                        activeRoofLayer.setStyle({ color: '#4b5563', weight: 1 });
+                    } else {
+                        activeRoofLayer.setStyle({ color: '#ea580c', weight: 2 });
+                    }
+                } else if (activeRoofLayer.setOpacity) {
+                    activeRoofLayer.setOpacity(1.0); // 🌟 คืนค่าโปร่งแสงปกติให้หมุด MDB
+                }
             }
             activeRoofLayer = layer;
-            if(layer && layer.panelConfig) {
-                layer.setStyle({ color: '#fa0505', weight: 4 }); // ไฮไลท์สีน้ำเงินเมื่อถูกเลือก
-			// --- เริ่ม: เพิ่มโค้ดส่วนนี้เพื่อดึง Mount Type กลับมาโชว์ ---
-			if (layer.panelConfig.mountType) {
-				document.getElementById('mountDisplayText').innerText = layer.panelConfig.mountType;
-				document.getElementById('mountDisplayIcon').innerHTML = layer.panelConfig.mountHTML;
-				document.getElementById('mountingDesc').innerText = layer.panelConfig.mountDesc;
-			}
-			// --- จบ ---						
-				
-                document.querySelector(`input[name="panelOrientation"][value="${layer.panelConfig.ori}"]`).checked = true;
-                document.getElementById('rowsPerGroup').value = layer.panelConfig.rowsPerGroup;
-                document.getElementById('colsPerGroup').value = layer.panelConfig.colsPerGroup;
-                document.getElementById('rowWalkwayGapCm').value = layer.panelConfig.rowWalkwayM * 100;
-                document.getElementById('colWalkwayGapCm').value = layer.panelConfig.colWalkwayM * 100;
-                document.getElementById('innerEdgeGapCm').value = layer.panelConfig.innerEdgeGapM * 100;
-                document.getElementById('keepoutGapCm').value = layer.panelConfig.keepoutGapM * 100;
-                
-                // 🌟 เพิ่ม: โหลดมุมเอียงและมุมทิศเฉพาะหลังคานี้กลับมาแสดง
-                if (layer.panelConfig.slope !== undefined) document.getElementById('sysSlope').value = layer.panelConfig.slope;
-                
-                if (layer.panelConfig.customAzimuth !== null && layer.panelConfig.customAzimuth !== undefined) {
-                    document.getElementById('sysAzimuth').value = layer.panelConfig.customAzimuth;
-                } else if (layer.panelConfig.autoAzimuth !== undefined) {
-                    document.getElementById('sysAzimuth').value = layer.panelConfig.autoAzimuth; // ดึงค่า Auto มาโชว์
-                } else {
-                    document.getElementById('sysAzimuth').value = "";
+            
+            // เมื่อวัตถุโดนคลิก ให้เปลี่ยนเป็นสีแดงเน้นย้ำ และโหลดข้อมูล
+            if(layer) {
+                if (layer.setStyle) { // 🌟 ป้องกัน Error สำหรับ Marker
+                    layer.setStyle({ color: '#fa0505', weight: 4 }); 
+                } else if (layer.setOpacity) {
+                    layer.setOpacity(0.5); // 🌟 ทำให้หมุด MDB จางลงเล็กน้อยเพื่อบอกว่ากำลังถูก Active อยู่
                 }
+                
+                // อัปเดตพารามิเตอร์ (เฉพาะถ้าเป็นหลังคา)
+                if (layer.panelConfig) {
+                    if (layer.panelConfig.mountType) {
+                        document.getElementById('mountDisplayText').innerText = layer.panelConfig.mountType;
+                        document.getElementById('mountDisplayIcon').innerHTML = layer.panelConfig.mountHTML;
+                        document.getElementById('mountingDesc').innerText = layer.panelConfig.mountDesc;
+                    }
+                    document.querySelector(`input[name="panelOrientation"][value="${layer.panelConfig.ori}"]`).checked = true;
+                    if (layer.panelConfig.stringOri) {
+                        document.querySelector(`input[name="stringOrientation"][value="${layer.panelConfig.stringOri}"]`).checked = true;
+                    } else {
+                        document.querySelector(`input[name="stringOrientation"][value="V"]`).checked = true;
+                    }
+                    document.getElementById('rowsPerGroup').value = layer.panelConfig.rowsPerGroup;
+                    document.getElementById('colsPerGroup').value = layer.panelConfig.colsPerGroup;
+                    document.getElementById('rowWalkwayGapCm').value = layer.panelConfig.rowWalkwayM * 100;
+                    document.getElementById('colWalkwayGapCm').value = layer.panelConfig.colWalkwayM * 100;
+                    document.getElementById('innerEdgeGapCm').value = layer.panelConfig.innerEdgeGapM * 100;
+                    document.getElementById('keepoutGapCm').value = layer.panelConfig.keepoutGapM * 100;
+                    if (layer.panelConfig.slope !== undefined) document.getElementById('sysSlope').value = layer.panelConfig.slope;
+                    
+                    if (layer.panelConfig.customAzimuth !== null && layer.panelConfig.customAzimuth !== undefined) {
+                        document.getElementById('sysAzimuth').value = layer.panelConfig.customAzimuth;
+                    } else if (layer.panelConfig.autoAzimuth !== undefined) {
+                        document.getElementById('sysAzimuth').value = layer.panelConfig.autoAzimuth; 
+                    } else {
+                        document.getElementById('sysAzimuth').value = "";
+                    }
+                }
+                
+                // 🌟 โหลดระยะความยาวด้านให้ทำงานกับวัตถุทุกประเภท
+                loadEdgeLengths(layer);
             }
         }
         const guideLinesLayer = L.layerGroup().addTo(map);
@@ -1724,6 +1814,16 @@ if (totalPolygons > totalMPPTs && state.optMfg === "-") {
             edit: { featureGroup: editableItems } 
         });
         map.addControl(drawControl);
+        
+        // --- 🌟 ดักจับโหมดลบ (Trash Mode) และ โหมดแก้ไข (Edit Mode) 🌟 ---
+        let isDeleteModeActive = false;
+        map.on('draw:deletestart', function () { isDeleteModeActive = true; });
+        map.on('draw:deletestop', function () { isDeleteModeActive = false; });
+        
+        let isEditModeActive = false;
+        map.on('draw:editstart', function () { isEditModeActive = true; });
+        map.on('draw:editstop', function () { isEditModeActive = false; });
+        
 		// --- 🌟 ดักจับ Double Click เพื่อสั่งจบการวาดทันที 🌟 ---
 	map.on('dblclick', function(e) {
     if (isDrawingMode) {
@@ -2178,14 +2278,14 @@ processPolygonsAndPanels = function() {
             let layer = e.layer;
             const drawMode = document.querySelector('input[name="drawMode"]:checked').value;
             
-            // 🌟 ตรรกะวาดทางเดิน (Walkway) 🌟
+            /// 🌟 ตรรกะวาดทางเดิน (Walkway) 🌟
             if (e.layerType === 'polyline') {
                 if (drawMode !== 'walkway') {
                     alert("⚠️ เครื่องมือ 'วาดเส้น' ใช้สำหรับสร้างทางเดิน (Walkway) เท่านั้นครับ");
                     return;
                 }
-                const wwWidth = (parseFloat(document.getElementById('manualWalkwayWidth').value) || 40) / 100;
-                const halfW = wwWidth / 2;
+                // 🌟 บังคับกว้างออกจากจุดกึ่งกลางด้านละ 25 ซม. เสมอ (0.25 เมตร)
+                const halfW = 0.20; 
                 const coords = layer.toGeoJSON().geometry.coordinates;
                 
                 let mergedWalkway = null;
@@ -2221,9 +2321,17 @@ processPolygonsAndPanels = function() {
                 
                 layer.drawMode = 'mdb';
                 layer.bindTooltip("<b>จุดรวมสาย (MDB/INV)</b>", { permanent: true, direction: 'right', className: 'edge-label' });
+                
+                // 🌟 เพิ่มคำสั่งดักจับการคลิก เพื่อให้ระบบรู้ว่าผู้ใช้เลือก MDB สำหรับลากย้าย หรือ ลบ
+                layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+
                 globalMdbMarker = layer;
                 editableItems.addLayer(layer);
                 processPolygonsAndPanels();
+                
+                // 🌟 ทำให้ MDB ที่เพิ่งวาดเป็น Active ทันที (พร้อมลากย้ายได้เลย)
+                setActiveRoofLayer(layer);
+                
                 saveMapState();
                 return; // หยุดการทำงานไม่ต้องลงไปวาด Polygon
             }
@@ -2235,6 +2343,7 @@ processPolygonsAndPanels = function() {
                 
                 layer.panelConfig = {
                     ori: document.querySelector('input[name="panelOrientation"]:checked').value,
+                    stringOri: document.querySelector('input[name="stringOrientation"]:checked').value, // 🌟 เพิ่มบรรทัดนี้
                     mountType: document.getElementById('mountDisplayText').innerText,
                     mountHTML: document.getElementById('mountDisplayIcon').innerHTML,
                     mountDesc: document.getElementById('mountingDesc').innerText,
@@ -2265,8 +2374,10 @@ processPolygonsAndPanels = function() {
             } else if (drawMode === 'keepout') { 
                 layer.setStyle({ color: '#dc2626', weight: 1, fillColor: '#ef4444', fillOpacity: 0.7, dashArray: '4, 4' }); 
                 layer.objectHeightM = parseFloat(document.getElementById('keepoutHeightM').value) || 0;
+                layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
             } else if (drawMode === 'walkway') { // 🌟 สีของทางเดิน 🌟
                 layer.setStyle({ color: '#4b5563', weight: 1, fillColor: '#9ca3af', fillOpacity: 0.7, dashArray: 'none' }); 
+                layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
             }
  
             editableItems.addLayer(layer);
@@ -2282,14 +2393,91 @@ processPolygonsAndPanels = function() {
             saveMapState();			
         });
 
-        map.on('draw:edited', () => { 
+        map.on('draw:edited', (e) => { 
+            // หากเป็นการแก้ไขหลังคาที่กำลังเลือกอยู่ ให้อัปเดตกล่องเครื่องมือเปลี่ยนความยาวด้วย
+            if (activeRoofLayer && e.layers.hasLayer(activeRoofLayer)) {
+                if (typeof loadEdgeLengths === 'function') loadEdgeLengths(activeRoofLayer);
+            }
             recalculateLabels(); processPolygonsAndPanels(); 
-			saveMapState();
+            saveMapState();
+        });
+
+        // 🌟 เพิ่ม Event ดักจับระหว่างที่กำลังใช้เครื่องมือ Edit ของ Leaflet ลากจุดแก้ไขเส้น
+        // 🌟 เพื่อให้ป้ายตัวเลขระยะทางและเส้นอัปเดตตามทันทีแบบ Real-time
+        map.on('draw:editvertex', (e) => {
+            recalculateLabels();
+            if (activeRoofLayer && typeof loadEdgeLengths === 'function') {
+                loadEdgeLengths(activeRoofLayer);
+            }
         });
         
-        map.on('draw:deleted', () => { 
+        map.on('draw:deleted', (e) => { 
+            // หากหลังคาที่กำลังเลือกอยู่ถูกลบทิ้งไป ให้ล้างค่าออกจากระบบป้องกันบั๊ก
+            if (activeRoofLayer && e.layers.hasLayer(activeRoofLayer)) {
+                setActiveRoofLayer(null);
+                if (document.getElementById('edgeEditorSection')) document.getElementById('edgeEditorSection').style.display = 'none';
+            }
             recalculateLabels(); processPolygonsAndPanels(); 
-			saveMapState();
+            saveMapState();
+        });
+
+        // =========================================================
+        // --- 🌟 ระบบคลิกค้างเพื่อลากย้ายวัตถุ (Drag to Move) 🌟 ---
+        // =========================================================
+        let isDraggingLayer = false;
+        let dragStartLatLng = null;
+
+        // ดักจับเมื่อคลิกเมาส์ค้างที่วัตถุ (Layer)
+        editableItems.on('mousedown', function(e) {
+            // 🌟 ปลดล็อกให้สามารถลากวัตถุได้ แม้จะเปิดโหมด Edit อยู่ก็ตาม (!isEditModeActive ถูกถอดออก)
+            if (activeRoofLayer === e.layer && !isDrawingMode && !isDeleteModeActive) {
+                isDraggingLayer = true;
+                dragStartLatLng = e.latlng;
+                map.dragging.disable(); // ป้องกันแผนที่หลักเลื่อนตาม
+            }
+        });
+
+        // ดักจับเมื่อลากเมาส์ไปมา
+        map.on('mousemove', function(e) {
+            if (isDraggingLayer && activeRoofLayer && dragStartLatLng) {
+                const latDiff = e.latlng.lat - dragStartLatLng.lat;
+                const lngDiff = e.latlng.lng - dragStartLatLng.lng;
+
+                if (activeRoofLayer.getLatLngs) {
+                    const shiftLatLngs = (latlngs) => {
+                        if (Array.isArray(latlngs)) return latlngs.map(shiftLatLngs);
+                        return L.latLng(latlngs.lat + latDiff, latlngs.lng + lngDiff);
+                    };
+                    activeRoofLayer.setLatLngs(shiftLatLngs(activeRoofLayer.getLatLngs()));
+                    
+                    // 🌟 หัวใจสำคัญ: สั่งให้จุดมาร์คเส้น วิ่งตามเส้นแบบ Real-time ขณะลากเมาส์
+                    if (activeRoofLayer.editing && activeRoofLayer.editing.enabled()) {
+                        activeRoofLayer.editing.updateMarkers();
+                    }
+                } else if (activeRoofLayer.getLatLng) {
+                    const current = activeRoofLayer.getLatLng();
+                    activeRoofLayer.setLatLng(L.latLng(current.lat + latDiff, current.lng + lngDiff));
+                }
+                
+                dragStartLatLng = e.latlng;
+                recalculateLabels(); // อัปเดตป้ายตัวเลขระยะทางแบบ Real-time
+            }
+        });
+
+        // ดักจับเมื่อปล่อยคลิกเมาส์
+        map.on('mouseup', function(e) {
+            if (isDraggingLayer) {
+                isDraggingLayer = false;
+                dragStartLatLng = null;
+                map.dragging.enable(); // เปิดให้แผนที่กลับมาเลื่อนได้ปกติ
+                
+                processPolygonsAndPanels(); // คำนวณแผงใหม่ตามพิกัดใหม่
+                saveMapState();             // เซฟประวัติลงระบบ Undo/Redo
+                
+                if (activeRoofLayer && typeof loadEdgeLengths === 'function') {
+                    loadEdgeLengths(activeRoofLayer); // อัปเดตระยะในแถบเครื่องมือด้านซ้าย
+                }
+            }
         });
 
         // 🛑 UPDATED: EIT Standard String Sizing & Optimizer Clamping 🛑
@@ -2511,16 +2699,37 @@ processPolygonsAndPanels = function() {
                 // 🌟 ตรวจสอบมุมเอียงเฉพาะของหลังคาชิ้นนี้
                 let currentSlope = config.slope !== undefined ? config.slope : (parseFloat(document.getElementById('sysSlope').value) || 15);
 
-                state.roofPolygonsData.push({
-                    id: index + 1,
-                    area: areaSqM,
-                    slope: currentSlope, // ค่าอิสระแต่ละหลังคา
-                    azimuth: Math.round(finalAzimuth), // ค่าอิสระแต่ละหลังคา
-                    mountType: config.mountType || document.getElementById('mountDisplayText').innerText
-                });
-
                 let center;
                 try { center = turf.centerOfMass(geojson); } catch(e) { center = turf.center(geojson); }
+
+                // --- 🌟 ดึง Bounding Box และคำนวณ Local Boundary ของหลังคา ---
+                let centerCoords = center.geometry.coordinates;
+                const mToDegLat = 1 / 111320;
+                const mToDegLng = 1 / (111320 * Math.cos(centerCoords[1] * Math.PI / 180));
+                
+                const rotatedRoof = turf.transformRotate(geojson, -finalAzimuth, {pivot: center});
+                const bbox = turf.bbox(rotatedRoof);
+                const minX_m = (bbox[0] - centerCoords[0]) / mToDegLng;
+                const maxY_m = (bbox[3] - centerCoords[1]) / mToDegLat; // จุดสูงสุดของหลังคาแกน Y
+
+                let localBoundary = [];
+                if (rotatedRoof.geometry.coordinates && rotatedRoof.geometry.coordinates[0]) {
+                    localBoundary = rotatedRoof.geometry.coordinates[0].map(coord => {
+                        let x_m = (coord[0] - centerCoords[0]) / mToDegLng;
+                        let y_m = (coord[1] - centerCoords[1]) / mToDegLat;
+                        return {
+                            x: Number((x_m - minX_m).toFixed(3)),
+                            y: Number((maxY_m - y_m).toFixed(3)) // 🌟 Invert Y ให้ 0 อยู่ด้านบนสุดแบบ SVG
+                        };
+                    });
+                }
+
+                config.roofId = index + 1;
+                state.roofPolygonsData.push({
+                    id: index + 1, area: areaSqM, slope: currentSlope, azimuth: Math.round(finalAzimuth), 
+                    mountType: config.mountType || document.getElementById('mountDisplayText').innerText,
+                    localBoundary: localBoundary // 🌟 ส่งขอบเขตหลังคาเข้าไปใน DB
+                });
 
                 state.allPossiblePanelsGeoJSON = state.allPossiblePanelsGeoJSON.concat(generatePanelGrid(geojson, center, finalAzimuth, state.pvWid/1000, state.pvLen/1000, keepoutPolys, config));           
             });
@@ -2538,18 +2747,13 @@ processPolygonsAndPanels = function() {
                 polyListDiv.style.display = 'none';
             }
 
-            // Sync with slider target
-            let targetRatio = parseFloat(document.getElementById('dcacSlider').value) || 1.2;
-            let totalAcKw = (state.inv1Qty * state.inv1AcKw) + (state.inv2Qty * state.inv2AcKw);
-            let targetPanels = 0;
-            if(totalAcKw > 0 && state.pvPmax > 0) {
-                targetPanels = Math.round((totalAcKw * targetRatio * 1000) / state.pvPmax);
-            }
-            
-            let finalCount = Math.min(targetPanels || state.allPossiblePanelsGeoJSON.length, state.allPossiblePanelsGeoJSON.length);
+            // 🌟 แก้ไขใหม่: ปลดล็อคระบบ Capping จำนวนแผงอัตโนมัติ
+            // เมื่อคัดลอกหรือวาดหลังคาใหม่ ให้ระบบวาดแผง "เต็มพื้นที่สูงสุด" เสมอ เพื่อให้ผู้ใช้มองเห็นแผงบนหลังคาทุกชิ้น
+            let finalCount = state.allPossiblePanelsGeoJSON.length;
             
             document.getElementById('finalPanelCount').value = finalCount;
-            updateOptQty(); calculateStringSizing(); 
+            updateOptQty(); 
+            calculateStringSizing(); 
         }
 
 function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM, keepouts, config) { 
@@ -2574,8 +2778,14 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
             let expandedKeepouts = []; 
             const koGapM = config.keepoutGapM;
             for (let ko of keepouts) {
-                let bufferDistance = ko.properties && ko.properties.drawMode === 'walkway' ? 0 : koGapM;
-                if (bufferDistance > 0) { 
+                let bufferDistance = koGapM;
+                
+                // 🌟 บังคับให้ Walkway มีระยะเว้นห่างจากแผงทุกด้าน 20 เซนติเมตร (0.20 เมตร)
+                if (ko.properties && ko.properties.drawMode === 'walkway') {
+                    bufferDistance = 0.20; 
+                }
+
+                if (bufferDistance > 0) {
                     try { 
                         const expanded = turf.buffer(ko, bufferDistance, {units: 'meters'}); 
                         if (expanded) expandedKeepouts.push(expanded); 
@@ -2605,10 +2815,11 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
             let colIndex = 0;
 
             // 3. วนลูปวาดแผงในระบบตาราง (Grid) แกน X,Y หน่วยเป็น "เมตร" (รับประกันขนานเป๊ะ 100%)
+            let tempPanels = []; // 🌟 เก็บแผงทั้งหมดไว้ก่อนเพื่อนำมาจัดกลุ่มทีหลัง
+            
             while (currentX_m < maxX_m) {
                 let currentY_m = minY_m; 
                 let rowIndex = 0; 
-                let colPanels = []; 
                 
                 while (currentY_m < maxY_m) {
                     // สร้างพิกัด 4 มุมของแผงในหน่วยเมตร (Perfect Rectangle)
@@ -2636,20 +2847,61 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
                         }
                         
                         if(!isObstacle) {
-                            colPanels.push(realWorldCheckPanel); 
+                            // 🌟 แนบข้อมูลพิกัด X, Y (Invert Y) และแนบ gridRow/gridCol เพื่อใช้จัดกลุ่มสตริง
+                            realWorldCheckPanel.properties = {
+                                roofId: config.roofId,
+                                localX: Number((currentX_m - minX_m).toFixed(3)),
+                                localY: Number((maxY_m - currentY_m - actualLengthM).toFixed(3)),
+                                isLandscape: config.ori === "L",
+                                angle: 0,
+                                gridCol: colIndex,   // 🌟 ล็อกคอลัมน์
+                                gridRow: rowIndex    // 🌟 ล็อกแถว
+                            };
+                            tempPanels.push(realWorldCheckPanel); 
                         }
                     }
                     rowIndex++; 
                     currentY_m += actualLengthM + ((rowIndex % rowsLimit === 0) ? rowWalkwayM : gapM);
                 }
-                
-                if (colIndex % 2 !== 0) { colPanels.reverse(); } // Snake Pattern
-                panels = panels.concat(colPanels); 
-                
                 colIndex++; 
                 currentX_m += actualWidthM + ((colIndex % colsLimit === 0) ? colWalkwayM : gapM);
             } 
-            return panels;
+            
+            // 🌟 5. จัดกลุ่มแผงเข้าสตริง (String Grouping & Snake Pattern) ตามที่ผู้ใช้เลือก
+            let finalPanels = [];
+            const stringOri = config.stringOri || "V"; // ทิศทางการกวาดสาย
+            
+            if (stringOri === "H") {
+                // 🌟 โหมดเดินสาย "แนวนอน" (กวาดแผงทีละแถว Row)
+                let maxRow = 0;
+                tempPanels.forEach(p => { if (p.properties.gridRow > maxRow) maxRow = p.properties.gridRow; });
+                
+                for (let r = 0; r <= maxRow; r++) {
+                    let rowPanels = tempPanels.filter(p => p.properties.gridRow === r);
+                    if (rowPanels.length === 0) continue;
+                    // เรียงพิกัดจากซ้ายไปขวา (ตามคอลัมน์)
+                    rowPanels.sort((a, b) => a.properties.gridCol - b.properties.gridCol);
+                    // ทรงงู (Snake Pattern) สลับทิศเดินสายทุกๆ แถว เพื่อไม่ให้สายกระโดด
+                    if (r % 2 !== 0) rowPanels.reverse();
+                    finalPanels = finalPanels.concat(rowPanels);
+                }
+            } else {
+                // 🌟 โหมดเดินสาย "แนวตั้ง" (กวาดแผงทีละคอลัมน์ Col) - ค่า Default
+                let maxCol = 0;
+                tempPanels.forEach(p => { if (p.properties.gridCol > maxCol) maxCol = p.properties.gridCol; });
+                
+                for (let c = 0; c <= maxCol; c++) {
+                    let colPanels = tempPanels.filter(p => p.properties.gridCol === c);
+                    if (colPanels.length === 0) continue;
+                    // เรียงพิกัดจากบนลงล่าง (ตามแถว)
+                    colPanels.sort((a, b) => a.properties.gridRow - b.properties.gridRow);
+                    // ทรงงู (Snake Pattern) สลับทิศเดินสายทุกๆ คอลัมน์
+                    if (c % 2 !== 0) colPanels.reverse();
+                    finalPanels = finalPanels.concat(colPanels);
+                }
+            }
+            
+            return finalPanels;
         }
 
         function renderPanels(countToDraw) {
@@ -2677,16 +2929,13 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
                 const center = turf.center(p).geometry.coordinates;
                 stringPoints[stringIndex].push([center[1], center[0]]); // Leaflet ใช้ [lat, lng]
 
-                let fillColor = '#111111'; let tooltipText = "คลิกลบแผง";
+                let fillColor = '#111111'; let tooltipText = "ต้องกดปุ่ม ถังขยะ ก่อนลบแผง";
                 if (renderMode === "2") { 
                     fillColor = STRING_COLORS[stringIndex % STRING_COLORS.length]; 
-                    tooltipText = `String ${stringIndex + 1} <br>(คลิกลบแผง)`; 
+                    tooltipText = `String ${stringIndex + 1} <br>(ต้องกดถังขยะก่อนลบแผง)`; 
                 }
                 
                 // 💡 นำเทคนิคความสวยงามจาก V55 มาใช้
-                // - smoothFactor: 0 (รักษามุมฉากคมกริบ ไม่ให้เบราว์เซอร์ลบเหลี่ยม)
-                // - weight: 0.6 (เส้นขอบบางเฉียบ)
-                // - fillOpacity: 0.95 (ลดความทึบลงนิดหน่อย ให้เห็นลายกระเบื้องหลังคา/พื้นผิวเดิม)
                 const panelLayer = L.geoJSON(p, { 
                     smoothFactor: 0, 
                     style: { 
@@ -2701,13 +2950,14 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
                 
                 panelLayer.bindTooltip(tooltipText, { className: 'delete-panel-tooltip', direction: 'top' });
                 panelLayer.on('click', function(e) {
+                    if (!isDeleteModeActive) return; // 🌟 ทำงานเมื่อกดปุ่มถังขยะเท่านั้น
                     L.DomEvent.stop(e); const idx = state.allPossiblePanelsGeoJSON.indexOf(p); if (idx > -1) state.allPossiblePanelsGeoJSON.splice(idx, 1);
                     const currentCount = parseInt(document.getElementById('finalPanelCount').value) - 1; document.getElementById('finalPanelCount').value = currentCount;
                     updateOptQty(); calculateStringSizing(); renderPanels(currentCount); 
                 }); 
                 panelItems.addLayer(panelLayer);
             });           
-// --- เริ่ม: วาดเส้นสายไฟจำลองแบบใหม่ (Smart String Reversal + Rotated Manhattan Trunk Routing) 🌟 ---
+// --- เริ่ม: วาดเส้นสายไฟจำลองแบบใหม่ (Smart String Reversal + Walkway Trunk Routing) 🌟 ---
             state.onRoofDcLength = 0; 
             state.mapHomeRunDcLength = 0; 
             let mdbLatLng = globalMdbMarker ? globalMdbMarker.getLatLng() : null;
@@ -2716,52 +2966,20 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
                 const pts = stringPoints[key];
                 if (pts.length > 0) {
                     let stringLinePts = [];
-                    
-                    // 1. นำจุดเข้า Array สำหรับเดินสาย
-                    for(let i=0; i<pts.length; i++) {
-                        stringLinePts.push(pts[i]); 
-                    }
-                    
-                    // 🧠 สมองกลย้อนกลับสาย (Smart Reversal): เช็คว่าหัวหรือท้ายสตริง ฝั่งไหนใกล้ MDB กว่ากัน
-                    if (mdbLatLng && stringLinePts.length > 1) {
-                        let pStart = turf.point([stringLinePts[0][1], stringLinePts[0][0]]);
-                        let pEnd = turf.point([stringLinePts[stringLinePts.length-1][1], stringLinePts[stringLinePts.length-1][0]]);
-                        let pMdb = turf.point([mdbLatLng.lng, mdbLatLng.lat]);
-                        
-                        let distStart = turf.distance(pStart, pMdb, {units: 'meters'});
-                        let distEnd = turf.distance(pEnd, pMdb, {units: 'meters'});
-                        
-                        // ถ้าย้อนศร ให้สลับลำดับ เพื่อบังคับให้ "ปลายสายสีดำ" มาตกอยู่ที่จุดที่ใกล้ตู้ MDB ที่สุดเสมอ
-                        if (distStart < distEnd) {
-                            stringLinePts.reverse();
-                        }
-                    }
+                    for(let i=0; i<pts.length; i++) { stringLinePts.push(pts[i]); }
 
-                    // วาดเส้นสายดีซี (สีดำ)
-                    if (stringLinePts.length > 1) {
-                        const lineCenterGeo = turf.lineString(stringLinePts.map(p => [p[1], p[0]]));
-                        state.onRoofDcLength += (turf.length(lineCenterGeo, {units: 'meters'}) * 2);
-                        if (isWiringVisible) L.polyline(stringLinePts, { color: '#000000', weight: 1.5, opacity: 0.9, interactive: false }).addTo(wiringItems);
-                    }
-
-                    // 2. เดินสาย Home Run (สีม่วง) ไปตู้ MDB ด้วยระบบ "Trunk & Branch" (แบบเดียวกับเส้นสีเหลือง)
                     if (mdbLatLng) {
-                        let lastP = stringLinePts[stringLinePts.length - 1]; 
-                        let mdbP = [mdbLatLng.lat, mdbLatLng.lng];
-                        let lastPLngLat = [lastP[1], lastP[0]];
-                        let mdbLngLat = [mdbP[1], mdbP[0]];
-                        let homeRunPts = [];
-
+                        let pivot = turf.point([mdbLatLng.lng, mdbLatLng.lat]);
                         let targetRoof = null;
                         let minEdgeDistance = Infinity;
 
-                        // 🔍 หาหลังคาที่สตริงนี้สังกัดอยู่ เพื่อดึงองศา (Azimuth) มาใช้สร้างเส้นหักฉาก
+                        // 🔍 หาหลังคาที่สตริงนี้สังกัดอยู่
                         editableItems.eachLayer(layer => {
                             if (layer.drawMode === 'roof' && layer.toGeoJSON) {
                                 let geo = layer.toGeoJSON();
                                 if (geo.geometry.type === 'Polygon') {
                                     let ring = turf.lineString(geo.geometry.coordinates[0]);
-                                    let dist = turf.pointToLineDistance(turf.point(lastPLngLat), ring, {units: 'meters'});
+                                    let dist = turf.pointToLineDistance(turf.point([stringLinePts[0][1], stringLinePts[0][0]]), ring, {units: 'meters'});
                                     if (dist < minEdgeDistance) {
                                         minEdgeDistance = dist;
                                         targetRoof = layer;
@@ -2771,17 +2989,58 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
                         });
 
                         let roofAzimuth = 0;
-                        if (targetRoof && targetRoof.panelConfig) {
+                        let roofStringOri = "V";
+                        let cLng = pivot.geometry.coordinates[0];
+                        let cLat = pivot.geometry.coordinates[1];
+
+                        if (targetRoof) {
                             roofAzimuth = targetRoof.panelConfig.customAzimuth !== null ? targetRoof.panelConfig.customAzimuth : (targetRoof.panelConfig.autoAzimuth || 0);
+                            if (targetRoof.panelConfig.stringOri) roofStringOri = targetRoof.panelConfig.stringOri;
+                            
+                            // 📍 หาจุดกึ่งกลางหลังคา (Center of Walkway)
+                            let unrotatedRoofCenter = turf.transformRotate(turf.centerOfMass(targetRoof.toGeoJSON()), -roofAzimuth, {pivot: pivot});
+                            cLng = unrotatedRoofCenter.geometry.coordinates[0];
+                            cLat = unrotatedRoofCenter.geometry.coordinates[1];
                         }
 
-                        homeRunPts.push(lastP); // จุดเริ่มต้นเส้นสีม่วง
+                        // 🧠 1. สมองกลย้อนกลับสาย (Smart Reversal)
+                        if (stringLinePts.length > 1) {
+                            let pStart = turf.point([stringLinePts[0][1], stringLinePts[0][0]]);
+                            let pEnd = turf.point([stringLinePts[stringLinePts.length-1][1], stringLinePts[stringLinePts.length-1][0]]);
+                            
+                            let unrotStart = turf.transformRotate(pStart, -roofAzimuth, {pivot: pivot});
+                            let unrotEnd = turf.transformRotate(pEnd, -roofAzimuth, {pivot: pivot});
+                            
+                            let distStart, distEnd;
+                            if (roofStringOri === "H") {
+                                distStart = Math.abs(unrotStart.geometry.coordinates[0] - cLng);
+                                distEnd = Math.abs(unrotEnd.geometry.coordinates[0] - cLng);
+                            } else {
+                                distStart = Math.abs(unrotStart.geometry.coordinates[1] - cLat);
+                                distEnd = Math.abs(unrotEnd.geometry.coordinates[1] - cLat);
+                            }
+                            
+                            if (distStart < distEnd) {
+                                stringLinePts.reverse();
+                            }
+                        }
+
+                        // วาดเส้นสายดีซีบนแผง (สีดำ)
+                        if (stringLinePts.length > 1) {
+                            const lineCenterGeo = turf.lineString(stringLinePts.map(p => [p[1], p[0]]));
+                            state.onRoofDcLength += (turf.length(lineCenterGeo, {units: 'meters'}) * 2);
+                            if (isWiringVisible) L.polyline(stringLinePts, { color: '#000000', weight: 1.5, opacity: 0.9, interactive: false }).addTo(wiringItems);
+                        }
+
+                        // 🧠 2. เดินสาย Home Run (สีม่วง) เข้าสู่ Walkway หลัก พร้อมระยะร่น 25 ซม.
+                        let lastP = stringLinePts[stringLinePts.length - 1]; 
+                        let mdbP = [mdbLatLng.lat, mdbLatLng.lng];
+                        let homeRunPts = [];
+
+                        homeRunPts.push(lastP); // ออกจากแผง
 
                         try {
-                            let pivot = turf.point(mdbLngLat);
-                            let endPt = turf.point(lastPLngLat);
-
-                            // 📐 2.1 หมุนโลก: หมุนจุดปลายสายและ MDB ให้ขนานกับแกน X, Y โลก (ลบความเอียงหลังคาชั่วคราว)
+                            let endPt = turf.point([lastP[1], lastP[0]]);
                             let unrotatedEndPt = turf.transformRotate(endPt, -roofAzimuth, {pivot: pivot});
                             
                             let pLng = unrotatedEndPt.geometry.coordinates[0];
@@ -2789,34 +3048,46 @@ function generatePanelGrid(roofGeojson, centerPoint, azimuth, pWidthM, pLengthM,
                             let mLng = pivot.geometry.coordinates[0];
                             let mLat = pivot.geometry.coordinates[1];
 
-                            let distLng = Math.abs(pLng - mLng);
-                            let distLat = Math.abs(pLat - mLat);
+                            // 📏 คำนวณระยะร่น 25 ซม. (0.25 เมตร) จากกึ่งกลาง Walkway
+                            let mToDeg = 1 / 111320;
+                            let offsetDeg = 0.25 * mToDeg; 
                             
-                            let unrotatedMidPt;
-                            // 🛣️ 2.2 หาแกนที่ยาวกว่าเพื่อทำเป็น Trunk (แกนสั้นคือ Branch ที่หักศอกเสียบเข้า Trunk)
-                            // กลไกนี้จะทำให้สายทุกเส้นวิ่งไปกองรวมเป็น "เส้นทับกัน" ที่แกนเดียวกัน (เหมือนเดินราง)
-                            if (distLng > distLat) {
-                                unrotatedMidPt = turf.point([pLng, mLat]);
+                            let trunkPt1, trunkPt2;
+
+                            if (roofStringOri === "H") {
+                                let isLeftPanel = pLng < cLng;
+                                let trunkX = cLng + (isLeftPanel ? -offsetDeg : offsetDeg);
+                                trunkPt1 = turf.point([trunkX, pLat]); 
+                                trunkPt2 = turf.point([trunkX, mLat]); 
                             } else {
-                                unrotatedMidPt = turf.point([mLng, pLat]);
+                                let isBottomPanel = pLat < cLat;
+                                let trunkY = cLat + (isBottomPanel ? -offsetDeg : offsetDeg);
+                                trunkPt1 = turf.point([pLng, trunkY]); 
+                                trunkPt2 = turf.point([mLng, trunkY]); 
                             }
 
-                            // 🔄 2.3 หมุนจุดหักศอกกลับไปยังองศาความเอียงเดิมของหลังคาหน้างาน
-                            let midPt = turf.transformRotate(unrotatedMidPt, roofAzimuth, {pivot: pivot});
+                            let midPt1 = turf.transformRotate(trunkPt1, roofAzimuth, {pivot: pivot});
+                            let midPt2 = turf.transformRotate(trunkPt2, roofAzimuth, {pivot: pivot});
 
-                            homeRunPts.push([midPt.geometry.coordinates[1], midPt.geometry.coordinates[0]]);
+                            homeRunPts.push([midPt1.geometry.coordinates[1], midPt1.geometry.coordinates[0]]);
+                            homeRunPts.push([midPt2.geometry.coordinates[1], midPt2.geometry.coordinates[0]]);
                         } catch(e) {
-                            // Fallback
+                            console.error(e);
                         }
                         
-                        homeRunPts.push(mdbP); // ยิงจาก Main Trunk เข้าตู้ MDB จุดสุดท้าย
+                        homeRunPts.push(mdbP);
 
-                        // 💾 บันทึกและคำนวณระยะทางสายไฟสีม่วง
                         const hrLineGeo = turf.lineString(homeRunPts.map(p => [p[1], p[0]]));
                         state.mapHomeRunDcLength += (turf.length(hrLineGeo, {units: 'meters'}) * 2); 
 
                         if (isWiringVisible) {
                             L.polyline(homeRunPts, { color: '#8b5cf6', weight: 2.0, dashArray: '4,6', opacity: 0.9, interactive: false }).addTo(wiringItems);
+                        }
+                    } else {
+                        if (stringLinePts.length > 1) {
+                            const lineCenterGeo = turf.lineString(stringLinePts.map(p => [p[1], p[0]]));
+                            state.onRoofDcLength += (turf.length(lineCenterGeo, {units: 'meters'}) * 2);
+                            if (isWiringVisible) L.polyline(stringLinePts, { color: '#000000', weight: 1.5, opacity: 0.9, interactive: false }).addTo(wiringItems);
                         }
                     }
                 }
@@ -2898,6 +3169,10 @@ function updateFinalDcLength() {
             }
             // --- จบ ---			
         }
+
+
+
+
         document.addEventListener('click', function(e) { const wrapper = document.getElementById('mountWrapper'); if (wrapper && !wrapper.contains(e.target)) { document.getElementById('mountOptions').classList.remove('show'); }});
 
         // Basic Listeners
@@ -2911,13 +3186,13 @@ function updateFinalDcLength() {
         function syncActiveConfig() {
             if(activeRoofLayer) {
                 activeRoofLayer.panelConfig.ori = document.querySelector('input[name="panelOrientation"]:checked').value;
+                activeRoofLayer.panelConfig.stringOri = document.querySelector('input[name="stringOrientation"]:checked').value; // 🌟 บันทึกการจัดสตริง
                 activeRoofLayer.panelConfig.rowsPerGroup = parseInt(document.getElementById('rowsPerGroup').value) || 1;
                 activeRoofLayer.panelConfig.colsPerGroup = parseInt(document.getElementById('colsPerGroup').value) || 1;
                 activeRoofLayer.panelConfig.rowWalkwayM = (parseFloat(document.getElementById('rowWalkwayGapCm').value) || 0) / 100;
                 activeRoofLayer.panelConfig.colWalkwayM = (parseFloat(document.getElementById('colWalkwayGapCm').value) || 0) / 100;
                 activeRoofLayer.panelConfig.innerEdgeGapM = (parseFloat(document.getElementById('innerEdgeGapCm').value) || 0) / 100;
                 activeRoofLayer.panelConfig.keepoutGapM = (parseFloat(document.getElementById('keepoutGapCm').value) || 0) / 100;
-                // 🌟 เพิ่ม: บันทึก Slope และ Azimuth แบบ Real-time ลงหลังคาชิ้นนี้
                 activeRoofLayer.panelConfig.slope = parseFloat(document.getElementById('sysSlope').value) || 15;
                 
                 let currentAzStr = document.getElementById('sysAzimuth').value;
@@ -2925,7 +3200,6 @@ function updateFinalDcLength() {
                     activeRoofLayer.panelConfig.customAzimuth = null;
                 } else {
                     let currentAz = parseFloat(currentAzStr);
-                    // 🌟 ถ้ายืนยันค่าเท่ากับค่า Auto พอดี ให้ถือว่าไม่ได้บังคับทิศ (กลับเป็น Auto)
                     if (activeRoofLayer.panelConfig.autoAzimuth !== undefined && currentAz === activeRoofLayer.panelConfig.autoAzimuth) {
                         activeRoofLayer.panelConfig.customAzimuth = null;
                     } else {
@@ -2941,7 +3215,7 @@ function updateFinalDcLength() {
                 state.keepoutGapCm = parseFloat(document.getElementById('keepoutGapCm').value) || 0;
             }
             processPolygonsAndPanels();
-            saveMapState(); // 🌟 ให้จำสถานะทุกครั้งที่มีการเปลี่ยนตั้งค่าด้วย
+            saveMapState(); 
         }
 
         document.getElementById('rowsPerGroup').addEventListener('input', syncActiveConfig);
@@ -2951,8 +3225,9 @@ function updateFinalDcLength() {
         document.getElementById('innerEdgeGapCm').addEventListener('input', syncActiveConfig);
         document.getElementById('keepoutGapCm').addEventListener('input', syncActiveConfig);
         document.querySelectorAll('input[name="panelOrientation"]').forEach(radio => radio.addEventListener('change', syncActiveConfig));
+        document.querySelectorAll('input[name="stringOrientation"]').forEach(radio => radio.addEventListener('change', syncActiveConfig)); // 🌟 สั่งอัปเดตเมื่อเปลี่ยนจัดสตริง
 
-        document.getElementById('finalPanelCount').addEventListener('input', e => { 
+        document.getElementById('finalPanelCount').addEventListener('input', e => {
             let req = parseInt(e.target.value) || 0; if (req > state.allPossiblePanelsGeoJSON.length) { req = state.allPossiblePanelsGeoJSON.length; e.target.value = req; } 
             updateOptQty(); calculateStringSizing(); renderPanels(req); 
         });
@@ -3093,6 +3368,22 @@ function updateFinalDcLength() {
             const db0KwPText = document.getElementById('db0KwPDisplay') ? document.getElementById('db0KwPDisplay').innerText.trim().replace(/\r?\n/g, ' | ') : "-";
             const db0Panels = document.getElementById('db0CalculatedPanels') ? parseInt(document.getElementById('db0CalculatedPanels').innerText.replace(/,/g, '')) : 0;
 
+            // 🌟 สร้าง Layout X, Y ของแต่ละกลุ่มแผง เพื่อบันทึกลง DB
+            const totalPanelsCount = parseInt(document.getElementById('finalPanelCount').value) || 0;
+            const activePanels = state.allPossiblePanelsGeoJSON.slice(0, totalPanelsCount);
+            
+            let exportedRoofPolygons = JSON.parse(JSON.stringify(state.roofPolygonsData));
+            exportedRoofPolygons.forEach(roof => {
+                roof.customLayout = activePanels
+                    .filter(p => p.properties && p.properties.roofId === roof.id)
+                    .map(p => ({
+                        x: p.properties.localX,
+                        y: p.properties.localY,
+                        isLandscape: p.properties.isLandscape,
+                        angle: p.properties.angle
+                    }));
+            });
+
             return {
                 step1_initialization: {
                     projectName: document.getElementById('projectTextInput').value.trim() || "Project",
@@ -3128,7 +3419,7 @@ function updateFinalDcLength() {
                     globalSlope: parseFloat(document.getElementById('sysSlope').value) || 0,
                     globalAzimuthOverride: parseFloat(document.getElementById('sysAzimuth').value) || null,
                     buildingVoltageLimit: parseInt(document.querySelector('input[name="buildingType"]:checked').value) || 1000,
-                    roofPolygons: state.roofPolygonsData,
+                    roofPolygons: exportedRoofPolygons, // 🌟 เปลี่ยนมาใช้ตัวแปรที่ฝังพิกัด customLayout แล้ว
                     mountType: document.getElementById('mountDisplayText').innerText,
                     orientation: document.querySelector('input[name="panelOrientation"]:checked').value,
                     // 🌟 เพิ่มพารามิเตอร์ที่ตกหล่น
@@ -3162,7 +3453,8 @@ function updateFinalDcLength() {
                     panelGap: document.getElementById('bom-panel-gap') ? document.getElementById('bom-panel-gap').value : "2",
                     cleaningSys: document.getElementById('bom-cleaning-sys') ? document.getElementById('bom-cleaning-sys').value : "none",
                     pipeLength: document.getElementById('bom-pipe-length') ? document.getElementById('bom-pipe-length').value : "30",
-                    distToMdb: document.getElementById('distToMdbMap') ? document.getElementById('distToMdbMap').value : "30"
+                    distToMdb: document.getElementById('distToMdbMap') ? document.getElementById('distToMdbMap').value : "30",
+                    serviceLadder: document.getElementById('bom-service-ladder') ? document.getElementById('bom-service-ladder').value : "auto"
                 },
                 step4_validation_results: {
                     equipmentCounts: {
@@ -3535,6 +3827,22 @@ function generateDB2() {
             }
         }
 
+        // 🌟 เพิ่มโค้ดส่วนนี้: สั่งให้ปุ่ม "บันทึกรูปภาพแผนที่" ทำงานเมื่อถูกคลิก
+        document.getElementById('btnCaptureMapOnly').addEventListener('click', async function() {
+            // สร้างชุดตัวเลข วัน-เวลา (Datetime) ปัจจุบันเพื่อใช้ต่อท้ายชื่อไฟล์
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const date = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const dateTimeStr = `${year}${month}${date}_${hours}${minutes}${seconds}`;
+            
+            // เรียกใช้งานฟังก์ชันถ่ายภาพพร้อมส่งเวลาไปตั้งชื่อไฟล์
+            await captureMapImage(dateTimeStr);
+        });
+
 		document.getElementById('btnExportDb2').addEventListener('click', async function() {
     if (!confirm("ระบบจะดาวน์โหลดไฟล์พารามิเตอร์ (.txt) และรูปภาพแผนที่ (.png) ลงในโฟลเดอร์ Downloads ในเครื่องของคุณ\n\nต้องการดำเนินการต่อหรือไม่?")) return;
     const db2Full = generateDB2();
@@ -3881,19 +4189,17 @@ function generateDB2() {
             }
 
 // 🌟🌟🌟 เริ่ม: โค้ดคำนวณบันไดเซอร์วิสแนวดิ่ง และบันทึกลง DB 🌟🌟🌟
-            const buildingHeight = parseFloat(document.getElementById('bom-pipe-length').value) || 0;
+            const buildingHeight = parseFloat(document.getElementById('roofHeightM') ? document.getElementById('roofHeightM').value : 0) || 0;
+            const ladderConfig = document.getElementById('bom-service-ladder') ? document.getElementById('bom-service-ladder').value : 'auto';
 
-            // 1. เตรียมโครงสร้างตัวแปร state ให้ตรงกับที่ไฟล์ Report V8 ต้องการนำเข้า
             if (!window.state) window.state = {};
             if (!window.state.step4_validation_results) window.state.step4_validation_results = {};
             if (!window.state.step4_validation_results.engineering_and_bom) window.state.step4_validation_results.engineering_and_bom = {};
 
-            if (buildingHeight > 0) {
-                // คำนวณขั้นบันได และ จำนวนชานพัก
+            if (ladderConfig === 'auto' && buildingHeight > 0) {
                 let ladderRungs = Math.floor(buildingHeight / 0.3);
                 let platforms = Math.floor((buildingHeight - 0.1) / 9);
                 
-                // แทรกแถวตารางในหน้า V10
                 addRow("Structure", "บันไดเซอร์วิสแนวดิ่ง (Fixed Ladder)", `โครงเหล็กชุบ Hot-Dip Galvanized (ASTM A123) สูง ${buildingHeight} ม.<br><span style="font-size: 0.9em; color:#64748b;">ลูกบันไดเหล็กกลม &ge;19mm กว้าง &ge;40cm ห่างกัน 30cm (รวม ${ladderRungs} ขั้น)</span>`, 1, "ชุด", "#ea580c");
                 
                 if (buildingHeight > 5) {
@@ -3913,18 +4219,12 @@ function generateDB2() {
                     </td>
                 </tr>`;
 
-                // 2. 🌟 บันทึกข้อมูลสเปกบันไดลง State (DB) ในตำแหน่งที่ V8.0 ดึงไปใช้
                 window.state.step4_validation_results.engineering_and_bom.service_ladder = {
-                    required: true,
-                    building_height_m: buildingHeight,
-                    ladder_rungs: ladderRungs,
-                    safety_cage_required: buildingHeight > 5,
-                    safety_cage_length_m: buildingHeight > 5 ? Number((buildingHeight - 2.2).toFixed(1)) : 0,
-                    rest_platforms: platforms,
-                    material_spec: "HDG (ASTM A123), Rung >=19mm, Width >=40cm, Spacing 30cm"
+                    required: true, building_height_m: buildingHeight, ladder_rungs: ladderRungs,
+                    safety_cage_required: buildingHeight > 5, safety_cage_length_m: buildingHeight > 5 ? Number((buildingHeight - 2.2).toFixed(1)) : 0,
+                    rest_platforms: platforms, material_spec: "HDG (ASTM A123), Rung >=19mm, Width >=40cm, Spacing 30cm"
                 };
             } else {
-                // กรณีอาคารไม่ได้กรอกความสูง
                 window.state.step4_validation_results.engineering_and_bom.service_ladder = { required: false };
             }
             // 🌟🌟🌟 จบ: โค้ดคำนวณบันไดเซอร์วิส 🌟🌟🌟
@@ -4684,6 +4984,11 @@ function generateDB2() {
                         if (document.getElementById('bom-pipe-length')) {
                             document.getElementById('bom-pipe-length').value = bomData.pipeLength || "30";
                         }
+                        
+                        // 4. คืนค่าบันไดเซอร์วิส
+                        if (document.getElementById('bom-service-ladder') && bomData.serviceLadder) {
+                            document.getElementById('bom-service-ladder').value = bomData.serviceLadder;
+                        }
 
                         // 🌟 ดึงข้อมูลผลลัพธ์ BOM (ตารางคำนวณส่วนหลังบ้าน) คืนเข้าสู่ระบบหลัก
                         if (data.step4_validation_results && data.step4_validation_results.engineering_and_bom) {
@@ -4789,8 +5094,8 @@ function generateDB2() {
                                         // Fallback ป้องกัน Error กรณีเปิดไฟล์โปรเจกต์รุ่นเก่าที่ไม่มี panelConfig
                                         layer.panelConfig = { 
                                             ori: document.querySelector('input[name="panelOrientation"]:checked').value || 'P', 
-                                            rowsPerGroup: parseInt(document.getElementById('rowsPerGroup').value) || 3, 
-                                            colsPerGroup: parseInt(document.getElementById('colsPerGroup').value) || 4, 
+                                            stringOri: document.querySelector('input[name="stringOrientation"]:checked').value || 'V', // 🌟 เพิ่มบรรทัดนี้เพื่อรองรับฟีเจอร์ใหม่
+                                            rowsPerGroup: parseInt(document.getElementById('rowsPerGroup').value) || 3,colsPerGroup: parseInt(document.getElementById('colsPerGroup').value) || 4, 
                                             rowWalkwayM: (parseFloat(document.getElementById('rowWalkwayGapCm').value)||80)/100, 
                                             colWalkwayM: (parseFloat(document.getElementById('colWalkwayGapCm').value)||80)/100, 
                                             innerEdgeGapM: (parseFloat(document.getElementById('innerEdgeGapCm').value)||0)/100, 
@@ -4804,14 +5109,21 @@ function generateDB2() {
                                     layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
                                     layer.on('contextmenu', function(ev) { L.DomEvent.stop(ev); this.panelConfig.ori = this.panelConfig.ori === 'P' ? 'L' : 'P'; if(activeRoofLayer === this) document.querySelector(`input[name="panelOrientation"][value="${this.panelConfig.ori}"]`).checked = true; processPolygonsAndPanels(); });
                                 } else if (layer.drawMode === 'keepout') {
-                                    layer.setStyle({ color: '#dc2626', weight: 1, fillColor: '#ef4444', fillOpacity: 0.5, dashArray: '4, 4' });
-                                } else if (layer.drawMode === 'walkway') {
-                                    layer.setStyle({ color: '#4b5563', weight: 1, fillColor: '#9ca3af', fillOpacity: 0.7, dashArray: 'none' });
-                                } else if (layer.drawMode === 'mdb') {
-                                    // 🌟 ดึงข้อมูลหมุด MDB จากไฟล์ DB1 กลับมาแสดง
-                                    layer.bindTooltip("<b>จุดรวมสาย (MDB/INV)</b>", { permanent: true, direction: 'right', className: 'edge-label' });
-                                    globalMdbMarker = layer;
-                                }
+                            layer.setStyle({ color: '#dc2626', weight: 1, fillColor: '#ef4444', fillOpacity: 0.7, dashArray: '4, 4' });
+                            layer.objectHeightM = feature.properties.objectHeightM || 0;
+                            layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                        } else if (layer.drawMode === 'walkway') {
+                            layer.setStyle({ color: '#4b5563', weight: 1, fillColor: '#9ca3af', fillOpacity: 0.7, dashArray: 'none' });
+                            layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                        } else if (layer.drawMode === 'mdb') {
+                            // 🌟 โหลดหมุด MDB กลับมาแสดงบนแผนที่
+                            layer.bindTooltip("<b>จุดรวมสาย (MDB/INV)</b>", { permanent: true, direction: 'right', className: 'edge-label' });
+                            
+                            // 🌟 เพิ่มคำสั่งดักจับการคลิกให้หมุดที่ถูกย้อนกลับ
+                            layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                            
+                            globalMdbMarker = layer;
+                        }
                                 editableItems.addLayer(layer);
                             }
                         });
@@ -4890,47 +5202,310 @@ document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
 });
 
-// ป้องกันการกดปุ่มลัดดู Source Code และโหมด DevTools
-document.onkeydown = function(e) {
-    // ป้องกันปุ่ม F12
-    if (e.key === 'F12' || e.keyCode === 123) {
-        return false;
-    }
-    // ป้องกัน Ctrl+Shift+I (เปิดโหมดนักพัฒนา)
-    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
-        return false;
-    }
-    // ป้องกัน Ctrl+Shift+J (เปิด Console)
-    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
-        return false;
-    }
-    // ป้องกัน Ctrl+U (ดู View Source)
-    if (e.ctrlKey && e.key === 'U') {
-        return false;
-    }
-    // ป้องกัน Ctrl+S (เซฟหน้าเว็บ)
-    if (e.ctrlKey && e.key === 'S') {
-        return false;
-    }
-};
-// --- เริ่ม: โค้ดปุ่มบันทึกรูปภาพแผนที่แบบด่วน ---
-document.getElementById('btnCaptureMapOnly').addEventListener('click', async function() {
-    // 1. สร้างชุดตัวเลข วัน-เวลา ปัจจุบัน เพื่อใช้ตั้งชื่อไฟล์
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const date = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const dateTimeStr = `${year}${month}${date}_${hours}${minutes}${seconds}`;
-    
-    // 2. เรียกใช้ฟังก์ชันบันทึกภาพที่มีอยู่แล้วในระบบ
-    await captureMapImage(dateTimeStr); 
-});
-	// --- จบ: โค้ดปุ่มบันทึกรูปภาพแผนที่แบบด่วน ---
+// ป้องกันการกดปุ่มลัดดู Source Code และโหมด DevTools พร้อมระบบ Keyboard Shortcuts
+let clipboardLayerData = null; // 🌟 ตัวแปรเสมือน Clipboard เก็บข้อมูลวัตถุที่ถูก Copy/Cut
 
-</script>
+document.addEventListener('keydown', function(e) {
+    // --- 1. ส่วนป้องกันการเปิดดูโค้ด ---
+    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'i' || e.key === 'j')) { e.preventDefault(); return false; }
+    if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+    if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
+
+    // --- 2. ส่วนระบบ Keyboard Shortcuts (คัดลอก/วาง/ลบ/ตัด) ---
+    // ยกเว้นการทำงานถ้าผู้ใช้กำลังพิมพ์ข้อความในช่อง Input หรือ Textarea อยู่
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        return;
+    }
+
+    // 🌟 COPY (Ctrl+C): คัดลอกวัตถุที่กำลังเลือกอยู่
+    if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) {
+        if (activeRoofLayer && activeRoofLayer.toGeoJSON) {
+            const geojson = activeRoofLayer.toGeoJSON(12); // เก็บความแม่นยำพิกัด
+            geojson.properties = geojson.properties || {};
+            geojson.properties.drawMode = activeRoofLayer.drawMode;
+            if (activeRoofLayer.drawMode === 'roof') {
+                geojson.properties.panelConfig = JSON.parse(JSON.stringify(activeRoofLayer.panelConfig));
+            } else if (activeRoofLayer.drawMode === 'keepout') {
+                geojson.properties.objectHeightM = activeRoofLayer.objectHeightM;
+            }
+            clipboardLayerData = geojson;
+        }
+    }
+
+    // 🌟 CUT (Ctrl+X): ตัดวัตถุที่กำลังเลือกอยู่
+    if (e.ctrlKey && (e.key === 'x' || e.key === 'X')) {
+        if (activeRoofLayer && activeRoofLayer.toGeoJSON) {
+            // Copy ข้อมูลเก็บไว้ก่อน
+            const geojson = activeRoofLayer.toGeoJSON(12);
+            geojson.properties = geojson.properties || {};
+            geojson.properties.drawMode = activeRoofLayer.drawMode;
+            if (activeRoofLayer.drawMode === 'roof') {
+                geojson.properties.panelConfig = JSON.parse(JSON.stringify(activeRoofLayer.panelConfig));
+            } else if (activeRoofLayer.drawMode === 'keepout') {
+                geojson.properties.objectHeightM = activeRoofLayer.objectHeightM;
+            }
+            clipboardLayerData = geojson;
+
+            // ลบวัตถุนั้นออกจากแผนที่ทันที
+            editableItems.removeLayer(activeRoofLayer);
+            setActiveRoofLayer(null);
+            if (document.getElementById('edgeEditorSection')) document.getElementById('edgeEditorSection').style.display = 'none';
+            
+            recalculateLabels();
+            processPolygonsAndPanels();
+            saveMapState();
+        }
+    }
+
+    // 🌟 PASTE (Ctrl+V): วางวัตถุที่คัดลอกไว้
+    if (e.ctrlKey && (e.key === 'v' || e.key === 'V')) {
+        if (clipboardLayerData) {
+            // โคลนข้อมูลเพื่อสร้างตัวใหม่
+            let pastedGeojson = JSON.parse(JSON.stringify(clipboardLayerData));
+            
+            // เลื่อนพิกัด (Offset) ออกไปนิดหน่อย เพื่อไม่ให้ทับซ้อนกันสนิท (ขยับประมาณ 3 เมตร)
+            const offset = 0.00003; 
+            const type = pastedGeojson.geometry.type;
+            let coords = pastedGeojson.geometry.coordinates;
+
+            if (type === 'Point') {
+                coords = [coords[0] + offset, coords[1] - offset];
+            } else if (type === 'LineString' || type === 'MultiPoint') {
+                coords = coords.map(c => [c[0] + offset, c[1] - offset]);
+            } else if (type === 'Polygon' || type === 'MultiLineString') {
+                coords = coords.map(ring => ring.map(c => [c[0] + offset, c[1] - offset]));
+            } else if (type === 'MultiPolygon') {
+                coords = coords.map(poly => poly.map(ring => ring.map(c => [c[0] + offset, c[1] - offset])));
+            }
+            pastedGeojson.geometry.coordinates = coords;
+
+            // วาดลงบนแผนที่ใหม่
+            L.geoJSON(pastedGeojson, {
+                onEachFeature: function(feature, layer) {
+                    layer.drawMode = feature.properties.drawMode;
+                    if (layer.drawMode === 'roof') {
+                        layer.setStyle({ color: '#ea580c', weight: 2, fillColor: '#f97316', fillOpacity: 0.3 });
+                        layer.panelConfig = JSON.parse(JSON.stringify(feature.properties.panelConfig)); // คัดลอกการตั้งค่าแผงมาด้วย
+                        layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                        layer.on('contextmenu', function(ev) { 
+                            L.DomEvent.stop(ev); 
+                            this.panelConfig.ori = this.panelConfig.ori === 'P' ? 'L' : 'P'; 
+                            if(activeRoofLayer === this) document.querySelector(`input[name="panelOrientation"][value="${this.panelConfig.ori}"]`).checked = true; 
+                            processPolygonsAndPanels(); 
+                            saveMapState();
+                        });
+                        layer.bindTooltip("คลิกซ้ายเลือกเพื่อปรับตั้งค่าอิสระ<br>คลิกขวาเพื่อสลับแนวแผง", {direction: 'center', className: 'ko-tooltip'});
+                    } else if (layer.drawMode === 'keepout') {
+                        layer.setStyle({ color: '#dc2626', weight: 1, fillColor: '#ef4444', fillOpacity: 0.7, dashArray: '4, 4' });
+                        layer.objectHeightM = feature.properties.objectHeightM || 0;
+                        layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                    } else if (layer.drawMode === 'walkway') {
+                        layer.setStyle({ color: '#4b5563', weight: 1, fillColor: '#9ca3af', fillOpacity: 0.7, dashArray: 'none' });
+                        layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                    } else if (layer.drawMode === 'mdb') {
+                        // ลบ MDB เดิมทิ้งถ้ามี (มีได้แค่ 1 จุด)
+                        editableItems.eachLayer(lyr => { if (lyr.drawMode === 'mdb') editableItems.removeLayer(lyr); });
+                        layer.bindTooltip("<b>จุดรวมสาย (MDB/INV)</b>", { permanent: true, direction: 'right', className: 'edge-label' });
+                        
+                        // 🌟 เพิ่มคำสั่งดักจับการคลิกให้หมุดที่ถูกโคลนนิ่งมาใหม่
+                        layer.on('click', function(ev) { L.DomEvent.stop(ev); setActiveRoofLayer(this); });
+                        
+                        globalMdbMarker = layer;
+                    }
+                    
+                    editableItems.addLayer(layer);
+                    setActiveRoofLayer(layer); // สลับความสนใจ (Active) ไปที่ตัวใหม่ที่เพิ่งวางทันที
+                }
+            });
+            
+            recalculateLabels();
+            processPolygonsAndPanels();
+            saveMapState();
+        }
+    }
+
+    // 🌟 DELETE (Delete / Backspace): ลบวัตถุที่กำลังเลือกอยู่
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (activeRoofLayer && editableItems.hasLayer(activeRoofLayer)) {
+            editableItems.removeLayer(activeRoofLayer);
+            setActiveRoofLayer(null);
+            if (document.getElementById('edgeEditorSection')) document.getElementById('edgeEditorSection').style.display = 'none';
+            
+            recalculateLabels();
+            processPolygonsAndPanels();
+            saveMapState();
+        }
+    }
+});
+
+		// =========================================================
+        // --- 🌟 สมองกลยืด/หดเส้น ความยาวหลังคา (Edge Editor) 🌟 ---
+        // =========================================================
+        let currentEditLayer = null;
+
+     
+		// โหลดความยาวแต่ละด้านของ polygon ลงในฟอร์ม (แสดงใน UI)
+function loadEdgeLengths(layer) {
+    const container = document.getElementById('edgeInputsContainer');
+    if (!container) return;
+
+    // 🌟 แก้ไขเงื่อนไขให้รองรับการคลิก Walkway และ Keepout ได้
+    if (!layer || (layer.drawMode !== 'roof' && layer.drawMode !== 'walkway' && layer.drawMode !== 'keepout')) {
+        container.innerHTML = '<div style="color:#64748b; font-size:0.85em;">กรุณาคลิกเลือกพื้นที่บนแผนที่ ที่ต้องการปรับ</div>';
+        document.getElementById('edgeEditorSection').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('edgeEditorSection').style.display = 'block';
+
+    // 🌟 บังคับใช้ Precision(12) เพื่อเก็บทศนิยมพิกัดไม่ให้ Leaflet ปัดเศษทิ้ง
+    const geojson = layer.toGeoJSON(12);
+    const coords = geojson.geometry.coordinates[0];
+    if (!coords || coords.length < 4) {
+        container.innerHTML = '<div style="color:#dc2626; font-size:0.85em;">รูปทรงไม่ถูกต้อง</div>';
+        return;
+    }
+
+    let html = '';
+    for (let i = 0; i < coords.length - 1; i++) {
+        const pt1 = turf.point(coords[i]);
+        const pt2 = turf.point(coords[i + 1]);
+        const dist = turf.distance(pt1, pt2, { units: 'meters' });
+        
+        // 🌟 ดักจับด้านสุดท้ายของรูปทรง
+        const isLastEdge = (i === coords.length - 2);
+
+        if (isLastEdge) {
+            // ด้านสุดท้าย: ล็อกการแก้ไข (Readonly) ทำพื้นหลังสีเทา และแสดงป้าย (Auto)
+            html += `
+                <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; background:#f8fafc; padding:6px 10px; border:1px solid #e2e8f0; border-radius:4px;" title="ด้านสุดท้ายต้องลากกลับมาปิดจุดเริ่มต้นเสมอ จึงคำนวณอัตโนมัติ">
+                    <label style="margin:0; color:#64748b; font-weight:bold; font-size:0.85em;">ด้านที่ ${i+1} <span style="color:#ef4444; font-size:0.8em;">(Auto)</span>:</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="edgeInput_${i}" value="${dist.toFixed(2)}" readonly style="width: 80px; padding: 4px; text-align: center; border: 1px dashed #cbd5e1; background: #f1f5f9; border-radius: 4px; font-weight:bold; color:#94a3b8; font-size:13px; cursor:not-allowed;">
+                        <span style="margin-left: 6px; color: #94a3b8; font-weight:bold; font-size:0.85em;">ม.</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            // ด้านอื่นๆ: สามารถพิมพ์แก้ไขตัวเลขได้ปกติ
+            html += `
+                <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; background:#ffffff; padding:6px 10px; border:1px solid #cbd5e1; border-radius:4px;">
+                    <label style="margin:0; color:#334155; font-weight:bold; font-size:0.85em;">ด้านที่ ${i+1}:</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="edgeInput_${i}" value="${dist.toFixed(2)}" step="0.1" min="0.1" style="width: 80px; padding: 4px; text-align: center; border: 1px solid #94a3b8; border-radius: 4px; font-weight:bold; color:#0f172a; font-size:13px;">
+                        <span style="margin-left: 6px; color: #475569; font-weight:bold; font-size:0.85em;">ม.</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    container.innerHTML = html;
+}
+
+function applyEdgeChanges() {
+    const layer = activeRoofLayer; // ดึง Layer ที่กำลังคลิกอยู่ปัจจุบัน
+    if (!layer) {
+        alert('⚠️ ไม่พบรูปทรงที่จะแก้ไข กรุณาคลิกเลือกพื้นที่บนแผนที่ก่อน');
+        return;
+    }
+
+    try {
+        const geojson = layer.toGeoJSON(12);
+        const coords = geojson.geometry.coordinates[0];
+        let newCoords = [];
+        newCoords.push(coords[0]); // คงจุดแรกสุดไว้ที่เดิม
+
+        // 🌟 ตรวจสอบว่าเป็นรูปสี่เหลี่ยมหรือไม่
+        const isRectangle = coords.length === 5;
+
+        if (isRectangle) {
+            // โหมดสี่เหลี่ยมมุมฉาก: ดึงค่าแค่ 2 ด้านแรก แล้วสร้าง 90 องศาเป๊ะๆ
+            const len1 = parseFloat(document.getElementById('edgeInput_0').value);
+            const len2 = parseFloat(document.getElementById('edgeInput_1').value);
+
+            if (isNaN(len1) || len1 <= 0 || isNaN(len2) || len2 <= 0) {
+                alert('⚠️ กรุณากรอกความยาวให้ถูกต้อง (มากกว่า 0)');
+                return;
+            }
+
+            const pt0 = turf.point(coords[0]);
+            const pt1 = turf.point(coords[1]);
+            const pt2 = turf.point(coords[2]);
+            
+            // หาองศาด้านแรก
+            const bearing1 = turf.bearing(pt0, pt1);
+            
+            // เช็คว่าด้านที่สองเลี้ยวไปทางซ้ายหรือขวาจากเส้นเดิม
+            const bearing2Original = turf.bearing(pt1, pt2);
+            let angleDiff = bearing2Original - bearing1;
+            angleDiff = ((angleDiff + 540) % 360) - 180;
+            const turnAngle = angleDiff > 0 ? 90 : -90; // บังคับเลี้ยวตั้งฉาก 90 องศาเสมอ
+
+            // สร้างพิกัดใหม่
+            const p1_new = turf.destination(pt0, len1, bearing1, { units: 'meters' });
+            newCoords.push(p1_new.geometry.coordinates);
+
+            const p2_new = turf.destination(p1_new, len2, bearing1 + turnAngle, { units: 'meters' });
+            newCoords.push(p2_new.geometry.coordinates);
+
+            const p3_new = turf.destination(p2_new, len1, bearing1 + (turnAngle * 2), { units: 'meters' });
+            newCoords.push(p3_new.geometry.coordinates);
+            
+            newCoords.push(coords[0]); // ปิดรูปด้วยจุดเริ่มต้น
+
+        } else {
+            // โหมดรูปหลายเหลี่ยม (เช่น 5 เหลี่ยมขึ้นไป): ใช้การขยายเส้นอิสระตามองศาเดิม
+            for (let i = 0; i < coords.length - 2; i++) {
+                const inputEl = document.getElementById(`edgeInput_${i}`);
+                if (!inputEl) continue;
+
+                const newLen = parseFloat(inputEl.value);
+                if (isNaN(newLen) || newLen <= 0) {
+                    alert(`⚠️ กรุณากรอกความยาวด้านที่ ${i+1} ให้ถูกต้อง (มากกว่า 0)`);
+                    return;
+                }
+
+                const pt1 = turf.point(coords[i]);
+                const pt2 = turf.point(coords[i + 1]);
+                const originalBearing = turf.bearing(pt1, pt2);
+
+                const currentStartPt = turf.point(newCoords[i]);
+                const nextPt = turf.destination(currentStartPt, newLen, originalBearing, { units: 'meters' });
+
+                newCoords.push(nextPt.geometry.coordinates);
+            }
+            newCoords.push(coords[0]); // บังคับลากจุดสุดท้ายกลับมาปิด
+        }
+
+        const newPoly = turf.polygon([newCoords]);
+        const kinks = turf.kinks(newPoly);
+        if (kinks.features.length > 0) {
+            alert('⚠️ ไม่สามารถปรับได้! ขนาดที่กรอกทำให้รูปทรงตัดกันเอง (Self-intersecting)');
+            return;
+        }
+
+        // อัปเดตรูปทรงในแผนที่
+        layer.setLatLngs(newCoords.map(c => [c[1], c[0]]));
+
+        // 🌟 หัวใจสำคัญ: สั่งรีเฟรชให้จุดมาร์คเส้น (Edit Handles) วิ่งมาเกาะตามเส้นที่ถูกเปลี่ยนขนาดใหม่
+        if (layer.editing && layer.editing.enabled()) {
+            layer.editing.disable();
+            layer.editing.enable();
+        }
+
+        recalculateLabels();
+        processPolygonsAndPanels();
+        saveMapState();
+        
+        loadEdgeLengths(layer); // โหลด UI แสดงผลตัวเลขใหม่
+
+    } catch (e) {
+        console.error(e);
+        alert('⚠️ เกิดข้อผิดพลาดในการคำนวณรูปทรง');
+    }
+}
+    </script>
 	<!-- ================= เริ่ม: กล่องข้อความ Help Custom ================= -->
 	<div id="customAlertModal" class="custom-alert-overlay">
 		<div class="custom-alert-box">
