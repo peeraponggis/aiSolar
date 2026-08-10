@@ -320,6 +320,20 @@
                         </div>
                     </div>
                 </div>
+				
+				<!-- 🌟 เริ่มต้นส่วนของออปติไมเซอร์ (Optimizer) -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">ออปติไมเซอร์ (Optimizer)</h3>
+                    <div class="param-group border-purple-200">
+                        <div class="param-grid">
+                            <div><label class="text-purple-700">จำนวนตัว (Units)</label><input type="number" id="inp-opt-qty" value="0" class="bg-purple-50 font-bold"></div>
+                            <div><label class="text-purple-700">Max Input (W)</label><input type="number" id="opt-Max_Input_Power_W" value="0" class="bg-purple-50 font-bold"></div>
+                            <div><label>Manufacturer</label><input type="text" id="opt-Manufacturer" value="-"></div>
+                            <div><label>Model Name</label><input type="text" id="inp-opt-model" value="-"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 🌟 สิ้นสุดส่วนของออปติไมเซอร์ -->
 
                 <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-indigo-500 mt-6" id="box-hourly-sim">
                     <h3 class="font-bold text-indigo-800 mb-4 border-b pb-2">
@@ -484,7 +498,13 @@
                     
                     <!-- 🌟 ส่วนที่เพิ่มใหม่: แผงควบคุมการเปิด/ปิดเนื้อหาในรายงาน -->
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-blue-200 mb-6 avoid-break no-print">
-                        <h3 class="font-bold text-blue-800 mb-3 border-b pb-2"><i class="fa-solid fa-list-check mr-2"></i>เลือกข้อมูลที่จะแสดงในรายงาน PDF และ Dashboard</h3>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 border-b pb-2 gap-2">
+                            <h3 class="font-bold text-blue-800"><i class="fa-solid fa-list-check mr-2"></i>เลือกข้อมูลที่จะแสดงในรายงาน PDF และ Dashboard</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="checkDefaultSections()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1.5 px-3 rounded border border-gray-300 font-bold transition shadow-sm">🔄 แสดงค่าเริ่มต้น</button>
+                                <button onclick="checkAllSections()" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1.5 px-3 rounded border border-blue-300 font-bold transition shadow-sm">☑️ เลือกทั้งหมด</button>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                             <label><input type="checkbox" id="chk-sec-env" checked class="form-checkbox text-blue-600" onchange="toggleSections()"> Environmental Impact</label>
                             <label><input type="checkbox" id="chk-sec-loss" checked class="form-checkbox text-blue-600" onchange="toggleSections()"> PV System Loss Diagram</label>
@@ -3820,6 +3840,7 @@ async function fetchMeteoData(lat, lon, fallbackGHI = 1850.00) {
         }
 
         // --- ฟังก์ชันวาด SLD Diagram (Industrial Grade) ---
+        // --- ฟังก์ชันวาด SLD Diagram (Industrial Grade) ---
         function generateSLDSVG(bom, eq, pName, locName, totalKwp) {
             bom = bom || {}; eq = eq || {};
             let sizing = bom.calculated_sizing || {}; let prot = bom.protection || {}; let counts = eq.counts || {}; let pv = eq.pv || {}; let inv1 = eq.inv1 || {}; let ind = eq.industrial_settings || {};
@@ -3828,16 +3849,68 @@ async function fetchMeteoData(lat, lon, fallbackGHI = 1850.00) {
             let trKva = ind.transformerRatingKva || 250; let mdbAmp = ind.targetMdbAmps || 800; let ctRatio = ind.ctRatio || "500/5A"; let meterBrand = ind.meterBrand || "Smart Meter";
             let totalPanels = counts.totalPanels || 0; let invKw = inv1.Rated_AC_Output_Power_kW || 100;
             let pvSpec = `${pv.Manufacturer || '-'} ${pv.Model_Name || '-'}`; let invSpec = `${inv1.Manufacturer || '-'} ${inv1.Model_Name || '-'}`;
-            let totalStrings = Math.ceil(totalPanels / 15) || 1; let dateStr = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' });
-			
-			// 💡 เพิ่มคำสั่งจำกัดความยาวชื่อโปรเจกต์ไว้ที่ 45 ตัวอักษร ถ้าเกินให้ใส่ ... 
+            let dateStr = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' });
             let shortName = pName.length > 45 ? pName.substring(0, 45) + '...' : pName;
+
+            // 🌟 1. ดึงข้อมูล String Configuration จาก DB มาใช้โดยตรง
+            let mps = (AppState.ivParams && AppState.ivParams.modules_per_string) ? AppState.ivParams.modules_per_string : 22;
+            
+            // 🌟 ใช้จำนวนสตริงจาก DB (ถ้าไม่มี ค่อยคำนวณจากแผงรวมหารด้วย mps)
+            let totalStrings = AppState.equipData?.numStrings || Math.ceil(totalPanels / mps) || 1;
+            
+            let drawStrings = Math.min(totalStrings, 6); // วาดใน SLD ได้สูงสุด 6 เส้นเพื่อไม่ให้กราฟิกล้น
+            let sldCoords = [610, 750, 855, 995, 1100, 1240];
+            let panelsRemaining = totalPanels;
+            let stringsHtml = '';
+
+            for (let i = 0; i < drawStrings; i++) {
+                let x = sldCoords[i];
+                let pCount = Math.min(panelsRemaining, mps); // จำนวนแผงที่จะวาดในสตริงนี้
+                if (pCount <= 0 && i > 0) break; 
+                panelsRemaining -= pCount;
+
+                // 🌟 2. วาดแผงแบบไดนามิก (คำนวณหมายเลขแผงหัว-ท้ายสตริงอัตโนมัติ)
+                let panelRep = '';
+                if (pCount === 1) {
+                    panelRep = `<use href="#sym-panel" x="${x}" y="880"/> <text x="${x-25}" y="883" font-size="8" font-weight="bold">01</text>`;
+                } else if (pCount === 2) {
+                    panelRep = `<use href="#sym-panel" x="${x}" y="880"/> <text x="${x-25}" y="883" font-size="8" font-weight="bold">01</text>
+                                <use href="#sym-panel" x="${x}" y="930"/> <text x="${x-25}" y="933" font-size="8" font-weight="bold">02</text>`;
+                } else if (pCount >= 3) {
+                    let lastNum = pCount.toString().padStart(2, '0');
+                    let prevNum = (pCount - 1).toString().padStart(2, '0');
+                    panelRep = `<use href="#sym-panel" x="${x}" y="880"/> <text x="${x-25}" y="883" font-size="8" font-weight="bold">01</text>
+                                <use href="#sym-panel" x="${x}" y="930"/> <text x="${x-25}" y="933" font-size="8" font-weight="bold">02</text>
+                                <circle cx="${x}" cy="970" r="2" fill="#000"/><circle cx="${x}" cy="980" r="2" fill="#000"/><circle cx="${x}" cy="990" r="2" fill="#000"/>
+                                <use href="#sym-panel" x="${x}" y="1030"/> <text x="${x-25}" y="1033" font-size="8" font-weight="bold">${prevNum}</text>
+                                <use href="#sym-panel" x="${x}" y="1080"/> <text x="${x-25}" y="1083" font-size="8" font-weight="bold">${lastNum}</text>`;
+                }
+
+                stringsHtml += `
+                    <line x1="${x}" y1="670" x2="${x}" y2="850" stroke="#000" stroke-width="1.5"/>
+                    <rect x="${x-6}" y="690" width="12" height="24" fill="#fff" stroke="#000" stroke-width="1.5"/>
+                    <line x1="${x-6}" y1="690" x2="${x+6}" y2="714" stroke="#000" stroke-width="1.5"/>
+                    <text x="${x+10}" y="700" font-size="8">2xFuse ${dcBreaker}A</text><text x="${x+10}" y="710" font-size="8">1100 Vdc</text>
+                    ${i % 2 === 0 ? `
+                        <line x1="${x}" y1="730" x2="${x+25}" y2="730" stroke="#000" stroke-width="1"/>
+                        <rect x="${x+20}" y="730" width="10" height="16" fill="#fff" stroke="#ff0000" stroke-width="1.5"/>
+                        <line x1="${x+20}" y1="746" x2="${x+30}" y2="730" stroke="#ff0000" stroke-width="1.5"/>
+                        <text x="${x+35}" y="735" font-size="8">DC SPD3P</text><text x="${x+35}" y="745" font-size="8">1000 Vdc</text><text x="${x+35}" y="755" font-size="8">Im 40kA</text>
+                        <line x1="${x+25}" y1="746" x2="${x+25}" y2="770" stroke="#00b050" stroke-width="1.5"/>
+                        <line x1="${x+18}" y1="770" x2="${x+32}" y2="770" stroke="#00b050" stroke-width="1.5"/>
+                        <line x1="${x+22}" y1="773" x2="${x+28}" y2="773" stroke="#00b050" stroke-width="1.5"/>
+                    ` : ''}
+                    <text x="${x}" y="840" font-size="9" text-anchor="middle" font-weight="bold">STRING ${i+1}</text>
+                    ${panelRep}
+                    <line x1="${x}" y1="850" x2="${x}" y2="1100" stroke="#000" stroke-width="1.5" stroke-dasharray="10,4" style="z-index: -1;"/>
+                `;
+            }
+
             return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" width="100%" height="auto" style="background-color: #ffffff; font-family: 'Segoe UI', Tahoma, Arial, sans-serif;">
-                <defs><g id="sym-tr"><circle cx="0" cy="-12" r="18" fill="none" stroke="#000" stroke-width="2"/><circle cx="0" cy="12" r="18" fill="none" stroke="#000" stroke-width="2"/></g><g id="sym-mccb"><rect x="-10" y="-15" width="20" height="30" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M -5 5 C 0 -15, 0 -15, 5 -5" fill="none" stroke="#000" stroke-width="1.5"/><line x1="0" y1="-15" x2="0" y2="-25" stroke="#000" stroke-width="2"/><line x1="0" y1="15" x2="0" y2="25" stroke="#000" stroke-width="2"/></g><g id="sym-dof"><circle cx="0" cy="-10" r="3" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M 0 -7 L 8 7" stroke="#000" stroke-width="1.5"/><circle cx="0" cy="10" r="3" fill="#fff" stroke="#000" stroke-width="1.5"/></g><g id="sym-panel"><rect x="-15" y="-20" width="30" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/><line x1="-15" y1="-10" x2="15" y2="-10" stroke="#000" stroke-width="0.5"/><line x1="-15" y1="0" x2="15" y2="0" stroke="#000" stroke-width="0.5"/><line x1="-15" y1="10" x2="15" y2="10" stroke="#000" stroke-width="0.5"/></g><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#000" /></marker></defs>
+                <defs><g id="sym-tr"><circle cx="0" cy="-12" r="18" fill="none" stroke="#000" stroke-width="2"/><circle cx="0" cy="12" r="18" fill="none" stroke="#000" stroke-width="2"/></g><g id="sym-mccb"><rect x="-10" y="-15" width="20" height="30" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M -5 5 C 0 -15, 0 -15, 5 -5" fill="none" stroke="#000" stroke-width="1.5"/><line x1="0" y1="-15" x2="0" y2="-25" stroke="#000" stroke-width="2"/><line x1="0" y1="15" x2="0" y2="25" stroke="#000" stroke-width="2"/></g><g id="sym-dof"><circle cx="0" cy="-10" r="3" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M 0 -7 L 8 7" stroke="#000" stroke-width="1.5"/><circle cx="0" cy="10" r="3" fill="#fff" stroke="#000" stroke-width="1.5"/></g><g id="sym-panel"><rect x="-15" y="-20" width="30" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/><line x1="-15" y1="-10" x2="15" y2="-10" stroke="#000" stroke-width="0.5"/><line x1="-15" y1="0" x2="15" y2="0" stroke="#000" stroke-width="0.5"/><line x1="-15" y1="10" x2="15" y2="10" stroke="#000" stroke-width="0.5"/></g></defs>
                 <rect x="20" y="20" width="1560" height="1160" fill="none" stroke="#000" stroke-width="2"/>
                 <text x="800" y="1150" font-size="28" font-weight="bold" text-anchor="middle" letter-spacing="2">SINGLE LINE DIAGRAM</text>
                 <line x1="500" y1="1165" x2="1100" y2="1165" stroke="#000" stroke-width="1"/>
-                <text x="500" y="1180" font-size="12"></text><text x="1100" y="1180" font-size="12" text-anchor="end"></text>
 
                 <!-- ฝั่งการไฟฟ้า PEA/MEA & MDB -->
                 <text x="100" y="115" font-size="12" font-weight="bold">TO PEA</text><line x1="150" y1="110" x2="350" y2="110" stroke="#000" stroke-width="2"/><text x="180" y="100" font-size="10">22 kV OVER HEAD LINE</text>
@@ -3881,35 +3954,9 @@ async function fetchMeteoData(lat, lon, fallbackGHI = 1850.00) {
 
                 <!-- DC Combiner Box & PV Strings -->
                 <rect x="520" y="650" width="800" height="150" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="10,5"/><text x="530" y="640" font-size="12" font-weight="bold">DC COMBINER BOX</text>
-                <line x1="680" y1="590" x2="680" y2="670" stroke="#000" stroke-width="2"/><line x1="610" y1="670" x2="750" y2="670" stroke="#000" stroke-width="2"/><text x="680" y="665" font-size="9" text-anchor="middle">2x${dcCable} Sq.mm. PV1-F</text>
-                <line x1="925" y1="590" x2="925" y2="670" stroke="#000" stroke-width="2"/><line x1="855" y1="670" x2="995" y2="670" stroke="#000" stroke-width="2"/><text x="925" y="665" font-size="9" text-anchor="middle">2x${dcCable} Sq.mm. PV1-F</text>
-                <line x1="1170" y1="590" x2="1170" y2="670" stroke="#000" stroke-width="2"/><line x1="1100" y1="670" x2="1240" y2="670" stroke="#000" stroke-width="2"/><text x="1170" y="665" font-size="9" text-anchor="middle">2x${dcCable} Sq.mm. PV1-F</text>
-
-                <!-- Strings Render -->
-                ${[610, 750, 855, 995, 1100, 1240].map((x, i) => `
-                    <line x1="${x}" y1="670" x2="${x}" y2="850" stroke="#000" stroke-width="1.5"/>
-                    <rect x="${x-6}" y="690" width="12" height="24" fill="#fff" stroke="#000" stroke-width="1.5"/>
-                    <line x1="${x-6}" y1="690" x2="${x+6}" y2="714" stroke="#000" stroke-width="1.5"/>
-                    <text x="${x+10}" y="700" font-size="8">2xFuse ${dcBreaker}A</text><text x="${x+10}" y="710" font-size="8">1100 Vdc</text>
-
-                    ${i % 2 === 0 ? `
-                        <line x1="${x}" y1="730" x2="${x+25}" y2="730" stroke="#000" stroke-width="1"/>
-                        <rect x="${x+20}" y="730" width="10" height="16" fill="#fff" stroke="#ff0000" stroke-width="1.5"/>
-                        <line x1="${x+20}" y1="746" x2="${x+30}" y2="730" stroke="#ff0000" stroke-width="1.5"/>
-                        <text x="${x+35}" y="735" font-size="8">DC SPD3P</text><text x="${x+35}" y="745" font-size="8">1000 Vdc</text><text x="${x+35}" y="755" font-size="8">Im 40kA</text>
-                        <line x1="${x+25}" y1="746" x2="${x+25}" y2="770" stroke="#00b050" stroke-width="1.5"/>
-                        <line x1="${x+18}" y1="770" x2="${x+32}" y2="770" stroke="#00b050" stroke-width="1.5"/>
-                        <line x1="${x+22}" y1="773" x2="${x+28}" y2="773" stroke="#00b050" stroke-width="1.5"/>
-                    ` : ''}
-
-                    <text x="${x}" y="840" font-size="9" text-anchor="middle" font-weight="bold">STRING ${i+1}</text>
-                    <use href="#sym-panel" x="${x}" y="880"/> <text x="${x-25}" y="883" font-size="8" font-weight="bold">01</text>
-                    <use href="#sym-panel" x="${x}" y="930"/> <text x="${x-25}" y="933" font-size="8" font-weight="bold">02</text>
-                    <circle cx="${x}" cy="970" r="2" fill="#000"/><circle cx="${x}" cy="980" r="2" fill="#000"/><circle cx="${x}" cy="990" r="2" fill="#000"/>
-                    <use href="#sym-panel" x="${x}" y="1030"/> <text x="${x-25}" y="1033" font-size="8" font-weight="bold">14</text>
-                    <use href="#sym-panel" x="${x}" y="1080"/> <text x="${x-25}" y="1083" font-size="8" font-weight="bold">15</text>
-                    <line x1="${x}" y1="850" x2="${x}" y2="1100" stroke="#000" stroke-width="1.5" stroke-dasharray="10,4" style="z-index: -1;"/>
-                `).join('')}
+                
+                <!-- เรนเดอร์สตริงและแผงทั้งหมดตรงนี้ -->
+                ${stringsHtml}
 
                 <!-- PV Array Outline -->
                 <rect x="520" y="810" width="800" height="300" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="15,10"/>
@@ -3939,244 +3986,346 @@ async function fetchMeteoData(lat, lon, fallbackGHI = 1850.00) {
                 <text x="1570" y="1160" font-size="12" text-anchor="end">DATE: ${dateStr}</text>
             </svg>`;
         }
-		// 🌟 2.5 ฟังก์ชันใหม่: Engine สร้างแบบจำลอง CAD Layout อัตโนมัติด้วย SVG
-        // 🌟 2.5 ฟังก์ชันใหม่: Engine สร้างแบบจำลอง CAD Layout อัตโนมัติด้วย SVG (Dynamic Grid Algorithm)
-        // 🌟 2.5 ฟังก์ชันใหม่: Engine สร้างแบบจำลอง CAD Layout อัตโนมัติด้วย SVG (Dynamic Grid & North-Up Algorithm)
-        // 🌟 2.5 ฟังก์ชันใหม่: Engine สร้างแบบจำลอง CAD Layout อัตโนมัติด้วย SVG (String Grouping & Array Config)
-        // 🌟 2.5 ฟังก์ชันใหม่: Engine สร้างแบบจำลอง CAD Layout อัตโนมัติ (True North, Auto-Flip Dimension & Title Block)
+	        // 🌟 2.5 ฟังก์ชันใหม่: Engine สร้างแบบจำลอง CAD Layout อัตโนมัติ (True North, Auto-Flip Dimension & Title Block)
         function renderCADLayout() {
-            const dashWrapper = document.getElementById('dynamic-cad-wrapper');
-            const pdfWrapper = document.getElementById('prt-dynamic-cad-wrapper');
-            if(!dashWrapper || !pdfWrapper) return;
-            dashWrapper.innerHTML = ''; pdfWrapper.innerHTML = '';
+    let dashWrapper = document.getElementById('dynamic-cad-wrapper');
+    let pdfWrapper = document.getElementById('prt-dynamic-cad-wrapper');
+    if (!dashWrapper || !pdfWrapper) return;
+    
+    dashWrapper.innerHTML = '';
+    pdfWrapper.innerHTML = '';
 
-            let totalPanels = getVal('inp-pv-qty', 0);
-            if(totalPanels <= 0) return;
+    let polygons = AppState.sysPolygons || [];
+    
+    if (polygons.length === 0) {
+        dashWrapper.innerHTML = '<div class="p-4 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded text-sm font-bold">⚠️ ไม่พบข้อมูลผังหลังคา (sysPolygons) จากไฟล์ DB2 ที่นำเข้า กรุณาตรวจสอบไฟล์ DB2 ว่ามีการวาดหลังคาไว้หรือไม่</div>';
+        return;
+    }
 
-            let planes = AppState.sysPolygons || [];
-            if(planes.length === 0) planes = [{ area: 1, slope: getVal('inp-tilt', 15), azimuth: getVal('inp-azi', 0) }];
-            let totalArea = planes.reduce((s, p) => s + p.area, 0);
+    let eq = AppState.equipData || {};
+    let pv = eq.pv || {};
+    let inv1 = eq.inv1 || {};
+    let counts = eq.counts || {};
+    let res = AppState.results || {};
+    let ivP = AppState.ivParams || {};
 
-            // 📥 ดึงข้อมูลอุปกรณ์จาก DB
-            let pv = AppState.equipData?.pv || {};
-            let pvModel = pv.Model_Name || '-';
-            let pvWp = pv.Pmax_Wp || pv.pmax || 0;
-            let inv1 = AppState.equipData?.inv1 || {};
-            let inv1Qty = AppState.equipData?.counts?.inv1Qty || 0;
-            let invKw = inv1.Rated_AC_Output_Power_kW || inv1.acKw || 0;
-            let mps = AppState.ivParams?.modules_per_string || 22;
-            let totalKwp = (totalPanels * pvWp) / 1000;
+    let pvModel = pv.Model_Name || pv.model || '-';
+    let pvPower = pv.Pmax_Wp || pv.pmax || 0;
+    let totalModules = counts.totalPanels || 0;
+    let invQty = counts.inv1Qty || 1;
+    let invModel = inv1.Model_Name || inv1.model || '-';
+    let totalPower = res.pnom ? res.pnom.toFixed(2) : '0.00';
+    let mps = ivP.modules_per_string || 0;
+    let totalStrings = eq.numStrings || (mps > 0 ? Math.ceil(totalModules / mps) : 0);
 
-            // พารามิเตอร์ขนาดแผงและระยะ (ปรับตามสเปกจริงถ้ามี)
-            // 🛠️ FIX: สลับแกน W และ H เพื่อบังคับให้แผง "นอนลง (Horizontal)" เสมอ
-            const pw = (pv.Length_mm || 2278) / 1000;  // ความกว้างของภาพวาด คือความยาวแผง
-            const ph = (pv.Width_mm || 1134) / 1000;   // ความสูงของภาพวาด คือความกว้างแผง
-            const gapX = 0.05; // ระยะห่างแนวแกน X (ช่องว่างระหว่างสตริง)
-            const gapY = 0.02; // ระยะห่างแนวแกน Y (Clamp ระหว่างแผง)
-            const walkwayY = 0.6; // ทางเดิน Service Walkway (แทรกแนวนอน)
+    let pvWidth = pv.Width_mm ? pv.Width_mm / 1000 : 1.134;
+    let pvHeight = pv.Length_mm ? pv.Length_mm / 1000 : 2.382;
 
-            planes.forEach((plane, idx) => {
-                let panelsThisRoof = Math.round(totalPanels * (plane.area / totalArea));
-                if(panelsThisRoof <= 0) return;
-                let roofKwp = (panelsThisRoof * pvWp) / 1000;
+    polygons.forEach((roof, index) => {
+        let ptsRaw = roof.localBoundary || roof.points || roof.vertices || roof.Points || [];
+        let modsRaw = roof.customLayout || roof.modules || roof.panels || roof.Modules || [];
 
-                // 🌟 อัลกอริทึมจัดกลุ่มสตริง (String Grouping)
-                let fullStrings = Math.floor(panelsThisRoof / mps);
-                let remainder = panelsThisRoof % mps;
-                let totalStrings = fullStrings + (remainder > 0 ? 1 : 0);
+        if (ptsRaw.length === 0 && modsRaw.length === 0) {
+             dashWrapper.innerHTML += `<div class="p-4 bg-red-50 text-red-700 border border-red-200 rounded mb-4 text-sm font-bold">⚠️ ระนาบหลังคาที่ ${index + 1}: พบข้อมูลหลังคา แต่ไม่มีพิกัดขอบหลังคา (localBoundary) หรือ แผงโซลาร์เซลล์ (customLayout) ในไฟล์ DB2</div>`;
+             return;
+        }
 
-                let svgPanels = '';
-                let totalW = totalStrings * (pw + gapX) - gapX; // ความกว้างรวมคือจำนวนสตริงเรียงกัน
-                let totalH = 0;
-                let wyArray = []; // แกนทางเดิน (แนวนอน)
+        // อ่านพิกัดตรงๆ ไม่ใช้ Invert Y เพื่อรักษาตำแหน่งการวาดเดิม 100%
+        let svgPts = ptsRaw.map(p => ({
+            x: p.x !== undefined ? p.x : (p.X || 0),
+            y: p.y !== undefined ? p.y : (p.Y || 0) 
+        }));
 
-                // คำนวณความสูงรวมของคอลัมน์ที่ยาวที่สุด (mps) พร้อมแทรกทางเดิน
-                for (let c = 0; c < mps; c++) {
-                    if (c > 0 && c % 2 === 0) {
-                        wyArray.push(totalH + (walkwayY / 2) - 0.05);
-                        totalH += walkwayY;
-                    }
-                    totalH += ph + gapY;
-                }
-                totalH -= gapY; 
+        let svgMods = modsRaw.map(m => {
+            let isLS = m.isLandscape === true || m.isLandscape === "true" || m.isLandscape === "True";
+            let mw = isLS ? pvHeight : pvWidth; 
+            let mh = isLS ? pvWidth : pvHeight;
+            let cx = m.x !== undefined ? m.x : (m.cx || 0); 
+            let cy = m.y !== undefined ? m.y : (m.cy || 0); 
+            let angle = m.angle !== undefined ? m.angle : 0;
+            return { x: cx, y: cy, w: mw, h: mh, angle: angle };
+        });
 
-                // วาดแถบพื้นหลังสีเทาสำหรับ Walkway (แนวนอน)
-                wyArray.forEach(wy => {
-                    svgPanels += `<rect x="-0.5" y="${wy - (walkwayY/2)}" width="${totalW + 1}" height="${walkwayY - 0.1}" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.05"/>`;
-                });
-
-                let xOffset = 0;
-                // วาดแผงทีละสตริง (เรียงจากซ้ายไปขวา)
-                for (let r = 0; r < totalStrings; r++) {
-                    let panelsInThisString = (r === totalStrings - 1 && remainder > 0) ? remainder : mps;
-                    
-                    // 🌟 วาดวงกลมระบุเลขสตริงที่ด้านบน
-                    let cxStr = xOffset + pw / 2;
-                    let cyStr = -1.5;
-                    svgPanels += `<circle cx="${cxStr}" cy="${cyStr}" r="0.4" fill="#fff" stroke="#1d4ed8" stroke-width="0.08"/>
-                                  <text x="${cxStr}" y="${cyStr + 0.15}" font-size="0.4" font-weight="bold" text-anchor="middle" fill="#1d4ed8">${r+1}</text>
-                                  <line x1="${cxStr}" y1="${cyStr + 0.4}" x2="${cxStr}" y2="-0.1" stroke="#94a3b8" stroke-width="0.05" stroke-dasharray="0.2, 0.2"/>`;
-
-                    let yOffset = 0;
-                    for (let c = 0; c < panelsInThisString; c++) {
-                        if (c > 0 && c % 2 === 0) yOffset += walkwayY;
-                        let x = xOffset; let y = yOffset;
-                        // บล็อกแผงโซลาร์เซลล์
-                        svgPanels += `<rect x="${x}" y="${y}" width="${pw}" height="${ph}" fill="#1e40af" stroke="#000" stroke-width="0.05"/>`;
-                        // Texture แผง (เส้นขวางตรงกลาง)
-                        if (panelsThisRoof <= 3000) {
-                            svgPanels += `<line x1="${x + 0.2}" y1="${y + ph/2}" x2="${x + pw - 0.2}" y2="${y + ph/2}" stroke="#fff" stroke-width="0.02" opacity="0.6"/>`;
-                        }
-                        yOffset += ph + gapY;
-                    }
-                    xOffset += pw + gapX;
-                }
-
-                // 🌟 เพิ่มกล่อง "จุดรวมสาย (MDB/INV)" ไว้ที่ขอบซ้าย
-                let combinerW = Math.max(2.5, totalW * 0.08); 
-                let combinerH = Math.max(4, totalH * 0.15);
-                let combinerX = -combinerW - 2.5;
-                let combinerY = (totalH / 2) - (combinerH / 2);
-                svgPanels += `
-                    <rect x="${combinerX}" y="${combinerY}" width="${combinerW}" height="${combinerH}" fill="#f97316" stroke="#c2410c" stroke-width="0.1" rx="0.2"/>
-                    <text x="${combinerX + combinerW/2}" y="${combinerY + combinerH/2 + 0.3}" font-size="0.8" font-weight="bold" text-anchor="middle" fill="#fff" transform="rotate(-90 ${combinerX + combinerW/2} ${combinerY + combinerH/2 + 0.3})">จุดรวมสาย (MDB/INV)</text>
-                `;
-
-                // 🌟 ทิศเหนือแผนที่ (True North Orientation)
-                let azimuth = plane.azimuth || 0;
-                let cx = totalW / 2; let cy = totalH / 2;
-                
-                // อาคารวาดตั้งตรง (Orthogonal) เสมอ
-                let cadRotation = 0; 
-                
-                // คำนวณ Bounding Box แบบตั้งตรง
-                let vW = totalW + 30; 
-                let vH = totalH + 30;
-                let minX = -15;
-                let minY = -15;
-
-                let dimStrW = totalW.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' m';
-                let dimStrH = totalH.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' m';
-
-                // คำนวณ Scale
-                let rawScale = Math.max((vW * 1000) / 260, (vH * 1000) / 160);
-                let scaleVal = Math.ceil(rawScale / 50) * 50; 
-                if (scaleVal < 100) scaleVal = Math.ceil(rawScale / 10) * 10;
-
-                // 🌟 หมุนเข็มทิศให้ชี้ไปหาทิศเหนือจริง (True North) อย่างแม่นยำ
-                // เนื่องจากในแบบจำลอง (แนวนอน) แผงถูกจับนอนลง โดยหัวแผงชี้ไปทางแกน X (ขวา) 
-                // ดังนั้นทิศตะวันตก (270) คือขวา, ทิศเหนือ (360) คือบน
-                // สมการปรับชดเชยการหมุนเข็มทิศ:
-                let compassRotation = 270 - azimuth;
-                let compassScale = Math.max(1.5, vW * 0.015);
-                
-                // 🛠️ FIX: ย้ายพิกัดเข็มทิศไปที่ "มุมขวาบนของแผงโซลาร์" ให้อยู่ในกรอบสีเทาอย่างลงตัว
-                let compassX = totalW + 5; 
-                let compassY = -5;
-                
-                // เพิ่มกลไกหมุนตัวอักษร 'N' สวนทางกับเข็มทิศ เพื่อให้ตัว N ตั้งตรงอ่านง่ายเสมอ
-                let compass = `<g transform="translate(${compassX}, ${compassY}) scale(${compassScale}) rotate(${compassRotation})">
-                                    <circle cx="0" cy="0" r="2.5" fill="none" stroke="#000" stroke-width="0.08"/>
-                                    <polygon points="-0.5,0 0,-2 0.5,0 0,0.5" fill="#dc2626"/>
-                                    <polygon points="-0.5,0 0,2 0.5,0 0,-0.5" fill="#fff" stroke="#000" stroke-width="0.08"/>
-                                    <text x="0" y="-2.8" font-size="1" font-weight="bold" text-anchor="middle" fill="#dc2626" transform="rotate(${-compassRotation}, 0, -2.8)">N</text>
-                               </g>`;
-
-                // ประกอบร่างแผนที่ CAD
-                let svg = `<svg viewBox="${minX} ${minY} ${vW} ${vH}" width="100%" height="100%" style="background-color: #ffffff; font-family: 'Kanit', sans-serif;">
-                    <defs>
-                        <marker id="arr1-${idx}" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#000"/></marker>
-                        <marker id="arr2-${idx}" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 10 0 L 0 5 L 10 10 z" fill="#000"/></marker>
-                    </defs>
-                    <g transform="rotate(${cadRotation}, ${cx}, ${cy})">
-                        ${svgPanels}
-                        <!-- เส้น Dimension แนวนอน (บอกความยาวรวมสตริง) -->
-                        <line x1="0" y1="${totalH + 5.5}" x2="${totalW}" y2="${totalH + 5.5}" stroke="#000" stroke-width="0.1" marker-start="url(#arr2-${idx})" marker-end="url(#arr1-${idx})"/>
-                        <line x1="0" y1="${totalH + 0.1}" x2="0" y2="${totalH + 5.8}" stroke="#000" stroke-width="0.04" stroke-dasharray="0.3, 0.3"/>
-                        <line x1="${totalW}" y1="${totalH + 0.1}" x2="${totalW}" y2="${totalH + 5.8}" stroke="#000" stroke-width="0.04" stroke-dasharray="0.3, 0.3"/>
-                        <text x="${totalW/2}" y="${totalH + 7}" font-size="1.5" font-weight="bold" text-anchor="middle" fill="#0f172a">${dimStrW}</text>
-                        <!-- เส้น Dimension แนวตั้ง (บอกความกว้างสตริง) -->
-                        <line x1="-5.5" y1="0" x2="-5.5" y2="${totalH}" stroke="#000" stroke-width="0.1" marker-start="url(#arr2-${idx})" marker-end="url(#arr1-${idx})"/>
-                        <line x1="-5.8" y1="0" x2="-0.1" y2="0" stroke="#000" stroke-width="0.04" stroke-dasharray="0.3, 0.3"/>
-                        <line x1="-5.8" y1="${totalH}" x2="-0.1" y2="${totalH}" stroke="#000" stroke-width="0.04" stroke-dasharray="0.3, 0.3"/>
-                        <text x="-6" y="${totalH/2}" font-size="1.5" font-weight="bold" text-anchor="middle" transform="rotate(-90 -6 ${totalH/2})" fill="#0f172a">${dimStrH}</text>
-                    </g>
-                    ${compass}
-                </svg>`;
-
-                // 🌟 Title Block & Legend ด้านล่างกรอบ (รีดระยะห่างเพื่อคืนพื้นที่ให้รูปวาดใหญ่ที่สุด)
-                let titleBlockHtml = `
-                <div class="flex justify-between border-2 border-black mt-1 text-[9px] w-full bg-white font-sans text-left" style="page-break-inside: avoid; line-height: 1.15;">
-                    <div class="w-1/2 border-r-2 border-black p-1.5">
-                        <div class="border-b border-black pb-0.5 mb-0.5 font-bold">
-                            <p>PHOTOVOLTAICS MODULE</p>
-                            <p>TYPE OF MODULE : ${pvModel}</p>
-                            <p>MODEL : MONO ${pvWp} W</p>
-                        </div>
-                        <p>TOTAL PV NUMBER OF SYM : ${totalPanels} MODULES</p>
-                        <p>TOTAL INVERTER NUMBER OF SYSTEM : ${inv1Qty} UNITS</p>
-                        <p class="ml-2">INVERTER 1 : ${inv1.Model_Name || '-'} , POWER OF PV : ${totalKwp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kWp.dc</p>
-                        <p class="ml-6 text-blue-700 font-bold">${mps} PV/STRING = ${totalStrings} STRING, ${panelsThisRoof} MODULES</p>
-                        <p class="mt-1 font-bold text-[11px]">กำลังผลิตรวม : ${totalKwp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} กิโลวัตต์</p>
-                    </div>
-                    <div class="w-1/2 p-1 flex">
-                        <div class="w-1/2 flex flex-col pl-1">
-                            <p class="font-bold underline mb-0.5">NOTE:</p>
-                            <p>อาคาร ${idx+1}</p>
-                            <p>PV MODULE : ${panelsThisRoof} MODULE</p>
-                            <p>${roofKwp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kWp. dc.</p>
-                            <p class="mt-auto font-bold text-red-600 bg-red-50 p-0.5 border border-red-200 text-center">Scale 1:${scaleVal} | Tilt: ${plane.slope || 15}° | Azi: ${plane.azimuth || 0}°</p>
-                        </div>
-                        <div class="w-1/2 border-l border-black pl-1 ml-1">
-                            <table class="w-full text-center border-collapse border border-black text-[8px]">
-                                <tr><th class="border border-black bg-gray-100 py-0.5">สัญลักษณ์</th><th class="border border-black bg-gray-100 py-0.5">รายละเอียด</th></tr>
-                                <tr><td class="border border-black text-blue-500 font-bold py-0.5">—</td><td class="border border-black text-left pl-1 py-0.5">WATER LINE</td></tr>
-                                <tr><td class="border border-black text-orange-500 font-bold py-0.5">—</td><td class="border border-black text-left pl-1 py-0.5">LIFT LINE</td></tr>
-                                <tr><td class="border border-black py-0.5"><div class="w-5 h-1 border border-black bg-gray-200 mx-auto"></div></td><td class="border border-black text-left pl-1 py-0.5">CABLE TRAY 300x100mm.</td></tr>
-                                <tr><td class="border border-black py-0.5"><div class="w-5 h-1 border border-black bg-gray-50 mx-auto"></div></td><td class="border border-black text-left pl-1 py-0.5">WALKWAY 400 mm.</td></tr>
-                                
-                                <tr>
-                                    <td class="border border-black py-0.5">
-                                        <div class="w-5 h-1.5 bg-orange-500 border border-orange-700 mx-auto"></div>
-                                    </td>
-                                    <td class="border border-black text-left pl-1 font-bold py-0.5">จุดรวมสาย (MDB/INV)</td>
-                                </tr>
-                                
-                                <tr>
-                                    <td class="border border-black text-blue-800 py-0.5">
-                                        <div class="w-5 h-2.5 bg-blue-600 border border-black mx-auto relative">
-                                            <span class="absolute -top-1.5 -left-1 text-[4px] text-red-500">${Math.round(ph * 1000)}</span>
-                                            <span class="absolute top-0.5 -left-3.5 text-[4px] text-red-500 transform -rotate-90">${Math.round(pw * 1000)}</span>
-                                        </div>
-                                    </td>
-                                    <td class="border border-black text-left pl-1 font-bold py-0.5">PV MODULE</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>`;
-
-                // ยัดลง Dashboard (ขยายความสูงให้ดูเต็มตาในจอคอม)
-                dashWrapper.innerHTML += `
-                <div class="w-full border border-gray-200 p-2 rounded bg-white shadow-sm mb-4">
-                    <h4 class="text-center font-bold text-gray-700 bg-gray-50 p-1 mb-1 border-b text-sm">แบบวางแผงโซลาร์เซลล์ อาคาร ${idx+1}</h4>
-                    <div class="w-full flex justify-center bg-gray-50 border border-gray-300" style="height: 550px;">${svg}</div>
-                    ${titleBlockHtml}
-                </div>`;
-
-                // ยัดลง PDF (รีดขอบกระดาษ p-4 ให้เหลือ p-2 เพื่อดันให้กราฟิกขยายสุดหน้ากระดาษโดยไม่ล้น)
-                pdfWrapper.innerHTML += `
-                <div class="pdf-page-landscape force-block" style="page-break-before: always;" id="prt-sec-cad-roof-${idx}">
-                    <div class="h-full flex flex-col items-center justify-start p-2 pb-1">
-                        <h2 class="text-[16px] font-bold text-gray-900 leading-none mb-1 text-center w-full border-b-2 border-black pb-0.5">แบบวางแผงโซลาร์เซลล์ อาคาร ${idx+1}</h2>
-                        <p class="text-[10px] text-gray-600 font-medium text-center w-full mb-1 leading-none">Scale 1:${scaleVal}</p>
-                        <div class="w-full flex-1 flex justify-center items-center overflow-hidden bg-white px-2 py-1">${svg}</div>
-                        ${titleBlockHtml}
-                        <div class="w-full text-right text-[9px] text-gray-400 font-medium mt-1 leading-none">Assessed by Pro Inventive Co., Ltd</div>
-                    </div>
-                </div>`;
+        // 🌟 แก้ไขปัญหา 1: หากมีทั้งหลังคาและแผง ให้คำนวณระยะจัดกลุ่มแผงเข้าจุดศูนย์กลางหลังคา (Auto-Centering) เพื่อขอบ (Edge) ด้านในเท่ากัน
+        let rMinX = Infinity, rMinY = Infinity, rMaxX = -Infinity, rMaxY = -Infinity;
+        if (svgPts.length > 0) {
+            svgPts.forEach(p => {
+                if (p.x < rMinX) rMinX = p.x; if (p.x > rMaxX) rMaxX = p.x;
+                if (p.y < rMinY) rMinY = p.y; if (p.y > rMaxY) rMaxY = p.y;
             });
         }
+
+        let mMinX = Infinity, mMinY = Infinity, mMaxX = -Infinity, mMaxY = -Infinity;
+        if (svgMods.length > 0) {
+            svgMods.forEach(m => {
+                if (m.x < mMinX) mMinX = m.x; if (m.x + m.w > mMaxX) mMaxX = m.x + m.w;
+                if (m.y < mMinY) mMinY = m.y; if (m.y + m.h > mMaxY) mMaxY = m.y + m.h;
+            });
+        }
+
+        // ขยับแผงทั้งหมด (Shift) ให้เข้าตรงกลางหลังคา
+        if (svgPts.length > 0 && svgMods.length > 0 && rMinX !== Infinity && mMinX !== Infinity) {
+            let rCx = (rMinX + rMaxX) / 2;
+            let rCy = (rMinY + rMaxY) / 2;
+            let mCx = (mMinX + mMaxX) / 2;
+            let mCy = (mMinY + mMaxY) / 2;
+            
+            let shiftX = rCx - mCx;
+            let shiftY = rCy - mCy;
+            
+            svgMods.forEach(m => {
+                m.x += shiftX;
+                m.y += shiftY;
+            });
+        }
+
+        // 🌟 แก้ไขปัญหา 2: ล็อค ViewBox เฉพาะแค่ตัวหลังคา (Roof Boundary) แล้วเผื่อ Padding ให้น้อยที่สุด ภาพจะได้ใหญ่เต็มกระดาษ!
+        let finalMinX = rMinX !== Infinity ? rMinX : mMinX;
+        let finalMaxX = rMaxX !== -Infinity ? rMaxX : mMaxX;
+        let finalMinY = rMinY !== Infinity ? rMinY : mMinY;
+        let finalMaxY = rMaxY !== -Infinity ? rMaxY : mMaxY;
+
+        let w = finalMaxX - finalMinX;
+        let h = finalMaxY - finalMinY;
+        
+        if (w <= 0 || h <= 0 || !isFinite(w) || !isFinite(h)) { w = 10; h = 10; finalMinX = 0; finalMinY = 0; }
+        
+        // เล็กมากๆ แค่ 10% ให้ภาพใหญ่ที่สุด แต่ยังพอมีที่ให้เส้น Dimensions
+        let pad = Math.max(w, h) * 0.10; 
+
+        let vbMinX = finalMinX - pad;
+        let vbMinY = finalMinY - pad;
+        let vbWidth = w + (pad * 2);
+        let vbHeight = h + (pad * 2);
+        let viewBoxStr = `${vbMinX} ${vbMinY} ${vbWidth} ${vbHeight}`;
+        
+        let cx = (finalMinX + finalMaxX) / 2;
+        let cy = (finalMinY + finalMaxY) / 2;
+
+        let polygonHtml = '';
+        let dimensionsHtml = '';
+        if (svgPts.length > 0) {
+            let roofPoints = svgPts.map(p => `${p.x},${p.y}`).join(' ');
+            polygonHtml = `<polygon points="${roofPoints}" fill="#ffedd5" stroke="#ea580c" stroke-width="${Math.max(w,h)*0.005}" />`;
+
+            for(let i = 0; i < svgPts.length; i++) {
+                let p1 = svgPts[i];
+                let p2 = svgPts[(i + 1) % svgPts.length];
+                
+                let dist = Math.sqrt(Math.pow(p2.x-p1.x, 2) + Math.pow(p2.y-p1.y, 2));
+                if(dist > 0.5) {
+                    let midX = (p1.x + p2.x) / 2;
+                    let midY = (p1.y + p2.y) / 2;
+                    
+                    let dx = p2.x - p1.x;
+                    let dy = p2.y - p1.y;
+                    let angleRad = Math.atan2(dy, dx);
+                    let angleDeg = angleRad * (180 / Math.PI);
+                    
+                    if (angleDeg > 90 || angleDeg < -90) { angleDeg += 180; }
+                    
+                    let outX = midX - cx;
+                    let outY = midY - cy;
+                    let len = Math.sqrt(outX*outX + outY*outY);
+                    let offsetX = 0, offsetY = 0;
+                    
+                    // ผลักระยะออกไปให้พ้นกรอบหลังคานิดหน่อย
+                    if (len > 0) {
+                        offsetX = (outX / len) * (Math.max(w,h)*0.03);
+                        offsetY = (outY / len) * (Math.max(w,h)*0.03);
+                    }
+                    
+                    dimensionsHtml += `
+                        <text x="${midX + offsetX}" y="${midY + offsetY}" 
+                              font-size="${Math.max(w,h)*0.02}" font-family="Arial" font-weight="bold" 
+                              fill="#0284c7" text-anchor="middle" dominant-baseline="central"
+                              transform="rotate(${angleDeg}, ${midX + offsetX}, ${midY + offsetY})"
+                              paint-order="stroke" stroke="#ffffff" stroke-width="${Math.max(w,h)*0.008}" stroke-linecap="round" stroke-linejoin="round">
+                              ${dist.toFixed(2)} m
+                        </text>
+                    `;
+                }
+            }
+        }
+
+        let modulesHtml = '';
+        svgMods.forEach(m => {
+            modulesHtml += `<rect x="${m.x}" y="${m.y}" width="${m.w}" height="${m.h}" fill="#111111" stroke="#94a3b8" stroke-width="0.03" transform="rotate(${m.angle}, ${m.x + m.w/2}, ${m.y + m.h/2})" />`;
+        });
+
+        // 🌟 ส่วนที่เพิ่มใหม่: สร้างป้าย จุดรวมสาย (MDB/INV)
+        let mdbHtml = '';
+        if (svgMods.length > 0) {
+            let mdbW = Math.max(w, h) * 0.04;
+            let mdbH = Math.max(w, h) * 0.12;
+            
+            // วางตำแหน่งอัตโนมัติ ไว้กึ่งกลางด้านซ้ายของกลุ่มแผงโซลาร์เซลล์
+            let mdbX = mMinX - (Math.max(w, h) * 0.05) - mdbW;
+            let mdbY = (mMinY + mMaxY) / 2 - (mdbH / 2);
+            let mdbFontSize = Math.max(w, h) * 0.015; // ขนาดตัวอักษรเท่ากับตัวเลขระยะหลังคา
+
+            mdbHtml = `
+                <rect x="${mdbX}" y="${mdbY}" width="${mdbW}" height="${mdbH}" fill="#ffffff" stroke="#ea580c" stroke-width="${Math.max(w,h)*0.005}" rx="${Math.max(w,h)*0.002}" />
+                <text x="${mdbX + mdbW/2}" y="${mdbY + mdbH/2}" font-size="${mdbFontSize}" font-family="Arial" font-weight="bold" fill="#0284c7" text-anchor="middle" dominant-baseline="central" transform="rotate(-90, ${mdbX + mdbW/2}, ${mdbY + mdbH/2})">MDB/INV</text>
+            `;
+        }
+
+        let svgHtml = `
+            <svg viewBox="${viewBoxStr}" style="width: 100%; height: 100%; max-width: 100%; max-height: 100%; background: transparent; display: block; margin: 0 auto;">
+                ${polygonHtml}
+                ${modulesHtml}
+                ${mdbHtml}
+                ${dimensionsHtml}
+            </svg>
+        `;
+
+        let azimuth = roof.azimuth || 0;
+        let compassRotation = -azimuth; 
+        
+        let tiltVal = roof.slope !== undefined ? roof.slope : (polygons[0]?.slope || 15);
+        let roofMods = modsRaw.length;
+
+        // ดึงข้อมูลสำหรับใส่ใน Note
+        let mountType = roof.mountType || AppState.sysMountType || '-';
+        
+        // คำนวณทิศภาษาไทย
+        let directionName = "";
+        let a = (azimuth % 360 + 360) % 360; 
+        if (a >= 337.5 || a < 22.5) directionName = "เหนือ"; 
+        else if (a >= 22.5 && a < 67.5) directionName = "ตะวันออกเฉียงเหนือ"; 
+        else if (a >= 67.5 && a < 112.5) directionName = "ตะวันออก";
+        else if (a >= 112.5 && a < 157.5) directionName = "ตะวันออกเฉียงใต้"; 
+        else if (a >= 157.5 && a < 202.5) directionName = "ใต้"; 
+        else if (a >= 202.5 && a < 247.5) directionName = "ตะวันตกเฉียงใต้";
+        else if (a >= 247.5 && a < 292.5) directionName = "ตะวันตก"; 
+        else if (a >= 292.5 && a < 337.5) directionName = "ตะวันตกเฉียงเหนือ";
+
+        // 🌟 ส่วนที่เพิ่มใหม่: ดึงสเปกสายไฟ ท่อ และ Walkway จาก BOM
+        let bom = AppState.bomData || {};
+        let bSize = bom.calculated_sizing || {};
+        let bMount = bom.mounting_structure || {};
+        let dcCable = bSize.pv_cable_sqmm ? `${bSize.pv_cable_sqmm} sq.mm` : '6 sq.mm';
+        let acCable = bSize.ac_cable_sqmm ? `${bSize.ac_cable_sqmm} sq.mm` : '16 sq.mm';
+        let conduit = bSize.conduit_or_wireway || 'Wireway 50x50 มม.';
+        let walkwaySpec = bMount.walkway_sqm ? 'Walkway FRP/Aluminum' : 'WALKWAY 400 mm.';
+
+        let titleBlockHtml = `
+            <div style="border: 2px solid #000; width: 100%; height: 100%; display: flex; flex-direction: column; background: #fff; box-sizing: border-box; font-family: 'Arial', 'Kanit', sans-serif;">
+                
+                <!-- ส่วนวาดแบบ (Drawing Area) -->
+                <div style="flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 20px;">
+                    
+                    ${svgHtml}
+                    
+                    <!-- เข็มทิศแบบลอยตัว มุมขวาบนเสมอ -->
+                    <div style="position: absolute; top: 15px; right: 15px; width: 70px; height: 70px; z-index: 10;">
+                        <svg viewBox="-35 -35 70 70" width="100%" height="100%" style="overflow: visible;">
+                            <g transform="rotate(${compassRotation})">
+                                <circle cx="0" cy="0" r="25" fill="#ffffff" stroke="#000000" stroke-width="1.5" />
+                                <polygon points="-6,0 0,-20 6,0" fill="#ffffff" stroke="#000" stroke-width="1"/>
+                                <polygon points="-6,0 0,20 6,0" fill="#ffffff" stroke="#000" stroke-width="1"/>
+                                <polygon points="0,0 0,-20 6,0" fill="#dc2626"/>
+                                <text x="0" y="-28" font-size="14" font-family="Arial" font-weight="bold" fill="#dc2626" text-anchor="middle" transform="rotate(${-compassRotation}, 0, -28)">N</text>
+                            </g>
+                        </svg>
+                    </div>
+                    
+                </div>
+                
+                <!-- ส่วนกรอบข้อมูลด้านล่าง (Title Block) -->
+                <div style="border-top: 2px solid #000; display: flex; font-size: 9px; line-height: 1.2;">
+                    
+                    <!-- Left Block: รายละเอียดโปรเจกต์ -->
+                    <div style="flex: 1.5; border-right: 1px solid #000; padding: 4px 8px;">
+                        <b style="font-size: 10px;">PHOTOVOLTAICS MODULE</b><br>
+                        <b>TYPE OF MODULE :</b> ${pvModel}<br>
+                        <b>MODEL : MONO ${pvPower} W</b><br>
+                        TOTAL PV NUMBER OF SYM : ${totalModules} MODULES<br>
+                        TOTAL INVERTER NUMBER OF SYSTEM : ${invQty} UNITS<br>
+                        INVERTER 1 : ${invModel} , POWER OF PV : ${totalPower} kWp.dc<br>
+                        <b style="color: #2563eb;">${mps} PV/STRING = ${totalStrings} STRING, ${totalModules} MODULES</b><br>
+                        <b style="font-size: 11px;">กำลังผลิตรวม : ${totalPower} กิโลวัตต์</b>
+                    </div>
+                    
+                    <!-- Middle Block: Note และ Scale -->
+                    <div style="flex: 1; border-right: 1px solid #000; padding: 4px 8px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <u><b>NOTE:</b></u><br><br>
+                            <b>📄:</b> ${getStr('inp-proj', '-')}<br>
+                            <b>📍:</b> ${getStr('inp-loc', '-')}<br>
+                            <b>แนวการวางแผง(Orientation):</b><br>
+                            <b>มุมเอียงหลังคา (Slope):</b> ${tiltVal}°<br>
+                            <b>มุมทิศหลังคา (Azimuth):</b> ${azimuth}° (ทิศ${directionName})
+                        </div>
+                        <div style="color: #dc2626; text-align: center; font-weight: bold; border-top: 1px solid #fca5a5; padding-top: 2px; font-size: 10px;">
+                            Scale NTS
+                        </div>
+                    </div>
+                    
+                    <!-- Right Block: Legend -->
+                    <div style="flex: 1; padding: 2px;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 8px;">
+                            <tr>
+                                <th style="border: 1px solid #000; padding: 2px; text-align: center; width: 30%;">สัญลักษณ์</th>
+                                <th style="border: 1px solid #000; padding: 2px; text-align: center;">รายละเอียด</th>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px; text-align: center; color: #3b82f6;">—</td>
+                                <td style="border: 1px solid #000; padding: 2px;">DC (PV1-F) ${dcCable}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px; text-align: center; color: #ea580c;">—</td>
+                                <td style="border: 1px solid #000; padding: 2px;">AC (THW/CV) ${acCable}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px; text-align: center;">
+                                    <div style="width: 16px; height: 4px; border: 1px solid #000; margin: auto;"></div>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px;">CABLE TRAY ${conduit}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px; text-align: center;">
+                                    <div style="width: 16px; height: 2px; background: #000; margin: auto;"></div>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px;">${walkwaySpec}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px; text-align: center;">
+                                    <div style="width: 16px; height: 8px; background: #ffffff; border: 1px solid #ea580c; margin: auto;"></div>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px; font-weight: bold;">จุดรวมสาย (MDB/INV)</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px; text-align: center;">
+                                    <div style="width: 16px; height: 8px; background: #111111; border: 1px solid #000; margin: auto;"></div>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px; font-weight: bold;">PV MODULE</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 6. แทรกโค้ดแสดงผลบน Dashboard
+        dashWrapper.innerHTML += `
+            <div class="w-full mb-6">
+                <div style="height: 500px; padding: 10px; background: #f1f5f9; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    ${titleBlockHtml}
+                </div>
+            </div>
+        `;
+
+        // 7. แทรกโค้ดแสดงผลในหน้าพิมพ์ PDF
+        pdfWrapper.innerHTML += `
+            <div class="pdf-page-landscape force-block" style="page-break-before: always; width: 100%; height: 100%;">
+                <div style="width: 100%; height: 100%; padding: 10mm; box-sizing: border-box; background-color: white;">
+                    ${titleBlockHtml}
+                </div>
+            </div>
+        `;
+    });
+}
     </script>
 	<!-- เริ่ม: โค้ดป้องกันการคลิกขวาและดู Source Code -->
     <script>
@@ -4250,6 +4399,22 @@ async function fetchMeteoData(lat, lon, fallbackGHI = 1850.00) {
             } else {
                 appendixPage.style.setProperty('display', 'none', 'important');
             }
+        }
+		// 🌟 ฟังก์ชันเลือกกลับไปใช้ค่าเริ่มต้น (5 รายการหลัก)
+        function checkDefaultSections() {
+            const defaultChecked = ['chk-sec-env', 'chk-sec-loss', 'chk-sec-daily', 'chk-sec-monthly', 'chk-sec-exec'];
+            document.querySelectorAll('input[type="checkbox"][id^="chk-sec-"]').forEach(chk => {
+                chk.checked = defaultChecked.includes(chk.id);
+            });
+            if (typeof toggleSections === 'function') toggleSections();
+        }
+
+        // 🌟 ฟังก์ชันเลือกแสดงผลกราฟและเนื้อหาทั้งหมด 100%
+        function checkAllSections() {
+            document.querySelectorAll('input[type="checkbox"][id^="chk-sec-"]').forEach(chk => {
+                chk.checked = true;
+            });
+            if (typeof toggleSections === 'function') toggleSections();
         }
     </script>
     <!-- จบ: โค้ดป้องกัน -->
