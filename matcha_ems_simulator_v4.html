@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATCHA Samui Resort — EMS Simulator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #e0e8ff; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, #0d2144 0%, #1a3a6b 100%);
+    padding: 18px 28px;
+    border-bottom: 2px solid #00d4ff;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header h1 { font-size: 1.2rem; color: #00d4ff; letter-spacing: 1px; }
+  .header .sub { font-size: 0.75rem; color: #88aacc; margin-top: 2px; }
+  .badge { background: #00d4ff22; border: 1px solid #00d4ff; color: #00d4ff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; }
+
+  .main { display: grid; grid-template-columns: 300px 1fr 260px; gap: 16px; padding: 16px; }
+
+  /* Controls */
+  .panel { background: #0d2144; border: 1px solid #1e3a6e; border-radius: 12px; padding: 16px; }
+  .panel h3 { font-size: 0.8rem; color: #00d4ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; border-bottom: 1px solid #1e3a6e; padding-bottom: 8px; }
+
+  .ctrl-group { margin-bottom: 14px; }
+  .ctrl-group label { font-size: 0.72rem; color: #88aacc; display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .ctrl-group label span { color: #00d4ff; font-weight: bold; }
+  input[type=range] { width: 100%; accent-color: #00d4ff; cursor: pointer; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
+  .toggle-row label { font-size: 0.72rem; color: #ccd; }
+  .toggle { position: relative; width: 42px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider-tog { position: absolute; cursor: pointer; inset: 0; background: #1e3a6e; border-radius: 22px; transition: .3s; }
+  .slider-tog:before { content:""; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#88aacc; border-radius:50%; transition:.3s; }
+  input:checked + .slider-tog { background: #00d4ff; }
+  input:checked + .slider-tog:before { transform: translateX(20px); background: #fff; }
+
+  .soc-limits { display: flex; gap: 8px; }
+  .soc-box { flex: 1; background: #0a1628; border-radius: 8px; padding: 8px; text-align: center; }
+  .soc-box .val { font-size: 1.1rem; font-weight: bold; margin-top: 2px; }
+  .soc-box .lbl { font-size: 0.62rem; color: #88aacc; }
+
+  /* Center — diagram */
+  .center-col { display: flex; flex-direction: column; gap: 12px; }
+
+  .diagram-area { background: #0d2144; border: 1px solid #1e3a6e; border-radius: 12px; padding: 16px; position: relative; min-height: 320px; }
+
+  /* Flow diagram SVG */
+  .flow-svg { width: 100%; }
+
+  /* Node boxes */
+  .node { position: absolute; border-radius: 10px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .node .icon { font-size: 1.6rem; }
+  .node .name { font-size: 0.65rem; color: #88aacc; margin-top: 2px; }
+  .node .kw { font-size: 0.85rem; font-weight: bold; margin-top: 1px; }
+
+  /* Timeline chart */
+  .chart-area { background: #0d2144; border: 1px solid #1e3a6e; border-radius: 12px; padding: 16px; }
+  .chart-area h3 { font-size: 0.8rem; color: #00d4ff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  #timelineCanvas { width: 100%; border-radius: 6px; }
+
+  /* Right — status */
+  .status-col { display: flex; flex-direction: column; gap: 12px; }
+
+  .meter { background: #0d2144; border: 1px solid #1e3a6e; border-radius: 12px; padding: 14px; }
+  .meter h3 { font-size: 0.75rem; color: #00d4ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+  .soc-ring-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+  #socCanvas { display: block; }
+
+  .stat-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 0.72rem; }
+  .stat-row .lbl { color: #88aacc; }
+  .stat-row .val { font-weight: bold; }
+  .green { color: #00ff88; }
+  .red { color: #ff4466; }
+  .yellow { color: #ffd700; }
+  .cyan { color: #00d4ff; }
+  .orange { color: #ff8800; }
+
+  .mode-badge { text-align: center; padding: 8px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; margin: 8px 0; letter-spacing: 0.5px; }
+  .mode-charge { background: #003322; border: 1px solid #00ff88; color: #00ff88; }
+  .mode-discharge { background: #330022; border: 1px solid #ff4466; color: #ff4466; }
+  .mode-idle { background: #1a1a00; border: 1px solid #ffd700; color: #ffd700; }
+  .mode-offgrid { background: #330000; border: 1px solid #ff4466; color: #ff6688; }
+
+  .event-log { background: #0a1628; border-radius: 8px; padding: 8px; max-height: 120px; overflow-y: auto; font-size: 0.65rem; }
+  .event-log div { padding: 2px 0; border-bottom: 1px solid #1e3a6e; }
+  .event-log div:last-child { border-bottom: none; }
+  .ev-green { color: #00ff88; }
+  .ev-red { color: #ff4466; }
+  .ev-yellow { color: #ffd700; }
+  .ev-cyan { color: #00d4ff; }
+
+  .btn-group { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn { padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: bold; transition: .2s; }
+  .btn-primary { background: #00d4ff; color: #0a1628; }
+  .btn-primary:hover { background: #00b8e0; }
+  .btn-danger { background: #ff4466; color: #fff; }
+  .btn-danger:hover { background: #dd2244; }
+  .btn-warn { background: #ffd700; color: #000; }
+  .btn-warn:hover { background: #e6c200; }
+  .btn-green { background: #00aa55; color: #fff; }
+  .btn-green:hover { background: #008844; }
+
+  /* Flow diagram */
+  .diagram-wrapper { position: relative; width: 100%; height: 260px; }
+
+  .dnode {
+    position: absolute;
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.4s;
+    min-width: 80px;
+  }
+  .dnode .dn-icon { font-size: 1.3rem; }
+  .dnode .dn-name { font-size: 0.6rem; color: #88aacc; margin-top: 2px; }
+  .dnode .dn-kw { font-size: 0.82rem; font-weight: bold; margin-top: 1px; }
+
+  .dnode-solar { background: #1a2800; border-color: #88dd00; left: 50%; transform: translateX(-50%); top: 0; }
+  .dnode-solar .dn-kw { color: #88dd00; }
+  .dnode-inv { background: #001833; border-color: #00d4ff; left: 50%; transform: translateX(-50%); top: 90px; }
+  .dnode-inv .dn-kw { color: #00d4ff; }
+  .dnode-batt { background: #001a10; border-color: #00ff88; left: 4%; top: 90px; }
+  .dnode-hotel { background: #1a0a00; border-color: #ff8800; right: 4%; top: 90px; }
+  .dnode-hotel .dn-kw { color: #ff8800; }
+  .dnode-gen { background: #1a1400; border-color: #ffd700; left: 4%; top: 185px; }
+  .dnode-gen .dn-kw { color: #ffd700; }
+  .dnode-grid { background: #100018; border-color: #aa66ff; right: 4%; top: 185px; }
+  .dnode-grid .dn-kw { color: #aa66ff; }
+
+  svg.arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .scenario-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .sc-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid #1e3a6e; background: #0a1628; color: #88aacc; font-size: 0.68rem; cursor: pointer; transition: .2s; }
+  .sc-btn:hover, .sc-btn.active { background: #00d4ff22; border-color: #00d4ff; color: #00d4ff; }
+
+  .info-box { background: #0a1628; border-left: 3px solid #00d4ff; padding: 8px 10px; border-radius: 0 6px 6px 0; font-size: 0.7rem; color: #aac; line-height: 1.5; margin-top: 8px; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .pulsing { animation: pulse 1.5s infinite; }
+
+  .sim-speed { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #88aacc; }
+
+  /* ===== TTS VOICE BUTTON ===== */
+  .sc-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .sc-btn-voice {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid #1e3a6e; background: #0a1628;
+    color: #88aacc; font-size: 0.68rem; cursor: pointer;
+    transition: .2s; white-space: nowrap;
+  }
+  .sc-btn-voice:hover, .sc-btn-voice.active {
+    background: #00d4ff22; border-color: #00d4ff; color: #00d4ff;
+  }
+  .sc-btn-voice.speaking {
+    background: #ff880022; border-color: #ff8800; color: #ff8800;
+    animation: voicePulse 0.8s ease-in-out infinite;
+  }
+  .voice-sub {
+    font-size: 0.58rem; color: #445566; text-align: center;
+    letter-spacing: 0.3px;
+  }
+  @keyframes voicePulse { 0%,100%{box-shadow:0 0 0 0 #ff880055} 50%{box-shadow:0 0 0 5px #ff880000} }
+
+  /* Voice indicator bar */
+  .voice-bar {
+    display: flex; align-items: center; gap: 6px;
+    background: #0a1628; border: 1px solid #1e3a6e;
+    border-radius: 8px; padding: 6px 10px; margin-bottom: 8px;
+    font-size: 0.68rem; color: #88aacc; min-height: 30px;
+    transition: all 0.3s;
+  }
+  .voice-bar.active { border-color: #ff8800; background: #1a0e00; color: #ff8800; }
+  .voice-dot { width: 8px; height: 8px; border-radius: 50%; background: #445566; flex-shrink: 0; }
+  .voice-dot.on { background: #ff8800; animation: voicePulse 0.8s infinite; }
+  .voice-wave { display: flex; align-items: center; gap: 2px; }
+  .voice-wave span {
+    display: inline-block; width: 3px; border-radius: 2px;
+    background: #ff8800; animation: wave 0.6s ease-in-out infinite;
+  }
+  .voice-wave span:nth-child(1){ height:6px; animation-delay:0s; }
+  .voice-wave span:nth-child(2){ height:12px; animation-delay:0.1s; }
+  .voice-wave span:nth-child(3){ height:8px; animation-delay:0.2s; }
+  .voice-wave span:nth-child(4){ height:14px; animation-delay:0.15s; }
+  .voice-wave span:nth-child(5){ height:6px; animation-delay:0.05s; }
+  @keyframes wave { 0%,100%{transform:scaleY(0.4)} 50%{transform:scaleY(1)} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🏨 MATCHA Samui Resort — EMS Simulator</h1>
+    <div class="sub">Hybrid Solar + ESS + Generator Load Following | Sigen System</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="badge">120.6 kWp Solar</span>
+    <span class="badge">336 kWh ESS</span>
+    <span class="badge">325 kVA Gen</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LEFT: Controls -->
+  <div>
+    <div class="panel">
+      <h3>⚙️ EMS Parameters</h3>
+
+      <div class="ctrl-group">
+        <label>Hotel Load <span id="hotelLoadVal">120</span> kW</label>
+        <input type="range" id="hotelLoad" min="40" max="240" value="120" step="5">
+      </div>
+
+      <div class="ctrl-group">
+        <label>Solar Irradiance <span id="solarVal">75</span>%</label>
+        <input type="range" id="solarPct" min="0" max="100" value="75" step="5">
+      </div>
+
+      <div class="ctrl-group">
+        <label>Gen Target Power <span id="genTargetVal">190</span> kW</label>
+        <input type="range" id="genTarget" min="100" max="250" value="190" step="5">
+      </div>
+
+      <div style="margin: 12px 0; border-top: 1px solid #1e3a6e; padding-top: 12px;">
+        <div style="font-size:0.72rem; color:#88aacc; margin-bottom:8px;">SOC Thresholds</div>
+        <div class="soc-limits">
+          <div class="soc-box">
+            <div class="lbl">Start Gen</div>
+            <input type="range" id="socStart" min="10" max="50" value="30" step="5" style="width:100%;margin:4px 0;accent-color:#ff4466">
+            <div class="val red" id="socStartVal">30%</div>
+          </div>
+          <div class="soc-box">
+            <div class="lbl">Stop Gen</div>
+            <input type="range" id="socStop" min="60" max="95" value="80" step="5" style="width:100%;margin:4px 0;accent-color:#00ff88">
+            <div class="val green" id="socStopVal">80%</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #1e3a6e; padding-top: 12px; margin-top: 4px;">
+        <div class="toggle-row">
+          <label>Generator Enable</label>
+          <label class="toggle"><input type="checkbox" id="genEnable" checked><span class="slider-tog"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label>Grid Connected</label>
+          <label class="toggle"><input type="checkbox" id="gridEnable" checked><span class="slider-tog"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label>Load Following Mode</label>
+          <label class="toggle"><input type="checkbox" id="lfMode" checked><span class="slider-tog"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label>Auto Gen SOC Control</label>
+          <label class="toggle"><input type="checkbox" id="autoSoc" checked><span class="slider-tog"></span></label>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-danger" onclick="triggerBlackoutVoice()">⚡ Simulate Blackout</button>
+        <button class="btn btn-green" onclick="restoreGridVoice()">✅ Restore Grid</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-warn" onclick="setScenarioVoice('low')">🌙 Low Season</button>
+        <button class="btn btn-primary" onclick="setScenarioVoice('high')">🎉 High Season</button>
+        <button class="btn btn-primary" onclick="setScenarioVoice('peak')">☀️ Solar Peak</button>
+      </div>
+
+      <div class="info-box" id="infoBox">
+        ปรับ Hotel Load และเปิด Load Following เพื่อดูการทำงานของ EMS
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center-col">
+
+    <!-- Scenario Selector -->
+    <div class="panel" style="padding: 12px 16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <h3 style="margin:0;border:none;padding:0;">🎬 Quick Scenarios</h3>
+        <div class="sim-speed">
+          Speed: <input type="range" id="simSpeed" min="1" max="10" value="3" style="width:80px;accent-color:#00d4ff"> <span id="simSpeedVal">3x</span>
+        </div>
+      </div>
+
+      <!-- Voice status bar -->
+      <div class="voice-bar" id="voiceBar">
+        <div class="voice-dot" id="voiceDot"></div>
+        <span id="voiceBarText">🎙️ กดปุ่มสถานการณ์เพื่อฟังคำอธิบายเสียง</span>
+        <div class="voice-wave" id="voiceWave" style="display:none">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <button id="voiceStopBtn" onclick="stopVoice()" style="display:none;margin-left:auto;padding:2px 8px;border:1px solid #ff4466;background:transparent;color:#ff4466;border-radius:4px;cursor:pointer;font-size:0.62rem;">■ หยุด</button>
+      </div>
+
+      <div class="scenario-btns" style="flex-direction:column;gap:5px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <div class="sc-btn-wrap">
+            <button class="sc-btn-voice active" id="scBtn-normal" onclick="setDetailScenarioVoice('normal', this)">
+              🌤️ Normal Day
+            </button>
+            <div class="voice-sub">วันปกติ — Solar+Grid+Battery</div>
+          </div>
+          <div class="sc-btn-wrap">
+            <button class="sc-btn-voice" id="scBtn-blackout" onclick="setDetailScenarioVoice('blackout', this)">
+              🆘 Blackout 2hr
+            </button>
+            <div class="voice-sub">ไฟดับ — Battery+Gen สำรอง</div>
+          </div>
+          <div class="sc-btn-wrap">
+            <button class="sc-btn-voice" id="scBtn-offpeak" onclick="setDetailScenarioVoice('offpeak', this)">
+              🌙 Off-Peak Charge
+            </button>
+            <div class="voice-sub">ชาร์จ Battery ราคาถูก</div>
+          </div>
+          <div class="sc-btn-wrap">
+            <button class="sc-btn-voice" id="scBtn-genlf" onclick="setDetailScenarioVoice('genlf', this)">
+              ⚙️ Gen Load Following
+            </button>
+            <div class="voice-sub">Gen คง 190kW / Battery buffer</div>
+          </div>
+          <div class="sc-btn-wrap">
+            <button class="sc-btn-voice" id="scBtn-fullsolar" onclick="setDetailScenarioVoice('fullsolar', this)">
+              ☀️ Solar Only Day
+            </button>
+            <div class="voice-sub">พลังงานแสงอาทิตย์ 100%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow Diagram -->
+    <div class="diagram-area">
+      <h3 style="font-size:0.8rem;color:#00d4ff;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Power Flow Diagram</h3>
+      <div class="diagram-wrapper">
+
+        <!-- SVG arrows -->
+        <svg class="arrows" id="arrowSvg" viewBox="0 0 600 260"></svg>
+
+        <!-- Nodes -->
+        <div class="dnode dnode-solar" id="nodeSolar">
+          <div class="dn-icon">☀️</div>
+          <div class="dn-name">Solar PV</div>
+          <div class="dn-kw" id="solarKw">0 kW</div>
+        </div>
+
+        <div class="dnode dnode-inv" id="nodeInv">
+          <div class="dn-icon">🔄</div>
+          <div class="dn-name">Sigen Hybrid Inv+Gateway</div>
+          <div class="dn-kw" id="invKw">EMS Active</div>
+        </div>
+
+        <div class="dnode dnode-batt" id="nodeBatt">
+          <div class="dn-icon" id="battIcon">🔋</div>
+          <div class="dn-name">ESS Battery<br>336 kWh</div>
+          <div class="dn-kw" id="battKw">0 kW</div>
+        </div>
+
+        <div class="dnode dnode-hotel" id="nodeHotel">
+          <div class="dn-icon">🏨</div>
+          <div class="dn-name">Hotel Load</div>
+          <div class="dn-kw" id="hotelKw">120 kW</div>
+        </div>
+
+        <div class="dnode dnode-gen" id="nodeGen">
+          <div class="dn-icon">🔧</div>
+          <div class="dn-name">Generator<br>Cummins 325kVA</div>
+          <div class="dn-kw" id="genKw">— kW</div>
+        </div>
+
+        <div class="dnode dnode-grid" id="nodeGrid">
+          <div class="dn-icon">⚡</div>
+          <div class="dn-name">PEA Grid</div>
+          <div class="dn-kw" id="gridKw">— kW</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Timeline Chart -->
+    <div class="chart-area">
+      <h3>📊 Power Flow Timeline (24hr)</h3>
+      <canvas id="timelineCanvas" height="130"></canvas>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-size:0.62rem;">
+        <span style="color:#88dd00">■ Solar</span>
+        <span style="color:#ff8800">■ Hotel Load</span>
+        <span style="color:#00ff88">■ Batt Charge</span>
+        <span style="color:#ff4466">■ Batt Discharge</span>
+        <span style="color:#ffd700">■ Generator</span>
+        <span style="color:#aa66ff">■ Grid</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Status -->
+  <div class="status-col">
+
+    <div class="meter">
+      <h3>🔋 Battery SOC</h3>
+      <div class="soc-ring-wrap">
+        <canvas id="socCanvas" width="120" height="120"></canvas>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">SOC</span>
+        <span class="val cyan" id="socPct">65%</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Usable Energy</span>
+        <span class="val" id="socEnergy">218 kWh</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Batt Power</span>
+        <span class="val" id="battPower">0 kW</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Est. Backup</span>
+        <span class="val green" id="backupTime">—</span>
+      </div>
+    </div>
+
+    <div class="meter">
+      <h3>📡 EMS Status</h3>
+      <div class="mode-badge mode-charge" id="modeBadge">BATTERY CHARGING</div>
+
+      <div class="stat-row">
+        <span class="lbl">Gen Status</span>
+        <span class="val" id="genStatus">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Gen Load %</span>
+        <span class="val" id="genLoadPct">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Solar Output</span>
+        <span class="val" id="solarOut">0 kW</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Grid Import</span>
+        <span class="val" id="gridImport">0 kW</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Load Following</span>
+        <span class="val green" id="lfStatus">ACTIVE</span>
+      </div>
+      <div class="stat-row">
+        <span class="lbl">Gen Target</span>
+        <span class="val yellow" id="genTargetShow">190 kW</span>
+      </div>
+    </div>
+
+    <div class="meter">
+      <h3>📋 Event Log</h3>
+      <div class="event-log" id="eventLog">
+        <div class="ev-cyan">[BOOT] EMS System Initialized</div>
+        <div class="ev-green">[INFO] SOC: 65% — System Ready</div>
+        <div class="ev-yellow">[INFO] Load Following: ENABLED</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============ STATE ============
+const state = {
+  soc: 65,
+  gridOn: true,
+  genOn: false,
+  genForced: false,
+  blackout: false,
+  hotelLoad: 120,
+  solarPct: 75,
+  genTarget: 190,
+  socStart: 30,
+  socStop: 80,
+  genEnable: true,
+  lfMode: true,
+  autoSoc: true,
+  simTime: 0,
+  timeline: [],
+  maxCapacity: 336,
+  maxSolar: 120.6,
+  simRunning: true,
+  scenario: 'normal',
+};
+
+const events = [];
+let socHistory = [];
+let simInterval = null;
+
+// ============ UTILS ============
+function log(msg, cls='ev-cyan') {
+  const t = String(Math.floor(state.simTime/60)).padStart(2,'0') + ':' + String(state.simTime%60).padStart(2,'0');
+  events.unshift(`<div class="${cls}">[${t}] ${msg}</div>`);
+  if (events.length > 30) events.pop();
+  document.getElementById('eventLog').innerHTML = events.join('');
+}
+
+function calcSolar() {
+  // Solar curve based on time of day + irradiance
+  const h = (state.simTime / 60) % 24;
+  const curve = Math.max(0, Math.sin((h - 6) * Math.PI / 12));
+  return curve * state.maxSolar * (state.solarPct / 100);
+}
+
+// ============ EMS LOGIC ============
+function emsStep() {
+  const solarKw = calcSolar();
+  const hotelKw = state.hotelLoad;
+  let genKw = 0;
+  let battKw = 0; // + = charging, - = discharging
+  let gridKw = 0;
+
+  const genEnable = state.genEnable && document.getElementById('genEnable').checked;
+  const lfMode = document.getElementById('lfMode').checked;
+  const autoSoc = document.getElementById('autoSoc').checked;
+  const gridOn = state.gridOn && document.getElementById('gridEnable').checked;
+
+  // ---- AUTO SOC GEN CONTROL ----
+  if (autoSoc && genEnable && !state.blackout) {
+    if (!state.genOn && state.soc <= state.socStart) {
+      state.genOn = true;
+      log(`🔧 Gen AUTO START — SOC reached ${state.socStart}%`, 'ev-yellow');
+    }
+    if (state.genOn && state.soc >= state.socStop && !state.blackout) {
+      state.genOn = false;
+      log(`✅ Gen AUTO STOP — SOC reached ${state.socStop}%`, 'ev-green');
+    }
+  }
+
+  // ---- BLACKOUT MODE ----
+  if (state.blackout) {
+    // Off-grid: Solar + Battery + Gen (if on)
+    const available = solarKw + (state.genOn ? state.genTarget : 0);
+    const deficit = hotelKw - available;
+    if (deficit > 0) {
+      battKw = -Math.min(deficit, 160); // discharge
+    } else {
+      battKw = Math.min(-deficit, 160); // charge from excess
+    }
+    genKw = state.genOn ? Math.min(state.genTarget, 260) : 0;
+    gridKw = 0;
+
+    // Auto start gen in blackout if SOC low
+    if (!state.genOn && state.soc < 20 && genEnable) {
+      state.genOn = true;
+      log('🆘 Emergency Gen Start — SOC critical!', 'ev-red');
+    }
+  }
+  // ---- GRID + LOAD FOLLOWING ----
+  else if (lfMode && state.genOn && genEnable) {
+    // Load Following: Gen holds target, battery absorbs difference
+    genKw = Math.min(state.genTarget, 260);
+    const surplus = solarKw + genKw - hotelKw;
+    battKw = Math.max(-160, Math.min(160, surplus));
+    gridKw = gridOn ? Math.max(0, hotelKw - solarKw - genKw + (battKw < 0 ? -battKw : 0)) : 0;
+  }
+  // ---- NORMAL GRID MODE ----
+  else {
+    if (gridOn) {
+      const surplus = solarKw - hotelKw;
+      if (surplus > 0) {
+        battKw = Math.min(surplus, 160); // charge from solar
+        gridKw = 0;
+      } else {
+        const deficit = -surplus;
+        battKw = -Math.min(deficit * 0.4, 160); // partial discharge
+        gridKw = Math.max(0, deficit + battKw);
+      }
+    } else {
+      // Off-grid, no gen
+      const deficit = hotelKw - solarKw;
+      battKw = -Math.min(deficit, 160);
+    }
+  }
+
+  // ---- SOC UPDATE ----
+  const speed = parseFloat(document.getElementById('simSpeed').value);
+  const dtHr = (1/60) * speed; // hours per tick
+  const socDelta = (battKw * dtHr / state.maxCapacity) * 100;
+  state.soc = Math.max(0, Math.min(100, state.soc + socDelta));
+
+  if (state.soc <= 0) {
+    log('💀 Battery EMPTY — Load may drop!', 'ev-red');
+  }
+
+  // Update display
+  updateDisplay(solarKw, genKw, battKw, gridKw, hotelKw);
+
+  // Timeline
+  state.timeline.push({ solar: solarKw, hotel: hotelKw, gen: genKw, batt: battKw, grid: gridKw, soc: state.soc });
+  if (state.timeline.length > 200) state.timeline.shift();
+
+  state.simTime = (state.simTime + speed) % (24*60);
+  drawTimeline();
+  drawSocRing();
+
+  socHistory.push(state.soc);
+  if (socHistory.length > 500) socHistory.shift();
+}
+
+// ============ DISPLAY ============
+function updateDisplay(solarKw, genKw, battKw, gridKw, hotelKw) {
+  // Nodes
+  document.getElementById('solarKw').textContent = solarKw.toFixed(1) + ' kW';
+  document.getElementById('hotelKw').textContent = hotelKw.toFixed(0) + ' kW';
+  document.getElementById('genKw').textContent = genKw > 0 ? genKw.toFixed(0) + ' kW' : '— OFF —';
+  document.getElementById('gridKw').textContent = document.getElementById('gridEnable').checked && !state.blackout ? (gridKw.toFixed(1) + ' kW') : '✘ BLACKOUT';
+  document.getElementById('battKw').textContent = battKw >= 0 ? `⬆ ${battKw.toFixed(0)} kW` : `⬇ ${(-battKw).toFixed(0)} kW`;
+  document.getElementById('battIcon').textContent = battKw > 5 ? '🔋' : battKw < -5 ? '🪫' : '🔋';
+
+  // Inverter label
+  const modes = [];
+  if (solarKw > 5) modes.push('Solar');
+  if (genKw > 0) modes.push('Gen LF');
+  if (battKw > 5) modes.push('Charging');
+  if (battKw < -5) modes.push('Discharging');
+  document.getElementById('invKw').textContent = modes.join(' | ') || 'Standby';
+
+  // Status panel
+  document.getElementById('socPct').textContent = state.soc.toFixed(1) + '%';
+  document.getElementById('socEnergy').textContent = (state.soc / 100 * state.maxCapacity).toFixed(0) + ' kWh';
+  document.getElementById('battPower').textContent = (battKw >= 0 ? '+' : '') + battKw.toFixed(0) + ' kW';
+  document.getElementById('solarOut').textContent = solarKw.toFixed(1) + ' kW';
+  document.getElementById('gridImport').textContent = gridKw.toFixed(1) + ' kW';
+  document.getElementById('genTargetShow').textContent = state.genTarget + ' kW';
+
+  // Backup time
+  if (battKw < 0) {
+    const hrs = (state.soc / 100 * state.maxCapacity) / (-battKw);
+    document.getElementById('backupTime').textContent = hrs.toFixed(1) + ' hr';
+  } else {
+    document.getElementById('backupTime').textContent = state.blackout ? 'Charging' : '—';
+  }
+
+  // Gen status
+  const genStatus = document.getElementById('genStatus');
+  if (state.genOn) {
+    genStatus.textContent = '🟢 RUNNING';
+    genStatus.className = 'val green';
+    const pct = (genKw / 260 * 100).toFixed(0);
+    document.getElementById('genLoadPct').textContent = pct + '%';
+  } else {
+    genStatus.textContent = '⭕ STOPPED';
+    genStatus.className = 'val';
+    document.getElementById('genLoadPct').textContent = '—';
+  }
+
+  // LF status
+  const lf = document.getElementById('lfMode').checked;
+  document.getElementById('lfStatus').textContent = lf ? 'ACTIVE' : 'DISABLED';
+  document.getElementById('lfStatus').className = lf ? 'val green' : 'val red';
+
+  // Mode badge
+  const badge = document.getElementById('modeBadge');
+  if (state.blackout) {
+    badge.textContent = '🆘 BLACKOUT — OFF-GRID MODE';
+    badge.className = 'mode-badge mode-offgrid pulsing';
+  } else if (battKw > 5) {
+    badge.textContent = '🟢 BATTERY CHARGING';
+    badge.className = 'mode-badge mode-charge';
+  } else if (battKw < -5) {
+    badge.textContent = '🔴 BATTERY DISCHARGING';
+    badge.className = 'mode-badge mode-discharge';
+  } else {
+    badge.textContent = '🟡 STANDBY / BALANCING';
+    badge.className = 'mode-badge mode-idle';
+  }
+
+  // Info box
+  updateInfoBox(solarKw, genKw, battKw, gridKw, hotelKw);
+
+  // Node highlighting
+  document.getElementById('nodeGen').style.opacity = genKw > 0 ? '1' : '0.4';
+  document.getElementById('nodeGrid').style.opacity = (!state.blackout && document.getElementById('gridEnable').checked) ? '1' : '0.4';
+
+  drawArrows(solarKw, genKw, battKw, gridKw, hotelKw);
+}
+
+function updateInfoBox(solarKw, genKw, battKw, gridKw, hotelKw) {
+  let msg = '';
+  if (state.blackout) {
+    msg = `🆘 ระบบ Off-Grid: Solar ${solarKw.toFixed(0)}kW + ${state.genOn ? 'Gen ' + genKw.toFixed(0) + 'kW' : 'Battery'} จ่ายโหลด ${hotelKw}kW | SOC ${state.soc.toFixed(0)}%`;
+  } else if (document.getElementById('lfMode').checked && state.genOn) {
+    const surplus = genKw + solarKw - hotelKw;
+    msg = `⚙️ Load Following: Gen คง ${genKw.toFixed(0)}kW | โหลด ${hotelKw}kW | ส่วนเกิน ${surplus.toFixed(0)}kW → ชาร์จ Battery`;
+  } else if (battKw > 5) {
+    msg = `☀️ Solar เกิน: ชาร์จ Battery ${battKw.toFixed(0)}kW | SOC ${state.soc.toFixed(0)}% | โหลด ${hotelKw}kW`;
+  } else if (battKw < -5) {
+    msg = `🔋 Battery Discharge: จ่าย ${(-battKw).toFixed(0)}kW เสริม | Solar ${solarKw.toFixed(0)}kW | Grid ${gridKw.toFixed(0)}kW`;
+  } else {
+    msg = `✅ ระบบสมดุล | Solar ${solarKw.toFixed(0)}kW | Grid ${gridKw.toFixed(0)}kW | Battery Standby`;
+  }
+  document.getElementById('infoBox').textContent = msg;
+}
+
+// ============ ARROWS ============
+function drawArrows(solarKw, genKw, battKw, gridKw, hotelKw) {
+  const svg = document.getElementById('arrowSvg');
+  // Node centers (approx, from CSS positions, 600x260 viewBox)
+  const nodes = {
+    solar: {x:300, y:30},
+    inv:   {x:300, y:130},
+    batt:  {x:70,  y:130},
+    hotel: {x:530, y:130},
+    gen:   {x:70,  y:220},
+    grid:  {x:530, y:220},
+  };
+
+  const arrows = [];
+
+  function arrow(from, to, color, width, label) {
+    arrows.push(`<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${color}" stroke-width="${width}" stroke-opacity="0.7" marker-end="url(#arr_${color.replace('#','')})"/>`);
+    if (label) {
+      const mx = (from.x+to.x)/2, my = (from.y+to.y)/2;
+      arrows.push(`<text x="${mx}" y="${my-4}" fill="${color}" font-size="9" text-anchor="middle" font-family="Arial">${label}</text>`);
+    }
+  }
+
+  // Define markers
+  const colors = ['#88dd00','#00d4ff','#00ff88','#ff8800','#ffd700','#aa66ff','#ff4466'];
+  let defs = '<defs>';
+  colors.forEach(c => {
+    const id = 'arr_' + c.replace('#','');
+    defs += `<marker id="${id}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${c}"/></marker>`;
+  });
+  defs += '</defs>';
+
+  // Solar → Inverter
+  if (solarKw > 1) arrow(nodes.solar, nodes.inv, '#88dd00', Math.min(solarKw/20+1,4), solarKw.toFixed(0)+'kW');
+  // Inverter → Hotel
+  arrow(nodes.inv, nodes.hotel, '#ff8800', 3, hotelKw+'kW');
+  // Battery ↔ Inverter
+  if (battKw > 2) arrow(nodes.inv, nodes.batt, '#00ff88', 2, '+'+battKw.toFixed(0)+'kW');
+  else if (battKw < -2) arrow(nodes.batt, nodes.inv, '#ff4466', 2, battKw.toFixed(0)+'kW');
+  // Gen → Inverter
+  if (genKw > 0) arrow(nodes.gen, nodes.inv, '#ffd700', 3, genKw.toFixed(0)+'kW');
+  // Grid ↔ Inverter
+  if (gridKw > 1 && !state.blackout) arrow(nodes.grid, nodes.inv, '#aa66ff', 2, gridKw.toFixed(0)+'kW');
+
+  svg.innerHTML = defs + arrows.join('');
+}
+
+// ============ SOC RING ============
+function drawSocRing() {
+  const canvas = document.getElementById('socCanvas');
+  const ctx = canvas.getContext('2d');
+  const cx = 60, cy = 60, r = 48, lw = 10;
+  ctx.clearRect(0, 0, 120, 120);
+
+  // Background ring
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = '#1e3a6e'; ctx.lineWidth = lw; ctx.stroke();
+
+  // SOC arc
+  const angle = (state.soc / 100) * Math.PI * 2 - Math.PI/2;
+  const color = state.soc > 60 ? '#00ff88' : state.soc > 30 ? '#ffd700' : '#ff4466';
+  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI/2, angle);
+  ctx.strokeStyle = color; ctx.lineWidth = lw;
+  ctx.lineCap = 'round'; ctx.stroke();
+
+  // Text
+  ctx.fillStyle = color;
+  ctx.font = 'bold 20px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(state.soc.toFixed(0)+'%', cx, cy+4);
+  ctx.fillStyle = '#88aacc';
+  ctx.font = '10px Arial';
+  ctx.fillText('SOC', cx, cy+18);
+
+  // SOC thresholds markers
+  const markAngle = (pct) => -Math.PI/2 + (pct/100)*Math.PI*2;
+  [[state.socStart, '#ff4466'], [state.socStop, '#00ff88']].forEach(([pct, c]) => {
+    const a = markAngle(pct);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, a - 0.05, a + 0.05);
+    ctx.strokeStyle = c; ctx.lineWidth = lw + 4; ctx.stroke();
+  });
+}
+
+// ============ TIMELINE ============
+function drawTimeline() {
+  const canvas = document.getElementById('timelineCanvas');
+  canvas.width = canvas.offsetWidth || 600;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = 130;
+  ctx.clearRect(0, 0, W, H);
+
+  const data = state.timeline;
+  if (data.length < 2) return;
+
+  const maxPow = 300;
+  function yPow(v) { return H * 0.8 - (v / maxPow) * (H * 0.7); }
+
+  const lines = [
+    { key: 'solar', color: '#88dd00' },
+    { key: 'hotel', color: '#ff8800' },
+    { key: 'gen',   color: '#ffd700' },
+    { key: 'grid',  color: '#aa66ff' },
+  ];
+
+  // Grid lines
+  ctx.strokeStyle = '#1e3a6e'; ctx.lineWidth = 0.5;
+  [0, 100, 200, 260].forEach(v => {
+    const y = yPow(v);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.fillStyle = '#446'; ctx.font = '9px Arial';
+    ctx.fillText(v+'kW', 2, y - 2);
+  });
+
+  // Zero line
+  ctx.strokeStyle = '#336'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, yPow(0)); ctx.lineTo(W, yPow(0)); ctx.stroke();
+
+  lines.forEach(({ key, color }) => {
+    ctx.beginPath();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+    data.forEach((d, i) => {
+      const x = (i / (data.length - 1)) * W;
+      const y = yPow(d[key]);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+
+  // Battery (separate — positive = charge, negative = discharge)
+  ctx.beginPath(); ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1.2;
+  data.forEach((d, i) => {
+    if (d.batt <= 0) return;
+    const x = (i / (data.length - 1)) * W;
+    const y = yPow(d.batt);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  ctx.beginPath(); ctx.strokeStyle = '#ff4466'; ctx.lineWidth = 1.2;
+  data.forEach((d, i) => {
+    if (d.batt >= 0) return;
+    const x = (i / (data.length - 1)) * W;
+    const y = yPow(-d.batt);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // SOC line (secondary axis, right side)
+  ctx.beginPath(); ctx.strokeStyle = '#00d4ff44'; ctx.lineWidth = 1;
+  ctx.setLineDash([4,3]);
+  data.forEach((d, i) => {
+    const x = (i / (data.length - 1)) * W;
+    const y = H * 0.05 + (1 - d.soc / 100) * H * 0.75;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ============ SCENARIOS ============
+function setScenario(s) {
+  if (s === 'low') {
+    document.getElementById('hotelLoad').value = 80;
+    document.getElementById('solarPct').value = 60;
+    state.hotelLoad = 80; state.solarPct = 60;
+    log('🌙 Scenario: Low Season (80kW load)', 'ev-cyan');
+  } else if (s === 'high') {
+    document.getElementById('hotelLoad').value = 160;
+    document.getElementById('solarPct').value = 80;
+    state.hotelLoad = 160; state.solarPct = 80;
+    log('🎉 Scenario: High Season (160kW load)', 'ev-cyan');
+  } else if (s === 'peak') {
+    document.getElementById('solarPct').value = 100;
+    state.solarPct = 100;
+    log('☀️ Scenario: Full Solar Irradiance', 'ev-cyan');
+  }
+  syncUI();
+}
+
+function setDetailScenario(s, btn) {
+  // active class managed by voice wrapper; just ensure the right btn is marked
+  document.querySelectorAll('.sc-btn-voice').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  state.scenario = s;
+  state.timeline = [];
+  state.simTime = 0;
+
+  if (s === 'blackout') {
+    state.blackout = true;
+    state.gridOn = false;
+    state.genOn = true;
+    document.getElementById('hotelLoad').value = 160;
+    state.hotelLoad = 160;
+    log('🆘 BLACKOUT scenario started — Gen + Battery mode', 'ev-red');
+  } else if (s === 'offpeak') {
+    state.blackout = false;
+    state.gridOn = true;
+    state.genOn = false;
+    document.getElementById('hotelLoad').value = 80;
+    document.getElementById('solarPct').value = 0;
+    state.hotelLoad = 80; state.solarPct = 0;
+    log('🌙 Off-Peak: Grid charging Battery (no solar)', 'ev-yellow');
+  } else if (s === 'genlf') {
+    state.blackout = false;
+    state.gridOn = false;
+    state.genOn = true;
+    document.getElementById('lfMode').checked = true;
+    document.getElementById('genTarget').value = 190;
+    state.genTarget = 190;
+    log('⚙️ Gen Load Following: Target 190kW', 'ev-yellow');
+  } else if (s === 'fullsolar') {
+    state.blackout = false; state.genOn = false;
+    document.getElementById('solarPct').value = 100;
+    state.solarPct = 100;
+    log('☀️ Solar-only day simulation started', 'ev-green');
+  } else {
+    state.blackout = false;
+    state.gridOn = true;
+    state.genOn = false;
+    document.getElementById('hotelLoad').value = 120;
+    document.getElementById('solarPct').value = 75;
+    state.hotelLoad = 120; state.solarPct = 75;
+    log('✅ Normal day scenario reset', 'ev-cyan');
+  }
+  syncUI();
+}
+
+function triggerBlackout() {
+  state.blackout = true;
+  state.gridOn = false;
+  if (state.soc < state.socStart + 5 && state.genEnable) state.genOn = true;
+  log('🆘 GRID BLACKOUT — Switching to Off-Grid!', 'ev-red');
+  log('🔋 Battery + Solar taking over load', 'ev-yellow');
+}
+
+function restoreGrid() {
+  state.blackout = false;
+  state.gridOn = true;
+  log('✅ Grid Restored — Back to normal mode', 'ev-green');
+}
+
+// ---- Helpers: อ่านค่าจริงจากหน้าจอ ----
+function readLiveValues() {
+  const socPct   = parseFloat(document.getElementById('socPct').textContent)   || state.soc;
+  const socEnergy= document.getElementById('socEnergy').textContent || '—';
+  const backupT  = document.getElementById('backupTime').textContent || '—';
+  const battPow  = document.getElementById('battPower').textContent || '—';
+  const solarOut = document.getElementById('solarOut').textContent  || '—';
+  const gridImp  = document.getElementById('gridImport').textContent|| '—';
+  const genStat  = document.getElementById('genStatus').textContent || '—';
+  const genLoadP = document.getElementById('genLoadPct').textContent|| '—';
+  const lfStat   = document.getElementById('lfStatus').textContent  || '—';
+  const genTgt   = document.getElementById('genTargetShow').textContent || '—';
+  const modeTxt  = document.getElementById('modeBadge').textContent || '—';
+  const hotelKwEl= document.getElementById('hotelKw').textContent   || '—';
+  const solarKwEl= document.getElementById('solarKw').textContent   || '—';
+  const genKwEl  = document.getElementById('genKw').textContent     || '—';
+  const battKwEl = document.getElementById('battKw').textContent    || '—';
+  const gridKwEl = document.getElementById('gridKw').textContent    || '—';
+  const invKwEl  = document.getElementById('invKw').textContent     || '—';
+  return { socPct, socEnergy, backupT, battPow, solarOut, gridImp,
+           genStat, genLoadP, lfStat, genTgt, modeTxt,
+           hotelKwEl, solarKwEl, genKwEl, battKwEl, gridKwEl, invKwEl };
+}
+
+// ---- สร้างสคริปต์เสียง dynamic จากค่าจริงบนหน้าจอ ----
+function buildBlackoutVoiceScript() {
+  const v = readLiveValues();
+  const socNum = parseFloat(v.socPct) || state.soc;
+  const genWillStart = socNum <= state.socStart + 5;
+  return [
+    'จำลองเหตุการณ์ไฟฟ้าดับ! ระบบกำลังสลับโหมดเป็น ออฟ กริด ทันที',
+    `Power Flow Diagram แสดงให้เห็นว่า สายเชื่อมต่อการไฟฟ้า PEA ถูกตัดขาด โหลดโรงแรม ${v.hotelKwEl} ถูกจ่ายโดยแบตเตอรี่และโซล่าร์เท่านั้น`,
+    `Battery SOC ขณะนี้อยู่ที่ ${v.socPct} คิดเป็นพลังงานสำรอง ${v.socEnergy}`,
+    genWillStart
+      ? `เนื่องจาก SOC ใกล้ถึง ${state.socStart} เปอร์เซ็นต์ เครื่องกำเนิด Cummins จะถูกสั่งสตาร์ทโดยอัตโนมัติเพื่อชาร์จแบตเตอรี่กลับ`
+      : `เครื่องกำเนิดยังไม่สตาร์ท เพราะ SOC ยังสูงกว่า ${state.socStart} เปอร์เซ็นต์ ระบบใช้แบตเตอรี่จ่ายโหลดต่อไป`,
+    `EMS Status แสดงโหมด: ออฟ กริด Emergency ระบบทำงานเต็มรูปแบบสำรองไฟ`,
+    `Power Flow Timeline จะเริ่มแสดงการใช้พลังงานแบตเตอรี่แทนการไฟฟ้า โดยไม่มีพลังงานจาก Grid อีกต่อไป`,
+    `Event Log บันทึกเหตุการณ์ไฟดับ พร้อมสถานะการสลับโหมดฉุกเฉินทุกขั้นตอน`,
+  ];
+}
+
+function buildRestoreGridVoiceScript() {
+  const v = readLiveValues();
+  return [
+    'ระบบไฟฟ้าการไฟฟ้า PEA กลับมาแล้ว! EMS กำลังสลับกลับสู่โหมดปกติ',
+    `Power Flow Diagram แสดงเส้นเชื่อมต่อ Grid กลับมา ระบบพร้อมรับไฟจากการไฟฟ้าอีกครั้ง`,
+    `Battery SOC ปัจจุบันอยู่ที่ ${v.socPct} พลังงานในแบตเตอรี่ ${v.socEnergy} จะเริ่มถูกชาร์จคืนจากโซล่าร์หรือกริด`,
+    `EMS Status สลับโหมดจาก ออฟ กริด กลับเป็นโหมดปกติ ระบบ Load Following กลับมาทำงาน`,
+    `Power Flow Timeline จะแสดงการกลับมาของ Grid ในกราฟ โหลดโรงแรมจะถูกจ่ายจากหลายแหล่งพลังงานร่วมกันอีกครั้ง`,
+    `Event Log บันทึกเวลาที่ Grid กลับมา และสถานะการสลับโหมดทุกขั้นตอน`,
+  ];
+}
+
+function buildLowSeasonVoiceScript() {
+  // Apply first, then read — use known values
+  return [
+    'สถานการณ์ Low Season หรือช่วงโลว์ซีซัน โหลดโรงแรมลดลงเหลือ 80 กิโลวัตต์',
+    'Power Flow Diagram แสดงให้เห็นว่า Solar ผลิตไฟได้เกินความต้องการของโรงแรม ส่วนเกินจะถูกนำไปชาร์จแบตเตอรี่อัตโนมัติ',
+    'ในโหมด Load Following เครื่องกำเนิดจะผลิตไฟ 190 กิโลวัตต์คงที่ ส่วนเกินจากโหลด 80 กิโลวัตต์ คือ 110 กิโลวัตต์ จะถูกนำชาร์จแบตเตอรี่ทั้งหมด',
+    'Battery SOC จะเพิ่มขึ้นอย่างรวดเร็วในช่วงนี้ เพราะกำลังชาร์จสูง เมื่อถึง 80 เปอร์เซ็นต์ เครื่องกำเนิดจะหยุดอัตโนมัติ',
+    'Power Flow Timeline แสดงเส้นโหลดโรงแรมต่ำ เส้นแบตเตอรี่ชาร์จสูง และเส้น Solar ผลิตตามช่วงเวลากลางวัน',
+    'EMS Status แสดงโหมด Battery Charging ซึ่งเป็นสถานะที่ประหยัดพลังงานสูงสุดในช่วงนักท่องเที่ยวน้อย',
+    'Event Log จะแสดงการชาร์จแบตเตอรี่ต่อเนื่อง พร้อมบันทึกเมื่อ SOC ถึง 80 เปอร์เซ็นต์และเครื่องกำเนิดหยุด',
+  ];
+}
+
+function buildHighSeasonVoiceScript() {
+  return [
+    'สถานการณ์ High Season หรือช่วงไฮซีซัน โหลดโรงแรมเพิ่มขึ้นเป็น 160 กิโลวัตต์',
+    'Power Flow Diagram แสดงการไหลของพลังงานจากหลายแหล่งพร้อมกัน Solar 80 เปอร์เซ็นต์ บวกกับ Grid หรือ Generator เสริม',
+    'ในโหมด Load Following เครื่องกำเนิดผลิตคงที่ 190 กิโลวัตต์ โหลด 160 กิโลวัตต์ ส่วนเกิน 30 กิโลวัตต์ยังคงชาร์จแบตเตอรี่',
+    'Battery SOC ชาร์จช้าลงเมื่อเทียบกับ Low Season เพราะโหลดสูงขึ้น กินพลังงานมากขึ้น',
+    'Power Flow Timeline แสดงเส้นโหลดโรงแรมสูงขึ้น เส้น Solar เพิ่มขึ้นตาม Irradiance 80 เปอร์เซ็นต์',
+    'EMS Status ยังคงแสดงโหมดชาร์จ แต่ด้วยกำลังที่น้อยกว่า ระบบสมดุลพลังงานทุกแหล่งอย่างชาญฉลาด',
+    'Event Log บันทึกการปรับสมดุลโหลดอย่างต่อเนื่อง พร้อมแจ้งเตือนหาก SOC ลดต่ำกว่าเกณฑ์',
+  ];
+}
+
+function buildSolarPeakVoiceScript() {
+  return [
+    'สถานการณ์ Solar Peak คือช่วงที่แสงอาทิตย์แรงที่สุด แผงโซล่าร์ผลิตไฟเต็ม 100 เปอร์เซ็นต์',
+    'Power Flow Diagram แสดงเส้นพลังงานจากโซล่าร์หนาที่สุด กำลังผลิตสูงสุดถึง 120 จุด 6 กิโลวัตต์ จ่ายตรงสู่โหลดโรงแรมและชาร์จแบตเตอรี่พร้อมกัน',
+    'โหลดโรงแรมถูกจ่ายด้วยโซล่าร์ทั้งหมด โดยไม่ต้องพึ่งพาการไฟฟ้าหรือเครื่องกำเนิดเลย',
+    'Battery SOC กำลังเพิ่มขึ้นอย่างรวดเร็ว จากพลังงานโซล่าร์ส่วนเกิน พลังงานที่ชาร์จเก็บไว้จะถูกนำมาใช้ยามกลางคืน',
+    'Power Flow Timeline ช่วงนี้จะเห็นเส้นสีเขียว Solar พุ่งสูงสุด เส้น Grid และ Generator เป็นศูนย์',
+    'EMS Status แสดงโหมด Solar Priority Charging ซึ่งเป็นโหมดที่ประหยัดค่าไฟและลดคาร์บอนสูงสุด',
+    'Event Log บันทึกกำลังผลิต Solar สูงสุด พร้อมสถานะชาร์จแบตเตอรี่และค่า SOC ที่เพิ่มขึ้นต่อเนื่อง',
+  ];
+}
+
+// ---- Voice wrappers สำหรับ 5 ปุ่มฝั่งซ้าย ----
+function triggerBlackoutVoice() {
+  triggerBlackout();
+  setTimeout(() => {
+    const script = buildBlackoutVoiceScript();
+    speakWithBar('⚡ กำลังบรรยาย: Simulate Blackout', script);
+  }, 300);
+}
+
+function restoreGridVoice() {
+  restoreGrid();
+  setTimeout(() => {
+    const script = buildRestoreGridVoiceScript();
+    speakWithBar('✅ กำลังบรรยาย: Restore Grid', script);
+  }, 300);
+}
+
+function setScenarioVoice(s) {
+  setScenario(s);
+  setTimeout(() => {
+    let script = [];
+    let label = '';
+    if (s === 'low') {
+      script = buildLowSeasonVoiceScript();
+      label = '🌙 กำลังบรรยาย: Low Season';
+    } else if (s === 'high') {
+      script = buildHighSeasonVoiceScript();
+      label = '🎉 กำลังบรรยาย: High Season';
+    } else if (s === 'peak') {
+      script = buildSolarPeakVoiceScript();
+      label = '☀️ กำลังบรรยาย: Solar Peak';
+    }
+    speakWithBar(label, script);
+  }, 300);
+}
+
+// ---- Shared speak helper ----
+function speakWithBar(label, script) {
+  hardStop(() => {
+    setVoiceBarState(true, label);
+    speakSequential(script, () => {
+      setVoiceBarState(false, '');
+    });
+  });
+}
+
+function syncUI() {
+  document.getElementById('hotelLoadVal').textContent = document.getElementById('hotelLoad').value;
+  document.getElementById('solarVal').textContent = document.getElementById('solarPct').value;
+  document.getElementById('genTargetVal').textContent = document.getElementById('genTarget').value;
+  document.getElementById('socStartVal').textContent = document.getElementById('socStart').value + '%';
+  document.getElementById('socStopVal').textContent = document.getElementById('socStop').value + '%';
+  document.getElementById('simSpeedVal').textContent = document.getElementById('simSpeed').value + 'x';
+  state.hotelLoad = parseFloat(document.getElementById('hotelLoad').value);
+  state.solarPct = parseFloat(document.getElementById('solarPct').value);
+  state.genTarget = parseFloat(document.getElementById('genTarget').value);
+  state.socStart = parseFloat(document.getElementById('socStart').value);
+  state.socStop = parseFloat(document.getElementById('socStop').value);
+}
+
+// ============================================================
+// TTS VOICE ENGINE v2 — แก้ Chrome cancel bug + choppy speech
+// ============================================================
+let currentUtterance = null;
+let ttsStopFlag = false;
+let ttsKeepAliveTimer = null;
+let ttsCancelRetry = null;
+
+// Preload voices async
+function initVoices() { speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = initVoices;
+initVoices();
+
+// Chrome keepalive: ป้องกันเสียงขาดช่วงทุก 10 วิ (Chrome bug)
+function startKeepAlive() {
+  stopKeepAlive();
+  ttsKeepAliveTimer = setInterval(() => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.pause();
+      speechSynthesis.resume();
+    }
+  }, 10000);
+}
+function stopKeepAlive() {
+  if (ttsKeepAliveTimer) { clearInterval(ttsKeepAliveTimer); ttsKeepAliveTimer = null; }
+}
+
+// hardStop: ยิง cancel ซ้ำหลายรอบ — แก้ Chrome ที่ cancel() ครั้งเดียวไม่หยุด
+function hardStop(cb) {
+  ttsStopFlag = true;
+  stopKeepAlive();
+  if (ttsCancelRetry) { clearInterval(ttsCancelRetry); ttsCancelRetry = null; }
+  let tries = 0;
+  function doCancel() {
+    speechSynthesis.cancel();
+    tries++;
+    if (tries >= 8 || !speechSynthesis.speaking) {
+      clearInterval(ttsCancelRetry); ttsCancelRetry = null;
+      setTimeout(() => { cb && cb(); }, 50);
+    }
+  }
+  doCancel();
+  ttsCancelRetry = setInterval(doCancel, 60);
+}
+
+// สคริปต์บรรยายสถานการณ์แต่ละปุ่ม (ภาษาไทยเต็ม)
+const scenarioVoiceScript = {
+  normal: [
+    'สถานการณ์ปกติ วันธรรมดา ของโรงแรมมัทฉะ สมุย รีสอร์ท',
+    'ขณะนี้ระบบทำงานเต็มรูปแบบ โดยมีแผงโซล่าร์เซลล์ขนาด 120 จุดหกกิโลวัตต์พีค ผลิตไฟฟ้าจากแสงอาทิตย์',
+    'ไฟฟ้าที่ผลิตได้ จะถูกจ่ายให้กับโหลดโรงแรมเป็นอันดับแรก',
+    'หากพลังงานแสงอาทิตย์เกินความต้องการ ส่วนที่เหลือจะถูกนำไปชาร์จแบตเตอรี่ ESS ขนาด 336 กิโลวัตต์ชั่วโมงโดยอัตโนมัติ',
+    'เมื่อแบตเตอรี่เต็มแล้ว หรือในช่วงที่แสงอาทิตย์ไม่เพียงพอ ระบบจะดึงไฟจากการไฟฟ้า PEA มาเสริม',
+    'โหลดโรงแรมในช่วงปกติอยู่ที่ประมาณ 120 กิโลวัตต์ เป็นสถานการณ์ที่ประหยัดพลังงานสูงสุด',
+  ],
+  blackout: [
+    'สถานการณ์ไฟฟ้าดับฉุกเฉิน ระบบสำรองไฟ 2 ชั่วโมง',
+    'เมื่อเกิดไฟดับจากการไฟฟ้า PEA ระบบ EMS จะตรวจจับและสลับโหมดเป็น ออฟ-กริด ทันทีโดยอัตโนมัติ',
+    'แบตเตอรี่ ESS ขนาด 336 กิโลวัตต์ชั่วโมง จะเริ่มจ่ายไฟให้กับทั้งสองอาคารของโรงแรมพร้อมกัน',
+    'โหลดขั้นต่ำของโรงแรมในช่วงฉุกเฉินอยู่ที่ 160 กิโลวัตต์ ระบบจึงต้องการพลังงานสำรองอย่างน้อย 320 กิโลวัตต์ชั่วโมง',
+    'เครื่องกำเนิดไฟฟ้า Cummins NTA855 ขนาด 325 กิโลวีเอ จะถูกสั่งสตาร์ทอัตโนมัติ หากระดับชาร์จแบตเตอรี่ลดลงถึง 30 เปอร์เซ็นต์',
+    'เมื่อเครื่องกำเนิดทำงาน ระบบจะชาร์จแบตเตอรี่กลับคืน ขณะเดียวกันก็จ่ายไฟให้โรงแรมต่อเนื่อง',
+    'ระบบนี้รองรับการสำรองไฟได้นานเกิน 2 ชั่วโมงตามที่โรงแรมต้องการ',
+  ],
+  offpeak: [
+    'สถานการณ์ชาร์จแบตเตอรี่ในช่วงอัตราค่าไฟต่ำ หรือ ออฟ-พีค',
+    'ในช่วงเวลา 22 นาฬิกา ถึง 9 นาฬิกา อัตราค่าไฟของการไฟฟ้า PEA จะต่ำกว่าช่วงกลางวันประมาณ 40 ถึง 50 เปอร์เซ็นต์',
+    'ระบบ EMS ของ Sigen รองรับการตั้งค่า Time-of-Use หรือ TOU Schedule โดยจะชาร์จแบตเตอรี่จากไฟกริดในช่วงราคาถูกโดยอัตโนมัติ',
+    'พลังงานที่สะสมไว้ในแบตเตอรี่ตอนกลางคืน จะถูกนำมาใช้ในช่วงกลางวันแทนการซื้อไฟในช่วงราคาแพง',
+    'นอกจากนี้ ในกรณีฉุกเฉิน ยังสามารถใช้เครื่องกำเนิดชาร์จแบตเตอรี่กลับได้เช่นกัน',
+    'กลยุทธ์นี้ช่วยลดค่าไฟฟ้ารวมของโรงแรมได้อย่างมีนัยสำคัญ',
+  ],
+  genlf: [
+    'สถานการณ์ Generator Load Following หรือการให้เครื่องกำเนิดทำงานที่กำลังคงที่',
+    'ฟีเจอร์นี้คือหัวใจของระบบที่โรงแรมต้องการ',
+    'EMS จะล็อกกำลังผลิตของเครื่องกำเนิด Cummins ให้คงที่ที่ 190 กิโลวัตต์ตลอดเวลา',
+    'เมื่อโหลดโรงแรมต่ำ เช่น 80 กิโลวัตต์ในช่วงโลว์ซีซัน พลังงานส่วนเกิน 110 กิโลวัตต์จะถูกนำไปชาร์จแบตเตอรี่โดยอัตโนมัติ',
+    'เมื่อโหลดสูงขึ้น เช่น 160 กิโลวัตต์ในช่วงไฮซีซัน แบตเตอรี่จะยังคงชาร์จในอัตรา 30 กิโลวัตต์',
+    'หากโหลดเกิน 190 กิโลวัตต์ แบตเตอรี่จะจ่ายไฟเสริมทันที โดยที่เครื่องกำเนิดยังคงทำงานที่ 190 กิโลวัตต์เหมือนเดิม',
+    'การตั้งค่า 190 กิโลวัตต์ เทียบเท่ากับ 73 เปอร์เซ็นต์ของความสามารถสูงสุดของเครื่อง ซึ่งเป็นจุดที่เครื่องกำเนิดดีเซลทำงานได้มีประสิทธิภาพสูงที่สุด ประหยัดน้ำมัน และยืดอายุเครื่อง',
+    'ระบบยังรองรับการตั้ง SOC สตาร์ทเครื่องที่ 30 เปอร์เซ็นต์ และหยุดเครื่องที่ 80 เปอร์เซ็นต์โดยอัตโนมัติ',
+  ],
+  fullsolar: [
+    'สถานการณ์วันที่ใช้พลังงานแสงอาทิตย์เต็มกำลัง',
+    'ในวันที่แสงแดดจัด แผงโซล่าร์เซลล์ขนาด 120 จุดหกกิโลวัตต์พีค สามารถผลิตไฟฟ้าได้สูงสุด',
+    'แผงจำนวน 180 แผง ขนาด 670 วัตต์ของ AIKO และ LONGi ถูกติดตั้งบนอาคารฝั่งโอเชียน ขนาด 80 คูณ 8 เมตร',
+    'พลังงานแสงอาทิตย์จะถูกใช้จ่ายโหลดโรงแรมก่อน ส่วนที่เหลือนำไปชาร์จแบตเตอรี่จนเต็ม',
+    'ในช่วงกลางวันที่ Solar ผลิตเต็มที่ โรงแรมสามารถใช้ไฟฟ้าฟรีได้ทั้งหมด โดยไม่ต้องพึ่งพาการไฟฟ้าหรือเครื่องกำเนิด',
+    'พลังงานที่สะสมในแบตเตอรี่ระหว่างวัน จะถูกนำมาจ่ายในตอนกลางคืน ช่วยลดการใช้ไฟจากกริดได้อีก',
+    'นี่คือโหมดที่ช่วยลดคาร์บอนและประหยัดค่าไฟฟ้าได้สูงสุดของโรงแรมมัทฉะ สมุย รีสอร์ท',
+  ],
+};
+
+// ---- Find best Thai male voice ----
+function getThaiMaleVoice() {
+  const voices = speechSynthesis.getVoices();
+  // Priority: Thai male > Thai any > th-TH > default
+  const priorities = [
+    v => v.lang === 'th-TH' && v.name.toLowerCase().includes('male'),
+    v => v.lang === 'th-TH' && v.name.toLowerCase().includes('นาย'),
+    v => v.lang === 'th-TH' && !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('woman'),
+    v => v.lang === 'th-TH',
+    v => v.lang.startsWith('th'),
+  ];
+  for (const pred of priorities) {
+    const found = voices.find(pred);
+    if (found) return found;
+  }
+  return voices[0] || null;
+}
+
+// ---- Speak sentences sequentially (robust version) ----
+function speakSequential(sentences, onDone) {
+  ttsStopFlag = false;
+  let idx = 0;
+  const voice = getThaiMaleVoice(); // cache voice once
+
+  function speakNext() {
+    if (ttsStopFlag || idx >= sentences.length) {
+      if (!ttsStopFlag) { onDone && onDone(); }
+      stopKeepAlive();
+      return;
+    }
+    // Chrome: ต้องรอให้ queue ว่างก่อน (workaround pause/resume)
+    if (speechSynthesis.speaking) {
+      setTimeout(speakNext, 50);
+      return;
+    }
+    const utt = new SpeechSynthesisUtterance(sentences[idx]);
+    utt.lang = 'th-TH';
+    utt.rate = 0.88;
+    utt.pitch = 0.82;
+    utt.volume = 1.0;
+    if (voice) utt.voice = voice;
+
+    utt.onstart = () => {
+      // Chrome pause+resume ทันทีหลัง start — ป้องกัน internal timer bug
+      if (idx === 0) startKeepAlive();
+    };
+    utt.onend = () => {
+      if (ttsStopFlag) return;
+      idx++;
+      // เว้น 120ms ระหว่างประโยค — ให้ Chrome flush queue
+      setTimeout(speakNext, 120);
+    };
+    utt.onerror = (e) => {
+      if (ttsStopFlag) return;
+      // ข้าม sentence ที่ error แล้วไปต่อ
+      idx++;
+      setTimeout(speakNext, 150);
+    };
+    currentUtterance = utt;
+    speechSynthesis.speak(utt);
+  }
+
+  // Chrome: cancel ก่อนเริ่มใหม่เสมอ แล้วรอ 120ms
+  speechSynthesis.cancel();
+  setTimeout(speakNext, 120);
+}
+
+function stopVoice() {
+  hardStop(() => {
+    setVoiceBarState(false, '');
+    document.querySelectorAll('.sc-btn-voice').forEach(b => b.classList.remove('speaking'));
+  });
+}
+
+function setVoiceBarState(active, text) {
+  const bar = document.getElementById('voiceBar');
+  const dot = document.getElementById('voiceDot');
+  const barText = document.getElementById('voiceBarText');
+  const wave = document.getElementById('voiceWave');
+  const stopBtn = document.getElementById('voiceStopBtn');
+  if (active) {
+    bar.classList.add('active');
+    dot.classList.add('on');
+    barText.textContent = text;
+    wave.style.display = 'flex';
+    stopBtn.style.display = 'block';
+  } else {
+    bar.classList.remove('active');
+    dot.classList.remove('on');
+    barText.textContent = '🎙️ กดปุ่มสถานการณ์เพื่อฟังคำอธิบายเสียง';
+    wave.style.display = 'none';
+    stopBtn.style.display = 'none';
+  }
+}
+
+function setDetailScenarioVoice(s, btn) {
+  // Run the original simulation scenario
+  setDetailScenario(s, btn);
+
+  // Reset button states
+  document.querySelectorAll('.sc-btn-voice').forEach(b => {
+    b.classList.remove('active', 'speaking');
+  });
+  btn.classList.add('active', 'speaking');
+
+  // Hard stop any running speech first
+  ttsStopFlag = true;
+  stopKeepAlive();
+  speechSynthesis.cancel();
+
+  const labels = {
+    normal:    '🌤️ กำลังบรรยาย: วันปกติ Normal Day',
+    blackout:  '🆘 กำลังบรรยาย: ไฟดับฉุกเฉิน Blackout',
+    offpeak:   '🌙 กำลังบรรยาย: ชาร์จช่วง Off-Peak',
+    genlf:     '⚙️ กำลังบรรยาย: Generator Load Following',
+    fullsolar: '☀️ กำลังบรรยาย: Solar วันพลังงานเต็ม',
+  };
+
+  setVoiceBarState(true, labels[s] || '🎙️ กำลังบรรยาย...');
+
+  const script = scenarioVoiceScript[s] || [];
+  speakSequential(script, () => {
+    btn.classList.remove('speaking');
+    setVoiceBarState(false, '');
+  });
+}
+
+// ============ EVENTS ============
+['hotelLoad','solarPct','genTarget','socStart','socStop','simSpeed'].forEach(id => {
+  document.getElementById(id).addEventListener('input', syncUI);
+});
+
+// ============ MAIN LOOP ============
+function startSim() {
+  simInterval = setInterval(() => {
+    if (state.simRunning) emsStep();
+  }, 200);
+}
+
+// Init
+log('🚀 MATCHA Samui EMS Simulator v1.0', 'ev-green');
+log('📊 120.6 kWp Solar | 336 kWh ESS | 325kVA Gen', 'ev-cyan');
+log('⚙️ Gen Load Following: Target 190kW ready', 'ev-yellow');
+log('🔋 SOC Start Gen: 30% | Stop Gen: 80%', 'ev-yellow');
+startSim();
+drawSocRing();
+</script>
+</body>
+</html>
