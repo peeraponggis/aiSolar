@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โปรแกรมประเมินระบบโซลาร์เซลล์ | Solar PV Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14202b;
+  --ink-2:#3d4f5e;
+  --line:#d8dee5;
+  --paper:#ffffff;
+  --bg:#eef1f4;
+  --band:#16283a;
+  --sun:#f0a202;
+  --pv:#1e9be0;
+  --load:#e03131;
+  --self:#12a15b;
+  --batt:#f07b10;
+  --psh:#8b5cf6;
+  --ok:#dff3e6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Kanit',system-ui,sans-serif;
+  font-weight:300;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.num-t{font-variant-numeric:tabular-nums}
+h1,h2,h3,h4{font-weight:500;margin:0;letter-spacing:-.01em}
+
+/* ---------- ส่วนหัว ---------- */
+.masthead{
+  background:var(--band);
+  color:#fff;
+  padding:22px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  border-bottom:4px solid var(--sun);
+}
+.masthead h1{font-size:22px;font-weight:500}
+.masthead p{margin:2px 0 0;font-size:13px;font-weight:200;color:#a9bccd}
+.sunmark{width:38px;height:38px;flex:none}
+
+/* ---------- โครงหน้า ---------- */
+.shell{display:grid;grid-template-columns:360px minmax(0,1fr);gap:0;align-items:start}
+@media (max-width:1080px){.shell{grid-template-columns:1fr}}
+
+/* ---------- แผงกรอกข้อมูล ---------- */
+.rail{
+  background:#f7f9fb;border-right:1px solid var(--line);
+  padding:18px 20px 60px;position:sticky;top:0;max-height:100vh;overflow-y:auto;
+}
+@media (max-width:1080px){.rail{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line)}}
+.group{margin-bottom:20px}
+.group>h3{
+  font-size:13px;font-weight:600;color:var(--band);
+  padding-bottom:6px;border-bottom:2px solid var(--band);margin-bottom:10px;
+  display:flex;align-items:baseline;gap:8px;
+}
+.group>h3 .step{
+  font-size:11px;font-weight:500;color:#fff;background:var(--band);
+  border-radius:3px;padding:1px 6px;
+}
+.f{margin-bottom:9px}
+.f label{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:3px}
+.f input[type=text],.f input[type=date],.f select{
+  width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:5px;
+  font-family:inherit;font-size:14px;font-weight:400;background:#fff;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.f input:focus,.f select:focus{outline:2px solid var(--sun);outline-offset:1px;border-color:transparent}
+.f .unit{float:right;font-size:11.5px;color:#8a97a3;font-weight:300}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0;color:var(--ink-2)}
+.chk input{width:16px;height:16px;accent-color:var(--batt)}
+.hint{font-size:11.5px;color:#8a97a3;margin:4px 0 0;line-height:1.45}
+.btn{
+  font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;
+  border:none;border-radius:6px;padding:10px 16px;
+}
+.btn-print{background:var(--band);color:#fff;width:100%}
+.btn-print:hover{background:#223b53}
+.btn-calc{background:var(--band);color:#fff;width:100%}
+.btn-calc:hover{background:#223b53}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink-2);width:100%;margin-top:8px}
+
+/* ---------- รายงาน ---------- */
+.report{padding:26px 30px 80px;max-width:1080px}
+.sec{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:20px 22px;margin-bottom:18px}
+.sec>h2{
+  font-size:16px;font-weight:600;color:var(--band);margin-bottom:4px;
+  display:flex;align-items:center;gap:9px;
+}
+.sec>h2 .n{
+  font-size:12px;background:var(--sun);color:#3a2600;border-radius:4px;
+  width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;flex:none;
+}
+.sec>.sub{font-size:12.5px;color:#8a97a3;margin:0 0 14px 31px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-radius:6px;padding:11px 13px;background:#fbfcfd}
+.kpi .k{font-size:12px;color:var(--ink-2);font-weight:300}
+.kpi .v{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.25;color:var(--band)}
+.kpi .v small{font-size:12px;font-weight:300;color:var(--ink-2);margin-left:3px}
+.kpi.hi{background:#fff8e8;border-color:#f2d894}
+.kpi.gd{background:#effaf3;border-color:#b6e3c9}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:right}
+th{font-weight:500;color:var(--ink-2);background:#f4f7f9;text-align:right;font-size:12.5px;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:#fafcfe}
+tr.payback{background:var(--ok)!important;font-weight:500}
+tr.payback td{border-bottom-color:#9fd6b6}
+.tbl-wrap{overflow-x:auto}
+
+.note{
+  font-size:13.5px;color:var(--ink-2);line-height:1.75;margin-top:14px;
+  border-left:3px solid var(--sun);padding:2px 0 2px 13px;font-weight:300;
+}
+.note b{font-weight:500;color:var(--ink)}
+.chart{width:100%;height:auto;display:block;margin:6px 0 2px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-2);margin:8px 0 2px}
+.legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.legend .sq{height:11px;width:13px;border-radius:2px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:13.5px}
+.dl dt{color:var(--ink-2);font-weight:300}
+.dl dd{margin:0;font-weight:400;font-variant-numeric:tabular-nums}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:34px;font-size:13px;color:var(--ink-2)}
+.sig div{border-top:1px dotted #9aa7b2;padding-top:6px;text-align:center}
+
+/* ---------- พิมพ์ / PDF ---------- */
+@media print{
+  @page{size:A4;margin:12mm 10mm}
+  body{background:#fff;font-size:11.5px}
+  .no-print{display:none!important}
+  .shell{display:block}
+  .report{padding:0;max-width:none}
+  .masthead{padding:10px 0;border-bottom:3px solid var(--sun);background:#fff;color:var(--band)}
+  .masthead p{color:#5b6b78}
+  .sec{border:1px solid #ccd4db;box-shadow:none;margin-bottom:10px;padding:12px 14px;
+       break-inside:avoid;page-break-inside:avoid}
+  .chart,.tbl-wrap,table,.kpis,.note,.legend{break-inside:avoid;page-break-inside:avoid}
+  tr{break-inside:avoid;page-break-inside:avoid}
+  thead{display:table-header-group}
+  .kpi .v{font-size:16px}
+  .page-break{break-before:page;page-break-before:always}
+}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div style="display:flex;align-items:center;gap:14px">
+    <svg class="sunmark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="8" fill="#f0a202"/>
+      <g stroke="#f0a202" stroke-width="2.4" stroke-linecap="round">
+        <path d="M20 3v5M20 32v5M3 20h5M32 20h5M8 8l3.5 3.5M28.5 28.5L32 32M32 8l-3.5 3.5M11.5 28.5L8 32"/>
+      </g>
+    </svg>
+    <div>
+      <h1>โปรแกรมประเมินระบบโซลาร์เซลล์</h1>
+      <p>ออกแบบขนาดระบบ · จำลองพฤติกรรมโหลดรายชั่วโมง · วิเคราะห์ผลตอบแทนการลงทุน</p>
+    </div>
+  </div>
+  <div style="text-align:right;font-size:12.5px;font-weight:200;color:#a9bccd" id="mastMeta"></div>
+</div>
+
+<div class="shell">
+
+<!-- ============ แผงกรอกข้อมูล ============ -->
+<aside class="rail no-print">
+
+  <div class="group">
+    <h3><span class="step">1</span> ข้อมูลโครงการ</h3>
+    <div class="f"><label>ชื่อโครงการ</label><input type="text" id="projName" value="ระบบผลิตไฟฟ้าพลังงานแสงอาทิตย์บนหลังคา"></div>
+    <div class="f"><label>ชื่อลูกค้า / เจ้าของโครงการ</label><input type="text" id="custName" value="บริษัท ตัวอย่าง จำกัด"></div>
+    <div class="f"><label>สถานที่ติดตั้ง</label><input type="text" id="siteAddr" value="อำเภอเมือง จังหวัดอุดรธานี"></div>
+    <div class="two">
+      <div class="f"><label>ประเภทผู้ใช้ไฟ</label>
+        <select id="custType"><option>บ้านอยู่อาศัย</option><option selected>กิจการขนาดเล็ก</option><option>กิจการขนาดกลาง</option><option>โรงงานอุตสาหกรรม</option></select></div>
+      <div class="f"><label>วันที่ประเมิน</label><input type="date" id="reportDate"></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <h3><span class="step">2</span> การใช้พลังงานไฟฟ้า</h3>
+    <div class="f"><label>หน่วยการใช้ไฟฟ้าต่อเดือน <span class="unit">kWh/เดือน</span></label><input type="text" class="num" id="monthlyUnits" value="12,000"></div>
+    <div class="f"><label>ค่าไฟฟ้าเฉลี่ย <span class="unit">บาท/หน่วย</span></label><input type="text" class="num" id="tariff" value="4.5"></div>
+    <div class="f"><label>สัดส่วนการใช้ไฟฟ้ากลางวัน (ช่วง PSH) <span class="unit">%</span></label><input type="text" class="num" id="dayRatio" value="60"></div>
+    <p class="hint">สัดส่วนกลางวันหมายถึงพลังงานที่ใช้ระหว่าง 09:00–15:00 น. ซึ่งเป็นช่วงที่แผงผลิตไฟได้สูงสุด</p>
+    <div id="battSuggestion" style="margin-top:6px;font-size:13px;color:#12a15b;background:#effaf3;padding:6px 10px;border-radius:4px;border:1px solid #b6e3c9;"></div>
+  </div>
+
+  <div class="group">
+    <h3><span class="step">3</span> พารามิเตอร์ออกแบบ</h3>
+    <div class="two">
+      <div class="f"><label>PSH <span class="unit">ชม./วัน</span></label><input type="text" class="num" id="psh" value="4.3"></div>
+      <div class="f"><label>Performance Ratio</label><input type="text" class="num" id="pr" value="0.75"></div>
+    </div>
+    <div class="two">
+      <div class="f"><label>กำลังแผง <span class="unit">Wp/แผง</span></label><input type="text" class="num" id="panelW" value="650"></div>
+      <div class="f"><label>DC/AC Ratio</label><input type="text" class="num" id="dcac" value="1.1"></div>
+    </div>
+    <div style="margin-bottom:6px;">
+      <div class="chk"><input type="checkbox" id="hasBattery" checked><label for="hasBattery" style="margin:0">ติดตั้งแบตเตอรี่</label></div>
+    </div>
+    <div class="f"><label>ความจุแบตเตอรี่ <span class="unit">kWh</span></label><input type="text" class="num" id="battKwh" value="20"></div>
+    <p class="hint">ใส่ 0 หากไม่ต้องการแบตเตอรี่ (หรือปิดตัวเลือกด้านบน) ระบบจะคำนวณแผงเพิ่มเพื่อชาร์จแบตเตอรี่ให้อัตโนมัติตามความจุที่ตั้ง</p>
+    <div class="chk"><input type="checkbox" id="dchPre"><label for="dchPre" style="margin:0">ดีสชาร์จก่อนช่วง PSH (05:00–09:00)</label></div>
+    <div class="chk"><input type="checkbox" id="dchPost" checked><label for="dchPost" style="margin:0">ดีสชาร์จหลังช่วง PSH (18:00–23:00)</label></div>
+  </div>
+
+  <div class="group">
+    <h3><span class="step">4</span> ต้นทุนและสมมติฐานการเงิน</h3>
+    <div class="two">
+      <div class="f"><label>ต้นทุนโครงการ <span class="unit">บาท/วัตต์</span></label><input type="text" class="num" id="costW" value="25"></div>
+      <div class="f"><label>ต้นทุนแบตเตอรี่ <span class="unit">บาท/kWh</span></label><input type="text" class="num" id="battCost" value="10,000"></div>
+    </div>
+    <div class="two">
+      <div class="f"><label>ค่าบำรุงรักษา <span class="unit">บาท/วัตต์/ปี</span></label><input type="text" class="num" id="omW" value="0.06"></div>
+      <div class="f"><label>ภาษีมูลค่าเพิ่ม <span class="unit">%</span></label><input type="text" class="num" id="vat" value="7"></div>
+    </div>
+    <div class="two">
+      <div class="f"><label>อัตราลด (Discount) <span class="unit">%/ปี</span></label><input type="text" class="num" id="disc" value="6.5"></div>
+      <div class="f"><label>ค่าเสื่อมแผง&อินฯ <span class="unit">%/ปี</span></label><input type="text" class="num" id="degr" value="1"></div>
+    </div>
+    <div class="two">
+      <div class="f"><label>อัตราเพิ่มค่าไฟฟ้า <span class="unit">%/ปี</span></label><input type="text" class="num" id="esc" value="3"></div>
+      <div class="f"><label>อายุโครงการ <span class="unit">ปี</span></label><input type="text" class="num" id="life" value="25"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-calc" onclick="recalc()">คำนวณใหม่</button>
+  <button class="btn btn-print" onclick="window.print()" style="margin-top:8px;">บันทึกเป็น PDF / พิมพ์รายงาน</button>
+  <p class="hint">รายงานจะถูกจัดหน้าอัตโนมัติ กราฟและตารางจะไม่ถูกตัดแบ่งหน้า และปุ่มทั้งหมดจะถูกซ่อนในไฟล์ PDF</p>
+</aside>
+
+<!-- ============ รายงาน ============ -->
+<main class="report" id="report">
+
+  <section class="sec" id="secProject">
+    <h2><span class="n">1</span>ข้อมูลโครงการ</h2>
+    <p class="sub">รายละเอียดผู้ใช้ไฟฟ้าและสถานที่ติดตั้ง</p>
+    <div id="projBox"></div>
+  </section>
+
+  <section class="sec" id="secLoad">
+    <h2><span class="n">2</span>การใช้พลังงานไฟฟ้าและความต้องการช่วง PSH</h2>
+    <p class="sub">หน่วยรายเดือน · ค่าเฉลี่ยรายวัน · สัดส่วนกลางวัน · พลังงานเป้าหมายที่ต้องผลิต</p>
+    <div class="kpis" id="loadKpis"></div>
+    <div class="note" id="loadNote"></div>
+  </section>
+
+  <section class="sec" id="secSize">
+    <h2><span class="n">3</span>ผลการออกแบบขนาดระบบ</h2>
+    <p class="sub">จำนวนแผง · ขนาดอินเวอร์เตอร์ · แผงส่วนเพิ่มสำหรับชาร์จแบตเตอรี่ · กำลังผลิตสูงสุด</p>
+    <div class="kpis" id="sizeKpis"></div>
+    <div class="tbl-wrap" style="margin-top:14px"><table id="sizeTable"></table></div>
+    <div class="note" id="sizeNote"></div>
+  </section>
+
+  <section class="sec" id="secFin">
+    <h2><span class="n">4</span>ต้นทุนโครงการและผลตอบแทนการลงทุน</h2>
+    <p class="sub">เงินลงทุน · ระยะเวลาคืนทุน · IRR · NPV · LCOE</p>
+    <div class="kpis" id="finKpis"></div>
+    <div class="split" style="margin-top:16px">
+      <div><h4 style="font-size:13.5px;margin-bottom:7px">โครงสร้างเงินลงทุน</h4><dl class="dl" id="capexDl"></dl></div>
+      <div><h4 style="font-size:13.5px;margin-bottom:7px">สมมติฐานทางการเงิน</h4><dl class="dl" id="assumeDl"></dl></div>
+    </div>
+    <div class="note" id="finNote"></div>
+  </section>
+
+  <section class="sec" id="secEnv">
+    <h2><span class="n">5</span>มูลค่าทางสิ่งแวดล้อม</h2>
+    <p class="sub">ปริมาณก๊าซเรือนกระจกที่ลดได้ตลอดอายุโครงการและมูลค่าเทียบเท่า</p>
+    <div class="kpis" id="envKpis"></div>
+    <div class="note" id="envNote"></div>
+  </section>
+
+  <section class="sec page-break" id="secDaily">
+    <h2><span class="n">6</span>กราฟการผลิตและการใช้พลังงานรายวัน</h2>
+    <p class="sub">โปรไฟล์รายชั่วโมงเฉลี่ย เปรียบเทียบการผลิต PV โหลด และการทำงานของแบตเตอรี่</p>
+    <div id="dailyChart"></div>
+    <div class="legend">
+      <span><i style="background:#e03131"></i>โหลดการใช้ไฟฟ้า</span>
+      <span><i style="background:#1e9be0"></i>การผลิตของ PV</span>
+      <span><i style="background:#12a15b"></i>โหลดที่ใช้จากการผลิต PV</span>
+      <span><i style="background:#f07b10"></i>ชาร์จ (+) / ดีสชาร์จ (−) แบตเตอรี่</span>
+      <span><i class="sq" style="background:#8b5cf6;opacity:.18;border:1px solid #8b5cf6"></i>ช่วง PSH 09:00–15:00</span>
+      <span><i style="background:#f07b10;height:0;border-top:2px dashed #f07b10"></i>สถานะประจุแบตเตอรี่ (SOC)</span>
+    </div>
+    <div class="note" id="dailyNote"></div>
+  </section>
+
+  <section class="sec" id="secMonthly">
+    <h2><span class="n">7</span>กราฟการผลิตพลังงานรายเดือน</h2>
+    <p class="sub">ผลผลิตพลังงานปีที่ 1 แยกรายเดือนตามความเข้มแสงเฉลี่ยของประเทศไทย</p>
+    <div id="monthlyChart"></div>
+    <div class="note" id="monthlyNote"></div>
+  </section>
+
+  <section class="sec page-break" id="secCash">
+    <h2><span class="n">8</span>กระแสเงินสดและจุดคืนทุน</h2>
+    <p class="sub">กระแสเงินสดสะสมตลอดอายุโครงการ พร้อมจุดตัดแสดงระยะเวลาคืนทุน</p>
+    <div id="cashChart"></div>
+    <div class="tbl-wrap" style="margin-top:14px"><table id="cashTable"></table></div>
+    <div class="note" id="cashNote"></div>
+  </section>
+
+  <section class="sec" id="secSummary">
+    <h2><span class="n">9</span>สรุปผลการประเมินและข้อเสนอแนะ</h2>
+    <p class="sub">ข้อสรุปเชิงวิศวกรรมและเชิงการเงินจากข้อมูลที่กรอกทั้งหมด</p>
+    <div id="summaryBox"></div>
+    <div class="sig">
+      <div>ผู้จัดทำ / วิศวกรผู้ออกแบบ</div>
+      <div>ผู้อนุมัติ / เจ้าของโครงการ</div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<script>
+/* ===================== เครื่องมือพื้นฐาน ===================== */
+const $ = id => document.getElementById(id);
+const pn = s => { const v = parseFloat(String(s).replace(/,/g,'')); return isFinite(v) ? v : 0; };
+const fmt = (n,d=0) => (isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtAuto = n => (isFinite(n)?n:0).toLocaleString('en-US',{maximumFractionDigits:4});
+const val = id => Math.max(0, pn($(id).value));
+const valPos = id => Math.max(0.001, pn($(id).value));
+const TH_MONTH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const DAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+const MFAC = [1.05,1.10,1.13,1.09,0.99,0.92,0.90,0.89,0.92,0.96,1.02,1.03];
+const CO2F = 0.4999;
+const CREDIT = 300;
+const TREE = 9.5;
+const RTE = 0.90;
+const SOC_MIN = 0.25;
+
+/* ===================== SVG helper ===================== */
+function svg(w,h,inner){
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet"
+   xmlns="http://www.w3.org/2000/svg" font-family="Kanit, sans-serif">${inner}</svg>`;
+}
+function smooth(pts){
+  if(pts.length<2) return '';
+  let d = `M ${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i], p1=pts[i], p2=pts[i+1], p3=pts[i+2]||p2;
+    const c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+    const c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+    d+=` C ${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;
+  }
+  return d;
+}
+
+/* ===================== การคำนวณหลัก ===================== */
+function model(){
+  const m = {};
+  m.monthly   = val('monthlyUnits');
+  m.tariff    = val('tariff');
+  m.dayRatio  = Math.min(1, Math.max(0, val('dayRatio')/100));
+  m.psh       = valPos('psh');
+  m.pr        = Math.min(1, Math.max(0.001, val('pr')));
+  m.panelW    = valPos('panelW') || 650;
+  m.dcac      = Math.max(0.1, val('dcac') || 1.1);
+  
+  // อ่านค่า checkbox และความจุแบตเตอรี่
+  m.hasBattery = $('hasBattery').checked;
+  m.battKwh = m.hasBattery ? val('battKwh') : 0;
+
+  m.costW     = valPos('costW');
+  m.battCost  = val('battCost');
+  m.omW       = val('omW');
+  m.vat       = Math.max(0, val('vat')/100);
+  m.disc      = Math.max(0, val('disc')/100);
+  m.degr      = Math.max(0, val('degr')/100);
+  m.esc       = Math.max(0, val('esc')/100);
+  m.life      = Math.max(1, Math.round(val('life')));
+
+  m.daily     = m.monthly/30;
+  m.dayKwh    = m.daily*m.dayRatio;
+  m.nightKwh  = m.daily-m.dayKwh;
+  m.yieldSp   = m.psh*m.pr;
+  m.pvNeed    = m.dayKwh/m.yieldSp;
+
+  m.nBase     = Math.ceil(m.pvNeed*1000/m.panelW);
+  m.usable    = m.battKwh*(1-SOC_MIN);
+  m.chargeE   = m.battKwh>0 ? m.usable/RTE : 0;
+  m.pvBatt    = m.chargeE/m.yieldSp;
+  m.nBatt     = m.battKwh>0 ? Math.ceil(m.pvBatt*1000/m.panelW) : 0;
+
+  m.nTotal    = m.nBase+m.nBatt;
+  m.kwp       = m.nTotal*m.panelW/1000;
+  m.invBase   = Math.ceil((m.nBase*m.panelW/1000)/m.dcac);
+  m.inv       = Math.ceil(m.kwp/m.dcac);
+  m.wattTotal = m.kwp*1000;
+  m.genDaily  = m.kwp*m.yieldSp;
+  m.annualGen = m.genDaily * 365;
+
+  m.hourly = hourly(m);
+  const hr = m.hourly;
+
+  m.direct    = hr.served.reduce((a,b)=>a+b, 0);
+  m.battOut   = hr.dchTotal;
+  m.battIn    = hr.chTotal;
+  m.exportD   = Math.max(0, m.genDaily - m.direct - m.battIn);
+  m.usedDaily = m.direct + m.battOut;
+  m.selfRate  = m.genDaily>0 ? m.usedDaily/m.genDaily : 0;
+  m.coverage  = m.daily>0 ? m.usedDaily/m.daily : 0;
+  m.annualUse = m.usedDaily * 365;
+
+  m.capexPV   = m.wattTotal*m.costW;
+  m.capexBatt = m.battKwh*m.battCost;
+  m.capexNet  = m.capexPV+m.capexBatt;
+  m.vatAmt    = m.capexNet*m.vat;
+  m.capex     = m.capexNet+m.vatAmt;
+  m.om0       = m.wattTotal*m.omW;
+  m.costPerWp = m.kwp>0 ? m.capex/m.wattTotal : 0;
+
+  const rows=[]; let cum=-m.capex;
+  rows.push({y:0,gen:0,use:0,save:0,om:0,net:-m.capex,cum:cum});
+  for(let y=1;y<=m.life;y++){
+    const dg  = Math.pow(1-m.degr,y-1);
+    const pr2 = Math.pow(1+m.esc,y-1);
+    const gen = m.genDaily*365*dg;
+    const use = m.annualUse*dg;
+    const save= use*m.tariff*pr2;
+    const om  = m.om0*pr2;
+    const net = save-om;
+    cum += net;
+    rows.push({y,gen,use,save,om,net,cum});
+  }
+  m.rows = rows;
+
+  m.payback = null; m.paybackYear = null;
+  for(let i=1;i<rows.length;i++){
+    if(rows[i].cum>=0 && rows[i-1].cum<0){
+      const f = -rows[i-1].cum/(rows[i].cum-rows[i-1].cum);
+      m.payback = (i-1)+f; m.paybackYear = i; break;
+    }
+  }
+  m.npv = rows.reduce((a,r)=>a+r.net/Math.pow(1+m.disc,r.y),0);
+  const npvAt = r => rows.reduce((a,x)=>a+x.net/Math.pow(1+r,x.y),0);
+  let lo=-0.9, hi=3, irr=null;
+  if(npvAt(lo)*npvAt(hi)<0){
+    for(let i=0;i<200;i++){ const mid=(lo+hi)/2; (npvAt(lo)*npvAt(mid)<=0)?hi=mid:lo=mid; }
+    irr=(lo+hi)/2;
+  }
+  m.irr = irr;
+  let dCost=m.capex, dGen=0;
+  for(let y=1;y<=m.life;y++){
+    dCost += m.om0*Math.pow(1+m.esc,y-1)/Math.pow(1+m.disc,y);
+    dGen  += m.annualUse*Math.pow(1-m.degr,y-1)/Math.pow(1+m.disc,y);
+  }
+  m.lcoe = dGen>0 ? dCost/dGen : 0;
+  m.lifeGen = rows.reduce((a,r)=>a+(r.gen||0),0);
+  m.lifeUse = rows.reduce((a,r)=>a+(r.use||0),0);
+  m.lifeSave= rows.reduce((a,r)=>a+(r.save||0),0);
+
+  m.co2Year = m.annualUse*CO2F/1000;
+  m.co2Life = m.lifeUse*CO2F/1000;
+  m.trees   = m.co2Life*1000/TREE;
+  m.credit  = m.co2Life*CREDIT;
+  m.carKm   = m.co2Life*1000/0.12;
+
+  let raw=0; for(let i=0;i<12;i++) raw+=DAYS[i]*MFAC[i];
+  const sc = 365/raw;
+  m.monthlyGen = MFAC.map((f,i)=>m.genDaily*DAYS[i]*f*sc);
+
+  // ---- คำแนะนำแบตเตอรี่ (ใช้กรณีไม่มีแบต) ----
+  // คำนวณโดยใช้ battKwh=0 เพื่อหาส่วนเกินที่แท้จริง
+  const m0 = Object.assign({}, m);
+  m0.battKwh = 0;
+  m0.hourly = hourly(m0);
+  const hr0 = m0.hourly;
+  const direct0 = hr0.served.reduce((a,b)=>a+b,0);
+  const surplus0 = Math.max(0, m0.genDaily - direct0);
+  // แนะนำให้เก็บส่วนเกินเพื่อใช้ในกลางคืน โดยไม่ให้เกิน nightKwh และพิจารณาประสิทธิภาพ
+  const battRec = Math.min(surplus0, m.nightKwh) / (RTE * (1 - SOC_MIN));
+  m.battRecommend = Math.max(0, Math.ceil(battRec * 10) / 10); // ปัดขึ้นครึ่ง
+  // แสดงเป็นข้อความแนะนำ
+  m.battSuggestionText = (m.battRecommend > 0) 
+    ? `💡 แนะนำขนาดแบตเตอรี่ประมาณ ${fmt(m.battRecommend,1)} kWh (จากส่วนเกินกลางวัน ${fmt(surplus0,2)} kWh และการใช้ไฟกลางคืน ${fmt(m.nightKwh,2)} kWh)`
+    : '💡 พลังงานส่วนเกินในกลางวันน้อยกว่าความต้องการใช้ไฟกลางคืน การติดตั้งแบตเตอรี่อาจไม่คุ้มค่า';
+
+  return m;
+}
+
+/* ===================== hourly, dailyChart, monthlyChart, cashChart ===================== */
+function hourly(m){
+  const shape=[];
+  for(let h=0;h<24;h++){
+    const t=h+0.5;
+    let s=(t>6&&t<18)? Math.pow(Math.sin(Math.PI*(t-6)/12),1.35) : 0;
+    shape.push(s);
+  }
+  const sSum=shape.reduce((a,b)=>a+b,0)||1;
+  const pv=shape.map(s=>s/sSum*m.genDaily);
+  const w=[0.55,0.50,0.46,0.45,0.50,0.62,0.82,0.96,1.06,1.16,1.26,1.32,1.24,1.30,1.24,1.14,1.10,1.22,1.46,1.52,1.40,1.16,0.90,0.70];
+  let sd=0,sn=0;
+  for(let h=0;h<24;h++){ (h>=9&&h<15)? sd+=w[h] : sn+=w[h]; }
+  const load=w.map((x,h)=>(h>=9&&h<15)? x/sd*m.dayKwh : x/sn*m.nightKwh);
+  const served=pv.map((p,h)=>Math.min(p,load[h]));
+  const batt=new Array(24).fill(0);
+  const soc=new Array(25).fill(0);
+  let stored=m.battKwh*SOC_MIN;
+  const cap=m.battKwh;
+  soc[0]=cap>0? stored/cap*100 : 0;
+  const pre=$('dchPre').checked, post=$('dchPost').checked;
+  const preH=[5,6,7,8], postH=[18,19,20,21,22];
+  let win=[]; if(pre) win=win.concat(preH); if(post) win=win.concat(postH);
+  let avail=0; for(let h=0;h<24;h++) avail+=Math.max(0,pv[h]-load[h]);
+  const willCharge = cap>0 ? Math.min(m.chargeE, avail) : 0;
+  const deliverable = Math.min(m.usable, willCharge*RTE);
+  let wSum=0; win.forEach(h=>{ wSum += Math.max(0,load[h]-pv[h]); });
+  const dchPlan=new Array(24).fill(0);
+  if(wSum>0 && deliverable>0){
+    win.forEach(h=>{
+      const need=Math.max(0,load[h]-pv[h]);
+      dchPlan[h]=Math.min(need, deliverable*need/wSum);
+    });
+  }
+  let charged=0;
+  for(let h=0;h<24;h++){
+    const sur=Math.max(0,pv[h]-load[h]);
+    let c=0,d=0;
+    if(cap>0 && sur>0 && charged<willCharge){
+      c=Math.min(sur, willCharge-charged, (cap-stored)/RTE);
+      stored+=c*RTE; charged+=c;
+    }
+    if(cap>0 && dchPlan[h]>0){
+      d=Math.min(dchPlan[h], Math.max(0,stored-cap*SOC_MIN));
+      stored-=d;
+    }
+    batt[h]=c-d;
+    soc[h+1]=cap>0? stored/cap*100 : 0;
+  }
+  return {pv,load,served,batt,soc,
+          dchTotal:batt.reduce((a,b)=>a+(b<0?-b:0),0),
+          chTotal:batt.reduce((a,b)=>a+(b>0?b:0),0)};
+}
+
+function dailyChart(m){
+  const W=940,H=400,L=60,R=54,T=20,B=42;
+  const pw=W-L-R, ph=H-T-B, hr=m.hourly;
+  const vmax=Math.max(...hr.pv,...hr.load,0.1)*1.18;
+  const vmin=Math.min(0,...hr.batt)*1.35;
+  const x=h=>L+h/24*pw;
+  const y=v=>T+ph-(v-vmin)/(vmax-vmin)*ph;
+  const pts=a=>a.map((v,h)=>[x(h+0.5),y(v)]);
+  let g='';
+  g+=`<rect x="${x(9)}" y="${T}" width="${x(15)-x(9)}" height="${ph}" fill="#8b5cf6" opacity="0.13"/>`;
+  g+=`<text x="${(x(9)+x(15))/2}" y="${T+14}" text-anchor="middle" font-size="12" fill="#6d4bc4">PSH 09:00–15:00</text>`;
+  const step=niceStep(vmax-vmin);
+  for(let v=Math.ceil(vmin/step)*step; v<=vmax; v+=step){
+    const yy=y(v);
+    g+=`<line x1="${L}" y1="${yy.toFixed(1)}" x2="${W-R}" y2="${yy.toFixed(1)}" stroke="${Math.abs(v)<1e-9?'#94a3b8':'#e6ebf0'}" stroke-width="${Math.abs(v)<1e-9?1.2:1}"/>`;
+    g+=`<text x="${L-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#7b8794">${fmt(v,1)}</text>`;
+  }
+  for(let h=0;h<=24;h+=2){
+    g+=`<line x1="${x(h)}" y1="${T+ph}" x2="${x(h)}" y2="${T+ph+4}" stroke="#b8c2cc"/>`;
+    g+=`<text x="${x(h)}" y="${T+ph+18}" text-anchor="middle" font-size="11" fill="#7b8794">${String(h).padStart(2,'0')}</text>`;
+  }
+  g+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="12" fill="#5b6b78">เวลา (นาฬิกา)</text>`;
+  g+=`<text x="16" y="${T+ph/2}" text-anchor="middle" font-size="12" fill="#5b6b78" transform="rotate(-90 16 ${T+ph/2})">พลังงาน (kWh ต่อชั่วโมง)</text>`;
+  const pvP=pts(hr.pv), ldP=pts(hr.load), svP=pts(hr.served);
+  g+=`<path d="${smooth(pvP)} L ${x(23.5)},${y(0)} L ${x(0.5)},${y(0)} Z" fill="#1e9be0" opacity="0.10"/>`;
+  g+=`<path d="${smooth(svP)} L ${x(23.5)},${y(0)} L ${x(0.5)},${y(0)} Z" fill="#12a15b" opacity="0.16"/>`;
+  if(m.battKwh>0){
+    const ys=p=>T+ph-p/100*ph;
+    const socP=hr.soc.slice(0,24).map((p,h)=>[x(h+0.5),ys(p)]);
+    g+=`<path d="${smooth(socP)}" fill="none" stroke="#f07b10" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.75"/>`;
+    for(let p=0;p<=100;p+=25){
+      g+=`<text x="${W-R+8}" y="${ys(p)+4}" font-size="11" fill="#c07a2a">${p}%</text>`;
+    }
+    g+=`<line x1="${W-R}" y1="${ys(25)}" x2="${W-R+4}" y2="${ys(25)}" stroke="#f07b10"/>`;
+    g+=`<text x="${W-6}" y="${T+ph/2}" text-anchor="middle" font-size="12" fill="#c07a2a" transform="rotate(90 ${W-6} ${T+ph/2})">SOC</text>`;
+  }
+  g+=`<path d="${smooth(pvP)}" fill="none" stroke="#1e9be0" stroke-width="2.6"/>`;
+  g+=`<path d="${smooth(svP)}" fill="none" stroke="#12a15b" stroke-width="2.6"/>`;
+  g+=`<path d="${smooth(ldP)}" fill="none" stroke="#e03131" stroke-width="2.6"/>`;
+  if(m.battKwh>0) g+=`<path d="${smooth(pts(hr.batt))}" fill="none" stroke="#f07b10" stroke-width="2.6"/>`;
+  return svg(W,H,g);
+}
+function niceStep(range){
+  const raw=range/6, p=Math.pow(10,Math.floor(Math.log10(raw||1))), n=raw/p;
+  return (n<=1?1:n<=2?2:n<=5?5:10)*p;
+}
+function monthlyChart(m){
+  const W=940,H=330,L=64,R=20,T=22,B=44;
+  const pw=W-L-R, ph=H-T-B;
+  const vmax=Math.max(...m.monthlyGen)*1.2||1;
+  const y=v=>T+ph-v/vmax*ph;
+  const bw=pw/12*0.6;
+  let g='';
+  const step=niceStep(vmax);
+  for(let v=0; v<=vmax; v+=step){
+    g+=`<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W-R}" y2="${y(v).toFixed(1)}" stroke="#e6ebf0"/>`;
+    g+=`<text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#7b8794">${fmt(v)}</text>`;
+  }
+  g+=`<defs><linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0a202"/><stop offset="100%" stop-color="#f0a202" stop-opacity=".55"/></linearGradient></defs>`;
+  m.monthlyGen.forEach((v,i)=>{
+    const cx=L+pw/12*(i+0.5);
+    g+=`<rect x="${cx-bw/2}" y="${y(v)}" width="${bw}" height="${T+ph-y(v)}" fill="url(#bg1)" rx="3"/>`;
+    g+=`<text x="${cx}" y="${y(v)-6}" text-anchor="middle" font-size="10.5" fill="#8a6a1a">${fmt(v)}</text>`;
+    g+=`<text x="${cx}" y="${T+ph+18}" text-anchor="middle" font-size="11.5" fill="#5b6b78">${TH_MONTH[i]}</text>`;
+  });
+  const avg=m.monthlyGen.reduce((a,b)=>a+b,0)/12;
+  g+=`<line x1="${L}" y1="${y(avg)}" x2="${W-R}" y2="${y(avg)}" stroke="#16283a" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+  g+=`<text x="${W-R-4}" y="${y(avg)-6}" text-anchor="end" font-size="11" fill="#16283a">เฉลี่ย ${fmt(avg)} kWh</text>`;
+  g+=`<line x1="${L}" y1="${T+ph}" x2="${W-R}" y2="${T+ph}" stroke="#b8c2cc"/>`;
+  g+=`<text x="16" y="${T+ph/2}" text-anchor="middle" font-size="12" fill="#5b6b78" transform="rotate(-90 16 ${T+ph/2})">พลังงาน (kWh ต่อเดือน)</text>`;
+  return svg(W,H,g);
+}
+function cashChart(m){
+  const W=940,H=360,L=78,R=24,T=22,B=44;
+  const pw=W-L-R, ph=H-T-B;
+  const cums=m.rows.map(r=>r.cum);
+  const vmax=Math.max(...cums,0)*1.12, vmin=Math.min(...cums,0)*1.12;
+  const x=y0=>L+y0/m.life*pw;
+  const y=v=>T+ph-(v-vmin)/(vmax-vmin)*ph;
+  let g='';
+  const step=niceStep(vmax-vmin);
+  for(let v=Math.ceil(vmin/step)*step; v<=vmax; v+=step){
+    g+=`<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W-R}" y2="${y(v).toFixed(1)}" stroke="${Math.abs(v)<1e-9?'#94a3b8':'#e6ebf0'}" stroke-width="${Math.abs(v)<1e-9?1.3:1}"/>`;
+    g+=`<text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#7b8794">${fmt(v/1000)}</text>`;
+  }
+  for(let yr=0;yr<=m.life;yr+=(m.life>20?2:1)){
+    g+=`<text x="${x(yr)}" y="${T+ph+18}" text-anchor="middle" font-size="11" fill="#7b8794">${yr}</text>`;
+  }
+  const pts=m.rows.map(r=>[x(r.y),y(r.cum)]);
+  const zeroY=y(0);
+  g+=`<defs><clipPath id="above"><rect x="${L}" y="${T}" width="${pw}" height="${Math.max(0,zeroY-T)}"/></clipPath>
+      <clipPath id="below"><rect x="${L}" y="${zeroY}" width="${pw}" height="${Math.max(0,T+ph-zeroY)}"/></clipPath></defs>`;
+  const area=`${smooth(pts)} L ${x(m.life)},${zeroY} L ${L},${zeroY} Z`;
+  g+=`<path d="${area}" fill="#12a15b" opacity="0.16" clip-path="url(#above)"/>`;
+  g+=`<path d="${area}" fill="#e03131" opacity="0.13" clip-path="url(#below)"/>`;
+  g+=`<path d="${smooth(pts)}" fill="none" stroke="#16283a" stroke-width="2.6"/>`;
+  if(m.payback!==null && m.payback<=m.life){
+    const px=x(m.payback);
+    g+=`<line x1="${px}" y1="${T}" x2="${px}" y2="${T+ph}" stroke="#12a15b" stroke-width="1.6" stroke-dasharray="6 4"/>`;
+    g+=`<circle cx="${px}" cy="${zeroY}" r="6" fill="#12a15b" stroke="#fff" stroke-width="2"/>`;
+    const tx=Math.min(px+10, W-R-190);
+    g+=`<rect x="${tx}" y="${zeroY-46}" width="184" height="34" rx="5" fill="#12a15b"/>`;
+    g+=`<text x="${tx+92}" y="${zeroY-24}" text-anchor="middle" font-size="12.5" fill="#fff">จุดคืนทุน ${fmt(m.payback,2)} ปี</text>`;
+  }
+  g+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="12" fill="#5b6b78">ปีที่</text>`;
+  g+=`<text x="18" y="${T+ph/2}" text-anchor="middle" font-size="12" fill="#5b6b78" transform="rotate(-90 18 ${T+ph/2})">กระแสเงินสดสะสม (พันบาท)</text>`;
+  return svg(W,H,g);
+}
+
+/* ===================== แสดงผล ===================== */
+function kpi(k,v,u,cls){return `<div class="kpi ${cls||''}"><div class="k">${k}</div><div class="v">${v}${u?`<small>${u}</small>`:''}</div></div>`;}
+
+function render(m){
+  const d=$('reportDate').value||new Date().toISOString().slice(0,10);
+  const dt=new Date(d);
+  const thDate=`${dt.getDate()} ${['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][dt.getMonth()]} ${dt.getFullYear()+543}`;
+  $('mastMeta').innerHTML=`${$('custName').value}<br>${thDate}`;
+
+  /* แสดงคำแนะนำแบตเตอรี่ในส่วนที่ 2 */
+  $('battSuggestion').innerHTML = m.battSuggestionText;
+
+  /* 1 โครงการ */
+  $('projBox').innerHTML=`<div class="split"><dl class="dl">
+      <dt>ชื่อโครงการ</dt><dd>${$('projName').value||'-'}</dd>
+      <dt>เจ้าของโครงการ</dt><dd>${$('custName').value||'-'}</dd>
+      <dt>สถานที่ติดตั้ง</dt><dd>${$('siteAddr').value||'-'}</dd>
+    </dl><dl class="dl">
+      <dt>ประเภทผู้ใช้ไฟ</dt><dd>${$('custType').value}</dd>
+      <dt>วันที่ประเมิน</dt><dd>${thDate}</dd>
+      <dt>รูปแบบระบบ</dt><dd>${m.battKwh>0?'ไฮบริดพร้อมระบบกักเก็บพลังงาน':'ออนกริด (ไม่มีแบตเตอรี่)'}</dd>
+    </dl></div>`;
+
+  /* 2 โหลด */
+  $('loadKpis').innerHTML=
+     kpi('หน่วยการใช้ไฟฟ้าต่อเดือน',fmt(m.monthly),' kWh')
+    +kpi('การใช้ไฟฟ้าเฉลี่ยต่อวัน',fmt(m.daily,2),' kWh/วัน')
+    +kpi('สัดส่วนการใช้ไฟฟ้ากลางวัน',fmt(m.dayRatio*100,1),' %')
+    +kpi('สัดส่วนการใช้ไฟฟ้ากลางคืน',fmt((1-m.dayRatio)*100,1),' %')
+    +kpi('หน่วยการใช้ไฟกลางวันเฉลี่ยต่อวัน',fmt(m.dayKwh,2),' kWh/วัน','hi')
+    +kpi('หน่วยการใช้ไฟกลางคืนเฉลี่ยต่อวัน',fmt(m.nightKwh,2),' kWh/วัน')
+    +kpi('กำลังผลิตที่ต้องการ',fmt(m.pvNeed,2),' kWp','hi')
+    +kpi('ค่าไฟฟ้าต่อเดือนโดยประมาณ',fmt(m.monthly*m.tariff),' บาท');
+  $('loadNote').innerHTML=
+    `การใช้ไฟฟ้าเฉลี่ยต่อวันคำนวณจาก <b>${fmt(m.monthly)} kWh ÷ 30 วัน = ${fmt(m.daily,2)} kWh/วัน</b>
+     เมื่อคูณด้วยสัดส่วนการใช้ไฟฟ้ากลางวัน ${fmt(m.dayRatio*100,1)}% จะได้พลังงานที่ต้องผลิตทดแทนในช่วงกลางวัน
+     <b>${fmt(m.dayKwh,2)} kWh/วัน</b> ซึ่งเป็นค่าเป้าหมายของการออกแบบ<br>
+     ขนาดระบบที่ต้องการ = พลังงานกลางวันต่อวัน ÷ (PSH × PR) = ${fmt(m.dayKwh,2)} ÷ (${fmt(m.psh,2)} × ${fmt(m.pr,2)})
+     = <b>${fmt(m.pvNeed,2)} kWp</b> โดยแผง 1 kWp ผลิตได้ประมาณ ${fmt(m.yieldSp,2)} kWh ต่อวันภายใต้ช่วง Peak Sun Hour 09:00–15:00 น.
+     <br>💡 <b>คำแนะนำแบตเตอรี่:</b> ${m.battSuggestionText}`;
+
+  /* 3 ขนาดระบบ */
+  $('sizeKpis').innerHTML=
+     kpi('จำนวนแผงสำหรับโหลดกลางวัน',fmt(m.nBase),' แผง')
+    +kpi('จำนวนแผงเพิ่มเพื่อชาร์จแบตฯ',fmt(m.nBatt),' แผง')
+    +kpi('จำนวนแผงรวม',fmt(m.nTotal),' แผง','hi')
+    +kpi('กำลังการผลิตสูงสุดของระบบ',fmt(m.kwp,2),' kWp','hi')
+    +kpi('ขนาดอินเวอร์เตอร์',fmt(m.inv),' kW')
+    +kpi('พลังงานที่ผลิตได้ปีที่ 1',fmt(m.annualGen),' kWh/ปี');
+  $('sizeTable').innerHTML=`<thead><tr>
+      <th>รายการ</th><th>สูตร / เงื่อนไข</th><th>ผลลัพธ์</th></tr></thead><tbody>
+    <tr><td>พลังงานเป้าหมายกลางวัน</td><td>${fmt(m.daily,2)} × ${fmt(m.dayRatio*100,1)}%</td><td>${fmt(m.dayKwh,2)} kWh/วัน</td></tr>
+    <tr><td>ขนาดระบบที่ต้องการ</td><td>${fmt(m.dayKwh,2)} ÷ (${fmt(m.psh,2)} × ${fmt(m.pr,2)})</td><td>${fmt(m.pvNeed,2)} kWp</td></tr>
+    <tr><td>จำนวนแผง (โหลดกลางวัน)</td><td>ปัดขึ้นจาก ${fmt(m.pvNeed*1000/m.panelW,2)} แผง @ ${fmt(m.panelW)} Wp</td><td>${fmt(m.nBase)} แผง</td></tr>
+    <tr><td>พลังงานที่ต้องผลิตเพื่อชาร์จแบตฯ</td><td>${fmt(m.battKwh,2)} kWh × ${fmt((1-SOC_MIN)*100)}% ÷ ${fmt(RTE*100)}%</td><td>${fmt(m.chargeE,2)} kWh/วัน</td></tr>
+    <tr><td>จำนวนแผงเพิ่มสำหรับแบตเตอรี่</td><td>${fmt(m.chargeE,2)} ÷ (${fmt(m.psh,2)} × ${fmt(m.pr,2)}) = ${fmt(m.pvBatt,2)} kWp</td><td>${fmt(m.nBatt)} แผง</td></tr>
+    <tr><td>กำลังการผลิตสูงสุดของระบบ</td><td>${fmt(m.nTotal)} แผง × ${fmt(m.panelW)} Wp</td><td><b>${fmt(m.kwp,2)} kWp</b></td></tr>
+    <tr><td>ขนาดอินเวอร์เตอร์</td><td>ปัดขึ้นจาก ${fmt(m.kwp,2)} ÷ ${fmt(m.dcac,2)} (DC/AC)</td><td>${fmt(m.inv)} kW</td></tr>
+    <tr><td>พลังงานที่ใช้เองได้จริง (จากโปรไฟล์ชั่วโมง)</td><td>ใช้ตรง ${fmt(m.direct,2)} + จ่ายจากแบตฯ ${fmt(m.battOut,2)}</td><td>${fmt(m.usedDaily,2)} kWh/วัน</td></tr>
+    </tbody>`;
+  $('sizeNote').innerHTML=
+    `ระบบใช้แผง ${fmt(m.panelW)} Wp จำนวน <b>${fmt(m.nTotal)} แผง</b> รวมกำลังติดตั้ง <b>${fmt(m.kwp,2)} kWp</b>
+     จับคู่กับอินเวอร์เตอร์ <b>${fmt(m.inv)} kW</b> ตามอัตราส่วน DC/AC ${fmt(m.dcac,2)}
+     ซึ่งเป็นค่าที่เหมาะสมสำหรับสภาพแสงของประเทศไทย เนื่องจากแผงแทบไม่เคยผลิตได้เต็มพิกัด STC
+     การออกแบบเผื่อ DC มากกว่า AC จึงช่วยยืดช่วงเวลาที่อินเวอร์เตอร์ทำงานที่ประสิทธิภาพสูง
+     ${m.battKwh>0?`<br>ส่วนแบตเตอรี่ขนาด <b>${fmt(m.battKwh,2)} kWh</b> ใช้งานได้จริง ${fmt(m.usable,2)} kWh (ดีสชาร์จลึกสุดเหลือ ${fmt(SOC_MIN*100)}%)
+     จึงต้องเพิ่มแผงอีก ${fmt(m.nBatt)} แผงเพื่อผลิตพลังงานสำหรับชาร์จโดยเผื่อประสิทธิภาพไป-กลับ ${fmt(RTE*100)}%`
+     :`<br>ระบบนี้เป็นแบบออนกริดไม่มีแบตเตอรี่ พลังงานส่วนเกิน ${fmt(m.exportD,2)} kWh/วัน จะไหลย้อนสู่ระบบจำหน่ายโดยไม่คิดเป็นรายได้ในแบบจำลองนี้`}
+     <br>อัตราการใช้พลังงานเอง (Self-consumption) เท่ากับ <b>${fmt(m.selfRate*100,1)}%</b>
+     และทดแทนการซื้อไฟฟ้าได้ <b>${fmt(m.coverage*100,1)}%</b> ของการใช้ไฟทั้งหมด`;
+
+  /* 4 การเงิน */
+  $('finKpis').innerHTML=
+     kpi('เงินลงทุนรวม (รวม VAT)',fmt(m.capex),' บาท','hi')
+    +kpi('ระยะเวลาคืนทุน',m.payback!==null?fmt(m.payback,2):'ไม่คืนทุน',m.payback!==null?' ปี':'','gd')
+    +kpi('IRR',m.irr!==null?fmt(m.irr*100,2):'—',m.irr!==null?' %':'','gd')
+    +kpi('NPV @ '+fmt(m.disc*100,1)+'%',fmt(m.npv),' บาท','gd')
+    +kpi('LCOE',fmt(m.lcoe,3),' บาท/kWh','gd')
+    +kpi('ประหยัดค่าไฟปีที่ 1',fmt(m.rows[1]?m.rows[1].save:0),' บาท');
+  $('capexDl').innerHTML=
+    `<dt>ค่าระบบ PV (${fmt(m.wattTotal)} W × ${fmt(m.costW,2)} บาท)</dt><dd>${fmt(m.capexPV)} บาท</dd>
+     <dt>ค่าแบตเตอรี่ (${fmt(m.battKwh,2)} kWh × ${fmt(m.battCost)} บาท)</dt><dd>${fmt(m.capexBatt)} บาท</dd>
+     <dt>รวมก่อนภาษี</dt><dd>${fmt(m.capexNet)} บาท</dd>
+     <dt>ภาษีมูลค่าเพิ่ม ${fmt(m.vat*100,1)}%</dt><dd>${fmt(m.vatAmt)} บาท</dd>
+     <dt><b>รวมเงินลงทุน</b></dt><dd><b>${fmt(m.capex)} บาท</b></dd>
+     <dt>ต้นทุนต่อวัตต์ (รวม VAT)</dt><dd>${fmt(m.costPerWp,2)} บาท/W</dd>`;
+  $('assumeDl').innerHTML=
+    `<dt>ค่าบำรุงรักษาปีที่ 1</dt><dd>${fmt(m.om0)} บาท/ปี (${fmt(m.omW,2)} บาท/วัตต์)</dd>
+     <dt>อัตราลด (Discount rate)</dt><dd>${fmt(m.disc*100,2)} % ต่อปี</dd>
+     <dt>ค่าเสื่อมแผงและอินเวอร์เตอร์</dt><dd>${fmt(m.degr*100,2)} % ต่อปี</dd>
+     <dt>อัตราเพิ่มค่าไฟฟ้า</dt><dd>${fmt(m.esc*100,2)} % ต่อปี</dd>
+     <dt>ค่าไฟฟ้าอ้างอิง</dt><dd>${fmt(m.tariff,2)} บาท/หน่วย</dd>
+     <dt>อายุโครงการ</dt><dd>${fmt(m.life)} ปี</dd>`;
+  $('finNote').innerHTML=
+    `เงินลงทุนรวม <b>${fmt(m.capex)} บาท</b> คิดเป็น ${fmt(m.costPerWp,2)} บาทต่อวัตต์ติดตั้ง
+     ระบบประหยัดค่าไฟได้ปีแรก <b>${fmt(m.rows[1]?m.rows[1].save:0)} บาท</b> และตลอด ${fmt(m.life)} ปีรวม <b>${fmt(m.lifeSave)} บาท</b><br>
+     ${m.payback!==null
+       ? `ระยะเวลาคืนทุนแบบไม่คิดลด (Simple payback) เท่ากับ <b>${fmt(m.payback,2)} ปี</b> `
+       : `กระแสเงินสดสะสมยังไม่กลับเป็นบวกภายใน ${fmt(m.life)} ปี ควรทบทวนต้นทุนต่อวัตต์หรือสัดส่วนการใช้ไฟกลางวัน `}
+     ${m.irr!==null?`อัตราผลตอบแทนภายใน (IRR) <b>${fmt(m.irr*100,2)}%</b> ${m.irr>m.disc?`สูงกว่า`:`ต่ำกว่า`}อัตราลดที่ใช้ ${fmt(m.disc*100,1)}% `:''}
+     และมูลค่าปัจจุบันสุทธิ (NPV) <b>${fmt(m.npv)} บาท</b> ${m.npv>0?'ซึ่งเป็นบวก แสดงว่าโครงการสร้างมูลค่าเพิ่มให้เจ้าของ':'ซึ่งติดลบ แสดงว่ายังไม่คุ้มค่าภายใต้สมมติฐานนี้'}<br>
+     ต้นทุนพลังงานเฉลี่ยตลอดอายุโครงการ (LCOE) เท่ากับ <b>${fmt(m.lcoe,3)} บาท/kWh</b>
+     เทียบกับค่าไฟฟ้าที่ซื้อจากการไฟฟ้า ${fmt(m.tariff,2)} บาท/หน่วย
+     ${m.lcoe<m.tariff?`คิดเป็นส่วนต่างที่ประหยัดได้ ${fmt(m.tariff-m.lcoe,3)} บาทต่อหน่วย`:'ซึ่งยังสูงกว่าค่าไฟฟ้าปัจจุบัน'}`;
+
+  /* 5 สิ่งแวดล้อม */
+  $('envKpis').innerHTML=
+     kpi('ลด CO₂ ต่อปี',fmt(m.co2Year,2),' ตัน/ปี','gd')
+    +kpi('ลด CO₂ ตลอดอายุโครงการ',fmt(m.co2Life,2),' ตัน','gd')
+    +kpi('เทียบเท่าการปลูกต้นไม้',fmt(m.trees),' ต้น·ปี')
+    +kpi('มูลค่าคาร์บอนเครดิต',fmt(m.credit),' บาท')
+    +kpi('เทียบเท่าระยะทางรถยนต์',fmt(m.carKm),' กม.')
+    +kpi('พลังงานสะอาดที่ใช้จริงตลอดอายุ',fmt(m.lifeUse),' kWh');
+  $('envNote').innerHTML=
+    `ใช้ค่าการปล่อยก๊าซเรือนกระจกของระบบผลิตไฟฟ้าไทยที่ ${CO2F} kgCO₂e ต่อหน่วย
+     ระบบขนาด ${fmt(m.kwp,2)} kWp ผลิตพลังงานได้ ${fmt(m.annualGen)} kWh ต่อปี แต่พลังงานที่ใช้จริงจากระบบ (ทดแทนไฟจากการไฟฟ้า) คือ <b>${fmt(m.annualUse)} kWh/ปี</b>
+     คิดเป็นลดการปล่อยคาร์บอน <b>${fmt(m.co2Year,2)} ตันต่อปี</b> หรือ <b>${fmt(m.co2Life,2)} ตัน</b> ตลอด ${fmt(m.life)} ปี
+     (โดยคำนวณจากการใช้พลังงานจริงที่ลดลงตามค่าเสื่อมของแผง)
+     เทียบเท่ากับการปลูกและดูแลต้นไม้ ${fmt(m.trees)} ต้น·ปี (ต้นไม้ 1 ต้นดูดซับราว ${TREE} kgCO₂ ต่อปี)
+     และหากคิดเป็นคาร์บอนเครดิตที่ราคา ${fmt(CREDIT)} บาทต่อตัน จะมีมูลค่าประมาณ <b>${fmt(m.credit)} บาท</b>
+     มูลค่าส่วนนี้ยังไม่ถูกรวมในการคำนวณ ROI ข้างต้น จึงถือเป็นผลตอบแทนส่วนเพิ่มของโครงการ`;
+
+  /* 6 รายวัน */
+  $('dailyChart').innerHTML=dailyChart(m);
+  const hr=m.hourly, pkPV=Math.max(...hr.pv), pkH=hr.pv.indexOf(pkPV);
+  $('dailyNote').innerHTML=
+    `กราฟแสดงพฤติกรรมของระบบใน 1 วันเฉลี่ย เส้นสีฟ้าคือกำลังผลิตของแผงซึ่งมีรูปทรงระฆังคว่ำ
+     ขึ้นสูงสุดราว <b>${fmt(pkPV,2)} kWh</b> ที่เวลา ${String(pkH).padStart(2,'0')}:00–${String(pkH+1).padStart(2,'0')}:00 น.
+     เส้นสีแดงคือโหลดการใช้ไฟฟ้าของผู้ใช้ซึ่งมีลักษณะสองยอด (ช่วงเช้าและช่วงหัวค่ำ)
+     เส้นสีเขียวคือส่วนของโหลดที่ถูกจ่ายด้วยไฟจากแผงโดยตรง รวม <b>${fmt(m.direct,2)} kWh/วัน</b>
+     พื้นที่ระหว่างเส้นฟ้ากับเส้นเขียวในแถบสีม่วง (ช่วง PSH 09:00–15:00) คือพลังงานส่วนเกินที่เหลือจากการใช้งาน<br>
+     ${m.battKwh>0
+       ? `เส้นสีส้มคือกำลังชาร์จ–ดีสชาร์จของแบตเตอรี่ ค่าบวกคือการชาร์จรวม <b>${fmt(hr.chTotal,2)} kWh</b> ในช่วงที่มีพลังงานส่วนเกิน
+          และค่าลบคือการดีสชาร์จรวม <b>${fmt(hr.dchTotal,2)} kWh</b> ในช่วงเวลาที่เลือกไว้
+          (${$('dchPre').checked?'ก่อนช่วง PSH 05:00–09:00 น.':''}${$('dchPre').checked&&$('dchPost').checked?' และ ':''}${$('dchPost').checked?'หลังช่วง PSH 18:00–23:00 น.':''}${!$('dchPre').checked&&!$('dchPost').checked?'ยังไม่ได้เลือกช่วงเวลาดีสชาร์จ':''})
+          เส้นประสีส้มคือสถานะประจุ (SOC) ซึ่งไต่ขึ้นระหว่างวันและลดลงจนเหลือ ${fmt(SOC_MIN*100)}% ตามขีดจำกัดการดีสชาร์จลึกสุด`
+       : `ระบบนี้ไม่มีแบตเตอรี่ พลังงานส่วนเกิน ${fmt(m.exportD,2)} kWh/วัน จึงไหลย้อนออกสู่ระบบจำหน่าย
+          หากติดตั้งแบตเตอรี่จะสามารถเก็บพลังงานส่วนนี้ไปใช้ในช่วงหัวค่ำที่โหลดสูงสุดได้`}<br>
+     <b>สรุป:</b> ระบบจ่ายพลังงานให้โหลดได้ ${fmt(m.usedDaily,2)} kWh จากความต้องการ ${fmt(m.daily,2)} kWh ต่อวัน
+     คิดเป็น ${fmt(m.coverage*100,1)}% ของการใช้ไฟทั้งหมด ส่วนที่เหลือ ${fmt(m.daily-m.usedDaily,2)} kWh/วัน ยังคงซื้อจากการไฟฟ้า`;
+
+  /* 7 รายเดือน */
+  $('monthlyChart').innerHTML=monthlyChart(m);
+  const mx=m.monthlyGen.indexOf(Math.max(...m.monthlyGen)), mn=m.monthlyGen.indexOf(Math.min(...m.monthlyGen));
+  $('monthlyNote').innerHTML=
+    `ผลผลิตรายเดือนคำนวณจากกำลังติดตั้ง ${fmt(m.kwp,2)} kWp คูณด้วยจำนวนวันในเดือนและตัวคูณความเข้มแสงรายเดือนของประเทศไทย
+     เดือนที่ผลิตได้สูงสุดคือ <b>${TH_MONTH[mx]} (${fmt(m.monthlyGen[mx])} kWh)</b> ซึ่งเป็นช่วงฤดูร้อนที่ท้องฟ้าโปร่ง
+     ส่วนเดือนที่ต่ำสุดคือ <b>${TH_MONTH[mn]} (${fmt(m.monthlyGen[mn])} kWh)</b> จากอิทธิพลของฤดูฝนและเมฆปกคลุม
+     ความต่างระหว่างเดือนสูงสุดกับต่ำสุดประมาณ ${fmt((m.monthlyGen[mx]/m.monthlyGen[mn]-1)*100,1)}%<br>
+     <b>สรุป:</b> ผลผลิตรวมทั้งปี <b>${fmt(m.annualGen)} kWh</b> เฉลี่ยเดือนละ ${fmt(m.annualGen/12)} kWh
+     หรือ ${fmt(m.annualGen/m.kwp)} kWh ต่อ kWp ต่อปี ซึ่งอยู่ในเกณฑ์ปกติของระบบติดตั้งบนหลังคาในประเทศไทย
+     ควรวางแผนการล้างแผงก่อนเข้าฤดูร้อนเพื่อรับผลผลิตสูงสุดในช่วงที่ผลิตได้ดีที่สุด`;
+
+  /* 8 กระแสเงินสด */
+  $('cashChart').innerHTML=cashChart(m);
+  let tb=`<thead><tr><th>ปีที่</th><th>พลังงานที่ผลิต (kWh)</th><th>พลังงานที่ใช้เอง (kWh)</th><th>ค่าไฟ (บาท/หน่วย)</th>
+          <th>เงินที่ประหยัดได้ (บาท)</th><th>ค่าบำรุงรักษา (บาท)</th><th>กระแสเงินสดสุทธิ (บาท)</th><th>สะสม (บาท)</th></tr></thead><tbody>`;
+  m.rows.forEach(r=>{
+    const cls = (m.paybackYear!==null && r.y===m.paybackYear) ? ' class="payback"' : '';
+    if(r.y===0){
+      tb+=`<tr${cls}><td>0 (ลงทุน)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${fmt(r.net)}</td><td>${fmt(r.cum)}</td></tr>`;
+    }else{
+      const price=m.tariff*Math.pow(1+m.esc,r.y-1);
+      tb+=`<tr${cls}><td>${r.y}</td><td>${fmt(r.gen)}</td><td>${fmt(r.use)}</td><td>${fmt(price,2)}</td>
+           <td>${fmt(r.save)}</td><td>${fmt(r.om)}</td><td>${fmt(r.net)}</td><td>${fmt(r.cum)}</td></tr>`;
+    }
+  });
+  tb+=`</tbody>`;
+  $('cashTable').innerHTML=tb;
+  $('cashNote').innerHTML=
+    `ตารางแสดงกระแสเงินสดรายปีโดยพลังงานที่ใช้เองลดลงปีละ ${fmt(m.degr*100,2)}% ตามค่าเสื่อมของแผงและอินเวอร์เตอร์
+     ขณะที่ค่าไฟฟ้าปรับขึ้นปีละ ${fmt(m.esc*100,2)}% ทำให้เงินที่ประหยัดได้ยังเพิ่มขึ้นในภาพรวม
+     ค่าบำรุงรักษาปรับเพิ่มตามอัตราเงินเฟ้อเดียวกัน<br>
+     ${m.payback!==null
+       ? `แถวที่ไฮไลต์สีเขียวคือปีที่กระแสเงินสดสะสมกลับเป็นบวกครั้งแรก (ปีที่ ${m.paybackYear}) ตรงกับจุดตัดในกราฟที่ <b>${fmt(m.payback,2)} ปี</b>
+          หลังจุดนี้เงินที่ประหยัดได้ทั้งหมดถือเป็นผลตอบแทนสุทธิ รวมตลอดอายุโครงการ <b>${fmt(m.rows[m.rows.length-1].cum)} บาท</b>`
+       : `กระแสเงินสดสะสมยังไม่กลับเป็นบวกภายในอายุโครงการที่กำหนด`}`;
+
+  /* 9 สรุป */
+  const verdict = (m.payback!==null && m.payback<=8 && m.npv>0) ? 'มีความคุ้มค่าสูง แนะนำให้ดำเนินโครงการ'
+                : (m.payback!==null && m.payback<=12 && m.npv>0) ? 'มีความคุ้มค่าอยู่ในเกณฑ์ยอมรับได้'
+                : 'ยังไม่คุ้มค่าภายใต้สมมติฐานปัจจุบัน ควรทบทวนขนาดระบบหรือต้นทุน';
+  $('summaryBox').innerHTML=`
+    <div class="kpis" style="margin-bottom:14px">
+      ${kpi('ขนาดระบบที่แนะนำ',fmt(m.kwp,2),' kWp','hi')}
+      ${kpi('แผง / อินเวอร์เตอร์',`${fmt(m.nTotal)} / ${fmt(m.inv)}`,' แผง / kW')}
+      ${kpi('เงินลงทุน',fmt(m.capex),' บาท')}
+      ${kpi('คืนทุน',m.payback!==null?fmt(m.payback,2):'—',m.payback!==null?' ปี':'','gd')}
+    </div>
+    <div class="note" style="margin-top:0">
+      <b>ข้อสรุปทางวิศวกรรม</b> ระบบที่เหมาะสมสำหรับผู้ใช้ไฟรายนี้คือขนาด ${fmt(m.kwp,2)} kWp
+      ประกอบด้วยแผง ${fmt(m.panelW)} Wp จำนวน ${fmt(m.nTotal)} แผง และอินเวอร์เตอร์ ${fmt(m.inv)} kW
+      ${m.battKwh>0?`พร้อมระบบกักเก็บพลังงาน ${fmt(m.battKwh,2)} kWh`:'แบบออนกริดไม่มีระบบกักเก็บพลังงาน'}
+      ออกแบบให้ผลิตพลังงานสอดคล้องกับโหลดช่วงกลางวันเป็นหลัก เพื่อให้อัตราการใช้พลังงานเองสูงที่สุด
+      โดยได้ค่า Self-consumption ${fmt(m.selfRate*100,1)}%<br><br>
+      <b>ข้อสรุปทางการเงิน</b> เงินลงทุน ${fmt(m.capex)} บาท (รวม VAT ${fmt(m.vat*100,1)}%)
+      ให้ผลตอบแทน IRR ${m.irr!==null?fmt(m.irr*100,2)+'%':'—'} NPV ${fmt(m.npv)} บาท
+      LCOE ${fmt(m.lcoe,3)} บาท/kWh และคืนทุนใน ${m.payback!==null?fmt(m.payback,2)+' ปี':'มากกว่าอายุโครงการ'}
+      ประเมินโดยรวมว่า <b>${verdict}</b><br><br>
+      <b>ข้อเสนอแนะ</b> ควรตรวจสอบโครงสร้างหลังคาให้รับน้ำหนักได้อย่างน้อย
+      ${fmt(m.nTotal*25)} กิโลกรัม (ประมาณ 25 กก. ต่อแผง รวมโครงยึด) ตรวจสอบขนาดมิเตอร์และเบรกเกอร์ให้รองรับ
+      ${fmt(m.inv)} kW ยื่นขออนุญาตขนานไฟกับการไฟฟ้าก่อนติดตั้ง ติดตั้งระบบตรวจวัดพลังงานเพื่อยืนยันผลผลิตจริง
+      และล้างแผงอย่างน้อยปีละ 2 ครั้งเพื่อรักษาค่า PR ให้ใกล้เคียง ${fmt(m.pr,2)} ตามที่ใช้ในการออกแบบ<br><br>
+      <b>ข้อจำกัดของการประเมิน</b> ผลลัพธ์นี้อ้างอิงค่า PSH ${fmt(m.psh,2)} ชั่วโมงและ PR ${fmt(m.pr,2)} เป็นค่าเฉลี่ยทั้งปี
+      ไม่ได้จำลองผลของเงามุมเอียง ทิศทางหลังคา และอุณหภูมิรายชั่วโมงจริง
+      ควรทำการสำรวจหน้างานและจำลองด้วยข้อมูลอุตุนิยมวิทยาของพื้นที่ก่อนสรุปแบบขั้นสุดท้าย
+    </div>`;
+}
+
+/* ===================== ควบคุม ===================== */
+function recalc(){ try{ render(model()); }catch(e){ console.error(e); } }
+
+// จัดการ checkbox เปิด/ปิดแบตเตอรี่
+$('hasBattery').addEventListener('change', function(){
+  const battInput = $('battKwh');
+  if(this.checked){
+    battInput.disabled = false;
+    battInput.style.background = '#fff';
+    // ถ้าค่าก่อนหน้าคือ 0 ให้ตั้งค่าเริ่มต้นที่ 20
+    if(pn(battInput.value) === 0) battInput.value = '20';
+  } else {
+    battInput.disabled = true;
+    battInput.style.background = '#f0f0f0';
+    battInput.value = '0';
+  }
+  recalc();
+});
+
+// เปิดใช้งานครั้งแรกตามค่าเริ่มต้น (checkbox ถูกเลือก)
+$('hasBattery').dispatchEvent(new Event('change'));
+
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('input',()=>{
+    if(el.id==='battKwh' && !$('hasBattery').checked){
+      // ถ้าไม่มีการเลือกติดตั้ง อย่าให้เปลี่ยนค่า
+      return;
+    }
+    if(el.id==='battKwh'){ $('omW').value = pn(el.value)>0 ? '1' : '0.06'; }
+    recalc();
+  });
+  el.addEventListener('change',recalc);
+});
+document.querySelectorAll('input.num').forEach(el=>{
+  el.addEventListener('focus',e=>{ e.target.value=String(pn(e.target.value)); });
+  el.addEventListener('blur', e=>{ e.target.value=fmtAuto(pn(e.target.value)); recalc(); });
+});
+$('reportDate').value=new Date().toISOString().slice(0,10);
+recalc();
+</script>
+</body>
+</html>
