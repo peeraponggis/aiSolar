@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>สำรวจหน้างาน — SPA เดี่ยว</title>
+<!--
+  site-survey.html — แบบสำรวจหน้างาน (§24) เป็น SPA ไฟล์เดียว ไม่มี build/ไม่พึ่งไลบรารีภายนอก
+    ใช้งานได้ 2 แบบ: (1) เปิดผ่านเว็บที่ /site-survey.html เมื่อ deploy แอปนี้ (2) คัดลอกไฟล์นี้ไฟล์เดียวไปเปิดตรง (double-click)
+    ในเครื่องช่างสำรวจโดยไม่ต้องมีเน็ต/เซิร์ฟเวอร์/ล็อกอิน — ทำงานออฟไลน์ล้วน
+  ต้นแบบ: solar-engine/src/survey/survey.ts (SURVEY_CHECKLIST/validateSurvey/formatAnswer/summarizeSurvey/renderSurveyReportHtml)
+    พอร์ตมาเป็น JS ธรรมดาในไฟล์นี้ (ไม่ import ได้เพราะไม่มีขั้นตอน build) — แก้ checklist ที่ engine แล้วอัปเดตที่นี่ให้ตรงกันด้วยมือ
+  เก็บข้อมูล: localStorage เดียว (ไม่ใช้ IndexedDB) เพื่อความเข้ากันได้แน่นอนเมื่อเปิดแบบไฟล์ (file://) บนมือถือ —
+    ภาพเก็บเป็นภาพย่อ (data URL, ~1000px, JPEG q0.55) ฝังอยู่ในบันทึกเลย ไม่มีต้นฉบับความละเอียดเต็มแยกต่างหาก (ต่างจากแอปเต็มที่ใช้ IndexedDB เก็บภาพต้นฉบับ)
+  ไม่เชื่อมกับโปรเจกต์ใน ASC ENTERPRISES โดยตรง — ส่งออกเป็น JSON รูปแบบ SurveyRecord เดียวกัน ให้นำไปใช้ต่อ/ตรวจสอบเองได้
+-->
+<style>
+:root {
+  --paper:#f3f6f8; --panel:#ffffff; --panel-2:#eef2f3; --ink:#12263a; --ink-2:#3b4c5e; --ink-3:#7a8794;
+  --line:#dce3ea; --accent:#146b4a; --accent-soft:#e2efe7; --accent-ink:#ffffff;
+  --ok:#146b4a; --ok-soft:#e2efe7; --warn:#8a6d1a; --warn-soft:#faf1da; --fail:#9c2b23; --fail-soft:#f7e3e1;
+  --radius:8px; --font: 'Sarabun','Leelawadee UI','Tahoma',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper:#0f1a15; --panel:#16231d; --panel-2:#1c2b23; --ink:#eaf1ec; --ink-2:#a9bcb2; --ink-3:#71857a;
+    --line:#28382f; --accent:#57b487; --accent-soft:#1d3a2c; --accent-ink:#0f1a15;
+    --ok:#57b487; --ok-soft:#1d3a2c; --warn:#e0b84a; --warn-soft:#3a301a; --fail:#e08078; --fail-soft:#3a201d; }
+}
+* { box-sizing: border-box; }
+html,body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font); font-size:16px; line-height:1.5; }
+h1,h2,h3 { font-weight:700; margin:0; }
+button, input, select, textarea { font-family:inherit; font-size:1em; color:inherit; }
+.wrap { max-width:720px; margin:0 auto; padding:0 0 90px; }
+header.top { position:sticky; top:0; z-index:5; background:var(--panel); border-bottom:1px solid var(--line); padding:12px 16px; display:flex; align-items:center; gap:10px; }
+header.top .ttl { flex:1; }
+header.top .ttl b { font-size:1.05em; }
+header.top .ttl span { display:block; font-size:.72em; color:var(--ink-3); }
+.btn { border:1px solid var(--line); background:var(--panel); color:var(--ink-2); border-radius:var(--radius); padding:9px 14px; font-size:.95em; cursor:pointer; touch-action:manipulation; }
+.btn:active { transform:scale(.98); }
+.btn.primary { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
+.btn.ghost { background:transparent; }
+.btn.danger { color:var(--fail); border-color:var(--fail); }
+.btn.small { padding:5px 10px; font-size:.85em; }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin:12px 16px; }
+.list-card { display:flex; align-items:center; gap:10px; cursor:pointer; }
+.list-card .meta { flex:1; min-width:0; }
+.list-card .meta b { display:block; }
+.list-card .meta span { display:block; font-size:.82em; color:var(--ink-3); margin-top:2px; }
+.chip { display:inline-block; font-family:monospace; font-size:.74em; font-weight:600; letter-spacing:.04em; padding:3px 9px 4px; border-radius:99px; }
+.chip.OK { background:var(--ok-soft); color:var(--ok); }
+.chip.WARN { background:var(--warn-soft); color:var(--warn); }
+.chip.FAIL { background:var(--fail-soft); color:var(--fail); }
+.small { font-size:.86em; color:var(--ink-2); }
+.notice { background:var(--accent-soft); color:var(--ink); border-left:3px solid var(--accent); padding:8px 12px; border-radius:4px; margin:12px 16px; font-size:.9em; }
+.notice.warn { background:var(--warn-soft); border-color:var(--warn); }
+.notice.err { background:var(--fail-soft); border-color:var(--fail); }
+section.sec { margin:16px 16px 0; }
+section.sec h2 { font-size:1.02em; padding-bottom:6px; border-bottom:1px solid var(--line); margin-bottom:10px; }
+.item { padding:10px 0; border-bottom:1px dashed var(--line); }
+.item:last-child { border-bottom:0; }
+.item label.q { display:flex; align-items:baseline; gap:6px; font-weight:600; margin-bottom:6px; }
+.item label.q .req { color:var(--fail); }
+.item .hint { font-size:.8em; color:var(--ink-3); margin:-2px 0 6px; }
+input[type=text], input[type=number], select, textarea {
+  width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); color:var(--ink); }
+textarea { resize:vertical; min-height:70px; }
+.yesno { display:flex; gap:8px; }
+.yesno button { flex:1; padding:9px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); color:var(--ink-2); }
+.yesno button.on-yes { background:var(--ok-soft); border-color:var(--ok); color:var(--ok); font-weight:700; }
+.yesno button.on-no { background:var(--fail-soft); border-color:var(--fail); color:var(--fail); font-weight:700; }
+.photo-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px; }
+.photo-row .thumb { position:relative; width:64px; height:64px; border-radius:6px; overflow:hidden; border:1px solid var(--line); }
+.photo-row .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.photo-row .thumb .rm { position:absolute; top:2px; right:2px; background:rgba(0,0,0,.55); color:#fff; border:0; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:18px; text-align:center; padding:0; cursor:pointer; }
+.photo-add { display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border:1px dashed var(--line); border-radius:6px; color:var(--ink-3); font-size:1.4em; cursor:pointer; background:var(--panel-2); }
+.photo-add input { display:none; }
+.miss-photo { font-size:.78em; color:var(--fail); margin-top:4px; }
+.row-list .row { display:grid; grid-template-columns:1fr auto auto auto; gap:6px; align-items:center; padding:8px 0; border-bottom:1px dashed var(--line); }
+.row-list .row input { padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--panel); color:var(--ink); width:100%; }
+.row-list .row .gpsxy { font-size:.74em; color:var(--ink-3); grid-column:1/-1; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.field { margin-bottom:10px; }
+.field label { display:block; font-size:.85em; color:var(--ink-2); margin-bottom:4px; }
+footer.bar { position:fixed; left:0; right:0; bottom:0; background:var(--panel); border-top:1px solid var(--line); padding:10px 16px; display:flex; gap:8px; align-items:center; z-index:5; }
+footer.bar .prog { flex:1; font-size:.85em; color:var(--ink-2); }
+.gal { display:flex; flex-wrap:wrap; gap:8px; }
+.hidden { display:none !important; }
+a.linklike { color:var(--accent); text-decoration:underline; cursor:pointer; background:none; border:0; font-size:inherit; padding:0; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+'use strict';
+
+/* ------------------------------------------------------------------ */
+/* checklist (ต้นแบบ: solar-engine/src/survey/survey.ts) — แก้ที่ engine แล้วคัดลอกมาที่นี่ด้วยมือ */
+/* ------------------------------------------------------------------ */
+const CHECKLIST = [
+  { id: 'roof', title: 'หลังคา', items: [
+    { id: 'roof_material', label: 'วัสดุหลังคา', type: 'choice', required: true, options: ['เมทัลชีท', 'กระเบื้องลอน', 'กระเบื้องคอนกรีต', 'คอนกรีตดาดฟ้า', 'อื่น ๆ'], photoRequired: true },
+    { id: 'roof_age_y', label: 'อายุหลังคาโดยประมาณ', type: 'number', unit: 'ปี' },
+    { id: 'roof_condition', label: 'สภาพหลังคา', type: 'choice', required: true, options: ['ดี', 'พอใช้', 'ทรุดโทรม'] },
+    { id: 'roof_leak', label: 'มีรอยรั่ว/ซ่อมแซมมาก่อน', type: 'yesno', required: true },
+    { id: 'roof_pitch_deg', label: 'มุมลาดเอียง (วัด/ประมาณ)', type: 'number', unit: '°', required: true },
+    { id: 'roof_walkable', label: 'เดินบนหลังคาได้โดยไม่ต้องใช้ทางเดินพิเศษ', type: 'yesno' },
+    { id: 'roof_access', label: 'ทางขึ้นหลังคา/จุดตั้งบันได-เครน', type: 'text', required: true },
+  ] },
+  { id: 'structure', title: 'โครงสร้าง', items: [
+    { id: 'purlin_spacing_m', label: 'ระยะแป', type: 'number', unit: 'ม.', required: true },
+    { id: 'rafter_type', label: 'โครงหลังคา', type: 'choice', options: ['เหล็กรูปพรรณ', 'ไม้', 'คอนกรีต', 'โครงถักเหล็ก', 'ไม่ทราบ'], photoRequired: true },
+    { id: 'rust_damage', label: 'พบสนิม/ชำรุดที่โครงสร้าง', type: 'yesno', required: true },
+    { id: 'struct_eng_needed', label: 'ต้องให้วิศวกรโครงสร้างตรวจก่อนติดตั้ง', type: 'yesno', required: true, hint: 'ติ๊ก "ใช่" เสมอเมื่อไม่แน่ใจ — ระบบไม่อนุมัติโครงสร้างเอง' },
+  ] },
+  { id: 'electrical', title: 'ระบบไฟฟ้า', items: [
+    { id: 'mdb_location', label: 'ตำแหน่ง MDB/ตู้เมน', type: 'text', required: true, photoRequired: true },
+    { id: 'main_breaker_a', label: 'เมนเบรกเกอร์', type: 'number', unit: 'A', required: true },
+    { id: 'phases', label: 'ระบบไฟ', type: 'choice', required: true, options: ['1 เฟส 230 V', '3 เฟส 400 V'] },
+    { id: 'meter_type', label: 'มิเตอร์/อัตรา', type: 'choice', options: ['ปกติ', 'TOU', 'ไม่ทราบ'] },
+    { id: 'mdb_spare', label: 'MDB มีช่องว่างสำหรับเบรกเกอร์ PV', type: 'yesno', required: true },
+    { id: 'earthing', label: 'มีระบบสายดินที่ตู้เมน', type: 'yesno', required: true },
+    { id: 'roof_to_mdb_m', label: 'ระยะเดินสายจากหลังคาถึง MDB', type: 'number', unit: 'ม.', required: true },
+    { id: 'inverter_space', label: 'มีที่ติดตั้งอินเวอร์เตอร์/SMDB (ร่ม ระบายอากาศ)', type: 'yesno', required: true, photoRequired: true },
+    { id: 'internet', label: 'มีอินเทอร์เน็ต/สัญญาณมือถือสำหรับมอนิเตอร์', type: 'yesno' },
+  ] },
+  { id: 'shading', title: 'เงาและสิ่งกีดขวาง', items: [
+    { id: 'obstacles_on_roof', label: 'มีสิ่งกีดขวางบนหลังคา (ปล่อง/แอร์/ถังน้ำ)', type: 'yesno', required: true, hint: 'บันทึกตำแหน่ง+ความสูงในส่วน "สิ่งกีดขวาง" ด้านล่าง' },
+    { id: 'trees', label: 'มีต้นไม้ใกล้เคียงที่อาจบัง', type: 'yesno', required: true },
+    { id: 'neighbor_taller', label: 'อาคารข้างเคียงสูงกว่าหลังคา', type: 'yesno', required: true },
+  ] },
+  { id: 'safety', title: 'ความปลอดภัย/การเข้าถึง', items: [
+    { id: 'crane_access', label: 'รถเครน/รถขนส่งเข้าถึงได้', type: 'yesno', required: true },
+    { id: 'height_work', label: 'ข้อกำหนดงานที่สูง/อุปกรณ์กันตก', type: 'text' },
+    { id: 'site_contact', label: 'ผู้ประสานงานหน้างาน (ชื่อ/เบอร์)', type: 'text' },
+  ] },
+];
+const ITEMS = CHECKLIST.flatMap((s) => s.items);
+const itemOf = (id) => ITEMS.find((i) => i.id === id);
+
+/* ------------------------------------------------------------------ */
+/* engine logic พอร์ตจาก survey.ts (ต้องตรงกับต้นแบบ) */
+/* ------------------------------------------------------------------ */
+const isAnswered = (v) => v !== undefined && v !== null && v !== '';
+
+function newRecord(id, now) {
+  now = now || new Date().toISOString();
+  return { id, createdAt: now, updatedAt: now, answers: {}, photos: [], gcps: [], obstacles: [] };
+}
+
+function validateSurvey(r) {
+  const missing = []; const warnings = []; let answered = 0;
+  for (const it of ITEMS) {
+    const v = r.answers[it.id];
+    if (isAnswered(v)) answered++;
+    else if (it.required) missing.push({ itemId: it.id, label: it.label, kind: 'answer' });
+    if (it.photoRequired && !r.photos.some((p) => p.itemId === it.id)) missing.push({ itemId: it.id, label: it.label, kind: 'photo' });
+    if (it.type === 'number' && isAnswered(v) && typeof v === 'number' && v < 0) warnings.push(it.label + ': ค่าติดลบ');
+  }
+  if (!r.gps) warnings.push('ไม่มีพิกัด GPS ของไซต์ — GCP/สิ่งกีดขวางแปลงเข้าผังไม่ได้');
+  else if ((r.gps.accuracyM || 0) > 15) warnings.push('ความแม่น GPS ' + Math.round(r.gps.accuracyM) + ' ม. — หยาบสำหรับวางผัง (ควร ≤ 15 ม. หรือใช้ GCP จากภาพถ่าย)');
+  for (const g of r.gcps) if ((g.accuracyM || 0) > 10) warnings.push('GCP "' + g.label + '" ความแม่น ' + Math.round(g.accuracyM) + ' ม. — ใช้เป็นจุดอ้างอิงได้จำกัด');
+  if (r.answers.struct_eng_needed === false) warnings.push('ระบุว่าไม่ต้องให้วิศวกรโครงสร้างตรวจ — ต้องมีเหตุผลบันทึกไว้ (ระบบไม่อนุมัติโครงสร้างเอง)');
+  if (r.answers.obstacles_on_roof === true && r.obstacles.length === 0) warnings.push('ระบุว่ามีสิ่งกีดขวางบนหลังคา แต่ยังไม่บันทึกตำแหน่ง/ความสูง');
+  return { ok: missing.length === 0, missing, warnings, answered, total: ITEMS.length };
+}
+
+function formatAnswer(it, v) {
+  if (!isAnswered(v)) return '—';
+  if (it.type === 'yesno') return (v === true || v === 'true') ? 'ใช่' : 'ไม่';
+  return String(v) + (it.unit ? ' ' + it.unit : '');
+}
+
+const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function reportHtml(r, projectName) {
+  const v = validateSurvey(r);
+  const sections = CHECKLIST.map((sec) => '<h2>' + esc(sec.title) + '</h2><table><tbody>' + sec.items.map((it) => {
+    const photos = r.photos.filter((p) => p.itemId === it.id);
+    return '<tr><td class="l">' + esc(it.label) + (it.required ? ' *' : '') + '</td><td>' + esc(formatAnswer(it, r.answers[it.id])) + '</td><td class="ph">' +
+      photos.map((p) => p.thumbDataUrl ? '<img src="' + p.thumbDataUrl + '" alt="' + esc(p.name) + '">' : '<span>' + esc(p.name) + '</span>').join('') + '</td></tr>';
+  }).join('') + '</tbody></table>').join('');
+  const general = r.photos.filter((p) => !p.itemId);
+  return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>สำรวจหน้างาน · ' + esc(projectName) + '</title>' +
+'<style>body{font-family:Sarabun,Tahoma,sans-serif;background:#fff;color:#111;margin:24px;font-size:13px}h1{font-size:18px}h2{font-size:14px;margin:16px 0 4px;border-bottom:1px solid #999}table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #ddd;padding:4px 6px;vertical-align:top}td.l{width:38%;color:#333}td.ph{width:30%}td.ph img{height:64px;margin:2px;border:1px solid #ccc}.meta{color:#555;font-size:12px}.miss{color:#9c2b23}.warn{color:#8a6d1a}ul{margin:4px 0 4px 18px}.gal img{height:90px;margin:3px;border:1px solid #ccc}</style></head><body>' +
+'<h1>บันทึกสำรวจหน้างาน — ' + esc(projectName) + '</h1>' +
+'<div class="meta">สำรวจโดย ' + esc(r.surveyor || '—') + ' · ' + r.createdAt.slice(0, 16).replace('T', ' ') + ' · ' +
+  (r.gps ? ('GPS ' + r.gps.latDeg.toFixed(6) + ', ' + r.gps.lngDeg.toFixed(6) + ' ±' + Math.round(r.gps.accuracyM || 0) + ' ม.') : 'ไม่มี GPS') +
+  ' · ตอบ ' + v.answered + '/' + v.total + ' · ออกเอกสาร ' + new Date().toISOString().slice(0, 10) + '</div>' +
+(v.missing.length ? '<p class="miss">ยังขาด: ' + v.missing.map((m) => esc(m.label) + ' (' + (m.kind === 'photo' ? 'ภาพ' : 'คำตอบ') + ')').join(' · ') + '</p>' : '') +
+(v.warnings.length ? '<ul class="warn">' + v.warnings.map((w) => '<li>' + esc(w) + '</li>').join('') + '</ul>' : '') +
+sections +
+'<h2>สิ่งกีดขวางบนหลังคา (' + r.obstacles.length + ')</h2><table><tbody>' +
+  (r.obstacles.map((o) => '<tr><td class="l">' + esc(o.label) + '</td><td>สูง ' + o.heightM + ' ม. · ' + (o.widthM || 1) + '×' + (o.depthM || 1) + ' ม. · ' + o.latDeg.toFixed(6) + ', ' + o.lngDeg.toFixed(6) + '</td><td></td></tr>').join('') || '<tr><td>—</td></tr>') +
+'</tbody></table>' +
+'<h2>จุด GCP (' + r.gcps.length + ')</h2><table><tbody>' +
+  (r.gcps.map((g) => '<tr><td class="l">' + esc(g.label) + '</td><td>' + g.latDeg.toFixed(6) + ', ' + g.lngDeg.toFixed(6) + ' ±' + Math.round(g.accuracyM || 0) + ' ม.</td><td></td></tr>').join('') || '<tr><td>—</td></tr>') +
+'</tbody></table>' +
+(general.length ? '<h2>ภาพทั่วไป (' + general.length + ')</h2><div class="gal">' + general.map((p) => p.thumbDataUrl ? '<img src="' + p.thumbDataUrl + '" alt="' + esc(p.name) + '">' : '').join('') + '</div>' : '') +
+(r.notes ? '<h2>บันทึกเพิ่มเติม</h2><p>' + esc(r.notes) + '</p>' : '') +
+'<p class="meta">ภาพในรายงานเป็นภาพย่อ (ไม่มีต้นฉบับความละเอียดเต็มแยกเก็บในเครื่องมือนี้) · ข้อมูลหน้างานเป็นข้อมูลดิบ ต้องให้วิศวกรยืนยันก่อนใช้ออกแบบ</p>' +
+'</body></html>';
+}
+
+/* ------------------------------------------------------------------ */
+/* เก็บข้อมูล: localStorage เดียว (ไม่ใช้ IndexedDB — เข้ากันได้แน่นอนกว่าเมื่อเปิดแบบไฟล์) */
+/* ------------------------------------------------------------------ */
+const LS_KEY = 'asc_site_survey_standalone_v1';
+function loadAll() { try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; } }
+function saveAll(list) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(list)); return { ok: true }; }
+  catch (e) { return { ok: false, error: String(e && e.message || e) }; }
+}
+function storageSizeKB() { try { return Math.round((localStorage.getItem(LS_KEY) || '').length / 1024); } catch (e) { return 0; } }
+const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+
+/* ย่อภาพเป็น JPEG data URL (ด้านยาวสุด maxPx) — เดียวกับแนวคิด makeThumb ของแอปเต็ม แต่คุณภาพต่ำกว่าเล็กน้อยเพื่อประหยัด localStorage */
+function fileToThumb(file, maxPx, quality) {
+  maxPx = maxPx || 1000; quality = quality || 0.55;
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('อ่านภาพไม่ได้')); };
+    img.src = url;
+  });
+}
+function getGps() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { reject(new Error('อุปกรณ์นี้ไม่มี GPS/geolocation')); return; }
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve({ latDeg: p.coords.latitude, lngDeg: p.coords.longitude, accuracyM: p.coords.accuracy, altM: p.coords.altitude == null ? undefined : p.coords.altitude, at: new Date().toISOString() }),
+      (e) => reject(new Error('GPS: ' + e.message)),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  });
+}
+function downloadBlob(filename, mime, text) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* ------------------------------------------------------------------ */
+/* state + render (ไม่ใช้ framework — วาดใหม่ทั้งจอทุกครั้งที่เปลี่ยนสถานะ เรียบง่ายพอสำหรับฟอร์มนี้) */
+/* ------------------------------------------------------------------ */
+const state = { records: loadAll(), curId: null, notice: null, noticeKind: 'ok' };
+
+function findCur() { return state.records.find((r) => r.id === state.curId) || null; }
+function persist() {
+  const res = saveAll(state.records);
+  if (!res.ok) setNotice('บันทึกลงเครื่องไม่สำเร็จ (พื้นที่เต็ม?) — ส่งออก JSON เก็บไว้แล้วลบสำรวจเก่าบางรายการ: ' + res.error, 'err');
+}
+function setNotice(msg, kind) { state.notice = msg; state.noticeKind = kind || 'ok'; }
+function updateCur(patch) {
+  const r = findCur(); if (!r) return;
+  Object.assign(r, patch); r.updatedAt = new Date().toISOString();
+  persist(); render();
+}
+function setAnswer(id, v) { const r = findCur(); if (!r) return; r.answers[id] = v; updateCur({}); }
+
+function createSurvey() {
+  const r = newRecord(uid());
+  state.records.unshift(r); state.curId = r.id; state.notice = null; persist(); render();
+}
+function openSurvey(id) { state.curId = id; state.notice = null; render(); window.scrollTo(0, 0); }
+function backToList() { state.curId = null; state.notice = null; render(); window.scrollTo(0, 0); }
+function deleteSurvey(id) {
+  if (!confirm('ลบบันทึกสำรวจนี้ถาวร? (แนะนำส่งออก JSON ไว้ก่อนถ้ายังไม่ได้ backup)')) return;
+  state.records = state.records.filter((r) => r.id !== id);
+  if (state.curId === id) state.curId = null;
+  persist(); render();
+}
+
+async function captureSiteGps() {
+  setNotice('กำลังหาพิกัด GPS…'); render();
+  try { const g = await getGps(); updateCur({ gps: g }); setNotice('บันทึกพิกัดไซต์แล้ว (±' + Math.round(g.accuracyM || 0) + ' ม.)'); render(); }
+  catch (e) { setNotice(String(e.message || e), 'err'); render(); }
+}
+async function addRowGps(kind, idx) {
+  const r = findCur(); if (!r) return;
+  setNotice('กำลังหาพิกัด GPS…'); render();
+  try {
+    const g = await getGps();
+    const list = kind === 'gcp' ? r.gcps : r.obstacles;
+    list[idx].latDeg = g.latDeg; list[idx].lngDeg = g.lngDeg; list[idx].accuracyM = g.accuracyM;
+    if (kind === 'gcp') list[idx].at = g.at;
+    updateCur({}); setNotice('บันทึกพิกัดแล้ว');
+  } catch (e) { setNotice(String(e.message || e), 'err'); render(); }
+}
+function addGcp() { const r = findCur(); if (!r) return; r.gcps.push({ id: uid(), label: 'GCP ' + (r.gcps.length + 1), latDeg: 0, lngDeg: 0 }); updateCur({}); }
+function removeGcp(idx) { const r = findCur(); if (!r) return; r.gcps.splice(idx, 1); updateCur({}); }
+function addObstacle() { const r = findCur(); if (!r) return; r.obstacles.push({ id: uid(), label: 'สิ่งกีดขวาง ' + (r.obstacles.length + 1), latDeg: 0, lngDeg: 0, heightM: 1 }); updateCur({}); }
+function removeObstacle(idx) { const r = findCur(); if (!r) return; r.obstacles.splice(idx, 1); updateCur({}); }
+
+async function addPhoto(file, itemId) {
+  const r = findCur(); if (!r || !file) return;
+  setNotice('กำลังย่อภาพ…'); render();
+  try {
+    const thumb = await fileToThumb(file);
+    r.photos.push({ id: uid(), name: file.name || 'photo.jpg', takenAt: new Date().toISOString(), itemId: itemId || undefined, thumbDataUrl: thumb, sizeBytes: file.size, gps: r.gps });
+    setNotice('เพิ่มภาพแล้ว'); updateCur({});
+  } catch (e) { setNotice(String(e.message || e), 'err'); render(); }
+}
+function removePhoto(id) { const r = findCur(); if (!r) return; r.photos = r.photos.filter((p) => p.id !== id); updateCur({}); }
+
+function exportRecordJson(r) { downloadBlob('survey-' + r.id + '.json', 'application/json', JSON.stringify(r, null, 2)); }
+function exportAllJson() { downloadBlob('site-survey-backup-' + new Date().toISOString().slice(0, 10) + '.json', 'application/json', JSON.stringify(state.records, null, 2)); }
+function exportReport(r) { downloadBlob('survey-report-' + r.id + '.html', 'text/html', reportHtml(r, r.projectName || 'ไม่ระบุโครงการ')); }
+function importJsonFile(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const data = JSON.parse(String(fr.result));
+      const incoming = Array.isArray(data) ? data : [data];
+      let added = 0, updated = 0;
+      for (const rec of incoming) {
+        if (!rec || !rec.id || !rec.answers) continue;
+        const i = state.records.findIndex((x) => x.id === rec.id);
+        if (i >= 0) { if (confirm('พบบันทึก id ซ้ำ (' + rec.id + ') — เขียนทับด้วยไฟล์ที่นำเข้า?')) { state.records[i] = rec; updated++; } }
+        else { state.records.push(rec); added++; }
+      }
+      persist(); setNotice('นำเข้าแล้ว: เพิ่ม ' + added + ' · เขียนทับ ' + updated); render();
+    } catch (e) { setNotice('อ่านไฟล์ JSON ไม่ได้: ' + String(e.message || e), 'err'); render(); }
+  };
+  fr.readAsText(file);
+}
+
+/* ------------------------------------------------------------------ */
+/* markup helpers */
+/* ------------------------------------------------------------------ */
+function h(tag, attrs, children) {
+  const el = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    if (k === 'class') el.className = attrs[k];
+    else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+    else if (attrs[k] !== undefined && attrs[k] !== null) el.setAttribute(k, attrs[k]);
+  }
+  (children || []).forEach((c) => { if (c) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+  return el;
+}
+function renderNotice() {
+  if (!state.notice) return null;
+  return h('div', { class: 'notice' + (state.noticeKind === 'err' ? ' err' : state.noticeKind === 'warn' ? ' warn' : '') }, [state.notice]);
+}
+
+function renderList() {
+  const root = h('div', { class: 'wrap' }, []);
+  root.appendChild(h('header', { class: 'top' }, [
+    h('div', { class: 'ttl' }, [h('b', {}, ['สำรวจหน้างาน']), h('span', {}, ['SPA ไฟล์เดียว · ทำงานออฟไลน์ · เก็บในเครื่องนี้เท่านั้น'])]),
+  ]));
+  const n = renderNotice(); if (n) root.appendChild(n);
+  const kb = storageSizeKB();
+  if (kb > 3500) root.appendChild(h('div', { class: 'notice warn' }, ['พื้นที่เก็บในเบราว์เซอร์ใช้ไปแล้ว ~' + kb + ' KB — ใกล้เต็ม แนะนำกด "ส่งออกทั้งหมด (JSON)" สำรองไว้แล้วลบบันทึกเก่าที่ส่งรายงานแล้ว']));
+
+  const actions = h('div', { class: 'card' }, [
+    h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, [
+      h('button', { class: 'btn primary', onclick: createSurvey }, ['+ สำรวจใหม่']),
+      h('button', { class: 'btn', onclick: exportAllJson }, ['ส่งออกทั้งหมด (JSON)']),
+      h('label', { class: 'btn' }, ['นำเข้า JSON', (() => { const inp = h('input', { type: 'file', accept: 'application/json', style: 'display:none', onchange: (e) => { const f = e.target.files[0]; if (f) importJsonFile(f); e.target.value = ''; } }); return inp; })()]),
+    ]),
+  ]);
+  actions.querySelector('input[type=file]').style.display = 'none';
+  root.appendChild(actions);
+
+  if (state.records.length === 0) {
+    root.appendChild(h('div', { class: 'card small' }, ['ยังไม่มีบันทึกสำรวจ — กด "+ สำรวจใหม่" เพื่อเริ่ม']));
+  }
+  state.records.forEach((r) => {
+    const v = validateSurvey(r);
+    const badge = v.missing.length === 0 ? h('span', { class: 'chip OK' }, ['ครบ']) : h('span', { class: 'chip WARN' }, ['ขาด ' + v.missing.length]);
+    const card = h('div', { class: 'card list-card' }, [
+      h('div', { class: 'meta', onclick: () => openSurvey(r.id) }, [
+        h('b', {}, [r.projectName || ('บันทึก ' + r.id.slice(0, 6))]),
+        h('span', {}, [
+          'อัปเดต ' + r.updatedAt.slice(0, 16).replace('T', ' ') + ' · ตอบ ' + v.answered + '/' + v.total + ' · ภาพ ' + r.photos.length +
+          (r.gps ? ' · มี GPS' : ' · ไม่มี GPS'),
+        ]),
+      ]),
+      badge,
+    ]);
+    const btnRow = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px' }, [
+      h('button', { class: 'btn small', onclick: () => openSurvey(r.id) }, ['เปิด']),
+      h('button', { class: 'btn small', onclick: () => exportReport(r) }, ['ดาวน์โหลดรายงาน']),
+      h('button', { class: 'btn small', onclick: () => exportRecordJson(r) }, ['ส่งออก JSON']),
+      h('button', { class: 'btn small danger', onclick: () => deleteSurvey(r.id) }, ['ลบ']),
+    ]);
+    const outer = h('div', {}, [card, btnRow]);
+    card.style.cursor = 'default';
+    root.appendChild(outer);
+  });
+  return root;
+}
+
+function renderItem(r, it) {
+  const v = r.answers[it.id];
+  const box = h('div', { class: 'item' }, []);
+  box.appendChild(h('label', { class: 'q' }, [it.label + (it.unit ? ' (' + it.unit + ')' : ''), it.required ? h('span', { class: 'req' }, ['*']) : null]));
+  if (it.hint) box.appendChild(h('div', { class: 'hint' }, [it.hint]));
+
+  if (it.type === 'yesno') {
+    const yes = h('button', { class: v === true ? 'on-yes' : '', onclick: () => setAnswer(it.id, true) }, ['ใช่']);
+    const no = h('button', { class: v === false ? 'on-no' : '', onclick: () => setAnswer(it.id, false) }, ['ไม่']);
+    box.appendChild(h('div', { class: 'yesno' }, [yes, no]));
+  } else if (it.type === 'choice') {
+    const sel = h('select', { onchange: (e) => setAnswer(it.id, e.target.value) }, [h('option', { value: '' }, ['— เลือก —'])].concat(
+      it.options.map((o) => { const opt = h('option', { value: o }, [o]); if (v === o) opt.setAttribute('selected', 'selected'); return opt; })
+    ));
+    box.appendChild(sel);
+  } else if (it.type === 'number') {
+    box.appendChild(h('input', { type: 'number', inputmode: 'decimal', value: isAnswered(v) ? v : '', onchange: (e) => setAnswer(it.id, e.target.value === '' ? null : Number(e.target.value)) }));
+  } else {
+    box.appendChild(h('input', { type: 'text', value: isAnswered(v) ? v : '', onchange: (e) => setAnswer(it.id, e.target.value) }));
+  }
+
+  const photos = r.photos.filter((p) => p.itemId === it.id);
+  const prow = h('div', { class: 'photo-row' }, photos.map((p) => h('div', { class: 'thumb' }, [
+    h('img', { src: p.thumbDataUrl, alt: p.name }),
+    h('button', { class: 'rm', onclick: () => removePhoto(p.id) }, ['×']),
+  ])));
+  const addLabel = h('label', { class: 'photo-add', title: 'เพิ่มภาพ' }, ['+',
+    h('input', { type: 'file', accept: 'image/*', capture: 'environment', onchange: (e) => { const f = e.target.files[0]; if (f) addPhoto(f, it.id); e.target.value = ''; } }),
+  ]);
+  prow.appendChild(addLabel);
+  box.appendChild(prow);
+  if (it.photoRequired && photos.length === 0) box.appendChild(h('div', { class: 'miss-photo' }, ['ต้องมีภาพประกอบอย่างน้อย 1 ภาพ']));
+  return box;
+}
+
+function renderRowList(r, kind) {
+  const list = kind === 'gcp' ? r.gcps : r.obstacles;
+  const wrap = h('div', { class: 'row-list' }, []);
+  list.forEach((item, idx) => {
+    const labelInput = h('input', { type: 'text', value: item.label, placeholder: 'ชื่อ', onchange: (e) => { item.label = e.target.value; updateCur({}); } });
+    const gpsBtn = h('button', { class: 'btn small', onclick: () => addRowGps(kind, idx) }, ['จับ GPS']);
+    const rmBtn = h('button', { class: 'btn small danger', onclick: () => (kind === 'gcp' ? removeGcp(idx) : removeObstacle(idx)) }, ['ลบ']);
+    const row = h('div', { class: 'row' }, [labelInput, gpsBtn]);
+    if (kind === 'obstacle') {
+      const hInput = h('input', { type: 'number', inputmode: 'decimal', value: item.heightM, placeholder: 'สูง (ม.)', onchange: (e) => { item.heightM = Number(e.target.value) || 0; updateCur({}); }, style: 'max-width:78px' });
+      row.insertBefore(hInput, gpsBtn);
+    }
+    row.appendChild(rmBtn);
+    wrap.appendChild(row);
+    wrap.appendChild(h('div', { class: 'row gpsxy', style: 'grid-template-columns:1fr' }, [
+      item.latDeg || item.lngDeg ? (item.latDeg.toFixed(6) + ', ' + item.lngDeg.toFixed(6) + (item.accuracyM ? (' ±' + Math.round(item.accuracyM) + ' ม.') : '')) : 'ยังไม่ได้จับพิกัด',
+    ]));
+  });
+  return wrap;
+}
+
+function renderForm() {
+  const r = findCur();
+  const root = h('div', { class: 'wrap' }, []);
+  root.appendChild(h('header', { class: 'top' }, [
+    h('button', { class: 'btn ghost', onclick: backToList }, ['← กลับ']),
+    h('div', { class: 'ttl' }, [h('b', {}, [r.projectName || 'บันทึกสำรวจ']), h('span', {}, ['อัปเดต ' + r.updatedAt.slice(0, 16).replace('T', ' ')])]),
+  ]));
+  const n = renderNotice(); if (n) root.appendChild(n);
+
+  const meta = h('div', { class: 'card' }, [
+    h('div', { class: 'field' }, [h('label', {}, ['ชื่อโครงการ']), h('input', { type: 'text', value: r.projectName || '', onchange: (e) => updateCur({ projectName: e.target.value }) })]),
+    h('div', { class: 'field' }, [h('label', {}, ['ผู้สำรวจ']), h('input', { type: 'text', value: r.surveyor || '', onchange: (e) => updateCur({ surveyor: e.target.value }) })]),
+    h('div', { class: 'field' }, [
+      h('label', {}, ['พิกัดไซต์ (GPS)']),
+      h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, [
+        h('button', { class: 'btn', onclick: captureSiteGps }, ['จับพิกัดไซต์']),
+        h('span', { class: 'small' }, [r.gps ? (r.gps.latDeg.toFixed(6) + ', ' + r.gps.lngDeg.toFixed(6) + ' ±' + Math.round(r.gps.accuracyM || 0) + ' ม.') : 'ยังไม่ได้จับพิกัด']),
+      ]),
+    ]),
+  ]);
+  root.appendChild(meta);
+
+  CHECKLIST.forEach((sec) => {
+    const s = h('section', { class: 'sec' }, [h('h2', {}, [sec.title])]);
+    sec.items.forEach((it) => s.appendChild(renderItem(r, it)));
+    root.appendChild(s);
+  });
+
+  const obSec = h('section', { class: 'sec' }, [
+    h('h2', {}, ['สิ่งกีดขวางบนหลังคา (' + r.obstacles.length + ')']),
+    renderRowList(r, 'obstacle'),
+    h('button', { class: 'btn small', style: 'margin-top:8px', onclick: addObstacle }, ['+ เพิ่มสิ่งกีดขวาง']),
+  ]);
+  root.appendChild(obSec);
+
+  const gcpSec = h('section', { class: 'sec' }, [
+    h('h2', {}, ['จุด GCP (' + r.gcps.length + ')']),
+    renderRowList(r, 'gcp'),
+    h('button', { class: 'btn small', style: 'margin-top:8px', onclick: addGcp }, ['+ เพิ่ม GCP']),
+  ]);
+  root.appendChild(gcpSec);
+
+  const general = r.photos.filter((p) => !p.itemId);
+  const galSec = h('section', { class: 'sec' }, [
+    h('h2', {}, ['ภาพทั่วไป (' + general.length + ')']),
+    (() => {
+      const row = h('div', { class: 'photo-row' }, general.map((p) => h('div', { class: 'thumb' }, [h('img', { src: p.thumbDataUrl, alt: p.name }), h('button', { class: 'rm', onclick: () => removePhoto(p.id) }, ['×'])])));
+      row.appendChild(h('label', { class: 'photo-add', title: 'เพิ่มภาพ' }, ['+', h('input', { type: 'file', accept: 'image/*', capture: 'environment', onchange: (e) => { const f = e.target.files[0]; if (f) addPhoto(f, undefined); e.target.value = ''; } })]));
+      return row;
+    })(),
+  ]);
+  root.appendChild(galSec);
+
+  const notesSec = h('section', { class: 'sec' }, [
+    h('h2', {}, ['บันทึกเพิ่มเติม']),
+    h('textarea', { onchange: (e) => updateCur({ notes: e.target.value }) }, [r.notes || '']),
+  ]);
+  root.appendChild(notesSec);
+
+  const v = validateSurvey(r);
+  if (v.warnings.length) {
+    const w = h('div', { class: 'notice warn' }, []);
+    w.appendChild(document.createTextNode('ข้อสังเกต: '));
+    v.warnings.forEach((msg, i) => { if (i) w.appendChild(document.createTextNode(' · ')); w.appendChild(document.createTextNode(msg)); });
+    root.appendChild(w);
+  }
+
+  const bar = h('footer', { class: 'bar' }, [
+    h('div', { class: 'prog' }, [
+      'ตอบ ' + v.answered + '/' + v.total + (v.missing.length ? (' · ขาด ' + v.missing.length) : ' · ครบแล้ว'),
+    ]),
+    h('button', { class: 'btn small', onclick: () => exportReport(r) }, ['รายงาน']),
+    h('button', { class: 'btn small', onclick: () => exportRecordJson(r) }, ['JSON']),
+    h('button', { class: 'btn small danger', onclick: () => { deleteSurvey(r.id); } }, ['ลบ']),
+  ]);
+  root.appendChild(bar);
+  return root;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.appendChild(state.curId && findCur() ? renderForm() : renderList());
+}
+render();
+</script>
+</body>
+</html>
