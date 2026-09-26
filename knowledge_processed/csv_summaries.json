@@ -1,0 +1,115 @@
+{
+  "PEA_inverter_registry": {
+    "file": "PEA\\PEA_inverter_registry.csv",
+    "shape": [
+      887,
+      11
+    ],
+    "columns": [
+      "brand",
+      "1600TL-G3",
+      "rated_power_kw",
+      "phases",
+      "ac_rated_voltage_v",
+      "system_size_limit",
+      "certified_date_th",
+      "expiry_date_th",
+      "detail_cert_no",
+      "detail_firmware",
+      "notes"
+    ],
+    "dtypes": {
+      "brand": "str",
+      "1600TL-G3": "str",
+      "rated_power_kw": "str",
+      "phases": "str",
+      "ac_rated_voltage_v": "str",
+      "system_size_limit": "str",
+      "certified_date_th": "str",
+      "expiry_date_th": "str",
+      "detail_cert_no": "str",
+      "detail_firmware": "float64",
+      "notes": "float64"
+    },
+    "null_counts": {
+      "brand": 0,
+      "1600TL-G3": 0,
+      "rated_power_kw": 0,
+      "phases": 0,
+      "ac_rated_voltage_v": 0,
+      "system_size_limit": 0,
+      "certified_date_th": 0,
+      "expiry_date_th": 0,
+      "detail_cert_no": 5,
+      "detail_firmware": 887,
+      "notes": 887
+    },
+    "sample": [
+      {
+        "brand": "SINENG",
+        "1600TL-G3": "2000G7",
+        "rated_power_kw": "50 kW",
+        "phases": "3",
+        "ac_rated_voltage_v": "230/400",
+        "system_size_limit": "ไม่เกิน 500 kW",
+        "certified_date_th": "24-ต.ค.-66",
+        "expiry_date_th": "24-ต.ค.-69",
+        "detail_cert_no": "ดู",
+        "detail_firmware": null,
+        "notes": null
+      },
+      {
+        "brand": "SMA",
+        "1600TL-G3": "3300TL-G3",
+        "rated_power_kw": "12 kW",
+        "phases": "3",
+        "ac_rated_voltage_v": "380/400/415",
+        "system_size_limit": "ทุกขนาด",
+        "certified_date_th": "24-ต.ค.-66",
+        "expiry_date_th": "24-ต.ค.-69",
+        "detail_cert_no": "ดู",
+        "detail_firmware": null,
+        "notes": null
+      },
+      {
+        "brand": "solis",
+        "1600TL-G3": "AE5K-L1-S",
+        "rated_power_kw": "6 kW",
+        "phases": "1",
+        "ac_rated_voltage_v": "220, 230",
+        "system_size_limit": "ทุกขนาด",
+        "certified_date_th": "24-ต.ค.-66",
+        "expiry_date_th": "24-ต.ค.-69",
+        "detail_cert_no": "ดู",
+        "detail_firmware": null,
+        "notes": null
+      },
+      {
+        "brand": "solis",
+        "1600TL-G3": "AF10K-MTH",
+        "rated_power_kw": "10 kW",
+        "phases": "1",
+        "ac_rated_voltage_v": "220, 230",
+        "system_size_limit": "ทุกขนาด",
+        "certified_date_th": "24-ต.ค.-66",
+        "expiry_date_th": "24-ต.ค.-69",
+        "detail_cert_no": "ดู",
+        "detail_firmware": null,
+        "notes": null
+      },
+      {
+        "brand": "solis",
+        "1600TL-G3": "AF50K-TH",
+        "rated_power_kw": "255 kW",
+        "phases": "3",
+        "ac_rated_voltage_v": "800",
+        "system_size_limit": "ทุกขนาด",
+        "certified_date_th": "24-ต.ค.-66",
+        "expiry_date_th": "24-ต.ค.-69",
+        "detail_cert_no": "ดู",
+        "detail_firmware": null,
+        "notes": null
+      }
+    ]
+  }
+}

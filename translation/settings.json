@@ -1,0 +1,30 @@
+{
+ "level": "science",
+ "direction": "auto",
+ "topmost": false,
+ "clipwatch": false,
+ "model": "maternion/spark-x2.5:4b-q4_K_M",
+ "floaticon": true,
+ "autospeak": true,
+ "ttsVoice": "เปรมวดี (หญิง)",
+ "ttsRate": "ปกติ",
+ "questions": [
+  "สรุปใจความสำคัญเป็นข้อๆ",
+  "หมายความว่าอะไร อธิบายโดยละเอียด",
+  "ตรวจไวยากรณ์และแนะนำการแก้ไข",
+  "มีคำศัพท์เทคนิคอะไรบ้าง อธิบายแต่ละคำ",
+  "แปลอีกสำนวนที่เป็นทางการกว่า",
+  "ร่างคำตอบกลับอีเมลนี้อย่างสุภาพ",
+  "ค้นข้อมูลจาก internet เพิ่ม แล้วสรุปเป็นไทย"
+ ],
+ "qaOpen": true,
+ "qaAutoSpeak": true,
+ "api": {
+  "mode": "api",
+  "preset": "OpenTyphoon (SCB10X, ปรับจูนภาษาไทย - แนะนำ)",
+  "base": "https://api.opentyphoon.ai/v1",
+  "key": "sk-jeY8DTwdt9nsjCIxEHFakCVjAaeVO9NY8M9MrjKu0KdLAIGp",
+  "model": "typhoon-v2.5-30b-a3b-instruct"
+ },
+ "optsOpen": true
+}

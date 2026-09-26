@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "LocalAI Feed",
+  "version": "1.0.0",
+  "description": "ดึงข่าว AI/โมเดล/เทคโนโลยี (และ social mentions จากแท็บที่ล็อกอินเปิดค้าง) ส่งเข้า LocalAI Chat",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": [
+    "https://news.google.com/*",
+    "https://hnrss.org/*",
+    "http://export.arxiv.org/*",
+    "https://export.arxiv.org/*",
+    "http://127.0.0.1:11435/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["file:///*", "http://127.0.0.1:11435/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.facebook.com/*",
+        "https://*.youtube.com/*",
+        "https://*.tiktok.com/*"
+      ],
+      "js": ["social.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": { "default_title": "LocalAI Feed — ข่าว AI/Tech + Mentions" }
+}

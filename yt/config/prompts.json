@@ -1,0 +1,4 @@
+{
+  "brainstorm": "Topic for YouTube Shorts: {topic}\n\nGenerate in Thai:\n1. [HOOKS] 3 engaging opening lines to grab attention\n2. [FACTS] 2-3 specific facts or statistics\n3. [CTA] One compelling call-to-action\n\nFormat: Keep it concise, YouTube Shorts style (45-60 seconds)",
+  "script": "Create a YouTube Shorts script (45-60 seconds) for: {topic}\n\nReference from brainstorm:\n{brainstorm}\n\nOutput format:\n[Hook 3s] - Grab attention immediately\n[Problem 10s] - Real problem this solves\n[Solution 15s] - How it works\n[Benefit 10s] - Why it matters\n[CTA 7s] - Tell them to follow/like/comment\n\nUse Thai language. Be specific, not generic."
+}

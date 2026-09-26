@@ -1,0 +1,35 @@
+ไฟล์: PEA_inverter_registry.csv
+จำนวนแถว: 887
+จำนวนคอลัมน์: 11
+
+คอลัมน์:
+  - brand (str): 0 null
+  - 1600TL-G3 (str): 0 null
+  - rated_power_kw (str): 0 null
+  - phases (str): 0 null
+  - ac_rated_voltage_v (str): 0 null
+  - system_size_limit (str): 0 null
+  - certified_date_th (str): 0 null
+  - expiry_date_th (str): 0 null
+  - detail_cert_no (str): 5 null
+  - detail_firmware (float64): 887 null
+  - notes (float64): 887 null
+
+ข้อมูล 5 แถวแรก:
+    brand  1600TL-G3 rated_power_kw phases ac_rated_voltage_v system_size_limit certified_date_th expiry_date_th detail_cert_no  detail_firmware  notes
+0  SINENG     2000G7          50 kW      3            230/400    ไม่เกิน 500 kW        24-ต.ค.-66     24-ต.ค.-69             ดู              NaN    NaN
+1     SMA  3300TL-G3          12 kW      3        380/400/415           ทุกขนาด        24-ต.ค.-66     24-ต.ค.-69             ดู              NaN    NaN
+2   solis  AE5K-L1-S           6 kW      1           220, 230           ทุกขนาด        24-ต.ค.-66     24-ต.ค.-69             ดู              NaN    NaN
+3   solis  AF10K-MTH          10 kW      1           220, 230           ทุกขนาด        24-ต.ค.-66     24-ต.ค.-69             ดู              NaN    NaN
+4   solis   AF50K-TH         255 kW      3                800           ทุกขนาด        24-ต.ค.-66     24-ต.ค.-69             ดู              NaN    NaN
+
+สถิติเบื้องต้น:
+       detail_firmware  notes
+count              0.0    0.0
+mean               NaN    NaN
+std                NaN    NaN
+min                NaN    NaN
+25%                NaN    NaN
+50%                NaN    NaN
+75%                NaN    NaN
+max                NaN    NaN

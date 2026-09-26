@@ -1,0 +1,2513 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local AI Chat</title>
+<link rel="icon" type="image/x-icon" href="img/favicon.ico?v=5">
+<link rel="icon" type="image/png" sizes="128x128" href="img/favicon.png?v=5">
+<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico?v=5">
+<style>
+  :root{
+    --bg:#f7f7f8; --panel:#ffffff; --side:#f0f0f2; --border:#e2e2e6;
+    --text:#1a1a1c; --muted:#6b6b70; --accent:#2563eb; --accent-hover:#1d4ed8;
+    --user-bg:#2563eb; --user-text:#ffffff; --ai-bg:#ffffff;
+    --code-bg:#1e1e24; --code-text:#e6e6e6; --danger:#dc2626;
+  }
+  :root[data-theme="dark"]{
+    --bg:#181820; --panel:#212129; --side:#15151b; --border:#33333d;
+    --text:#e8e8ea; --muted:#9a9aa2; --accent:#3b82f6; --accent-hover:#60a5fa;
+    --user-bg:#2563eb; --user-text:#ffffff; --ai-bg:#262631;
+    --code-bg:#0f0f14; --code-text:#e6e6e6; --danger:#f87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,'Sarabun',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:15px}
+  .app{display:flex;height:100vh}
+
+  /* Sidebar */
+  .sidebar{width:270px;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:margin-left .2s}
+  .sidebar.hidden{margin-left:-270px}
+  .side-head{padding:12px;display:flex;gap:8px}
+  .btn{border:none;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:14px;font-family:inherit;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn-primary{background:var(--accent);color:#fff;flex:1}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{background:var(--border)}
+  .conv-list{flex:1;overflow-y:auto;padding:4px 8px}
+  .conv{padding:9px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:2px;color:var(--text)}
+  .conv:hover{background:var(--border)}
+  .conv.active{background:var(--accent);color:#fff}
+  .conv .title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
+  .conv .del{opacity:0;background:none;border:none;color:inherit;cursor:pointer;font-size:16px;line-height:1}
+  .conv:hover .del{opacity:.7}
+  .conv .del:hover{opacity:1}
+  .side-foot{padding:10px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px}
+  .side-foot .btn{font-size:12px;padding:7px 9px;flex:1 1 auto}
+
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--panel)}
+  .topbar select{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:14px;font-family:inherit;max-width:260px}
+  .icon-btn{background:transparent;border:1px solid var(--border);border-radius:8px;width:36px;height:36px;cursor:pointer;color:var(--text);font-size:17px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .icon-btn:hover{background:var(--border)}
+  .status{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9ca3af;margin-right:5px;vertical-align:middle}
+  .status.online .dot{background:#22c55e}
+  .status.offline .dot{background:var(--danger)}
+
+  .messages{flex:1;overflow-y:auto;padding:24px 0}
+  .msg-row{max-width:820px;margin:0 auto 22px;padding:0 20px;display:flex;gap:12px}
+  .avatar{width:30px;height:30px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff}
+  .avatar.user{background:#64748b}
+  .avatar.ai{background:var(--accent)}
+  .bubble{flex:1;min-width:0}
+  .role{font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+  .content{line-height:1.65;word-wrap:break-word;overflow-wrap:anywhere}
+  .content p{margin:0 0 10px}
+  .content p:last-child{margin-bottom:0}
+  .content ul,.content ol{margin:0 0 10px 22px}
+  .content li{margin:3px 0}
+  .content h1,.content h2,.content h3{margin:14px 0 8px;line-height:1.3}
+  .content h1{font-size:1.5em}.content h2{font-size:1.3em}.content h3{font-size:1.1em}
+  .content blockquote{border-left:3px solid var(--accent);padding-left:12px;color:var(--muted);margin:0 0 10px}
+  .content a{color:var(--accent)}
+  .content table{border-collapse:collapse;margin:0 0 10px;display:block;overflow-x:auto}
+  .content th,.content td{border:1px solid var(--border);padding:6px 10px;text-align:left}
+  .inline-code{background:var(--border);padding:1.5px 5px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:.9em}
+  .chart-box{position:relative;height:300px;margin:0 0 12px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+  .gen-img{margin:0 0 12px}
+  .gen-img img{max-width:384px;width:100%;border-radius:10px;border:1px solid var(--border);display:block}
+  .gen-img-load{font-size:12.5px;color:var(--muted);padding:20px;text-align:center;border:1px dashed var(--border);border-radius:10px}
+  .gen-img-cap{font-size:12px;color:var(--muted);margin-top:4px}
+  .clip-box{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+  .clip-info{font-size:13px;font-weight:600;margin-bottom:8px}
+  .clip-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+  .clip-btn:hover{background:var(--accent-hover)}
+  .clip-btn:disabled{background:var(--muted);cursor:default}
+  .clip-fmt{padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px;font-family:inherit}
+  .clip-box video{max-height:60vh}
+  .code-block{position:relative;margin:0 0 12px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+  .code-head{display:flex;justify-content:space-between;align-items:center;background:#2a2a33;color:#c8c8d0;padding:5px 12px;font-size:12px;font-family:monospace}
+  .code-copy{background:transparent;border:none;color:#c8c8d0;cursor:pointer;font-size:12px;padding:3px 6px;border-radius:5px}
+  .code-copy:hover{background:rgba(255,255,255,.12)}
+  pre{background:var(--code-bg);color:var(--code-text);padding:14px;overflow-x:auto;margin:0}
+  pre code{font-family:'Consolas','Courier New',monospace;font-size:13.5px;line-height:1.55;white-space:pre}
+  .msg-actions{margin-top:6px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+  .msg-row:hover .msg-actions{opacity:1}
+  .msg-actions button{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;padding:3px 8px}
+  .msg-actions button:hover{background:var(--border);color:var(--text)}
+  .cursor-blink{display:inline-block;width:8px;height:15px;background:var(--accent);animation:blink 1s steps(2) infinite;vertical-align:text-bottom;margin-left:2px}
+  .refs{margin-top:10px;border-top:1px dashed var(--border);padding-top:8px}
+  .refs-title{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+  .ref-card{border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--bg);overflow:hidden}
+  .ref-head{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:12.5px}
+  .ref-n{color:var(--accent);font-weight:700}
+  .ref-src{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ref-score{color:var(--muted);font-size:11px}
+  .ref-body{display:none;padding:0 10px 10px;font-size:12.5px;color:var(--muted);line-height:1.55;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+  .ref-card.open .ref-body{display:block}
+  .ref-card:hover{border-color:var(--accent)}
+  @keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+
+  .empty{max-width:560px;margin:8vh auto;text-align:center;color:var(--muted);padding:0 20px}
+  .empty h2{color:var(--text);margin-bottom:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+  .chip{border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;font-size:13px;background:var(--panel)}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* Composer */
+  .composer{border-top:1px solid var(--border);background:var(--panel);padding:12px 20px}
+  .composer-inner{max-width:820px;margin:0 auto;display:flex;gap:10px;align-items:flex-end;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:8px 8px 8px 14px}
+  .composer-inner:focus-within{border-color:var(--accent)}
+  textarea{flex:1;border:none;background:transparent;color:var(--text);resize:none;font-family:inherit;font-size:15px;line-height:1.5;max-height:200px;outline:none;padding:6px 0}
+  .send-btn{width:38px;height:38px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:17px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .send-btn:hover{background:var(--accent-hover)}
+  .send-btn:disabled{background:var(--muted);cursor:not-allowed}
+  .send-btn.stop{background:var(--danger)}
+  .hint{max-width:820px;margin:6px auto 0;font-size:11px;color:var(--muted);text-align:center}
+
+  .add-wrap{position:relative;flex-shrink:0}
+  .add-menu{position:absolute;bottom:44px;left:0;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:236px;box-shadow:0 10px 30px rgba(0,0,0,.3);display:none;z-index:45}
+  .add-menu.show{display:block}
+  .add-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:14px;white-space:nowrap}
+  .add-item:hover{background:var(--border)}
+  .add-item>span:first-child{width:18px;text-align:center}
+  .add-item .add-kbd{margin-left:auto;font-size:11px;color:var(--muted)}
+  .add-item .add-caret{margin-left:auto;color:var(--muted);font-size:16px}
+  .add-sub{display:none;padding:2px 4px 6px 30px;max-height:220px;overflow-y:auto}
+  .add-sub.show{display:block}
+  .add-sub .s-item{padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .add-sub .s-item:hover{background:var(--border)}
+  .add-sub .s-head{padding:6px 10px 2px;font-size:11.5px;font-weight:600;color:var(--muted)}
+  .add-sub .s-empty{padding:7px 10px;font-size:12px;color:var(--muted)}
+  .tool-btn{width:34px;height:34px;border-radius:9px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:17px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .tool-btn:hover{background:var(--border);color:var(--text)}
+  .tool-btn.active{background:var(--danger);color:#fff;animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .attach-bar{max-width:820px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px}
+  .attach-bar:not(:empty){margin-bottom:8px}
+  .attach-chip{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:5px 8px;font-size:12px;max-width:220px}
+  .attach-chip img{width:34px;height:34px;object-fit:cover;border-radius:6px}
+  .attach-chip .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .attach-chip .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 2px}
+  .attach-chip .rm:hover{color:var(--danger)}
+  .msg-img{max-width:280px;max-height:280px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;display:block}
+  .read-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;padding:3px 8px}
+  .read-btn:hover{background:var(--border);color:var(--text)}
+  .read-btn.speaking{color:var(--accent);border-color:var(--accent)}
+
+  /* News & Social feed drawer */
+  .feed-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--danger);display:none}
+  .feed-dot.on{display:block}
+  .feed-drawer{position:fixed;top:0;right:0;width:360px;max-width:90vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:55;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s;box-shadow:-6px 0 24px rgba(0,0,0,.15)}
+  .feed-drawer.show{transform:translateX(0)}
+  .feed-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border)}
+  .feed-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--border)}
+  .feed-tab{flex:1;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:8px;padding:6px 4px;font-size:12px;cursor:pointer;font-family:inherit}
+  .feed-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .feed-list{flex:1;overflow-y:auto;padding:10px}
+  .feed-card{display:block;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-decoration:none;color:var(--text);cursor:pointer}
+  .feed-card:hover{border-color:var(--accent);background:var(--bg)}
+  .feed-src{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-bottom:4px}
+  .feed-badge{background:var(--accent);color:#fff;border-radius:5px;padding:1px 6px;font-size:10px}
+  .feed-badge.social{background:#7c3aed}
+  .feed-title{font-size:13.5px;line-height:1.4;font-weight:600}
+  .feed-snip{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .feed-foot{padding:10px 14px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);text-align:center}
+@keyframes feedBlink{0%,100%{opacity:1}50%{opacity:0}}
+.feed-breaking{color:#ef4444;font-weight:700;animation:feedBlink 0.8s infinite;margin-right:3px;font-size:14px}
+.feed-xlate-btn{border:none;background:none;cursor:pointer;font-size:10px;color:var(--accent);padding:2px 5px;border-radius:4px;opacity:0.65;vertical-align:middle;margin-left:4px}
+.feed-xlate-btn:hover{opacity:1;background:var(--border)}
+.feed-xlated{font-size:11.5px;color:var(--accent);margin-top:5px;line-height:1.45;font-style:italic;padding-top:4px;border-top:1px dashed var(--border)}
+.feed-kw-area{padding:6px 10px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:34px}
+.feed-kw-tag{display:inline-flex;align-items:center;gap:2px;background:var(--accent);color:#fff;border-radius:20px;padding:2px 10px 2px 10px;font-size:10.5px}
+.feed-kw-tag button{background:none;border:none;color:#fff;cursor:pointer;padding:0 0 0 3px;font-size:13px;line-height:1;opacity:.8}
+.feed-kw-inp{border:1px solid var(--border);border-radius:16px;padding:2px 9px;font-size:11px;background:var(--bg);color:var(--text);width:90px;outline:none}
+.feed-kw-add{background:var(--accent);color:#fff;border:none;border-radius:16px;padding:2px 10px;font-size:11px;cursor:pointer}
+.feed-act-editor{padding:8px 10px;border-bottom:1px solid var(--border);background:var(--bg);display:none;font-size:11.5px}
+.feed-act-editor.open{display:block}
+.feed-act-erow{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px dashed var(--border)}
+.feed-act-erow span{flex:1;color:var(--text)}
+.feed-act-erow button{background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;opacity:.7;padding:0 4px}
+.feed-act-erow button:hover{opacity:1}
+.feed-act-einp{width:100%;border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg);color:var(--text);margin-top:6px;box-sizing:border-box}
+.feed-ask-btn{border:none;background:var(--border);font-size:10px;color:var(--text);padding:2px 7px;cursor:pointer;border-radius:4px;margin-left:5px;opacity:.7;vertical-align:middle}
+.feed-ask-btn:hover{background:var(--accent);color:#fff;opacity:1}
+.feed-wrap{margin-bottom:8px}
+.feed-act-bar{padding:5px 8px;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;display:none;flex-wrap:wrap;gap:4px}
+.feed-act-bar.open{display:flex}
+.feed-act-pill{font-size:10.5px;border:1px solid var(--border);background:var(--panel);border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--text);white-space:normal;text-align:left;max-width:100%}
+.feed-act-pill:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.qa-bar{display:flex;gap:5px;overflow-x:auto;padding:3px 12px 5px;scrollbar-width:none;flex-wrap:nowrap}
+.qa-bar::-webkit-scrollbar{display:none}
+.qa-pill{flex-shrink:0;font-size:11px;border:1px solid var(--border);background:var(--panel);border-radius:20px;padding:3px 11px;cursor:pointer;color:var(--text);white-space:nowrap}
+.qa-pill:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.qa-edit-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px dashed var(--border);font-size:11.5px}
+.qa-edit-row span{flex:1}
+.qa-edit-row button{background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;opacity:.7;padding:0 4px}
+.qa-edit-row button:hover{opacity:1}
+
+  /* Floating selection toolbar */
+  .sel-bar{position:fixed;z-index:60;display:none;gap:2px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .sel-bar.show{display:flex}
+  .sel-bar button{background:transparent;border:none;color:var(--text);cursor:pointer;font-size:12.5px;padding:6px 10px;border-radius:7px;white-space:nowrap}
+  .sel-bar button:hover{background:var(--accent);color:#fff}
+  .drag-over{outline:3px dashed var(--accent);outline-offset:-8px}
+  .tts-stop{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:65;display:none;background:var(--danger);color:#fff;border:none;border-radius:22px;padding:10px 20px;font-size:14px;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:pulse 1.4s infinite}
+  .tts-stop.show{display:block}
+  .mini-badge{background:var(--accent);color:#fff;border-radius:9px;padding:0 6px;font-size:10px;margin-left:4px}
+  .icon-btn.active{background:var(--accent);color:#fff}
+  .kb-stat,.drive-path{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--muted);margin-bottom:12px;word-break:break-all}
+  .drive-list{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:12px}
+  .drive-list:empty::after{content:'— ยังไม่มีไฟล์ —';display:block;padding:16px;text-align:center;color:var(--muted);font-size:13px}
+  .drive-item{display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px}
+  .drive-item:last-child{border-bottom:none}
+  .drive-item:hover{background:var(--border)}
+  .drive-item .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .drive-item .sz{color:var(--muted);font-size:11px}
+  .kb-savebtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;padding:3px 8px}
+  .kb-savebtn:hover{background:var(--border);color:var(--text)}
+  .prov-card{border:1px solid var(--border);border-radius:9px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px;background:var(--bg)}
+  .prov-card input{width:100%;padding:6px 9px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:12.5px;font-family:inherit}
+  .prov-row{display:flex;gap:6px;align-items:center}
+  .prov-row input{flex:1}
+  .prov-del{background:none;border:1px solid var(--border);border-radius:6px;color:var(--danger);cursor:pointer;padding:5px 8px;flex-shrink:0}
+  .prov-del:hover{background:var(--border)}
+  .imp-list{max-height:260px;overflow-y:auto;margin:6px 0 12px}
+  .imp-item{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;background:var(--bg)}
+  .imp-item .who{font-size:10px;padding:1px 6px;border-radius:5px;flex-shrink:0;margin-top:1px}
+  .imp-item .who.user{background:#64748b;color:#fff}
+  .imp-item .who.ai{background:var(--accent);color:#fff}
+  .imp-item .tx{flex:1;line-height:1.5}
+  .imp-item .ts{font-size:10px;color:var(--muted)}
+  .imp-item .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px}
+  .imp-item .x:hover{color:var(--danger)}
+
+  /* Settings modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
+  .overlay.show{display:flex}
+  .modal{background:var(--panel);border-radius:14px;width:460px;max-width:92vw;max-height:88vh;overflow-y:auto;padding:22px;border:1px solid var(--border)}
+  .modal h3{margin-bottom:16px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .field small{color:var(--muted);font-weight:400}
+  .field input,.field textarea,.field select{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;font-size:14px}
+  .field textarea{resize:vertical;min-height:70px}
+  .range-row{display:flex;align-items:center;gap:10px}
+  .range-row input[type=range]{flex:1}
+  .range-val{font-family:monospace;min-width:44px;text-align:right;font-size:13px}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+  .conn-help{font-size:12px;color:var(--danger);background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:8px;padding:10px;margin-bottom:14px;display:none}
+  .conn-help.show{display:block}
+
+  /* Console panel */
+  .console-panel{border-top:1px solid var(--border);background:var(--code-bg);color:var(--code-text);display:flex;flex-direction:column;flex-shrink:0;height:180px;transition:height .15s}
+  .console-panel.collapsed{height:34px}
+  .console-resize{height:5px;cursor:ns-resize;background:transparent;flex-shrink:0}
+  .console-resize:hover{background:var(--accent)}
+  .console-head{height:34px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12px;font-family:'Consolas',monospace;background:#2a2a33;color:#c8c8d0;cursor:pointer;user-select:none}
+  .console-head .ttl{font-weight:600;flex:1}
+  .console-head .cbtn{background:transparent;border:none;color:#c8c8d0;cursor:pointer;font-size:12px;padding:2px 7px;border-radius:5px}
+  .console-head .cbtn:hover{background:rgba(255,255,255,.12)}
+  .console-badge{background:var(--accent);color:#fff;border-radius:9px;padding:0 6px;font-size:10px;min-width:16px;text-align:center}
+  .console-body{flex:1;overflow-y:auto;padding:8px 12px;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.6}
+  .console-panel.collapsed .console-body,.console-panel.collapsed .console-resize{display:none}
+  .log-line{white-space:pre-wrap;word-break:break-word;display:flex;gap:8px}
+  .log-line .t{color:#7a7a88;flex-shrink:0}
+  .log-line .m{flex:1}
+  .log-info .m{color:#cfd3dc}
+  .log-ok .m{color:#4ade80}
+  .log-warn .m{color:#fbbf24}
+  .log-err .m{color:#f87171}
+  .log-req .m{color:#60a5fa}
+
+  @media(max-width:640px){.sidebar{position:absolute;z-index:20;height:100%}.status{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <button class="btn btn-primary" onclick="newChat()">+ แชทใหม่</button>
+    </div>
+    <div class="conv-list" id="convList"></div>
+    <div class="side-foot">
+      <button class="btn btn-ghost" onclick="openKB()">🧠 คลังความรู้ <span id="kbCountBadge" class="mini-badge">0</span></button>
+      <button class="btn btn-ghost" onclick="openImprove()">📝 ปรับปรุง <span id="impBadge" class="mini-badge">0</span></button>
+      <button class="btn btn-ghost" onclick="openDrive()">📁 ไดรฟ์</button>
+      <button class="btn btn-ghost" onclick="exportChats()">⬇ Export</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Import</button>
+      <button class="btn btn-ghost" onclick="openSettings()">⚙ ตั้งค่า</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importChats(event)">
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <button class="icon-btn" onclick="toggleSidebar()" title="ซ่อน/แสดงเมนู">☰</button>
+      <select id="modelSelect" title="เลือกโมเดล"></select>
+      <button class="icon-btn" onclick="refreshModels()" title="โหลดรายชื่อโมเดลใหม่">⟳</button>
+      <button class="icon-btn" id="feedBtn" onclick="toggleFeed()" title="ข่าว AI/เทคโนโลยี & Social mentions">📰<span id="feedDot" class="feed-dot"></span></button>
+      <button class="icon-btn" id="ragBtn" onclick="toggleRag()" title="ใช้คลังความรู้ RAG ประกอบคำตอบ">🧠</button>
+      <button class="icon-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง" id="themeBtn">🌙</button>
+      <span id="pluginBtns" style="display:flex;gap:4px"></span>
+      <div class="status" id="status"><span class="dot"></span><span id="statusText">กำลังเชื่อมต่อ…</span></div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="composer">
+      <div id="attachBar" class="attach-bar"></div>
+      <div class="composer-inner">
+        <div class="add-wrap">
+          <button class="tool-btn" onclick="toggleAddMenu(event)" title="เพิ่ม / เครื่องมือ">＋</button>
+          <div class="add-menu" id="addMenu">
+            <div class="add-item" onclick="addMenuAction('files')"><span>📎</span><span>เพิ่มไฟล์ / รูปภาพ</span><span class="add-kbd">Ctrl+U</span></div>
+            <div class="add-item" onclick="addMenuAction('folder')"><span>📁</span><span>เพิ่มโฟลเดอร์</span></div>
+            <div class="add-item" onclick="addMenuSub('cmd')"><span>⌘</span><span>คำสั่ง (Slash)</span><span class="add-caret">›</span></div>
+            <div class="add-sub" id="sub-cmd"></div>
+            <div class="add-item" onclick="addMenuSub('conn')"><span>🔌</span><span>ตัวเชื่อมต่อ (โมเดล)</span><span class="add-caret">›</span></div>
+            <div class="add-sub" id="sub-conn"></div>
+            <div class="add-item" onclick="addMenuSub('plug')"><span>✦</span><span>ปลั๊กอิน</span><span class="add-caret">›</span></div>
+            <div class="add-sub" id="sub-plug"></div>
+          </div>
+        </div>
+        <button class="tool-btn" id="micBtn" onclick="toggleVoice()" title="พูดเป็นข้อความ (ต้องต่อเน็ต)">🎤</button>
+        <textarea id="input" rows="1" placeholder="พิมพ์ข้อความ… (Enter ส่ง / Shift+Enter ขึ้นบรรทัดใหม่)" oninput="autoGrow(this)" onkeydown="onKey(event)" onpaste="onPaste(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="onSend()" title="ส่ง">➤</button>
+      </div>
+      <div class="qa-bar" id="qaBar"></div>
+      <div class="hint">ทุกอย่างประมวลผลในเครื่องผ่าน Ollama · แนบรูป/PDF/Excel ได้ · ลากคลุมข้อความเพื่ออ่าน/แปล</div>
+      <input type="file" id="fileInput" multiple accept="image/*,.pdf,.csv,.txt,.md,.xlsx,.xls,.json,.log" style="display:none" onchange="onFilePick(event)">
+    </div>
+
+    <!-- Console -->
+    <div class="console-panel collapsed" id="consolePanel">
+      <div class="console-resize" id="consoleResize" title="ลากเพื่อปรับขนาด"></div>
+      <div class="console-head" onclick="toggleConsole(event)">
+        <span class="ttl">🖥 Console</span>
+        <span class="console-badge" id="consoleBadge">0</span>
+        <button class="cbtn" onclick="clearConsole(event)" title="ล้าง">🗑 ล้าง</button>
+        <button class="cbtn" id="consoleToggle" title="ย่อ/ขยาย">▲</button>
+      </div>
+      <div class="console-body" id="consoleBody"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Improvement log -->
+<div class="overlay" id="impOverlay">
+  <div class="modal">
+    <h3>📝 สิ่งที่ควรปรับปรุง (Improvement Log)</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">บันทึกสิ่งที่ควรแก้/เพิ่ม/ปรับปรุง เก็บไว้แก้ภายหลัง (เก็บในเครื่อง + ส่งออกเป็นไฟล์ได้)</p>
+    <div class="field">
+      <textarea id="impInput" placeholder="เช่น: ปุ่มส่งควรใหญ่ขึ้น / เพิ่มปุ่มลบทุกแชท / สีพื้นหลังโหมดมืดสว่างไป…"></textarea>
+    </div>
+    <div class="modal-foot" style="justify-content:flex-start;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="addImprove()">＋ บันทึก</button>
+      <button class="btn btn-ghost" onclick="aiSuggestImprove(this)">🤖 ให้ AI แนะนำ</button>
+    </div>
+    <div class="imp-list" id="impList"></div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="exportImprove()">⬇ ส่งออก .md</button>
+        <button class="btn btn-ghost" onclick="saveImproveToDrive()">💾 ลงไดรฟ์</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="color:var(--danger)" onclick="clearImprove()">ล้าง</button>
+        <button class="btn btn-primary" onclick="closeImprove()">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- News & Social feed drawer -->
+<div class="feed-drawer" id="feedDrawer">
+  <div class="feed-head">
+    <span style="font-weight:600">📰 ข่าว & Mentions</span>
+    <button class="icon-btn" style="width:30px;height:30px" onclick="refreshFeed()" title="รีเฟรช">⟳</button>
+    <button class="icon-btn" style="width:30px;height:30px" onclick="toggleFeedActEditor()" title="แก้ไข Quick Actions">⚙</button>
+    <button class="icon-btn" style="width:30px;height:30px;margin-left:auto" onclick="toggleFeed()" title="ปิด">✕</button>
+  </div>
+  <div class="feed-tabs">
+    <button class="feed-tab active" data-f="all" onclick="feedFilter('all',this)">ทั้งหมด</button>
+    <button class="feed-tab" data-f="news" onclick="feedFilter('news',this)">📰 ข่าว AI/Tech</button>
+    <button class="feed-tab" data-f="social" onclick="feedFilter('social',this)">💬 Mentions</button>
+  </div>
+  <div class="feed-kw-area" id="feedKwArea"></div>
+  <div class="feed-act-editor" id="feedActEditor"></div>
+  <div class="feed-list" id="feedList"></div>
+  <div class="feed-foot" id="feedFoot">ยังไม่มีข้อมูล — ติดตั้ง extension บน D:\LocalAI\extension แล้วกด ⟳</div>
+</div>
+
+<!-- Floating TTS stop button -->
+<button id="ttsStop" class="tts-stop" onclick="stopSpeak()" title="หยุดอ่านออกเสียง (Esc)">⏹ หยุดอ่าน</button>
+
+<!-- Floating selection toolbar -->
+<div id="selBar" class="sel-bar">
+  <button onclick="selRead()" title="อ่านออกเสียง">🔊 อ่าน</button>
+  <button onclick="selTranslate()" title="แปลเป็นไทยด้วยโมเดล">🌐 แปลไทย</button>
+  <button onclick="selCopy()" title="คัดลอก">⧉ คัดลอก</button>
+  <button onclick="selSend()" title="ส่งเข้าแชท">➤ ส่งเข้าแชท</button>
+</div>
+
+<!-- Knowledge base (RAG) -->
+<div class="overlay" id="kbOverlay">
+  <div class="modal">
+    <h3>🧠 คลังความรู้ (RAG)</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">เก็บเรื่องใหม่/ตรรกะ/สมการ/skill ที่โมเดลยังไม่รู้ ระบบจะฝังด้วย <b>bge-m3</b> แล้วดึงมาประกอบคำตอบอัตโนมัติ (offline, สะสมต่อเนื่อง)</p>
+    <div class="kb-stat" id="kbStat">มี 0 ชิ้นความรู้</div>
+    <div class="field">
+      <label>เพิ่มความรู้ใหม่ (พิมพ์/วาง)</label>
+      <textarea id="kbInput" placeholder="เช่น สูตร/ตรรกะ/ขั้นตอน/ข้อเท็จจริงใหม่ ที่อยากให้โมเดลจำ…"></textarea>
+      <input id="kbSource" type="text" placeholder="แหล่งที่มา/ชื่อเรื่อง (ไม่บังคับ)" style="margin-top:6px">
+    </div>
+    <div class="modal-foot" style="justify-content:flex-start;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="kbAddFromInput()">＋ เพิ่มเข้าคลัง</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('kbFiles').click()">📄 นำเข้าไฟล์</button>
+      <button class="btn btn-ghost" onclick="kbLoadFolder()">📁 โหลดโฟลเดอร์ knowledge</button>
+      <input type="file" id="kbFiles" multiple accept=".txt,.md,.csv,.json,.log,.pdf" style="display:none" onchange="kbImportFiles(event)">
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn btn-ghost" onclick="kbSaveIndex()" title="บันทึกดัชนีเป็นไฟล์บน D:">💾 บันทึกดัชนีลง D:</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="color:var(--danger)" onclick="kbClear()">ล้างคลัง</button>
+        <button class="btn btn-primary" onclick="closeKB()">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drive folder -->
+<div class="overlay" id="driveOverlay">
+  <div class="modal">
+    <h3>📁 ไฟล์ในไดรฟ์</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">เลือกโฟลเดอร์บน D: (ครั้งเดียว) แล้วเปิดไฟล์มาทำงานต่อในแชท + สำรองประวัติแชทลงโฟลเดอร์นี้อัตโนมัติ <br><small>รองรับ Chrome/Edge · เปิดผ่าน file://</small></p>
+    <div class="modal-foot" style="justify-content:flex-start;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="pickFolder()">📂 เลือกโฟลเดอร์</button>
+      <button class="btn btn-ghost" onclick="listFolder()">⟳ รีเฟรช</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto">
+        <input type="checkbox" id="autoBackup" onchange="toggleBackup()"> สำรองแชทอัตโนมัติ
+      </label>
+    </div>
+    <div class="drive-path" id="drivePath">ยังไม่ได้เลือกโฟลเดอร์</div>
+    <div class="drive-list" id="driveList"></div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="closeDrive()">ปิด</button></div>
+  </div>
+</div>
+
+<!-- Code preview -->
+<div class="overlay" id="previewOverlay">
+  <div class="modal" style="width:760px;max-width:95vw;padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <span style="font-weight:600">▶ พรีวิวผลลัพธ์</span>
+      <span style="font-size:11px;color:var(--muted)">(รันในกล่อง sandbox แยกจากแอป)</span>
+      <button class="icon-btn" style="width:30px;height:30px;margin-left:auto" onclick="closePreview()" title="ปิด">✕</button>
+    </div>
+    <iframe id="previewFrame" sandbox="allow-scripts allow-modals" style="width:100%;height:62vh;border:none;background:#fff"></iframe>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>⚙ ตั้งค่า</h3>
+    <div class="conn-help" id="connHelp">
+      เชื่อมต่อ Ollama ไม่ได้ — ตรวจว่ารัน <b>Start-LocalAI.bat</b> ค้างไว้ แล้วกด ⟳<br>
+      ถ้าเปิดไฟล์นี้ผ่าน file:// แล้วโดนบล็อก ให้ตั้ง <code>OLLAMA_ORIGINS=*</code> (ไฟล์ .bat ตั้งให้แล้ว)
+    </div>
+    <div class="field">
+      <label>Ollama API URL</label>
+      <input id="setApiUrl" type="text" placeholder="http://localhost:11434">
+    </div>
+    <div class="field">
+      <label>System Prompt <small>(บทบาท/คำสั่งประจำตัว)</small></label>
+      <textarea id="setSystem" placeholder="เช่น: คุณเป็นผู้ช่วยเขียนโค้ด ตอบเป็นภาษาไทย กระชับ"></textarea>
+    </div>
+    <div class="field">
+      <label>Temperature <small>(ความสร้างสรรค์ 0=แม่นยำ 1=หลากหลาย)</small></label>
+      <div class="range-row">
+        <input id="setTemp" type="range" min="0" max="1.5" step="0.05" oninput="tempVal.textContent=this.value">
+        <span class="range-val" id="tempVal">0.7</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Context length — num_ctx <small>(ยิ่งมาก ยิ่งกิน VRAM/RAM)</small></label>
+      <select id="setCtx">
+        <option value="2048">2048 (ประหยัด VRAM สุด)</option>
+        <option value="4096" selected>4096 (แนะนำสำหรับ 4GB VRAM — ค่าเริ่มต้น)</option>
+        <option value="8192">8192</option>
+        <option value="16384">16384 (ต้อง RAM เยอะ)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>🔊 เครื่องเสียงอ่าน (TTS Engine)</label>
+      <select id="setTtsEngine" onchange="onEngineChange()">
+        <option value="local">ในเครื่อง (offline) — เสียง Windows</option>
+        <option value="neural">Neural ออนไลน์ — เปรมวดี/นิวัตน์ (คุณภาพสูง)</option>
+      </select>
+      <div id="neuralRow" style="margin-top:8px;display:none">
+        <div style="display:flex;gap:6px">
+          <select id="setNeuralVoice" style="flex:1">
+            <option value="th-TH-PremwadeeNeural">👩 เปรมวดี (หญิง)</option>
+            <option value="th-TH-NiwatNeural">👨 นิวัตน์ (ชาย)</option>
+          </select>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick="testVoice()">▶ ทดสอบ</button>
+        </div>
+        <small>ต้องต่อเน็ต + เปิดผ่าน lung_pee.bat (TTS server ที่ :11435)</small>
+      </div>
+    </div>
+    <div class="field" id="localVoiceField">
+      <label>🔊 เสียงในเครื่อง (offline)</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <button class="btn btn-ghost" style="font-size:12px;padding:7px 10px" onclick="setVoiceByName('pattara','ภัทระ (ไทย ชาย)')">🇹🇭 Pattara (ที่มีในเครื่อง)</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:7px 10px" onclick="setVoiceByName('premwadee','เปรมวดี (หญิง)')">👩 เปรมวดี*</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:7px 10px" onclick="setVoiceByName('niwat','นิวัตน์ (ชาย)')">👨 นิวัตน์*</button>
+      </div>
+      <select id="setVoice"><option value="">อัตโนมัติ (เปรมวดี > Pattara > เสียงไทยอื่น)</option></select>
+      <div class="range-row" style="margin-top:8px">
+        <span style="font-size:12px;color:var(--muted)">ความเร็ว</span>
+        <input id="setVoiceRate" type="range" min="0.5" max="1.6" step="0.1" oninput="voiceRateVal.textContent=this.value">
+        <span class="range-val" id="voiceRateVal">1</span>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 10px" onclick="testVoice()">▶ ทดสอบ</button>
+      </div>
+      <small>ถ้าไม่มีเสียงไทยในรายการ = Windows ยังไม่ได้ติดตั้งภาษาไทย (Settings → Time &amp; language → Speech)</small>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="setAutoFallback"> 🔄 Auto-fallback — ลองโมเดลฟรีอัตโนมัติ ถ้าโมเดลหลักล้มเหลว
+      </label>
+      <small>ลำดับ: โมเดลที่เลือก → Pollinations → OpenRouter :free → Groq → Local · ข้ามได้เองถ้า error</small>
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="setFreeOnline"> 🆓 เปิดโมเดลฟรีออนไลน์ (Pollinations — ไม่ต้องใช้ key)
+      </label>
+      <small>โมเดลใหญ่/เก่งกว่า local · ต้องต่อเน็ต · ความเสถียรขึ้นกับผู้ให้บริการ</small>
+    </div>
+    <div class="field">
+      <label>💳 ผู้ให้บริการแบบมี API key</label>
+      <small>เพิ่มด่วนจาก preset (แนะนำ OpenRouter/Groq — ใช้จากเบราว์เซอร์ได้; OpenAI/Google อาจติด CORS):</small>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 9px" onclick="addProvider('openrouter')">＋ OpenRouter</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 9px" onclick="addProvider('groq')">＋ Groq</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 9px" onclick="addProvider('google')">＋ Gemini</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 9px" onclick="addProvider('openai')">＋ OpenAI</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 9px" onclick="addProvider('custom')">＋ กำหนดเอง</button>
+      </div>
+      <div id="providerList"></div>
+      <small style="color:var(--danger)">⚠️ API key เก็บใน localStorage + สำรองใน <code>D:\LocalAI\model.md</code> (plaintext — อย่าอัปโหลด/แชร์)</small>
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="backupCfgNow()" title="บันทึก config → D:\LocalAI\model.md">💾 บันทึก → model.md</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="reloadCfgFromFile()" title="โหลด config จาก D:\LocalAI\model.md แทนที่ localStorage">♻ โหลดจาก model.md</button>
+        <small style="color:var(--muted);margin-left:auto">Auto-save: 1.5s หลังแก้</small>
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label style="font-weight:600">⚡ Quick Actions — ปุ่มลัดใต้ช่องถาม</label>
+      <div id="setQaList" style="margin:6px 0"></div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input id="setQaInp" type="text" placeholder="พิมพ์ action ใหม่แล้วกด Enter…" onkeydown="if(event.key==='Enter')addQAFromSettings()" style="flex:1;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;background:var(--bg);color:var(--text)">
+        <button class="btn btn-ghost" style="white-space:nowrap" onclick="addQAFromSettings()">+ เพิ่ม</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeSettings()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveSettings()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Local libraries (offline, บน D:) -->
+<link rel="stylesheet" href="lib/katex/katex.min.css">
+<script src="lib/pdf.min.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="lib/chart.umd.min.js"></script>
+<script src="lib/katex/katex.min.js"></script>
+<script>
+"use strict";
+// ตั้ง worker ของ pdf.js เป็นไฟล์ local
+try{ if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='lib/pdf.worker.min.js'; }catch(e){}
+/* ---------- State ---------- */
+const LS_CONVS='localai.convs', LS_CFG='localai.cfg', LS_THEME='localai.theme';
+let convs = load(LS_CONVS, []);
+let cfg = Object.assign({apiUrl:'http://localhost:11434', system:'', temp:0.7, ctx:4096, model:'', ragOn:false, embModel:'bge-m3', kbServer:'http://localhost:5002', autoBackup:false, topK:4, freeOnline:true, autoFallback:true, providers:[], sel:'', voice:'', voiceRate:1, ttsEngine:'local', neuralVoice:'th-TH-PremwadeeNeural', ttsUrl:'http://127.0.0.1:11435'}, load(LS_CFG, {}));
+let activeId = convs[0]?.id || null;
+let controller = null;      // AbortController for streaming
+let generating = false;
+let attachments = [];       // {kind:'image'|'text', name, dataB64?, text?, thumb?}
+let recognition = null;     // SpeechRecognition
+let listening = false;
+
+/* ---------- Utils ---------- */
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function saveConvs(){save(LS_CONVS,convs);if(typeof scheduleBackup==='function')scheduleBackup();}
+function saveCfg(){save(LS_CFG,cfg);scheduleBackupCfg();}
+/* ---- Backup cfg to D:\LocalAI\model.md (via TTS server) — debounced ---- */
+let _cfgBackupT=null;
+function scheduleBackupCfg(){
+  if(_cfgBackupT)clearTimeout(_cfgBackupT);
+  _cfgBackupT=setTimeout(backupCfgNow,1500);
+}
+async function backupCfgNow(){
+  try{
+    const base=(cfg.ttsUrl||'http://127.0.0.1:11435').replace(/\/$/,'');
+    const res=await fetch(base+'/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cfg})});
+    if(res.ok){const j=await res.json();logMsg('💾 บันทึก config → '+(j.path||'model.md'),'info');}
+  }catch(e){/* silent — server อาจไม่ได้รัน */}
+}
+async function reloadCfgFromFile(){
+  if(!confirm('โหลด config จาก D:\\LocalAI\\model.md แทนที่ค่าปัจจุบันในเบราว์เซอร์?\n(providers, keys, settings จะถูกเขียนทับ)'))return;
+  try{
+    const base=(cfg.ttsUrl||'http://127.0.0.1:11435').replace(/\/$/,'');
+    const res=await fetch(base+'/config');
+    if(!res.ok){alert('โหลดไม่ได้: HTTP '+res.status+' — model.md ยังไม่มี');return;}
+    const j=await res.json();
+    if(!j||typeof j!=='object'){alert('ไฟล์เสีย');return;}
+    Object.assign(cfg,j);save(LS_CFG,cfg);
+    renderProviders();rebuildModelSelect();
+    logMsg('♻ โหลด config จาก model.md · '+(cfg.providers||[]).length+' provider','ok');
+    alert('โหลดสำเร็จ · '+(cfg.providers||[]).length+' provider');
+  }catch(e){alert('ผิดพลาด: '+e.message);}
+}
+async function restoreCfgIfEmpty(){
+  // ถ้า providers ว่างและไม่มี localStorage เดิม → ลองโหลดจาก model.md
+  const hasLocal=load(LS_CFG,null);
+  if(hasLocal&&hasLocal.providers&&hasLocal.providers.length)return false;
+  try{
+    const base=(cfg.ttsUrl||'http://127.0.0.1:11435').replace(/\/$/,'');
+    const res=await fetch(base+'/config');
+    if(!res.ok)return false;
+    const j=await res.json();
+    if(!j||typeof j!=='object')return false;
+    Object.assign(cfg,j);
+    save(LS_CFG,cfg);
+    logMsg('♻ กู้คืน config จาก model.md · '+(cfg.providers||[]).length+' provider','ok');
+    renderProviders&&renderProviders();rebuildModelSelect&&rebuildModelSelect();
+    return true;
+  }catch(e){return false;}
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function activeConv(){return convs.find(c=>c.id===activeId);}
+
+/* ---------- Console / activity log ---------- */
+let logCount=0;
+const LS_CONSOLE='localai.console.open';
+function logMsg(msg,level){
+  const body=document.getElementById('consoleBody');if(!body)return;
+  const t=new Date().toLocaleTimeString('th-TH',{hour12:false});
+  const div=document.createElement('div');
+  div.className='log-line log-'+(level||'info');
+  div.innerHTML=`<span class="t">${t}</span><span class="m"></span>`;
+  div.querySelector('.m').textContent=msg;
+  body.appendChild(div);
+  body.scrollTop=body.scrollHeight;
+  logCount++;
+  const badge=document.getElementById('consoleBadge');if(badge)badge.textContent=logCount;
+  while(body.children.length>500)body.removeChild(body.firstChild);
+}
+function toggleConsole(ev){
+  if(ev&&ev.target.closest('.cbtn')&&ev.target.id!=='consoleToggle')return;
+  const p=document.getElementById('consolePanel');
+  const open=p.classList.toggle('collapsed')===false;
+  document.getElementById('consoleToggle').textContent=open?'▼':'▲';
+  save(LS_CONSOLE,open);
+}
+function clearConsole(ev){
+  if(ev)ev.stopPropagation();
+  document.getElementById('consoleBody').innerHTML='';logCount=0;
+  document.getElementById('consoleBadge').textContent='0';
+  logMsg('ล้าง console แล้ว','info');
+}
+function initConsoleResize(){
+  const handle=document.getElementById('consoleResize'),panel=document.getElementById('consolePanel');
+  let startY,startH;
+  handle.addEventListener('mousedown',e=>{
+    startY=e.clientY;startH=panel.offsetHeight;e.preventDefault();
+    const mv=ev=>{const h=Math.min(Math.max(startH+(startY-ev.clientY),80),window.innerHeight*0.6);panel.style.height=h+'px';};
+    const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+}
+
+/* ---------- Minimal Markdown renderer (self-contained, no CDN) ---------- */
+function renderMarkdown(src){
+  const blocks=[]; // extract fenced code first
+  src = src.replace(/```([\w+-]*)\n?([\s\S]*?)```/g,(m,lang,code)=>{
+    const i=blocks.length;
+    blocks.push({lang:lang||'text',code:code.replace(/\n$/,'')});
+    return ` CB${i} `;
+  });
+  const maths=[];
+  const stashMath=(tex,display)=>{ maths.push({tex,display}); return ' MJ'+(maths.length-1)+' '; };
+  src = src.replace(/\$\$([\s\S]+?)\$\$/g,(m,t)=>stashMath(t,true));
+  src = src.replace(/\\\[([\s\S]+?)\\\]/g,(m,t)=>stashMath(t,true));
+  src = src.replace(/\\\(([\s\S]+?)\\\)/g,(m,t)=>stashMath(t,false));
+  src = src.replace(/\$([^\$\n]{1,120}?)\$/g,(m,t)=> /[\\^_{}]/.test(t)?stashMath(t,false):m);
+  const lines=src.split('\n');
+  let html='',i=0;
+  function inline(t){
+    t=esc(t);
+    t=t.replace(/`([^`]+)`/g,'<code class="inline-code">$1</code>');
+    t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    t=t.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+    t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return t;
+  }
+  while(i<lines.length){
+    let ln=lines[i];
+    if(/^ CB\d+ $/.test(ln.trim())){ html+=ln.trim(); i++; continue; }
+    if(!ln.trim()){ i++; continue; }
+    let h=ln.match(/^(#{1,3})\s+(.*)/);
+    if(h){ const lv=h[1].length; html+=`<h${lv}>${inline(h[2])}</h${lv}>`; i++; continue; }
+    if(/^>\s?/.test(ln)){ let q=[]; while(i<lines.length&&/^>\s?/.test(lines[i])){q.push(lines[i].replace(/^>\s?/,''));i++;} html+=`<blockquote>${inline(q.join(' '))}</blockquote>`; continue; }
+    if(/^\s*[-*+]\s+/.test(ln)){ let items=[]; while(i<lines.length&&/^\s*[-*+]\s+/.test(lines[i])){items.push(lines[i].replace(/^\s*[-*+]\s+/,''));i++;} html+='<ul>'+items.map(x=>`<li>${inline(x)}</li>`).join('')+'</ul>'; continue; }
+    if(/^\s*\d+\.\s+/.test(ln)){ let items=[]; while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){items.push(lines[i].replace(/^\s*\d+\.\s+/,''));i++;} html+='<ol>'+items.map(x=>`<li>${inline(x)}</li>`).join('')+'</ol>'; continue; }
+    if(/^\|(.+)\|/.test(ln)&&i+1<lines.length&&/^\|[\s:|-]+\|/.test(lines[i+1])){
+      const row=l=>l.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const head=row(ln); i+=2; let body=[];
+      while(i<lines.length&&/^\|(.+)\|/.test(lines[i])){body.push(row(lines[i]));i++;}
+      html+='<table><thead><tr>'+head.map(c=>`<th>${inline(c)}</th>`).join('')+'</tr></thead><tbody>'+
+        body.map(r=>'<tr>'+r.map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+      continue;
+    }
+    // paragraph (gather consecutive plain lines)
+    let para=[ln]; i++;
+    while(i<lines.length&&lines[i].trim()&&!/^(#{1,3}\s|>\s?|\s*[-*+]\s|\s*\d+\.\s|\|)/.test(lines[i])&&!/^ CB\d+ $/.test(lines[i].trim())){para.push(lines[i]);i++;}
+    html+=`<p>${inline(para.join(' '))}</p>`;
+  }
+  // restore code blocks
+  html=html.replace(/ CB(\d+) /g,(m,n)=>{
+    const b=blocks[+n];
+    const lang=(b.lang||'').toLowerCase();
+    if(lang==='chart'||lang==='chartjs'){
+      return `<div class="chart-box" data-cfg="${encodeURIComponent(b.code)}"><canvas></canvas></div>`;
+    }
+    if(lang==='clip'||lang==='video'){
+      let n=0;try{n=(JSON.parse(b.code).scenes||[]).length;}catch(e){}
+      return `<div class="clip-box" data-spec="${encodeURIComponent(b.code)}"><div class="clip-info">🎬 แผนคลิป ${n} ฉาก (รูป+เสียงบรรยาย)</div>`+
+        `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><select class="clip-fmt"><option value="portrait">📱 แนวตั้ง 9:16 (TikTok/Reels)</option><option value="landscape">🖥 แนวนอน 16:9 (YouTube)</option><option value="square">⬛ จัตุรัส 1:1</option></select>`+
+        `<label style="font-size:12.5px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" class="clip-sub" checked> 💬 ซับ</label>`+
+        `<label style="font-size:12.5px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" class="clip-music" checked> 🎵 เพลง</label>`+
+        `<button class="clip-btn" onclick="makeClip(this)">▶ สร้างคลิป</button></div><div class="clip-out"></div></div>`;
+    }
+    if(lang==='image'||lang==='img'){
+      const prompt=b.code.trim();
+      const src='https://image.pollinations.ai/prompt/'+encodeURIComponent(prompt)+'?width=768&height=768&nologo=true&seed='+Math.floor(Math.random()*99999);
+      return `<div class="gen-img"><div class="gen-img-load">🎨 กำลังสร้างรูป… (Pollinations · ต้องต่อเน็ต)</div>`+
+        `<img loading="lazy" src="${esc(src)}" alt="${esc(prompt)}" onload="this.previousElementSibling.style.display='none'" onerror="this.previousElementSibling.textContent='⚠️ สร้างรูปไม่ได้ (ต่อเน็ตไหม?)'">`+
+        `<div class="gen-img-cap">🎨 ${esc(prompt)}</div></div>`;
+    }
+    const previewable=['html','htm','svg','xml','css','js','javascript'].includes(lang)||(!lang&&/<[a-z!]/i.test(b.code));
+    const runBtn=previewable?`<button class="code-copy" onclick="runCode(this)" title="พรีวิวผลลัพธ์">▶ พรีวิว</button>`:'';
+    return `<div class="code-block" data-lang="${esc(lang)}"><div class="code-head"><span>${esc(b.lang)}</span><span style="display:flex;gap:6px">${runBtn}<button class="code-copy" onclick="copyCode(this)">⧉ คัดลอก</button></span></div><pre><code>${esc(b.code)}</code></pre></div>`;
+  });
+  // render สูตรคณิตด้วย KaTeX (offline)
+  html=html.replace(/MJ(\d+)/g,(m,n)=>{
+    const mm=maths&&maths[+n]; if(!mm)return m;
+    try{ return window.katex ? katex.renderToString(mm.tex.trim(),{displayMode:mm.display,throwOnError:false,output:'html'}) : '<code>'+esc(mm.tex)+'</code>'; }
+    catch(e){ return '<code>'+esc(mm.tex)+'</code>'; }
+  });
+  return html;
+}
+function copyCode(btn){
+  const code=btn.closest('.code-block').querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(()=>{btn.textContent='✓ คัดลอกแล้ว';setTimeout(()=>btn.textContent='⧉ คัดลอก',1500);});
+}
+// สร้างคลิปจากบล็อก ```clip -> POST /clip -> เล่นวิดีโอ
+async function makeClip(btn){
+  const box=btn.closest('.clip-box');
+  let spec;try{spec=JSON.parse(decodeURIComponent(box.dataset.spec));}catch(e){alert('สเปคคลิปไม่ถูกต้อง: '+e.message);return;}
+  if(!spec.voice)spec.voice=cfg.neuralVoice||'th-TH-PremwadeeNeural';
+  const fmtSel=box.querySelector('.clip-fmt');spec.format=fmtSel?fmtSel.value:(spec.format||'portrait');
+  const subCb=box.querySelector('.clip-sub');spec.subtitle=subCb?subCb.checked:true;
+  const musCb=box.querySelector('.clip-music');spec.music=(musCb&&musCb.checked)?'default':null;
+  btn.disabled=true;btn.textContent='⏳ กำลังสร้างคลิป… (1-3 นาที)';
+  const out=box.querySelector('.clip-out');
+  out.innerHTML='<div style="font-size:12px;color:var(--muted);margin-top:6px">🎬 สร้างรูป + เสียง + ต่อวิดีโอ… อย่าปิดหน้านี้</div>';
+  logMsg('🎬 เริ่มสร้างคลิป '+((spec.scenes||[]).length)+' ฉาก…','req');
+  try{
+    const res=await fetch(cfg.ttsUrl.replace(/\/$/,'')+'/clip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(spec)});
+    if(!res.ok){throw new Error((await res.text()).slice(0,160));}
+    const blob=await res.blob();const url=URL.createObjectURL(blob);
+    out.innerHTML=`<video controls src="${url}" style="max-width:100%;border-radius:10px;margin-top:8px"></video>`+
+      `<div style="margin-top:6px"><a href="${url}" download="clip.mp4" class="read-btn">⬇ ดาวน์โหลด mp4</a></div>`;
+    btn.textContent='✓ สร้างเสร็จ';
+    logMsg('🎬 สร้างคลิปเสร็จ ('+(blob.size/1024).toFixed(0)+' KB)','ok');
+  }catch(e){
+    out.innerHTML='<div style="color:var(--danger);font-size:12px;margin-top:6px">⚠️ สร้างคลิปไม่ได้: '+esc(e.message)+' (tts-server + ffmpeg + เน็ต พร้อมไหม?)</div>';
+    btn.disabled=false;btn.textContent='↻ ลองใหม่';
+    logMsg('✖ สร้างคลิปไม่ได้: '+e.message,'err');
+  }
+}
+// เรนเดอร์กราฟจากบล็อก ```chart (Chart.js) ที่ยังไม่ได้วาด
+function renderCharts(){
+  if(typeof Chart==='undefined')return;
+  document.querySelectorAll('.chart-box[data-cfg]').forEach(box=>{
+    if(box.dataset.done)return;
+    let cfg;
+    const _raw=decodeURIComponent(box.dataset.cfg);
+    try{cfg=JSON.parse(_raw);}
+    catch(e){
+      // AI ตอบเป็นข้อความแทน JSON — ลอง extract { ... } ออกมา
+      const m=_raw.match(/\{[\s\S]*\}/);
+      if(m){try{cfg=JSON.parse(m[0]);}catch(e2){cfg=null;}}
+      if(!cfg){
+        box.innerHTML='<div style="color:var(--danger);font-size:12px;padding:8px">⚠️ โมเดลตอบเป็นข้อความแทน JSON — ลองถามใหม่ด้วย "วาดกราฟ [เรื่อง] ตอบเป็น JSON Chart.js เท่านั้น"<br><small style="color:var(--muted);margin-top:4px;display:block">'+esc(_raw.slice(0,300))+'</small></div>';
+        box.dataset.done='1';return;
+      }
+    }
+    box.dataset.done='1';
+    try{
+      const cv=box.querySelector('canvas');
+      cfg.options=Object.assign({responsive:true,maintainAspectRatio:false},cfg.options||{});
+      new Chart(cv.getContext('2d'),cfg);
+    }catch(e){box.innerHTML='<div style="color:var(--danger);font-size:12px;padding:8px">⚠️ วาดกราฟไม่ได้: '+esc(e.message)+'</div>';}
+  });
+}
+function runCode(btn){
+  const cb=btn.closest('.code-block');const lang=(cb.dataset.lang||'').toLowerCase();
+  const code=cb.querySelector('code').textContent;
+  let doc;
+  if(lang==='css')
+    doc=`<!doctype html><meta charset="utf-8"><style>${code}</style><body><h1>ตัวอย่างหัวข้อ H1</h1><p>ข้อความตัวอย่าง paragraph สำหรับดูสไตล์</p><button>ปุ่มตัวอย่าง</button> <a href="#">ลิงก์</a></body>`;
+  else if(lang==='js'||lang==='javascript')
+    doc=`<!doctype html><meta charset="utf-8"><body><pre id="__o" style="font-family:Consolas,monospace;white-space:pre-wrap;padding:10px"></pre><script>(function(){var o=document.getElementById('__o');function w(){o.textContent+=[].slice.call(arguments).map(function(x){return (typeof x==='object')?JSON.stringify(x):String(x)}).join(' ')+'\\n';}console.log=w;console.info=w;console.warn=w;console.error=w;try{\n${code}\n}catch(e){o.textContent+='⚠️ Error: '+e.message}})();<\/script></body>`;
+  else doc=code; // html/svg/xml
+  document.getElementById('previewFrame').srcdoc=doc;
+  document.getElementById('previewOverlay').classList.add('show');
+  logMsg('▶ พรีวิวโค้ด ('+(lang||'html')+')','info');
+}
+function closePreview(){document.getElementById('previewOverlay').classList.remove('show');document.getElementById('previewFrame').srcdoc='';}
+
+/* ---------- Greeting + weather (สวัสดี ลุงพี) ---------- */
+const USER_NAME='ลุงพี';
+let greetCache={sub:'',ts:0};
+const WMO={0:'ท้องฟ้าแจ่มใส ☀️',1:'ส่วนใหญ่แจ่มใส 🌤️',2:'มีเมฆบางส่วน ⛅',3:'เมฆมาก ☁️',
+  45:'มีหมอก 🌫️',48:'หมอกน้ำแข็ง 🌫️',51:'ฝนปรอยเล็กน้อย 🌦️',53:'ฝนปรอย 🌦️',55:'ฝนปรอยหนัก 🌧️',
+  61:'ฝนตกเล็กน้อย 🌦️',63:'ฝนตก 🌧️',65:'ฝนตกหนัก 🌧️',66:'ฝนเย็นจัด 🌧️',67:'ฝนเย็นจัดหนัก 🌧️',
+  71:'หิมะเล็กน้อย 🌨️',73:'หิมะ 🌨️',75:'หิมะหนัก ❄️',77:'เม็ดหิมะ 🌨️',
+  80:'ฝนซู่เล็กน้อย 🌦️',81:'ฝนซู่ 🌧️',82:'ฝนซู่หนัก ⛈️',85:'หิมะซู่ 🌨️',86:'หิมะซู่หนัก 🌨️',
+  95:'พายุฝนฟ้าคะนอง ⛈️',96:'ฝนฟ้าคะนองมีลูกเห็บ ⛈️',99:'ฝนฟ้าคะนองรุนแรง ⛈️'};
+function timeGreet(){const h=new Date().getHours();if(h<12)return'สวัสดีตอนเช้า';if(h<17)return'สวัสดีตอนบ่าย';if(h<19)return'สวัสดีตอนเย็น';return'สวัสดีตอนค่ำ';}
+function healthTip(w){
+  if(!w)return'ขอให้เป็นวันที่ดี ดูแลสุขภาพด้วยนะครับ 🙏';
+  const c=w.code,t=w.temp;
+  if([61,63,65,80,81,82,95,96,99].includes(c))return'ฝนอาจตก พกร่มไปด้วยนะครับ ขอให้เป็นวันที่ดี ดูแลสุขภาพด้วย ☔';
+  if(t>=35)return'อากาศร้อนมาก ดื่มน้ำเยอะๆ เลี่ยงแดดจัดนะครับ ขอให้เป็นวันที่ดี 🥵';
+  if(t>=32)return'อากาศค่อนข้างร้อน ดื่มน้ำบ่อยๆ นะครับ ขอให้เป็นวันที่ดี ดูแลสุขภาพด้วย 💧';
+  if(t<=18)return'อากาศเย็น ใส่เสื้อกันหนาวหน่อยนะครับ ขอให้เป็นวันที่ดี ดูแลสุขภาพด้วย 🧥';
+  return'ขอให้เป็นวันที่ดี ดูแลสุขภาพด้วยนะครับ 🌈';
+}
+async function getWeather(){
+  // ตำแหน่ง: ลองขอ geolocation (timeout 3s) ไม่ได้ก็ default กรุงเทพฯ
+  let lat=13.7563,lon=100.5018; // Bangkok default
+  try{
+    const pos=await new Promise((res,rej)=>{
+      if(!navigator.geolocation)return rej();
+      navigator.geolocation.getCurrentPosition(res,rej,{timeout:3000,maximumAge:1800000});
+    });
+    lat=pos.coords.latitude;lon=pos.coords.longitude;
+  }catch(e){/* ใช้ default */}
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`;
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('weather '+res.status);
+  const d=await res.json();
+  return {temp:Math.round(d.current.temperature_2m),code:d.current.weather_code,
+    max:Math.round(d.daily.temperature_2m_max[0]),min:Math.round(d.daily.temperature_2m_min[0])};
+}
+async function buildGreeting(){
+  const title=document.getElementById('greetTitle'),sub=document.getElementById('greetSub');
+  if(!title)return;
+  title.textContent=`👋 ${timeGreet()} ${USER_NAME}`;
+  // ใช้ cache ถ้าดึงมาไม่เกิน 30 นาที
+  if(greetCache.sub&&Date.now()-greetCache.ts<1800000){sub.innerHTML=greetCache.sub;return;}
+  try{
+    const w=await getWeather();
+    const desc=WMO[w.code]||'—';
+    const html=`วันนี้อากาศ <b>${desc}</b> อุณหภูมิ <b>${w.temp}°C</b> (สูงสุด ${w.max}° / ต่ำสุด ${w.min}°)<br>${healthTip(w)}`;
+    greetCache={sub:html,ts:Date.now()};
+    if(document.getElementById('greetSub'))document.getElementById('greetSub').innerHTML=html;
+    logMsg(`🌤️ ดึงพยากรณ์อากาศสำเร็จ: ${desc} ${w.temp}°C`,'ok');
+  }catch(e){
+    const html=healthTip(null)+' <small style="opacity:.7">(ดูอากาศไม่ได้ — อาจออฟไลน์)</small>';
+    greetCache={sub:html,ts:Date.now()-1740000}; // ให้ลองใหม่ในอีก ~1 นาที
+    if(document.getElementById('greetSub'))document.getElementById('greetSub').innerHTML=html;
+    logMsg('🌤️ ดึงพยากรณ์อากาศไม่ได้ (ออฟไลน์?) — ใช้คำทักทายปกติ','warn');
+  }
+}
+
+/* ---------- Conversations ---------- */
+function newChat(){
+  const c={id:uid(),title:'แชทใหม่',messages:[],created:Date.now()};
+  convs.unshift(c); activeId=c.id; saveConvs(); renderConvList(); renderMessages();
+  document.getElementById('input').focus();
+}
+function selectConv(id){activeId=id;renderConvList();renderMessages();}
+function deleteConv(id,ev){
+  ev.stopPropagation();
+  if(!confirm('ลบแชทนี้?'))return;
+  convs=convs.filter(c=>c.id!==id);
+  if(activeId===id)activeId=convs[0]?.id||null;
+  saveConvs();renderConvList();renderMessages();
+}
+function renderConvList(){
+  const el=document.getElementById('convList');
+  el.innerHTML=convs.map(c=>`<div class="conv ${c.id===activeId?'active':''}" onclick="selectConv('${c.id}')">
+    <span>💬</span><span class="title">${esc(c.title)}</span>
+    <button class="del" onclick="deleteConv('${c.id}',event)" title="ลบ">×</button></div>`).join('')
+    || '<div style="padding:16px;color:var(--muted);font-size:13px;text-align:center">ยังไม่มีแชท</div>';
+}
+
+/* ---------- Messages render ---------- */
+function renderMessages(){
+  const el=document.getElementById('messages');
+  const c=activeConv();
+  if(!c||c.messages.length===0){
+    el.innerHTML=`<div class="empty">
+      <h2 id="greetTitle">👋 สวัสดี ลุงพี</h2>
+      <p id="greetSub">${greetCache.sub||'กำลังดูอากาศวันนี้ให้…'}</p>
+      <p style="margin-top:6px">ผู้ช่วย AI ในเครื่องของคุณ พร้อมช่วยเขียนโค้ด สรุปงาน และตอบคำถาม</p>
+      <div class="chips">
+        <div class="chip" onclick="quick(this)">เขียนฟังก์ชัน Python อ่านไฟล์ Excel</div>
+        <div class="chip" onclick="quick(this)">อธิบายโค้ดนี้ให้หน่อย</div>
+        <div class="chip" onclick="quick(this)">ช่วยสรุปข้อมูล BoQ</div>
+      </div></div>`;
+    buildGreeting();
+    return;
+  }
+  el.innerHTML=c.messages.map((m,idx)=>msgHTML(m,idx)).join('');
+  el.scrollTop=el.scrollHeight;
+  renderCharts();
+}
+function msgHTML(m,idx){
+  const isUser=m.role==='user';
+  const imgs=(m.imgThumbs||[]).map(src=>`<img class="msg-img" src="${src}">`).join('');
+  const body=isUser?`${imgs}<p>${esc(m.content).replace(/\n/g,'<br>')}</p>`:(m.content?renderMarkdown(m.content):'<span class="cursor-blink"></span>');
+  const stat=m.stats?`<span style="margin-left:8px">· ${m.stats}</span>`:'';
+  let refsHtml='';
+  if(m.refs&&m.refs.length){
+    refsHtml=`<div class="refs"><div class="refs-title">📚 อ้างอิง ${m.refs.length} แหล่ง (คลิกเพื่ออ่าน)</div>`+
+      m.refs.map(r=>`<div class="ref-card" onclick="this.classList.toggle('open')">
+        <div class="ref-head"><span class="ref-n">[${r.n}]</span><span class="ref-src">${esc(r.source)}</span><span class="ref-score">${(r.score*100).toFixed(0)}%</span></div>
+        <div class="ref-body">${esc(r.text)}</div></div>`).join('')+`</div>`;
+  }
+  return `<div class="msg-row" data-idx="${idx}">
+    <div class="avatar ${isUser?'user':'ai'}">${isUser?'คุณ':'AI'}</div>
+    <div class="bubble">
+      <div class="role">${isUser?'คุณ':'ผู้ช่วย'}${stat}</div>
+      <div class="content">${body}</div>
+      ${refsHtml}
+      <div class="msg-actions">
+        <button class="read-btn" onclick="readMsg(${idx},this)">🔊 อ่าน</button>
+        <button onclick="copyMsg(${idx})">⧉ คัดลอก</button>
+        ${!isUser?`<button onclick="regen(${idx})">↻ สร้างใหม่</button>`:''}
+        ${!isUser?`<button onclick="thumbUp(${idx},this)" title="มีประโยชน์ — ให้โมเดลพิจารณาเก็บเข้าคลังเอง">${m.liked?'👍 ชอบแล้ว':'👍 มีประโยชน์'}</button>`:''}
+        ${!isUser?`<button onclick="saveMsgToKB(${idx})" title="บังคับจำเข้าคลัง">💡 จำเข้าคลัง</button>`:''}
+        <button onclick="delMsg(${idx})">🗑 ลบ</button>
+      </div>
+    </div></div>`;
+}
+function quick(el){document.getElementById('input').value=el.textContent;autoGrow(document.getElementById('input'));document.getElementById('input').focus();}
+function copyMsg(idx){navigator.clipboard.writeText(activeConv().messages[idx].content);}
+function delMsg(idx){const c=activeConv();c.messages.splice(idx,1);saveConvs();renderMessages();}
+function regen(idx){
+  const c=activeConv();
+  // remove this assistant msg and everything after, then resend from last user
+  c.messages=c.messages.slice(0,idx);
+  saveConvs();renderMessages();
+  streamReply();
+}
+
+/* ---------- Sending ---------- */
+function autoGrow(t){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,200)+'px';}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();onSend();}}
+// ตรวจจับ path ไฟล์ในข้อความ -> ให้ backend อ่านเนื้อหา -> แนบเป็น context
+async function resolveFilePaths(text){
+  const paths=text.match(/[A-Za-z]:\\[^\s"'<>|?*\n]+/g);
+  if(!paths||!paths.length)return;
+  for(const p of paths){
+    try{
+      logMsg('📄 อ่านไฟล์จาก path: '+p+' …','info');
+      const r=await fetch(cfg.ttsUrl.replace(/\/$/,'')+'/file?path='+encodeURIComponent(p));
+      if(!r.ok){const t=await r.text();logMsg('✖ อ่านไฟล์ไม่ได้: '+t.slice(0,100),'err');continue;}
+      const content=await r.text();
+      attachments.push({kind:'text',name:p.split('\\').pop(),text:content});
+      logMsg('📄 อ่านไฟล์สำเร็จ: '+p.split('\\').pop()+' ('+content.length+' ตัวอักษร)','ok');
+    }catch(e){logMsg('✖ อ่าน path ไม่ได้ ('+e.message+') — ต้องเปิดผ่าน http://localhost:11435 + tts-server ทำงาน','warn');}
+  }
+}
+async function onSend(){
+  if(generating){stopGen();return;}
+  const inp=document.getElementById('input');
+  let text=inp.value.trim();
+  if(!text&&attachments.length===0)return;
+  // plugin: send hooks (แก้/ยกเลิกข้อความได้) + คำสั่ง
+  for(const fn of _pluginHooks.send){try{const r=fn(text);if(r===false)return;if(typeof r==='string')text=r;}catch(e){}}
+  if(attachments.length===0&&runCommandIfAny(text))return;
+  // ถ้ามี path ไฟล์ในข้อความ -> อ่านมาแนบ (ผ่าน backend)
+  await resolveFilePaths(text);
+  if(!activeConv())newChat();
+  const c=activeConv();
+  // รวมข้อความจากไฟล์ text/pdf/excel เข้าใน prompt
+  const textFiles=attachments.filter(a=>a.kind==='text');
+  const images=attachments.filter(a=>a.kind==='image');
+  let content=text;
+  for(const tf of textFiles){
+    content+=`\n\n--- เนื้อหาจากไฟล์: ${tf.name} ---\n${tf.text}`;
+  }
+  const msg={role:'user',content:content||'(อธิบายรูปนี้)'};
+  if(images.length){msg.images=images.map(im=>im.dataB64);msg.imgThumbs=images.map(im=>im.thumb);}
+  c.messages.push(msg);
+  if(c.title==='แชทใหม่'||!c.title)c.title=(text||attachments[0]?.name||'แชท').slice(0,40);
+  inp.value='';autoGrow(inp);
+  attachments=[];renderAttachBar();
+  saveConvs();renderConvList();renderMessages();
+  streamReply();
+}
+
+/* ---- Auto-fallback helpers ---- */
+function isRetryable(msg){
+  const m=msg||'';
+  return /40[234]|429|413|rate.?limit|no credit|quota|too large|not found|does not exist|unavailable|decommission|deprecat|no longer support/i.test(m)
+    ||m.includes('413')||m.name==='TypeError'||m.toLowerCase().includes('fetch')||m.toLowerCase().includes('network');
+}
+// โมเดลตระกูลที่มีโหมดคิด (thinking) — ปิดไว้เพื่อให้ตอบทันที ไม่งั้นโมเดลคิดในใจก่อนตอบและหน้าจอดูค้าง
+function thinkOpt(model){return /qwen3|typhoon2\.5|deepseek-r1|gpt-oss|magistral|spark-x2|reasoning|thinking/i.test(model||'')?{think:false}:{};}
+function getFallbackChain(provId,model){
+  const chain=[{provId,model}];
+  if(!cfg.autoFallback)return chain;
+  const seen=new Set([provId+'::'+model]);
+  const add=(pid,m)=>{const k=pid+'::'+m;if(!seen.has(k)){seen.add(k);chain.push({provId:pid,model:m});}};
+  // Local Ollama first (เร็วและไม่พึ่งเน็ต) — เดิมอยู่ท้ายสุด
+  if(localModels.length)add('local',localModels.find(m=>/typhoon2\.5/i.test(m))||localModels[0]);
+  // Pollinations (always free)
+  if(cfg.freeOnline)add('free',freeModels[0]||'openai-fast');
+  // OpenRouter :free models
+  for(const p of cfg.providers){
+    if(!p.baseUrl.includes('openrouter'))continue;
+    const ms=(typeof p.models==='string'?p.models:(p.models||[]).join(',')).split(',').map(s=>s.trim()).filter(s=>s.includes(':free'));
+    for(const m of ms)add(p.id,m);
+  }
+  // Other providers (first model each)
+  for(const p of cfg.providers){
+    if(p.baseUrl.includes('openrouter'))continue;
+    const ms=(typeof p.models==='string'?p.models:(p.models||[]).join(',')).split(',').map(s=>s.trim()).filter(Boolean);
+    if(ms.length)add(p.id,ms[0]);
+  }
+  // Local Ollama last
+  if(localModels.length)add('local',localModels[0]);
+  return chain;
+}
+async function doStream(prov,model,msgs,signal,t0,onToken,onStats){
+  if(prov.type==='ollama'){
+    const res=await fetch(cfg.apiUrl.replace(/\/$/,'')+'/api/chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},signal,
+      body:JSON.stringify(Object.assign({model,messages:msgs,stream:true,keep_alive:'30m',options:{temperature:cfg.temp,num_ctx:+cfg.ctx}},thinkOpt(model)))});
+    if(!res.ok){const t=await res.text().catch(()=>'');throw new Error('HTTP '+res.status+' — '+(t.replace(/[{}"]/g,'').slice(0,200)||'no detail'));}
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf='',tok=0;
+    while(true){const{done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      let nl;while((nl=buf.indexOf('\n'))>=0){const line=buf.slice(0,nl).trim();buf=buf.slice(nl+1);
+        if(!line)continue;let j;try{j=JSON.parse(line);}catch(e){continue;}
+        if(j.message?.content){onToken(j.message.content);tok++;}
+        if(j.done){const secs=(performance.now()-t0)/1000;const ec=j.eval_count||tok;const tps=j.eval_duration?(ec/(j.eval_duration/1e9)):(tok/secs);
+          onStats(`${ec} tok · ${tps.toFixed(1)} tok/s`);logMsg(`✔ เสร็จ: ${ec} tok · ${tps.toFixed(1)} tok/s`,'ok');}
+      }
+    }
+  }else{
+    const h={'Content-Type':'application/json'};if(prov.apiKey)h['Authorization']='Bearer '+prov.apiKey;
+    const res=await fetch(prov.baseUrl.replace(/\/$/,'')+'/chat/completions',{
+      method:'POST',headers:h,signal,
+      body:JSON.stringify({model,messages:toOpenAIMessages(msgs),stream:true,temperature:cfg.temp})});
+    if(!res.ok){
+      const t=await res.text().catch(()=>'');
+      let detail=t.slice(0,300);try{const j=JSON.parse(t);detail=j.error?.message||j.message||detail;}catch(e){}
+      throw new Error('HTTP '+res.status+' — '+detail.replace(/\s+/g,' ').slice(0,200));
+    }
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
+    while(true){const{done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      let nl;while((nl=buf.indexOf('\n'))>=0){let line=buf.slice(0,nl).trim();buf=buf.slice(nl+1);
+        if(!line.startsWith('data:'))continue;line=line.slice(5).trim();if(line==='[DONE]')continue;
+        let j;try{j=JSON.parse(line);}catch(e){continue;}
+        const delta=j.choices?.[0]?.delta?.content;if(delta)onToken(delta);
+      }
+    }
+    const secs=(performance.now()-t0)/1000;
+    onStats(`${prov.label} · ${model} · ${secs.toFixed(1)}s`);
+    logMsg(`✔ เสร็จ (${prov.label} / ${model})`,'ok');
+  }
+}
+function errHint(err,prov){
+  const m=err.message||'';
+  const isCorsOrNet=err.name==='TypeError'||m.toLowerCase().includes('fetch')||m.includes('network');
+  if(prov.type!=='ollama'){
+    if(isCorsOrNet&&location.protocol==='file:')return'\n\n_(เปิดจาก **file://** — เบราว์เซอร์บล็อก CORS · เปิดผ่าน **[http://127.0.0.1:11435/](http://127.0.0.1:11435/)** แทน)_';
+    if(isCorsOrNet)return'\n\n_(CORS/Network error · ลอง **OpenRouter** หรือ **Groq** ซึ่งรองรับ CORS)_';
+    if(m.includes('401'))return'\n\n_(HTTP 401 — **API key ผิดหรือหมดอายุ** · ตรวจสอบ key ในตั้งค่า)_';
+    if(m.includes('404'))return'\n\n_(HTTP 404 — **ไม่พบโมเดลนี้** · ชื่ออาจเปลี่ยน กด **🔌 ทดสอบ** เพื่อดูรายชื่อ)_';
+    if(m.includes('402'))return'\n\n_(HTTP 402 — **ยอดเครดิตไม่พอ** · ใช้โมเดล `:free` บน OpenRouter หรือเติมเครดิต)_';
+    if(m.includes('429')){const nc=/no credit|billing|insufficient|quota|usage limit/i.test(m);return nc?'\n\n_(HTTP 429 — **ยอดเครดิตหมด** · ใช้โมเดลฟรีแทน)_':'\n\n_(HTTP 429 — **Rate limit** · รอสักครู่แล้วลองใหม่)_';}
+    if(m.includes('413')||/too large/i.test(m))return'\n\n_(HTTP 413 — **Request ใหญ่เกินไป** · ลด ctx, เริ่มห้องใหม่, หรือเปลี่ยนโมเดล)_';
+    return'\n\n_(ตรวจ API key, Base URL · กด **🔌 ทดสอบ** ในตั้งค่า)_';
+  }
+  return'\n\n_(ตรวจว่า Start-LocalAI.bat ทำงานอยู่)_';
+}
+
+async function streamReply(){
+  const c=activeConv();if(!c)return;
+  const selv=currentSel();
+  if(!selv.model){alert('ยังไม่มีโมเดล — เลือกจาก dropdown, ollama pull, หรือเปิดโมเดลออนไลน์ในตั้งค่า');return;}
+
+  // Auto-fetch URLs ที่ผู้ใช้พิมพ์/วางเอง — ถ้าข้อความล่าสุดมี URL + intent สรุป/แปล/อ่าน → proxy fetch
+  {
+    const lastU=[...c.messages].reverse().find(m=>m.role==='user');
+    if(lastU&&lastU.content&&!lastU._fetched){
+      const urls=(lastU.content.match(/https?:\/\/[^\s<>"']+/gi)||[]).slice(0,3);
+      const readIntent=/สรุป|แปล|อ่าน|วิเคราะห์|บทความ|เนื้อหา|link|ลิงก์|ลิงค์|summar|translat|read|analy|fetch|เปิด/i.test(lastU.content);
+      if(urls.length&&readIntent){
+        logMsg('📄 พบ '+urls.length+' URL ในข้อความ — กำลังดึงเนื้อหา…','req');
+        const fetched=[];
+        for(const u of urls){
+          const t0=performance.now();
+          const body=await fetchArticleViaProxy(u,20000);
+          if(body&&body.length>200){
+            logMsg('✅ ดึง '+u.slice(0,50)+' ('+body.length+' chars, '+((performance.now()-t0)/1000).toFixed(1)+'s)','ok');
+            fetched.push({url:u,body});
+          }else logMsg('⚠️ ดึง '+u.slice(0,50)+' ไม่ได้','warn');
+        }
+        if(fetched.length){
+          const insert=fetched.map(f=>`\n\n[เนื้อหาจาก ${f.url}]\n${f.body}\n[/เนื้อหา]`).join('');
+          lastU.content=lastU.content+insert;
+          lastU._fetched=true;   // กัน fetch ซ้ำถ้ากด regenerate
+          saveConvs();renderMessages();
+        }
+      }
+    }
+  }
+
+  const aiMsg={role:'assistant',content:'',stats:''};
+  c.messages.push(aiMsg);renderMessages();setGenerating(true);
+
+  // Build messages
+  const msgs=[];let sys=cfg.system;
+  if(cfg.ragOn){
+    try{
+      const lastUser=[...c.messages].reverse().find(m=>m.role==='user');
+      if(lastUser){
+        let hits=await kbServerSearch(lastUser.content,cfg.topK);
+        if(hits===null)hits=await kbSearch(lastUser.content,cfg.topK);
+        if(hits.length){
+          const ctx=hits.map((h,i)=>`[${i+1}] (${h.source}) ${h.text}`).join('\n\n');
+          sys=(sys?sys+'\n\n':'')+
+            'ตอบโดยอ้างอิงจาก "ข้อมูลอ้างอิง" ด้านล่างเท่านั้นเมื่อเกี่ยวข้อง และ**ต้องใส่เลขอ้างอิง [1] [2] กำกับทุกจุดที่นำข้อมูลมาใช้เสมอ** '+
+            'จบคำตอบด้วยหัวข้อ "อ้างอิง:" แล้วลิสต์แหล่งที่มาแต่ละเลข ถ้าไม่มีข้อมูลอ้างอิงที่เกี่ยวข้องให้บอกตามตรงว่าอ้างอิงจากความรู้ทั่วไป\n\n'+
+            'ข้อมูลอ้างอิง:\n'+ctx;
+          aiMsg.refs=hits.map((h,i)=>({n:i+1,source:h.source,text:h.text,score:h.score}));
+          logMsg(`🧠 RAG: ดึงความรู้ ${hits.length} ชิ้น (สูงสุด ${hits[0].score.toFixed(2)})`,'req');
+        }else logMsg('🧠 RAG: ไม่พบความรู้ที่เกี่ยวข้อง','info');
+      }
+    }catch(e){logMsg('🧠 RAG ข้ามไป: '+e.message,'warn');}
+  }
+  // Detect user's language from last message — บังคับให้โมเดลตอบตามภาษาที่ถาม (สำคัญกับ qwen จีน-based ที่ชอบตอบจีน)
+  const lastUserMsg=[...c.messages].reverse().find(m=>m.role==='user')?.content||'';
+  const hasThai=/[฀-๿]/.test(lastUserMsg);
+  const hasCJK=/[一-鿿぀-ゟ゠-ヿ]/.test(lastUserMsg);
+  const langRule=hasThai&&!hasCJK
+    ? 'ตอบเป็น**ภาษาไทย**เสมอ ห้ามใช้อักษรจีน/ญี่ปุ่น/เกาหลีในคำตอบ (ยกเว้นชื่อเฉพาะ) ถ้าไม่แน่ใจให้ใช้อังกฤษแทน — ผู้ใช้ถามเป็นไทย ต้องตอบเป็นไทย'
+    : 'ตอบด้วยภาษาเดียวกับที่ผู้ใช้ถาม ถ้าไม่ชัดเจนให้ใช้ภาษาไทย';
+  // แนบคำสั่งเรื่องกราฟ/รูป/คลิป เฉพาะเมื่อผู้ใช้พูดถึง (เดิมแนบทุกคำขอ ~700 ตัวอักษร ทำให้ prompt ยาวและช้าโดยไม่จำเป็น)
+  const wantsMedia=/กราฟ|ชาร์ต|แผนภูมิ|chart|graph|plot|รูป|ภาพ|วาด|image|picture|draw|คลิป|วิดีโอ|clip|video/i.test(lastUserMsg);
+  sys=(sys?sys+'\n\n':'')+langRule+(wantsMedia?'\n\n':'')+(!wantsMedia?'':
+    'ถ้าผู้ใช้ขอกราฟ/ชาร์ต/แผนภูมิ ให้ตอบเป็นบล็อกโค้ด ```chart ที่ภายในเป็น JSON config ของ Chart.js เท่านั้น (key: type เช่น bar/line/pie, data{labels:[],datasets:[{label,data:[]}]}, options) จากนั้นอธิบายสั้นๆ ใต้บล็อก. ถ้าผู้ใช้ขอสร้างรูป/วาดภาพ ให้ตอบเป็นบล็อกโค้ด ```image ที่ภายในเป็นคำบรรยายภาพ (prompt) เป็นภาษาอังกฤษ กระชับ 1 บรรทัด. ถ้าผู้ใช้ขอทำคลิป/วิดีโอ ให้ตอบเป็นบล็อกโค้ด ```clip ที่ภายในเป็น JSON {"scenes":[{"image":"prompt ภาษาอังกฤษ","narration":"คำบรรยายภาษาไทย"}]} (2-5 ฉาก)');
+  msgs.push({role:'system',content:sys});
+  const isVision=/moondream|llava|vision|qwen2\.?5?-?vl|qwen2-vl|bakllava|minicpm-v|llama3\.2-vision/i.test(selv.model);
+  let hadImages=false;
+  // ส่งเฉพาะประวัติล่าสุด (HISTORY_MAX ข้อความ) — เดิมส่งทั้งห้องทุกครั้ง ยิ่งคุยนานยิ่งช้าและล้น num_ctx
+  const HISTORY_MAX=16;
+  const hist=c.messages.filter(m=>!(m.role==='assistant'&&!m.content));
+  const recent=hist.slice(-HISTORY_MAX);
+  if(hist.length>recent.length)logMsg(`✂ ส่งประวัติ ${recent.length} จาก ${hist.length} ข้อความล่าสุด (ลดเวลาประมวลผล)`,'info');
+  for(const m of recent){
+    const om={role:m.role,content:m.content};
+    if(m.images&&m.images.length){hadImages=true;if(isVision)om.images=m.images;}
+    msgs.push(om);
+  }
+  if(hadImages)logMsg(isVision?'🖼 ส่งรูปเข้า vision model':'🖼 มีรูปแต่โมเดลนี้ไม่ใช่ vision → ข้ามรูป','warn');
+
+  controller=new AbortController();
+  const t0=performance.now();
+  const chain=getFallbackChain(selv.provId,selv.model);
+  let firstTok=true,lastErr=null,usedProv=null;
+
+  // เปิด Streaming TTS ทันที ถ้ามาจาก "อ่านเป็นไทย" — จะเล่นเสียงพร้อม AI พิมพ์ (ไม่รอจบ)
+  const autoTTSMode=window._feedAutoTTS===true;
+  if(autoTTSMode){window._feedAutoTTS=false;ttsStreamStart();}
+
+  const onToken=(tok)=>{
+    if(firstTok){firstTok=false;logMsg(`⏱ เริ่มตอบ (${((performance.now()-t0)/1000).toFixed(1)}s)`,'info');}
+    aiMsg.content+=tok;updateLastMsg(c);
+    if(autoTTSMode)ttsStreamAdd(tok);
+  };
+  const onStats=(s)=>{aiMsg.stats=s;};
+
+  try{
+    for(let i=0;i<chain.length;i++){
+      const{provId,model}=chain[i];
+      const prov=getProvider(provId);if(!prov)continue;
+      usedProv=prov;
+      if(i===0)logMsg(`▶ ส่งคำขอ → [${prov.label}] ${model}`,'req');
+      else logMsg(`↩ Fallback [${i}/${chain.length-1}] → ${prov.label} / ${model}`,'warn');
+      try{
+        await doStream(prov,model,msgs,controller.signal,t0,onToken,onStats);
+        if(i>0)aiMsg.stats=(aiMsg.stats||'')+(aiMsg.stats?' · ':'')+`↩ fallback #${i}`;
+        lastErr=null;break;
+      }catch(err){
+        if(err.name==='AbortError')throw err;
+        lastErr=err;
+        const canRetry=firstTok&&isRetryable(err.message||'')&&i<chain.length-1;
+        if(!canRetry)throw err;
+        logMsg(`⚠ ${prov.label}/${model}: ${(err.message||'').slice(0,80)} → ลองต่อ...`,'warn');
+        aiMsg.content=''; // ยังไม่มี content แสดง ปลอดภัยที่จะ reset
+      }
+    }
+  }catch(err){
+    if(err.name==='AbortError'){aiMsg.content+='\n\n_(หยุดโดยผู้ใช้)_';logMsg('■ หยุดโดยผู้ใช้','warn');}
+    else{
+      const prov=usedProv||getProvider(selv.provId)||{type:'openai',label:'?'};
+      const cleanMsg=(err.message||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const fallNote=cfg.autoFallback&&chain.length>1?`\n\n_(ลองแล้ว ${chain.length} provider — ทุกอันล้มเหลว)_`:'';
+      aiMsg.content+=`\n\n⚠️ **ผิดพลาด:** ${cleanMsg}${errHint(err,prov)}${fallNote}`;
+      logMsg('✖ ข้อผิดพลาด: '+err.message,'err');
+    }
+  }finally{
+    setGenerating(false);saveConvs();renderMessages();
+    // ตรวจภาษาคำตอบ: ถ้าถามไทยแต่ตอบจีน/ญี่ปุ่น/เกาหลี > 15% → เตือน + แนะนำสลับโมเดล
+    if(hasThai&&!hasCJK&&aiMsg.content&&aiMsg.content.length>100){
+      const cjkMatch=aiMsg.content.match(/[一-鿿぀-ゟ゠-ヿ]/g)||[];
+      const cjkRatio=cjkMatch.length/aiMsg.content.length;
+      if(cjkRatio>0.15){
+        const modelName=(usedProv&&usedProv.type==='ollama')?selv.model:(usedProv?.label||selv.model);
+        logMsg(`⚠️ โมเดล ${modelName} ตอบเป็นภาษาจีน ${(cjkRatio*100).toFixed(0)}% — แนะนำสลับไป scb10x/typhoon2-3b (ไทยแท้) หรือ qwen2.5:7b`,'warn');
+        aiMsg.content+='\n\n> ℹ️ _โมเดลนี้ตอบภาษาจีนแทนไทย — ลองสลับไป **scb10x/typhoon2-3b** (ไทยเร็วสุด) หรือ **qwen2.5:7b** (Q4 ไม่ใช่ Q3) ที่ dropdown ด้านบน_';
+        renderMessages();
+      }
+    }
+    // ปิด streaming TTS (flush buffer สุดท้าย → ต่อคิวไปเรื่อยๆ จนจบเอง)
+    if(autoTTSMode)ttsStreamEnd();
+    if(aiMsg.content&&_pluginHooks.reply.length)for(const fn of _pluginHooks.reply){try{fn(aiMsg.content,c);}catch(e){}}
+    // Fallback: ถ้าไม่ได้เปิด streaming (เช่นกด 🔊 บนข้อความเก่า) ก็ยังอ่านแบบเดิม
+    if(!autoTTSMode&&window._feedAutoTTS&&aiMsg.content){window._feedAutoTTS=false;setTimeout(()=>speakNeural(aiMsg.content,null),50);}
+  }
+}
+function toOpenAIMessages(msgs){
+  return msgs.map(m=>{
+    if(m.images&&m.images.length){
+      const content=[{type:'text',text:m.content||''}];
+      for(const b64 of m.images)content.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}});
+      return {role:m.role,content};
+    }
+    return {role:m.role,content:m.content};
+  });
+}
+// ระหว่างสตรีม: วาดเป็นข้อความธรรมดาและรวมหลายโทเค็นต่อรอบ (ทุก ~40 ms ใช้ setTimeout ไม่ใช่ rAF เพราะ rAF หยุดเมื่อแท็บอยู่เบื้องหลัง)
+// เดิมเรียก renderMarkdown ทั้งคำตอบทุกโทเค็น (O(n²)) ทำให้เบราว์เซอร์หน่วงเมื่อคำตอบยาว; markdown เต็มรูปแบบวาดตอนจบใน renderMessages()
+let _streamRaf=null;
+function updateLastMsg(c){
+  if(_streamRaf)return;
+  _streamRaf=setTimeout(()=>{
+    _streamRaf=null;
+    const rows=document.querySelectorAll('.msg-row');
+    const last=rows[rows.length-1]; if(!last)return;
+    const txt=c.messages[c.messages.length-1].content||'';
+    const safe=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    last.querySelector('.content').innerHTML=safe+'<span class="cursor-blink"></span>';
+    const el=document.getElementById('messages');el.scrollTop=el.scrollHeight;
+  });
+}
+function setGenerating(g){
+  generating=g;
+  const b=document.getElementById('sendBtn');
+  b.classList.toggle('stop',g);b.innerHTML=g?'■':'➤';b.title=g?'หยุด':'ส่ง';
+}
+function stopGen(){if(controller)controller.abort();}
+
+/* ---------- Providers (Local / Free online / Paid) ---------- */
+const FREE_PROVIDER={id:'free',label:'🆓 ฟรีออนไลน์ (Pollinations)',type:'openai',baseUrl:'https://text.pollinations.ai/openai',apiKey:'',
+  models:['openai-fast'],vision:['openai-fast']};
+const PROVIDER_PRESETS={
+  openrouter:{label:'OpenRouter',baseUrl:'https://openrouter.ai/api/v1',models:'meta-llama/llama-3.3-70b-instruct, google/gemini-2.0-flash-exp:free, deepseek/deepseek-chat',cors:true},
+  groq:{label:'Groq (เร็วมาก)',baseUrl:'https://api.groq.com/openai/v1',models:'llama-3.3-70b-versatile, llama-3.1-8b-instant',cors:true},
+  google:{label:'Google Gemini',baseUrl:'https://generativelanguage.googleapis.com/v1beta/openai',models:'gemini-2.0-flash, gemini-1.5-pro',cors:false},
+  openai:{label:'OpenAI',baseUrl:'https://api.openai.com/v1',models:'gpt-4o, gpt-4o-mini',cors:false},
+  custom:{label:'กำหนดเอง (OpenAI-compatible)',baseUrl:'',models:'',cors:true}
+};
+let localModels=[]; // จาก Ollama
+let freeModels=['openai-fast']; // ค่าเริ่มต้น (แสดงได้ทันที) -> โหลดรายชื่อจริงหลังบ้าน
+let _freeLoaded=false;
+// รวมทุก provider เป็นรายการเดียว
+function allProviders(){
+  const list=[{id:'local',label:'🖥 Local (Ollama)',type:'ollama',models:localModels}];
+  if(cfg.freeOnline)list.push(Object.assign({}, FREE_PROVIDER, {models:freeModels}));
+  for(const p of cfg.providers)list.push(p);
+  return list;
+}
+// โหลดรายชื่อโมเดลฟรีจาก Pollinations แบบหลังบ้าน (ไม่บล็อก UI)
+async function loadFreeModels(force){
+  if(!cfg.freeOnline)return;
+  if(_freeLoaded&&!force)return;
+  try{
+    const res=await fetch('https://text.pollinations.ai/models',{cache:'no-store'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const names=(Array.isArray(data)?data:[]).map(m=>typeof m==='string'?m:(m&&m.name)).filter(Boolean);
+    if(names.length){freeModels=[...new Set(names)];_freeLoaded=true;rebuildModelSelect();logMsg('🆓 อัปเดตรายชื่อโมเดลฟรี '+freeModels.length+' ตัว','ok');}
+  }catch(e){logMsg('🆓 ดึงรายชื่อโมเดลฟรีไม่ได้ ('+e.message+') — ใช้ openai-fast ไปก่อน','warn');}
+}
+function getProvider(id){return allProviders().find(p=>p.id===id);}
+function currentSel(){ // {provId, model}
+  const v=document.getElementById('modelSelect').value||cfg.sel||'';
+  if(v.includes('::')){const [pid,...m]=v.split('::');return {provId:pid,model:m.join('::')};}
+  return {provId:'local',model:v}; // backward-compat
+}
+function rebuildModelSelect(){
+  const sel=document.getElementById('modelSelect');
+  let html='';
+  for(const p of allProviders()){
+    const models=p.id==='local'?localModels:(Array.isArray(p.models)?p.models:String(p.models).split(',').map(s=>s.trim()).filter(Boolean));
+    if(!models.length&&p.id==='local'){html+=`<optgroup label="${p.label}"><option value="">— ยังไม่มีโมเดล —</option></optgroup>`;continue;}
+    if(!models.length)continue;
+    html+=`<optgroup label="${p.label}">`+models.map(m=>`<option value="${p.id}::${m}">${m}</option>`).join('')+`</optgroup>`;
+  }
+  sel.innerHTML=html||'<option value="">— ไม่มีโมเดล —</option>';
+  // คืนค่าที่เคยเลือก — แต่ถ้าเคยเลือก "ฟรีออนไลน์" ไว้ทั้งที่มีโมเดลในเครื่อง ให้กลับมาใช้โมเดลในเครื่องก่อน (เร็วกว่ามาก)
+  if(cfg.sel&&cfg.sel.startsWith('free::')&&localModels.length){
+    const prefer=localModels.find(m=>/typhoon2\.5/i.test(m))||localModels[0];
+    cfg.sel='local::'+prefer;logMsg('⚡ สลับจากฟรีออนไลน์มาใช้โมเดลในเครื่อง '+prefer+' (เร็วกว่า) — เลือกกลับได้ที่ dropdown','info');
+  }
+  if(cfg.sel&&[...sel.options].some(o=>o.value===cfg.sel))sel.value=cfg.sel;
+  else if(cfg.model&&[...sel.options].some(o=>o.value==='local::'+cfg.model))sel.value='local::'+cfg.model;
+  cfg.sel=sel.value;
+  sel.onchange=()=>{cfg.sel=sel.value;saveCfg();logMsg('เปลี่ยนโมเดล → '+sel.value,'info');};
+}
+
+/* ---------- Models & connection ---------- */
+async function refreshModels(){
+  try{
+    const res=await fetch(cfg.apiUrl.replace(/\/$/,'')+'/api/tags');
+    if(!res.ok)throw new Error();
+    const data=await res.json();
+    localModels=(data.models||[]).map(m=>m.name);
+    const wasOffline=document.getElementById('status').classList.contains('offline');
+    rebuildModelSelect();
+    setStatus(true, localModels.length?'พร้อมใช้งาน':'ยังไม่มีโมเดล local');
+    if(wasOffline||!refreshModels._announced){logMsg(`● เชื่อมต่อ Ollama สำเร็จ — พบ ${localModels.length} โมเดล local`,'ok');refreshModels._announced=true;}
+  }catch(e){
+    localModels=[];
+    const wasOnline=document.getElementById('status').classList.contains('online');
+    rebuildModelSelect(); // ยังแสดง free/paid ได้แม้ Ollama ปิด
+    const hasOnline=cfg.freeOnline||cfg.providers.length;
+    setStatus(hasOnline?true:false, hasOnline?'ใช้โมเดลออนไลน์ได้':'ออฟไลน์');
+    if(wasOnline||refreshModels._announced===undefined){logMsg('○ เชื่อมต่อ Ollama ไม่ได้ '+(hasOnline?'(ใช้โมเดลออนไลน์แทนได้)':'— ตรวจ Start-LocalAI.bat'),'warn');refreshModels._announced=false;}
+  }
+}
+function setStatus(online,text){
+  const s=document.getElementById('status');
+  s.className='status '+(online?'online':'offline');
+  document.getElementById('statusText').textContent=text||(online?'พร้อม':'ออฟไลน์');
+  document.getElementById('connHelp').classList.toggle('show',!online);
+}
+
+/* ---------- Settings ---------- */
+function openSettings(){
+  document.getElementById('setApiUrl').value=cfg.apiUrl;
+  document.getElementById('setSystem').value=cfg.system;
+  document.getElementById('setTemp').value=cfg.temp;
+  document.getElementById('tempVal').textContent=cfg.temp;
+  document.getElementById('setCtx').value=cfg.ctx;
+  document.getElementById('setAutoFallback').checked=cfg.autoFallback!==false;
+  document.getElementById('setFreeOnline').checked=cfg.freeOnline;
+  populateVoices();
+  document.getElementById('setVoiceRate').value=cfg.voiceRate||1;
+  document.getElementById('voiceRateVal').textContent=cfg.voiceRate||1;
+  document.getElementById('setTtsEngine').value=cfg.ttsEngine||'local';
+  document.getElementById('setNeuralVoice').value=cfg.neuralVoice||'th-TH-PremwadeeNeural';
+  onEngineChange();
+  renderProviders();renderSettingsQA();
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSettings(){document.getElementById('overlay').classList.remove('show');}
+function saveSettings(){
+  cfg.apiUrl=document.getElementById('setApiUrl').value.trim()||'http://localhost:11434';
+  cfg.system=document.getElementById('setSystem').value;
+  cfg.temp=parseFloat(document.getElementById('setTemp').value);
+  cfg.ctx=parseInt(document.getElementById('setCtx').value);
+  cfg.autoFallback=document.getElementById('setAutoFallback').checked;
+  cfg.freeOnline=document.getElementById('setFreeOnline').checked;
+  cfg.voice=document.getElementById('setVoice').value;
+  cfg.voiceRate=parseFloat(document.getElementById('setVoiceRate').value);
+  cfg.ttsEngine=document.getElementById('setTtsEngine').value;
+  cfg.neuralVoice=document.getElementById('setNeuralVoice').value;
+  saveCfg();rebuildModelSelect();closeSettings();logMsg('บันทึกการตั้งค่า · โมเดลออนไลน์: '+(cfg.freeOnline?'เปิด':'ปิด')+' · paid '+cfg.providers.length,'info');refreshModels();if(cfg.freeOnline)loadFreeModels(true);
+}
+/* ---- Paid provider management ---- */
+function addProvider(key){
+  const p=PROVIDER_PRESETS[key]||PROVIDER_PRESETS.custom;
+  cfg.providers.push({id:'p'+uid(),label:p.label,type:'openai',baseUrl:p.baseUrl,apiKey:'',models:p.models});
+  saveCfg();renderProviders();rebuildModelSelect();
+}
+function updateProvider(id,field,val){const p=cfg.providers.find(x=>x.id===id);if(p){p[field]=val;saveCfg();if(field==='models'||field==='label')rebuildModelSelect();}}
+function removeProvider(id){cfg.providers=cfg.providers.filter(x=>x.id!==id);saveCfg();renderProviders();rebuildModelSelect();}
+function renderProviders(){
+  const box=document.getElementById('providerList');if(!box)return;
+  const fileWarn=location.protocol==='file:'?'<div style="font-size:11px;color:#f59e0b;background:#7c2d1220;border:1px solid #f59e0b44;border-radius:6px;padding:6px 10px;margin-bottom:8px">⚠️ เปิดจาก <b>file://</b> — CORS จะบล็อก API ภายนอก ควรเปิดผ่าน <a href="http://127.0.0.1:11435/" target="_blank">http://127.0.0.1:11435/</a> แทน</div>':'';
+  const header='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:11px;color:var(--muted)">ผู้ให้บริการ '+cfg.providers.length+' ราย</div><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="refreshAllProviders(true)" title="ค้นหาโมเดลฟรีจากทุก provider ที่มี API key">🔄 รีเฟชโมเดลฟรีทั้งหมด</button></div>';
+  box.innerHTML=fileWarn+header+cfg.providers.map(p=>{
+    const modelsStr=typeof p.models==='string'?p.models:(p.models||[]).join(', ');
+    const modelCount=typeof p.models==='string'?p.models.split(',').filter(x=>x.trim()).length:(p.models||[]).length;
+    return `<div class="prov-card">
+    <div class="prov-row"><input value="${esc(p.label)}" placeholder="ชื่อ" oninput="updateProvider('${p.id}','label',this.value)">
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 7px" id="tbtn_${p.id}" onclick="testProvider('${p.id}')" title="ทดสอบการเชื่อมต่อ">🔌</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 7px" id="rbtn_${p.id}" onclick="refreshProviderModels('${p.id}')" title="ดึงเฉพาะโมเดลฟรีจาก API">🔄</button>
+      <button class="prov-del" onclick="removeProvider('${p.id}')" title="ลบ">🗑</button></div>
+    <input value="${esc(p.baseUrl)}" placeholder="Base URL (…/v1)" oninput="updateProvider('${p.id}','baseUrl',this.value)">
+    <input value="${esc(p.apiKey)}" type="password" placeholder="API key" oninput="updateProvider('${p.id}','apiKey',this.value)">
+    <input id="mfield_${p.id}" value="${esc(modelsStr)}" placeholder="โมเดล คั่นด้วยจุลภาค (กด 🔄 เพื่อดึงฟรี)" oninput="updateProvider('${p.id}','models',this.value)">
+    <div id="mstat_${p.id}" style="font-size:10px;color:var(--muted);margin-top:2px">📊 ${modelCount} โมเดลในลิสต์</div>
+  </div>`;}).join('')||'<div style="font-size:12px;color:var(--muted)">— ยังไม่มี —</div>';
+}
+async function testProvider(id){
+  const p=cfg.providers.find(x=>x.id===id);if(!p)return;
+  const btn=document.getElementById('tbtn_'+id);if(!btn)return;
+  const orig=btn.textContent;btn.textContent='⏳';btn.disabled=true;
+  try{
+    const h={'Content-Type':'application/json'};
+    if(p.apiKey)h['Authorization']='Bearer '+p.apiKey;
+    const url=p.baseUrl.replace(/\/$/,'')+'/models';
+    const res=await fetch(url,{headers:h,signal:AbortSignal.timeout(10000)});
+    if(res.ok){
+      const data=await res.json();
+      const count=(data.data||data.models||[]).length;
+      btn.textContent='✅'+count;
+      btn.title='พบ '+count+' โมเดลทั้งหมด (กด 🔄 เพื่อกรองเฉพาะฟรี)';
+    }else{
+      const t=await res.text().catch(()=>'');
+      btn.textContent='❌'+res.status;
+      btn.title='['+p.baseUrl+']\n'+t.slice(0,300);
+    }
+  }catch(e){
+    const isCors=e.message.includes('fetch')||e.message.includes('network')||e.message==='Failed to fetch'||e.name==='TypeError';
+    btn.textContent=isCors?'❌CORS':'❌';
+    btn.title=e.message+(location.protocol==='file:'?'\n(ลอง http://127.0.0.1:11435/ แทน file://)':'');
+  }
+  btn.disabled=false;
+  setTimeout(()=>{btn.textContent='🔌';btn.title='ทดสอบการเชื่อมต่อ';},8000);
+}
+
+/* ---- Auto-fetch free models per provider ---- */
+function _isFreeModel(m,provType){
+  // OpenRouter: pricing.prompt==="0" AND pricing.completion==="0"
+  if(m.pricing&&(m.pricing.prompt!==undefined||m.pricing.completion!==undefined)){
+    const p=parseFloat(m.pricing.prompt||'0');
+    const c=parseFloat(m.pricing.completion||'0');
+    return p===0&&c===0;
+  }
+  // OpenRouter fallback: id has :free suffix
+  const id=(m.id||m.name||'').toLowerCase();
+  if(provType==='openrouter'||id.includes(':free'))return id.includes(':free');
+  // Groq: ทุกโมเดลใน list ฟรี (rate-limited)
+  if(provType==='groq')return true;
+  // Google Gemini: model IDs containing 'flash' or 'exp' หรือ '-002' มักฟรี tier
+  if(provType==='gemini')return /flash|exp|gemini-1\.5/i.test(id)&&!/pro-latest|ultra/i.test(id);
+  // Pollinations: ทุกโมเดลฟรี
+  if(provType==='pollinations')return true;
+  // ไม่ทราบ → ไม่กรอง (คืนทุกตัว)
+  return true;
+}
+function _detectProvType(p){
+  const u=(p.baseUrl||'').toLowerCase();
+  const l=(p.label||'').toLowerCase();
+  if(u.includes('openrouter')||l.includes('openrouter'))return 'openrouter';
+  if(u.includes('groq')||l.includes('groq'))return 'groq';
+  if(u.includes('googleapis')||u.includes('gemini')||l.includes('gemini')||l.includes('google'))return 'gemini';
+  if(u.includes('pollinations')||l.includes('pollinations'))return 'pollinations';
+  if(u.includes('openai.com')||l.includes('openai'))return 'openai';
+  return 'other';
+}
+async function refreshProviderModels(id,silent){
+  const p=cfg.providers.find(x=>x.id===id);if(!p||!p.baseUrl)return {ok:false,count:0};
+  const btn=document.getElementById('rbtn_'+id);
+  const stat=document.getElementById('mstat_'+id);
+  const field=document.getElementById('mfield_'+id);
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(stat)stat.textContent='⏳ กำลังดึงรายการโมเดล…';
+  try{
+    const h={'Content-Type':'application/json'};
+    if(p.apiKey)h['Authorization']='Bearer '+p.apiKey;
+    const url=p.baseUrl.replace(/\/$/,'')+'/models';
+    const res=await fetch(url,{headers:h,signal:AbortSignal.timeout(15000)});
+    if(!res.ok){
+      const msg='HTTP '+res.status;
+      if(btn){btn.textContent='❌';btn.title=msg;}
+      if(stat)stat.textContent='❌ '+msg+(res.status===401?' — API key ผิด/หายไป':'');
+      btn&&(btn.disabled=false);
+      setTimeout(()=>{if(btn){btn.textContent='🔄';btn.title='ดึงเฉพาะโมเดลฟรีจาก API';}},6000);
+      return {ok:false,count:0};
+    }
+    const data=await res.json();
+    const all=data.data||data.models||[];
+    const provType=_detectProvType(p);
+    const free=all.filter(m=>_isFreeModel(m,provType));
+    const ids=free.map(m=>m.id||m.name).filter(Boolean).sort();
+    if(ids.length===0){
+      if(btn){btn.textContent='⚠️';btn.title='ไม่พบโมเดลฟรี (พบทั้งหมด '+all.length+')';}
+      if(stat)stat.textContent='⚠️ ไม่พบโมเดลฟรี (ทั้งหมด '+all.length+' ตัวมีค่าใช้จ่าย)';
+    }else{
+      p.models=ids;
+      if(field)field.value=ids.join(', ');
+      saveCfg();rebuildModelSelect();
+      if(btn){btn.textContent='✅';btn.title='ดึง '+ids.length+' โมเดลฟรี (จากทั้งหมด '+all.length+')';}
+      if(stat)stat.textContent='✅ '+ids.length+' โมเดลฟรี (จาก '+all.length+' ทั้งหมด) — อัปเดตลิสต์แล้ว';
+      if(!silent)logMsg('🔄 '+p.label+': ดึงโมเดลฟรี '+ids.length+'/'+all.length,'ok');
+    }
+    btn&&(btn.disabled=false);
+    setTimeout(()=>{if(btn){btn.textContent='🔄';btn.title='ดึงเฉพาะโมเดลฟรีจาก API';}},6000);
+    return {ok:true,count:ids.length,total:all.length};
+  }catch(e){
+    const isCors=e.message.includes('fetch')||e.message.includes('network')||e.message==='Failed to fetch'||e.name==='TypeError';
+    if(btn){btn.textContent=isCors?'❌CORS':'❌';btn.title=e.message;}
+    if(stat)stat.textContent='❌ '+(isCors?'CORS/Network — provider นี้อาจไม่รองรับเบราว์เซอร์':e.message.slice(0,80));
+    btn&&(btn.disabled=false);
+    setTimeout(()=>{if(btn){btn.textContent='🔄';btn.title='ดึงเฉพาะโมเดลฟรีจาก API';}},6000);
+    return {ok:false,count:0,error:e.message};
+  }
+}
+async function refreshAllProviders(verbose){
+  const eligible=cfg.providers.filter(p=>p.baseUrl&&(p.apiKey||_detectProvType(p)==='pollinations'));
+  if(eligible.length===0){if(verbose)logMsg('ℹ️ ยังไม่มี provider ที่มี API key','info');return;}
+  if(verbose)logMsg('🔄 กำลังดึงโมเดลฟรีจาก '+eligible.length+' provider…','info');
+  const results=await Promise.all(eligible.map(p=>refreshProviderModels(p.id,true).catch(e=>({ok:false,error:e.message}))));
+  const totalFree=results.filter(r=>r&&r.ok).reduce((s,r)=>s+r.count,0);
+  const okCount=results.filter(r=>r&&r.ok).length;
+  if(verbose)logMsg('✅ เสร็จ · '+okCount+'/'+eligible.length+' provider · รวม '+totalFree+' โมเดลฟรี','ok');
+  else logMsg('🔄 Auto-refresh: '+totalFree+' โมเดลฟรี จาก '+okCount+' provider','info');
+}
+
+/* ---------- Export / Import ---------- */
+function exportChats(){
+  const blob=new Blob([JSON.stringify({convs,cfg,exported:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='localai-chats-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  logMsg('⬇ Export ประวัติแชท '+convs.length+' ห้อง','ok');
+}
+function importChats(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(d.convs){if(confirm('รวมกับแชทเดิม? (ยกเลิก=แทนที่ทั้งหมด)')){convs=d.convs.concat(convs);}else{convs=d.convs;}
+      activeId=convs[0]?.id||null;saveConvs();renderConvList();renderMessages();alert('นำเข้าสำเร็จ');}
+  }catch(e){alert('ไฟล์ไม่ถูกต้อง');}};
+  r.readAsText(f);ev.target.value='';
+}
+
+/* ---------- Theme & UI ---------- */
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',cur);
+  document.getElementById('themeBtn').textContent=cur==='dark'?'☀':'🌙';
+  save(LS_THEME,cur);
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('hidden');}
+
+/* ---------- Attachments: files, images, pdf, excel ---------- */
+function onFilePick(ev){for(const f of ev.target.files)handleFile(f);ev.target.value='';}
+function onPaste(ev){
+  const items=ev.clipboardData?.items||[];
+  for(const it of items){if(it.type.startsWith('image/')){const f=it.getAsFile();if(f){handleFile(f);ev.preventDefault();}}}
+}
+async function handleFile(f){
+  const ext=(f.name.split('.').pop()||'').toLowerCase();
+  try{
+    if(f.type.startsWith('image/')){
+      const b64=await fileToDataURL(f);
+      attachments.push({kind:'image',name:f.name,dataB64:b64.split(',')[1],thumb:b64});
+      logMsg('📎 แนบรูป: '+f.name,'info');
+    }else if(ext==='pdf'){
+      logMsg('📄 กำลังดึงข้อความจาก PDF: '+f.name+' …','info');
+      const text=await extractPDF(f);
+      attachments.push({kind:'text',name:f.name,text});
+      logMsg(`📄 ดึง PDF สำเร็จ: ${f.name} (${text.length} ตัวอักษร)`,'ok');
+    }else if(ext==='xlsx'||ext==='xls'){
+      const text=await extractExcel(f);
+      attachments.push({kind:'text',name:f.name,text});
+      logMsg('📊 ดึง Excel สำเร็จ: '+f.name,'ok');
+    }else{ // csv/txt/md/json/log
+      const text=await f.text();
+      attachments.push({kind:'text',name:f.name,text});
+      logMsg('📄 แนบไฟล์ข้อความ: '+f.name,'info');
+    }
+  }catch(e){logMsg('✖ อ่านไฟล์ไม่ได้: '+f.name+' — '+e.message,'err');alert('อ่านไฟล์ไม่ได้: '+f.name);}
+  renderAttachBar();
+}
+function fileToDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});}
+async function extractPDF(f){
+  if(!window.pdfjsLib)throw new Error('pdf.js ไม่ได้โหลด (ตรวจ lib/pdf.min.js)');
+  const buf=await f.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  let out=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const c=await page.getTextContent();
+    out.push(`[หน้า ${p}]\n`+c.items.map(i=>i.str).join(' '));
+  }
+  return out.join('\n\n');
+}
+async function extractExcel(f){
+  if(!window.XLSX)throw new Error('SheetJS ไม่ได้โหลด (ตรวจ lib/xlsx.full.min.js)');
+  const buf=await f.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  let out=[];
+  wb.SheetNames.forEach(n=>{
+    const csv=XLSX.utils.sheet_to_csv(wb.Sheets[n]);
+    out.push(`[ชีท: ${n}]\n`+csv);
+  });
+  return out.join('\n\n');
+}
+function renderAttachBar(){
+  const bar=document.getElementById('attachBar');
+  bar.innerHTML=attachments.map((a,i)=>{
+    const inner=a.kind==='image'?`<img src="${a.thumb}">`:`<span>📄</span>`;
+    return `<div class="attach-chip">${inner}<span class="nm">${esc(a.name)}</span><button class="rm" onclick="removeAttach(${i})">×</button></div>`;
+  }).join('');
+}
+function removeAttach(i){attachments.splice(i,1);renderAttachBar();}
+// drag & drop onto messages area
+(function initDnD(){
+  const zone=document.getElementById('messages');
+  ['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();zone.classList.add('drag-over');}));
+  ['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();if(ev!=='dragleave'||e.target===zone)zone.classList.remove('drag-over');}));
+  document.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');const fs=e.dataTransfer?.files;if(fs)for(const f of fs)handleFile(f);});
+})();
+
+/* ---------- Voice input (Web Speech, ต้องต่อเน็ต) ---------- */
+async function toggleVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('เบราว์เซอร์นี้ไม่รองรับการพูดเป็นข้อความ (ลอง Chrome/Edge)');return;}
+  if(listening){recognition.stop();return;}
+  if(!navigator.onLine)logMsg('🎤 ⚠️ ดูเหมือนออฟไลน์ — Web Speech ต้องต่อเน็ต','warn');
+  // 1) บังคับขอสิทธิ์ไมค์ + ยืนยันว่าจับเสียงได้จริง (จุดที่ Chrome มักติด)
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const track=stream.getAudioTracks()[0];
+    logMsg('🎤 ไมค์พร้อม: '+(track?track.label||'(default)':'ไม่พบ track')+' | state='+(track?track.readyState:'-'),'ok');
+    stream.getTracks().forEach(t=>t.stop()); // ปล่อยให้ recognition เปิดเอง
+  }catch(err){
+    logMsg('🎤 ✖ เข้าถึงไมค์ไม่ได้: '+err.name+' — '+(err.message||''),'err');
+    alert('Chrome เข้าถึงไมค์ไม่ได้ ('+err.name+')\n\nแก้ไข:\n1) กดไอคอน 🔒/🎤 ซ้ายแถบที่อยู่ → Site settings → Microphone → Allow\n2) chrome://settings/content/microphone → ตรวจอุปกรณ์ default ให้ถูกตัว\n3) Windows: Settings → Privacy → Microphone → เปิดให้ Chrome');
+    return;
+  }
+  // 2) เริ่มรู้จำเสียง
+  recognition=new SR();
+  recognition.lang='th-TH';recognition.interimResults=true;recognition.continuous=true;recognition.maxAlternatives=1;
+  const inp=document.getElementById('input');const base=inp.value;
+  recognition.onstart=()=>{listening=true;document.getElementById('micBtn').classList.add('active');logMsg('🎤 เริ่มฟัง… พูดได้เลย','req');};
+  recognition.onaudiostart=()=>logMsg('🎤 รับสัญญาณเสียงจากไมค์แล้ว','info');
+  recognition.onspeechstart=()=>logMsg('🎤 ตรวจพบเสียงพูด','ok');
+  recognition.onspeechend=()=>logMsg('🎤 เสียงพูดจบ','info');
+  recognition.onnomatch=()=>logMsg('🎤 ⚠️ ได้ยินเสียงแต่แปลงเป็นข้อความไม่ได้ (ลองพูดชัดขึ้น/ใกล้ไมค์)','warn');
+  recognition.onresult=e=>{let txt='';for(let i=0;i<e.results.length;i++)txt+=e.results[i][0].transcript;inp.value=(base?base+' ':'')+txt;autoGrow(inp);logMsg('🎤 ได้ข้อความ: '+txt.slice(0,40),'ok');};
+  recognition.onerror=e=>{
+    const m={'no-speech':'ไม่ได้ยินเสียงพูด — พูดดังขึ้น/เข้าใกล้ไมค์',
+      'not-allowed':'ไม่ได้อนุญาตให้ใช้ไมค์ — กดอนุญาตที่แถบที่อยู่',
+      'service-not-allowed':'บริการเสียงถูกปิด — เปิดสิทธิ์ไมค์ใน Windows',
+      'audio-capture':'ไม่พบไมโครโฟน — เสียบ/เลือกไมค์ให้ถูก',
+      'network':'ต้องต่อเน็ต (Web Speech ใช้เซิร์ฟเวอร์ออนไลน์ของ Google)',
+      'language-not-supported':'ภาษาไทยไม่รองรับในเบราว์เซอร์นี้'}[e.error]||e.error;
+    logMsg('🎤 ✖ '+e.error+': '+m,'err');
+  };
+  recognition.onend=()=>{listening=false;document.getElementById('micBtn').classList.remove('active');logMsg('🎤 หยุดฟังเสียง','info');};
+  recognition.start();
+}
+
+/* ---------- Text-to-Speech (อ่านออกเสียงไทย, offline) ---------- */
+function pickVoice(){
+  const voices=speechSynthesis.getVoices();
+  if(cfg.voice){const v=voices.find(x=>x.name===cfg.voice);if(v)return v;}
+  // auto: ค่าเริ่มต้น = เปรมวดี (หญิงไทย) -> เสียงไทยอื่น -> null
+  return voices.find(v=>/premwadee|เปรมวดี/i.test(v.name))
+      || voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('th'))
+      || null;
+}
+function setVoiceByName(part,label){
+  const v=speechSynthesis.getVoices().find(x=>new RegExp(part,'i').test(x.name));
+  if(!v){alert('ไม่พบเสียง '+(label||part)+' ในเครื่อง\n\nติดตั้งเสียงไทยได้ที่:\nSettings → Time & language → Speech → Manage voices → Add → Thai');return;}
+  cfg.voice=v.name;saveCfg();
+  const sel=document.getElementById('setVoice');if(sel)sel.value=v.name;
+  speak('สวัสดีครับ ลุงพี นี่คือเสียง'+(label||part));
+  logMsg('🔊 ตั้งเสียงเริ่มต้น → '+v.name,'ok');
+}
+let ttsAudio=null;
+let ttsGen=0;
+function neuralRate(){const p=Math.round(((cfg.voiceRate||1)-1)*100);return (p>=0?'+':'')+p+'%';}
+
+/* ---- Streaming TTS: อ่านประโยคต่อประโยคขณะ AI ยังพิมพ์อยู่ (ลดดีเลย์จาก 3-5s เหลือ <1s) ---- */
+let ttsStream={active:false,buffer:'',gen:0,queue:[],playing:false,pending:0,startedAt:0,sentCount:0};
+function cleanTextForTTS(t){
+  return String(t||'')
+    .replace(/```[\s\S]*?```/g,' ')                        // fenced code
+    .replace(/`[^`]+`/g,' ')                               // inline code
+    .replace(/!\[[^\]]*\]\([^)]+\)/g,' ')                  // images
+    .replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')                // links → text
+    .replace(/[*_~|#>]+/g,' ')                             // markdown syntax
+    .replace(/^\s*[-•]\s+/gm,'')                           // bullet markers
+    .replace(/&(nbsp|amp|lt|gt|quot|#39);/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function ttsStreamStart(){
+  stopSpeak();
+  ttsStream={active:true,buffer:'',gen:++ttsGen,queue:[],playing:false,pending:0,startedAt:performance.now(),sentCount:0};
+  const stopBtn=document.getElementById('ttsStop');if(stopBtn)stopBtn.classList.add('show');
+  logMsg('🔊 Streaming TTS เริ่ม (อ่านพร้อม AI พิมพ์)','info');
+}
+function ttsStreamAdd(chunk){
+  if(!ttsStream.active)return;
+  ttsStream.buffer+=chunk;
+  // ตัด code fence ที่ยังไม่ปิดออก (อย่าอ่านโค้ด)
+  const fenceOpen=(ttsStream.buffer.match(/```/g)||[]).length%2===1;
+  if(fenceOpen)return;   // รอ fence ปิดก่อน
+  // แยกตามจุดจบประโยค ไทย/อังกฤษ/ขึ้นบรรทัดใหม่
+  const re=/[.!?。！？\n]/g;let m,lastEnd=0;
+  while((m=re.exec(ttsStream.buffer))!==null)lastEnd=m.index+1;
+  if(lastEnd===0)return;   // ยังไม่จบประโยค
+  // ประโยคแรกๆ ส่งเร็วกว่า (10 chars) เพื่อลด perceived latency
+  const minLen=ttsStream.sentCount===0?8:25;
+  if(lastEnd<minLen)return;
+  const chunk_=ttsStream.buffer.slice(0,lastEnd);
+  ttsStream.buffer=ttsStream.buffer.slice(lastEnd);
+  const clean=cleanTextForTTS(chunk_);
+  if(clean.length<3)return;
+  ttsStream.sentCount++;
+  ttsStreamFetch(clean);
+}
+async function ttsStreamFetch(text){
+  const myGen=ttsStream.gen;
+  ttsStream.pending++;
+  try{
+    const url=cfg.ttsUrl.replace(/\/$/,'')+'/tts?voice='+encodeURIComponent(cfg.neuralVoice||'th-TH-PremwadeeNeural')+'&rate='+encodeURIComponent(neuralRate())+'&text='+encodeURIComponent(text);
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const blob=await res.blob();
+    if(myGen!==ttsStream.gen){ttsStream.pending--;return;}
+    ttsStream.queue.push(blob);
+    if(ttsStream.sentCount===1)logMsg(`🔊 TTS พร้อมเล่นประโยคแรก (${((performance.now()-ttsStream.startedAt)/1000).toFixed(1)}s)`,'ok');
+    ttsStreamPlayNext();
+  }catch(e){logMsg('✖ TTS chunk: '+e.message,'err');}
+  finally{ttsStream.pending--;}
+}
+function ttsStreamPlayNext(){
+  if(ttsStream.playing||!ttsStream.queue.length)return;
+  const myGen=ttsStream.gen;
+  const blob=ttsStream.queue.shift();
+  const burl=URL.createObjectURL(blob);
+  const audio=new Audio(burl);
+  ttsStream.playing=true;ttsAudio=audio;
+  const cleanup=()=>{try{URL.revokeObjectURL(burl);}catch(e){}
+    if(myGen!==ttsStream.gen)return;
+    ttsStream.playing=false;ttsAudio=null;
+    if(ttsStream.queue.length)ttsStreamPlayNext();
+    else if(!ttsStream.active&&ttsStream.pending===0){
+      const stopBtn=document.getElementById('ttsStop');if(stopBtn)stopBtn.classList.remove('show');
+    }
+  };
+  audio.onended=cleanup;audio.onerror=cleanup;
+  audio.play().catch(e=>{cleanup();});
+}
+function ttsStreamEnd(){
+  if(!ttsStream.active)return;
+  // Flush buffer สุดท้าย
+  const rest=cleanTextForTTS(ttsStream.buffer);
+  ttsStream.buffer='';
+  if(rest.length>=2){ttsStream.sentCount++;ttsStreamFetch(rest);}
+  ttsStream.active=false;
+}
+
+async function speakNeural(text,btn){
+  const stopBtn=document.getElementById('ttsStop');
+  stopSpeak();
+  const myGen=++ttsGen;   // กันการเรียกซ้อน
+  const voice=cfg.neuralVoice||'th-TH-PremwadeeNeural';
+  const url=cfg.ttsUrl.replace(/\/$/,'')+'/tts?voice='+encodeURIComponent(voice)+'&rate='+encodeURIComponent(neuralRate())+'&text='+encodeURIComponent(text);
+  if(btn)btn.classList.add('speaking');if(stopBtn)stopBtn.classList.add('show');
+  logMsg('🔊 เสียง Neural ('+voice.replace('th-TH-','').replace('Neural','')+')…','info');
+  try{
+    const res=await fetch(url);                 // ดึงเสียงเป็น blob ก่อน (error แม่นยำ)
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const blob=await res.blob();
+    if(myGen!==ttsGen){return;}                 // ถ้ามีการกดใหม่/หยุดระหว่างโหลด → ทิ้ง
+    const burl=URL.createObjectURL(blob);
+    const cleanup=()=>{if(btn)btn.classList.remove('speaking');if(stopBtn)stopBtn.classList.remove('show');try{URL.revokeObjectURL(burl);}catch(e){}if(ttsAudio&&ttsAudio.src===burl)ttsAudio=null;};
+    ttsAudio=new Audio(burl);
+    ttsAudio.onended=cleanup; ttsAudio.onerror=cleanup;
+    try{ await ttsAudio.play(); }catch(e){ /* ข้าม race play()/pause() ที่ไม่เป็นอันตราย */ }
+  }catch(e){
+    if(myGen===ttsGen){if(btn)btn.classList.remove('speaking');if(stopBtn)stopBtn.classList.remove('show');ttsAudio=null;
+      logMsg('✖ เสียง Neural ไม่ได้: '+e.message,'err');
+      alert('เสียง Neural ใช้ไม่ได้ — ตรวจว่า TTS server ทำงาน (เปิดผ่าน lung_pee.bat) และต่อเน็ตอยู่\n\n'+e.message);}
+  }
+}
+function speak(text,btn){
+  if(cfg.ttsEngine==='neural')return speakNeural(text,btn);
+  if(!('speechSynthesis'in window)){alert('เบราว์เซอร์ไม่รองรับการอ่านออกเสียง');return;}
+  if(speechSynthesis.speaking){speechSynthesis.cancel();if(btn&&btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}}
+  const u=new SpeechSynthesisUtterance(text);
+  const v=pickVoice();
+  if(v){u.voice=v;u.lang=v.lang;}else u.lang='th-TH';
+  u.rate=cfg.voiceRate||1;
+  const stopBtn=document.getElementById('ttsStop');
+  u.onstart=()=>{if(btn)btn.classList.add('speaking');if(stopBtn)stopBtn.classList.add('show');};
+  u.onend=u.onerror=()=>{if(btn)btn.classList.remove('speaking');if(stopBtn)stopBtn.classList.remove('show');};
+  speechSynthesis.speak(u);
+  if(stopBtn)stopBtn.classList.add('show');
+  logMsg('🔊 อ่านออกเสียง'+(v?' ('+v.name+')':' (ไม่พบเสียงไทย — ใช้เสียงเริ่มต้น)'),'info');
+}
+function stopSpeak(){
+  ttsGen++;   // ยกเลิกงาน Neural ที่กำลังโหลดค้าง
+  if(ttsStream)ttsStream.active=false,ttsStream.queue.length=0,ttsStream.playing=false;   // stop streaming TTS
+  if('speechSynthesis'in window)speechSynthesis.cancel();
+  if(ttsAudio){try{ttsAudio.pause();}catch(e){}ttsAudio=null;}
+  const sb=document.getElementById('ttsStop');if(sb)sb.classList.remove('show');
+  document.querySelectorAll('.read-btn.speaking').forEach(b=>b.classList.remove('speaking'));
+}
+function populateVoices(){
+  const sel=document.getElementById('setVoice');if(!sel)return;
+  const voices=speechSynthesis.getVoices();
+  const cur=cfg.voice;
+  sel.innerHTML='<option value="">อัตโนมัติ (เลือกเสียงไทยถ้ามี)</option>'+
+    voices.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} — ${esc(v.lang)}${v.lang.toLowerCase().startsWith('th')?' 🇹🇭':''}</option>`).join('');
+  if(cur&&voices.some(v=>v.name===cur))sel.value=cur;
+}
+function onEngineChange(){
+  const eng=document.getElementById('setTtsEngine').value;
+  document.getElementById('neuralRow').style.display=eng==='neural'?'block':'none';
+  const lf=document.getElementById('localVoiceField');if(lf)lf.style.display=eng==='neural'?'none':'block';
+}
+function testVoice(){
+  cfg.ttsEngine=document.getElementById('setTtsEngine').value;
+  cfg.neuralVoice=document.getElementById('setNeuralVoice').value;
+  cfg.voice=document.getElementById('setVoice').value;
+  cfg.voiceRate=parseFloat(document.getElementById('setVoiceRate').value);
+  speak('สวัสดีครับ ลุงพี นี่คือเสียงทดสอบการอ่านออกเสียง');
+}
+function readMsg(idx,btn){speak(activeConv().messages[idx].content,btn);}
+async function saveMsgToKB(idx){
+  const m=activeConv().messages[idx];if(!m)return;
+  if(!idb){alert('คลังยังไม่พร้อม');return;}
+  try{await kbAddText(m.content,'จากแชท: '+(activeConv().title||''));alert('บันทึกเข้าคลังความรู้แล้ว — โมเดลจะดึงมาใช้เมื่อเปิด RAG 🧠');}
+  catch(e){alert('บันทึกไม่ได้: '+e.message+'\n(ต้องมีโมเดล bge-m3 และ Ollama ทำงานอยู่)');}
+}
+// เรียกโมเดลแบบไม่สตรีม (สำหรับให้โมเดลตัดสินใจ/สรุป)
+async function askModelOnce(messages,opts){
+  const res=await fetch(cfg.apiUrl.replace(/\/$/,'')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(Object.assign({model:document.getElementById('modelSelect').value,messages,stream:false,keep_alive:'30m',options:Object.assign({temperature:0.2,num_ctx:+cfg.ctx},opts||{})},thinkOpt(document.getElementById('modelSelect').value)))});
+  if(!res.ok){const t=await res.text().catch(()=>'');throw new Error('HTTP '+res.status+' — '+(t.replace(/[{}"]/g,'').slice(0,200)||'no detail'));}
+  const d=await res.json();return d.message?.content||'';
+}
+// 👍 ผู้ใช้บอกว่ามีประโยชน์ -> ให้โมเดลพิจารณาเองว่าควรจำเข้าคลังไหม
+async function thumbUp(idx,btn){
+  const c=activeConv();const m=c.messages[idx];if(!m)return;
+  m.liked=true;saveConvs();
+  if(btn){btn.textContent='👍 ชอบแล้ว';}
+  if(!idb){logMsg('👍 บันทึก feedback (คลังยังไม่พร้อม)','info');return;}
+  // หา user prompt ก่อนหน้า
+  let q='';for(let i=idx-1;i>=0;i--){if(c.messages[i].role==='user'){q=c.messages[i].content;break;}}
+  logMsg('👍 ผู้ใช้ชอบคำตอบ — ให้โมเดลพิจารณาเก็บเข้าคลัง…','req');
+  if(btn)btn.textContent='👍 กำลังพิจารณา…';
+  try{
+    const judge=await askModelOnce([
+      {role:'system',content:'คุณเป็นตัวช่วยคัดกรองความรู้เข้าคลังระยะยาว เก็บเฉพาะ "ความรู้ที่นำกลับมาใช้ได้" เช่น ข้อเท็จจริง สูตร ตรรกะ ขั้นตอน วิธีแก้ปัญหา skill ใหม่ — ไม่เก็บบทสนทนาทั่วไป คำทักทาย หรือข้อมูลชั่วคราว ตอบเป็น JSON เท่านั้น'},
+      {role:'user',content:`คำถาม: ${q}\n\nคำตอบ: ${m.content}\n\nควรเก็บความรู้นี้เข้าคลังระยะยาวไหม? ถ้าควร ให้สรุปเป็นบันทึกความรู้กระชับพร้อมใช้ ตอบ JSON: {"keep": true/false, "note": "บันทึกความรู้กระชับ (ถ้า keep=true)", "reason": "เหตุผลสั้นๆ"}`}
+    ]);
+    let obj=null;try{obj=JSON.parse(judge.match(/\{[\s\S]*\}/)[0]);}catch(e){}
+    if(obj&&obj.keep&&obj.note){
+      await kbAddText(obj.note,'👍 '+(c.title||'')+' ('+new Date().toLocaleDateString('th-TH')+')');
+      if(btn)btn.textContent='👍 จำแล้ว ✓';
+      logMsg('🧠 โมเดลตัดสินใจเก็บเข้าคลัง: '+(obj.reason||''),'ok');
+    }else{
+      if(btn)btn.textContent='👍 ขอบคุณ';
+      logMsg('🧠 โมเดลพิจารณาว่าไม่ต้องเก็บ: '+((obj&&obj.reason)||'เป็นบทสนทนาทั่วไป'),'info');
+    }
+  }catch(e){
+    if(btn)btn.textContent='👍 ชอบแล้ว';
+    logMsg('👍 บันทึกความชอบแล้ว (พิจารณาเข้าคลังไม่ได้: '+e.message+')','warn');
+  }
+}
+
+/* ---------- Selection floating toolbar ---------- */
+let selText='';
+document.addEventListener('mouseup',e=>{
+  if(e.target.closest('#selBar'))return;
+  setTimeout(()=>{
+    const s=window.getSelection();const t=s?s.toString().trim():'';
+    const bar=document.getElementById('selBar');
+    if(t&&t.length>0&&e.target.closest('.content')){
+      selText=t;
+      const r=s.getRangeAt(0).getBoundingClientRect();
+      bar.style.left=Math.max(8,Math.min(r.left,window.innerWidth-330))+'px';
+      bar.style.top=(r.top-46>8?r.top-46:r.bottom+8)+'px';
+      bar.classList.add('show');
+    }else{bar.classList.remove('show');}
+  },10);
+});
+document.addEventListener('mousedown',e=>{if(!e.target.closest('#selBar'))document.getElementById('selBar').classList.remove('show');});
+function selRead(){speak(selText);}
+function selCopy(){navigator.clipboard.writeText(selText);document.getElementById('selBar').classList.remove('show');logMsg('⧉ คัดลอกข้อความที่เลือก','info');}
+function selSend(){const inp=document.getElementById('input');inp.value=selText;autoGrow(inp);inp.focus();document.getElementById('selBar').classList.remove('show');}
+function selTranslate(){
+  const t=selText;document.getElementById('selBar').classList.remove('show');
+  if(!activeConv())newChat();
+  const c=activeConv();
+  c.messages.push({role:'user',content:'แปลข้อความต่อไปนี้เป็นภาษาไทย (ถ้าเป็นไทยอยู่แล้วให้แปลเป็นอังกฤษ) ตอบเฉพาะคำแปล:\n\n'+t});
+  if(c.title==='แชทใหม่')c.title='แปล: '+t.slice(0,30);
+  saveConvs();renderConvList();renderMessages();streamReply();
+}
+
+/* ============================================================
+   RAG Knowledge base + Drive access + Auto-backup
+   ============================================================ */
+let idb=null;
+function openIDB(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open('localai',1);
+    rq.onupgradeneeded=e=>{const d=e.target.result;
+      if(!d.objectStoreNames.contains('kb'))d.createObjectStore('kb',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'});
+    };
+    rq.onsuccess=e=>{idb=e.target.result;res(idb);};
+    rq.onerror=e=>rej(e);
+  });
+}
+function idbAll(store){return new Promise((res,rej)=>{const t=idb.transaction(store,'readonly').objectStore(store).getAll();t.onsuccess=()=>res(t.result);t.onerror=rej;});}
+function idbPut(store,val){return new Promise((res,rej)=>{const t=idb.transaction(store,'readwrite').objectStore(store).put(val);t.onsuccess=()=>res();t.onerror=rej;});}
+function idbGet(store,k){return new Promise((res,rej)=>{const t=idb.transaction(store,'readonly').objectStore(store).get(k);t.onsuccess=()=>res(t.result);t.onerror=rej;});}
+function idbClear(store){return new Promise((res,rej)=>{const t=idb.transaction(store,'readwrite').objectStore(store).clear();t.onsuccess=()=>res();t.onerror=rej;});}
+
+/* ---- Embeddings via Ollama (bge-m3) ---- */
+// บังคับ embedding รันบน CPU (num_gpu:0) — กัน bge-m3 แย่งที่โมเดลแชทใน VRAM (การ์ด 4GB ใส่พร้อมกันไม่พอ)
+// เดิมรัน GPU ร่วมกับโมเดลแชท ทำให้ Ollama ต้อง evict สลับเข้า-ออกทุกครั้งที่เปิด RAG (~5-10s ต่อรอบ วัดจริงบนเครื่องนี้ ช้ากว่านั้นมากถ้าโมเดลอยู่บน HDD)
+async function embed(text){
+  const base=cfg.apiUrl.replace(/\/$/,'');
+  const res=await fetch(base+'/api/embeddings',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:cfg.embModel,prompt:text,options:{num_gpu:0}})});
+  if(!res.ok)throw new Error('embeddings HTTP '+res.status+' (มีโมเดล '+cfg.embModel+' ไหม? ollama pull bge-m3)');
+  const d=await res.json();
+  if(!d.embedding)throw new Error('ไม่ได้ค่า embedding');
+  return d.embedding;
+}
+function chunkText(t){
+  const paras=t.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+  const out=[];let cur='';
+  for(const p of paras){
+    if((cur+'\n\n'+p).length>800){if(cur)out.push(cur);cur=p;}
+    else cur=cur?cur+'\n\n'+p:p;
+  }
+  if(cur)out.push(cur);
+  return out.length?out:[t.slice(0,800)];
+}
+async function kbAddText(text,source){
+  const chunks=chunkText(text);let n=0;
+  for(const ch of chunks){
+    try{const vec=await embed(ch);
+      await idbPut('kb',{id:uid(),text:ch,source:source||'ผู้ใช้',vec,ts:Date.now()});n++;
+    }catch(e){logMsg('✖ ฝังความรู้ไม่ได้: '+e.message,'err');throw e;}
+  }
+  await kbRefreshCount();logMsg(`🧠 เพิ่มความรู้ ${n} ชิ้น (${source||'ผู้ใช้'})`,'ok');
+  return n;
+}
+function cosine(a,b){let d=0,na=0,nb=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9);}
+// ค้นจาก RAG backend (rag_server.py) — auto-index โฟลเดอร์ knowledge + cache
+// คืน array ผลลัพธ์ถ้า server ตอบ · คืน null ถ้าต่อไม่ได้ (ให้ fallback ไป IndexedDB)
+async function kbServerSearch(query,k){
+  const url=(cfg.kbServer||'').replace(/\/$/,'');
+  if(!url)return null;
+  try{
+    const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),20000);
+    const r=await fetch(`${url}/kb/search?q=${encodeURIComponent(query)}&k=${k||cfg.topK}`,{signal:ctl.signal});
+    clearTimeout(t);
+    if(!r.ok)return null;
+    const d=await r.json();
+    return Array.isArray(d.hits)?d.hits:null;
+  }catch(e){return null;}
+}
+async function kbSearch(query,k){
+  const all=await idbAll('kb');if(!all.length)return [];
+  const qv=await embed(query);
+  return all.map(r=>({...r,score:cosine(qv,r.vec)})).sort((a,b)=>b.score-a.score).slice(0,k||cfg.topK);
+}
+async function kbRefreshCount(){
+  if(!idb)return;const all=await idbAll('kb');
+  const n=all.length;
+  const b=document.getElementById('kbCountBadge');if(b)b.textContent=n;
+  const s=document.getElementById('kbStat');if(s)s.textContent=`มี ${n} ชิ้นความรู้ในคลัง`;
+}
+async function kbAddFromInput(){
+  const t=document.getElementById('kbInput').value.trim();if(!t){alert('พิมพ์ความรู้ก่อน');return;}
+  const src=document.getElementById('kbSource').value.trim();
+  try{await kbAddText(t,src);document.getElementById('kbInput').value='';document.getElementById('kbSource').value='';}
+  catch(e){alert('เพิ่มไม่ได้: '+e.message);}
+}
+async function kbImportFiles(ev){
+  for(const f of ev.target.files){
+    try{let text;const ext=(f.name.split('.').pop()||'').toLowerCase();
+      if(ext==='pdf')text=await extractPDF(f);else text=await f.text();
+      await kbAddText(text,f.name);
+    }catch(e){logMsg('✖ นำเข้า KB ไม่ได้: '+f.name,'err');}
+  }
+  ev.target.value='';
+}
+async function kbClear(){if(!confirm('ล้างคลังความรู้ทั้งหมด?'))return;await idbClear('kb');await kbRefreshCount();logMsg('🧠 ล้างคลังความรู้แล้ว','warn');}
+async function kbSaveIndex(){
+  const all=await idbAll('kb');
+  const blob=new Blob([JSON.stringify({kb:all,saved:new Date().toISOString()})],{type:'application/json'});
+  if(dirHandle){try{const fh=await dirHandle.getFileHandle('knowledge-index.json',{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();logMsg('💾 บันทึกดัชนีลงโฟลเดอร์ไดรฟ์แล้ว','ok');alert('บันทึก knowledge-index.json ลงโฟลเดอร์ที่เลือกแล้ว');return;}catch(e){}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='knowledge-index.json';a.click();
+  logMsg('💾 ดาวน์โหลดดัชนีความรู้','ok');
+}
+async function kbLoadFolder(){
+  if(!dirHandle){await pickFolder();if(!dirHandle)return;}
+  // ถ้ามี knowledge-index.json ให้โหลดกลับ ไม่งั้น index ไฟล์ข้อความในโฟลเดอร์
+  try{const fh=await dirHandle.getFileHandle('knowledge-index.json');const f=await fh.getFile();const d=JSON.parse(await f.text());
+    for(const r of d.kb)await idbPut('kb',r);await kbRefreshCount();logMsg('🧠 โหลดดัชนีความรู้จากไฟล์ '+d.kb.length+' ชิ้น','ok');alert('โหลดดัชนีเดิมกลับมาแล้ว');return;
+  }catch(e){/* ไม่มีไฟล์ index — index ไฟล์เอง */}
+  let cnt=0;
+  for await(const [name,h] of dirHandle.entries()){
+    if(h.kind!=='file')continue;const ext=name.split('.').pop().toLowerCase();
+    if(!['txt','md','csv','json','log'].includes(ext))continue;
+    try{const f=await h.getFile();await kbAddText(await f.text(),name);cnt++;}catch(e){}
+  }
+  alert('ฝังความรู้จากไฟล์ในโฟลเดอร์ '+cnt+' ไฟล์');
+}
+function toggleRag(){
+  cfg.ragOn=!cfg.ragOn;saveCfg();
+  document.getElementById('ragBtn').classList.toggle('active',cfg.ragOn);
+  logMsg('🧠 คลังความรู้ (RAG): '+(cfg.ragOn?'เปิด':'ปิด'),'info');
+}
+function openKB(){document.getElementById('kbOverlay').classList.add('show');kbRefreshCount();}
+function closeKB(){document.getElementById('kbOverlay').classList.remove('show');}
+
+/* ---- Drive access (File System Access API) ---- */
+let dirHandle=null;
+async function pickFolder(){
+  if(!window.showDirectoryPicker){alert('เบราว์เซอร์นี้ไม่รองรับ (ใช้ Chrome/Edge)');return;}
+  try{dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+    await idbPut('meta',{k:'dirHandle',v:dirHandle});
+    logMsg('📁 เลือกโฟลเดอร์: '+dirHandle.name,'ok');listFolder();
+  }catch(e){if(e.name!=='AbortError')logMsg('📁 เลือกโฟลเดอร์ไม่ได้: '+e.message,'err');}
+}
+async function ensurePerm(h){try{const o={mode:'readwrite'};if(await h.queryPermission(o)==='granted')return true;return await h.requestPermission(o)==='granted';}catch(e){return false;}}
+async function listFolder(){
+  const path=document.getElementById('drivePath'),list=document.getElementById('driveList');
+  if(!dirHandle){path.textContent='ยังไม่ได้เลือกโฟลเดอร์';return;}
+  if(!await ensurePerm(dirHandle)){path.textContent='ไม่ได้รับสิทธิ์เข้าถึง';return;}
+  path.textContent='📂 '+dirHandle.name;list.innerHTML='';
+  const items=[];
+  try{for await(const [name,h] of dirHandle.entries())items.push([name,h]);}catch(e){path.textContent='อ่านโฟลเดอร์ไม่ได้: '+e.message;return;}
+  items.sort((a,b)=>a[0].localeCompare(b[0]));
+  for(const [name,h] of items){
+    const icon=h.kind==='directory'?'📁':'📄';
+    let sz='';if(h.kind==='file'){try{const f=await h.getFile();sz=(f.size/1024).toFixed(0)+' KB';}catch(e){}}
+    const div=document.createElement('div');div.className='drive-item';
+    div.innerHTML=`<span>${icon}</span><span class="nm">${esc(name)}</span><span class="sz">${sz}</span>`;
+    if(h.kind==='file')div.onclick=()=>openDriveFile(h,name);
+    list.appendChild(div);
+  }
+  logMsg('📁 แสดงไฟล์ในโฟลเดอร์ '+items.length+' รายการ','info');
+}
+async function openDriveFile(h,name){
+  try{const f=await h.getFile();await handleFile(f);closeDrive();logMsg('📎 เปิดไฟล์จากไดรฟ์: '+name,'ok');}
+  catch(e){alert('เปิดไฟล์ไม่ได้: '+e.message);}
+}
+function openDrive(){document.getElementById('driveOverlay').classList.add('show');document.getElementById('autoBackup').checked=cfg.autoBackup;if(dirHandle)listFolder();}
+function closeDrive(){document.getElementById('driveOverlay').classList.remove('show');}
+function toggleBackup(){cfg.autoBackup=document.getElementById('autoBackup').checked;saveCfg();if(cfg.autoBackup&&!dirHandle)pickFolder();logMsg('💾 สำรองแชทอัตโนมัติ: '+(cfg.autoBackup?'เปิด':'ปิด'),'info');}
+let backupTimer=null;
+function scheduleBackup(){
+  if(!cfg.autoBackup||!dirHandle)return;
+  clearTimeout(backupTimer);
+  backupTimer=setTimeout(async()=>{
+    try{if(!await ensurePerm(dirHandle))return;
+      const fh=await dirHandle.getFileHandle('chats-backup.json',{create:true});
+      const w=await fh.createWritable();await w.write(JSON.stringify({convs,saved:new Date().toISOString()},null,2));await w.close();
+      logMsg('💾 สำรองประวัติแชทลงไดรฟ์แล้ว','ok');
+    }catch(e){logMsg('💾 สำรองไม่ได้: '+e.message,'warn');}
+  },2500);
+}
+
+/* ============================================================
+   News & Social feed (รับข้อมูลจาก browser extension บน D:)
+   ============================================================ */
+const LS_FEED='localai.feed';
+let feedItems=load(LS_FEED,[]);
+let feedCurFilter='all';
+function toggleFeed(){
+  const d=document.getElementById('feedDrawer');
+  d.classList.toggle('show');
+  if(d.classList.contains('show')){document.getElementById('feedDot').classList.remove('on');renderFeedKw();renderFeed();refreshFeed();}
+  renderQABar();
+}
+function feedFilter(f,btn){feedCurFilter=f;document.querySelectorAll('.feed-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFeed();}
+const FEED_BREAK=/ภัยพิบัติ|แผ่นดินไหว|น้ำท่วม|พายุ|ไฟไหม้|ระเบิด|เสียชีวิต|ด่วน|วิกฤต|tsunami|earthquake|flood|hurricane|wildfire|explosion|emergency|breaking|killed|dead|fatal|disaster/i;
+function mergeFeed(items){
+  if(!Array.isArray(items))return;
+  const seen=new Set(feedItems.map(x=>x.url||x.title));
+  let added=0;
+  for(const it of items){
+    // ดึง "Article URL" จาก HN feed หรือ href แรกจาก Google News → เก็บเป็น articleUrl ก่อนล้าง
+    if(it.snippet){
+      const raw=String(it.snippet);
+      // hnrss: "Article URL: https://..."
+      let m=raw.match(/Article\s*URL:\s*(https?:\/\/\S+)/i);
+      // หรือ href แรกใน <a>
+      if(!m)m=raw.match(/<a[^>]+href=["'](https?:\/\/[^"']+)["']/i);
+      if(m&&!it.articleUrl)it.articleUrl=m[1];
+    }
+    // ล้าง HTML/URL รกออกจาก snippet ที่ต้นทาง (Google News RSS ส่ง <a href> ปนมา)
+    if(it.snippet&&typeof cleanFeedText==='function')it.snippet=cleanFeedText(it.snippet);
+    if(FEED_BREAK.test((it.title||'')+' '+(it.snippet||''))) it.breaking=true;
+    const key=it.url||it.title;if(key&&!seen.has(key)){feedItems.unshift(it);seen.add(key);added++;}
+  }
+  feedItems=feedItems.slice(0,200);
+  save(LS_FEED,feedItems);
+  if(added){logMsg(`📰 รับฟีดใหม่ ${added} รายการ`,'ok');
+    if(!document.getElementById('feedDrawer').classList.contains('show'))document.getElementById('feedDot').classList.add('on');}
+  renderFeed();
+}
+function timeAgo(ts){if(!ts)return'';const s=(Date.now()-ts)/1000;if(s<60)return'เมื่อสักครู่';if(s<3600)return Math.floor(s/60)+' นาทีก่อน';if(s<86400)return Math.floor(s/3600)+' ชม.ก่อน';return Math.floor(s/86400)+' วันก่อน';}
+function renderFeed(){
+  const list=document.getElementById('feedList'),foot=document.getElementById('feedFoot');
+  const items=feedItems.filter(it=>{
+    if(feedCurFilter!=='all'&&it.type!==feedCurFilter)return false;
+    if(it.type==='social'&&feedKeywords.length){
+      const txt=((it.title||'')+' '+(it.snippet||'')).toLowerCase();
+      return feedKeywords.some(k=>k&&txt.includes(String(k).toLowerCase()));
+    }
+    return true;
+  });
+  if(!items.length){list.innerHTML='';foot.textContent=feedItems.length?'ไม่มีรายการในหมวดนี้':'ยังไม่มีข้อมูล — ติดตั้ง extension (ดู D:\\LocalAI\\extension\\README) แล้วกด ⟳';return;}
+  foot.textContent=`มี ${feedItems.length} รายการ · อัปเดต ${timeAgo(feedItems[0]?.time)}`;
+  list.innerHTML=items.map((it,i)=>{
+    const badge=it.type==='social'?`<span class="feed-badge social">${esc(it.platform||'social')}</span>`:`<span class="feed-badge">ข่าว</span>`;
+    const brk=it.breaking?'<span class="feed-breaking">✳</span>':'';
+    const bestUrl=it.articleUrl||it.url||'';
+    const xlate=`<button class="feed-xlate-btn" onclick="event.preventDefault();event.stopPropagation();translateFeedCard(this)" data-t="${esc(it.title||'')}" data-s="${esc(it.snippet||'')}" data-u="${esc(bestUrl)}" title="แปลเป็นไทย">🌐</button>`;
+    const askBtn=`<button class="feed-ask-btn" onclick="event.preventDefault();event.stopPropagation();toggleFeedAsk(${i})" title="ถาม AI">→ ถาม</button>`;
+    const pills=feedActions.map(a=>`<button class="feed-act-pill" data-t="${esc(it.title||'')}" data-s="${esc(it.snippet||'')}" data-u="${esc(bestUrl)}" data-a="${esc(a)}" data-tts="${a.includes('อ่าน')?1:0}" onclick="sendFeedAction(this)">${esc(a)}</button>`).join('');
+    return `<div class="feed-wrap"><a class="feed-card" href="${esc(it.url||'#')}" target="_blank" rel="noopener">
+      <div class="feed-src">${badge}<span>${esc(it.source||'')}</span><span style="margin-left:auto">${timeAgo(it.time)}</span></div>
+      <div class="feed-title">${brk}${esc(it.title||'')}${xlate}${askBtn}</div>
+      ${it.snippet?`<div class="feed-snip">${esc(it.snippet)}</div>`:''}</a>
+      <div class="feed-act-bar" id="fbar${i}">${pills}</div></div>`;
+  }).join('');
+}
+/* ---------- Feed keywords ---------- */
+const LS_FEEDKW='localai.feedKeywords';
+let feedKeywords=load(LS_FEEDKW,['peerapong','aisolar','ai','พีระพงษ์','อ.พี']);
+function renderFeedKw(){
+  const a=document.getElementById('feedKwArea');if(!a)return;
+  a.innerHTML=feedKeywords.map((k,i)=>`<span class="feed-kw-tag">${esc(k)}<button onclick="delFeedKw(${i})" title="ลบ">×</button></span>`).join('')
+    +`<input id="feedKwInp" class="feed-kw-inp" placeholder="+ คำใหม่" onkeydown="if(event.key==='Enter')addFeedKw()">`
+    +`<button class="feed-kw-add" onclick="addFeedKw()">+</button>`;
+}
+function addFeedKw(){const inp=document.getElementById('feedKwInp');if(!inp)return;const v=inp.value.trim();if(!v)return;if(!feedKeywords.includes(v)){feedKeywords.push(v);save(LS_FEEDKW,feedKeywords);}inp.value='';renderFeedKw();renderFeed();}
+function delFeedKw(i){feedKeywords.splice(i,1);save(LS_FEEDKW,feedKeywords);renderFeedKw();renderFeed();}
+
+/* ---------- Feed quick actions ---------- */
+const LS_FEEDACT='localai.feedActions';
+const DEFAULT_FEED_ACTIONS=['หมายความว่าอะไร','หมายความว่าอะไร อธิบายโดยละเอียด พร้อมอ้างอิงที่มาของคำตอบ','แปลเป็นไทย','อ่านเป็นไทยให้ฟังทันทีที่ตอบ','แก้ไขให้ด้วย ให้เสร็จจนจบงาน'];
+let feedActions=load(LS_FEEDACT,DEFAULT_FEED_ACTIONS);
+function renderFeedActEditor(){
+  const el=document.getElementById('feedActEditor');if(!el)return;
+  el.innerHTML=`<div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--muted)">⚙ Quick Actions (แก้ไข/เพิ่มได้)</div>`
+    +feedActions.map((a,i)=>`<div class="feed-act-erow"><span>${esc(a)}</span><button onclick="delFeedAction(${i})" title="ลบ">×</button></div>`).join('')
+    +`<input id="feedActInp" class="feed-act-einp" placeholder="พิมพ์ action ใหม่ แล้วกด Enter" onkeydown="if(event.key==='Enter')addFeedAction()">`;
+}
+function toggleFeedActEditor(){const el=document.getElementById('feedActEditor');if(!el)return;el.classList.toggle('open');if(el.classList.contains('open'))renderFeedActEditor();}
+function addFeedAction(){const inp=document.getElementById('feedActInp');if(!inp)return;const v=inp.value.trim();if(!v)return;feedActions.push(v);save(LS_FEEDACT,feedActions);inp.value='';renderFeedActEditor();renderFeed();}
+function delFeedAction(i){feedActions.splice(i,1);save(LS_FEEDACT,feedActions);renderFeedActEditor();renderFeed();}
+
+/* ---------- Per-card ask ---------- */
+function renderQABar(){
+  const bar=document.getElementById('qaBar');if(!bar)return;
+  bar.innerHTML=feedActions.map(a=>`<button class="qa-pill" data-a="${esc(a)}" onclick="sendQA(this.dataset.a)">${esc(a)}</button>`).join('');
+}
+function sendQA(action){
+  const inp=document.getElementById('input');if(!inp)return;
+  const cur=inp.value.trim();
+  inp.value=cur?cur+'\n\n'+action:action;
+  inp.dispatchEvent(new Event('input'));
+  if(action.includes('อ่าน'))window._feedAutoTTS=true;
+  if(cur||!action.includes('อ่าน'))document.getElementById('sendBtn').click();
+  else inp.focus();
+}
+function renderSettingsQA(){
+  const el=document.getElementById('setQaList');if(!el)return;
+  el.innerHTML=feedActions.map((a,i)=>`<div class="qa-edit-row"><span>${esc(a)}</span><button onclick="delQA(${i})" title="ลบ">×</button></div>`).join('')
+    ||(feedActions.length?'':'<div style="color:var(--muted);font-size:11px;padding:4px 0">ยังไม่มี action</div>');
+}
+function addQAFromSettings(){
+  const inp=document.getElementById('setQaInp');if(!inp)return;
+  const v=inp.value.trim();if(!v)return;
+  feedActions.push(v);save(LS_FEEDACT,feedActions);
+  inp.value='';renderSettingsQA();renderQABar();renderFeed();
+}
+function delQA(i){feedActions.splice(i,1);save(LS_FEEDACT,feedActions);renderSettingsQA();renderQABar();renderFeed();}
+
+function toggleFeedAsk(i){const b=document.getElementById('fbar'+i);if(b)b.classList.toggle('open');}
+// ทำความสะอาด snippet: ตัด HTML, entity, URL รก, ช่องว่างซ้อน
+function cleanFeedText(s){
+  if(!s)return '';
+  return String(s)
+    .replace(/<[^>]+>/g,' ')                                      // ตัด tag <a>, <font> ฯลฯ
+    .replace(/&(nbsp|amp|lt|gt|quot|#39);/g,m=>({'&nbsp;':' ','&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[m]||' '))
+    .replace(/https?:\/\/\S+/g,'')                                // ตัด URL รก (Google News base64)
+    .replace(/\s+/g,' ').trim();
+}
+/* ---- Fetch article via TTS-server proxy (bypass CORS) ---- */
+async function fetchArticleViaProxy(url,timeoutMs){
+  if(!url||!/^https?:/i.test(url))return null;
+  try{
+    const base=(cfg.ttsUrl||'http://127.0.0.1:11435').replace(/\/$/,'');
+    const res=await fetch(base+'/proxy?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(timeoutMs||20000)});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    return await res.text();
+  }catch(e){
+    logMsg('📄 ดึงบทความไม่ได้: '+e.message,'warn');
+    return null;
+  }
+}
+async function sendFeedAction(btn){
+  const title=btn.dataset.t,rawSnip=btn.dataset.s,action=btn.dataset.a,autoTTS=btn.dataset.tts==='1',articleUrl=btn.dataset.u||'';
+  const snip=cleanFeedText(rawSnip);
+  const inp=document.getElementById('input');if(!inp)return;
+  const isReadTypeAction=/แปล|อ่าน|สรุป|translate|summar|explain|หมายความ|อธิบาย/i.test(action);
+  // ถ้าเป็น action สรุป/แปล/อ่าน + มี URL → ดึงเนื้อหาเต็มจาก proxy มาก่อน
+  if(isReadTypeAction&&articleUrl){
+    btn.disabled=true;const origText=btn.textContent;btn.textContent='⏳ กำลังดึงบทความ…';
+    logMsg('📄 ดึงบทความจาก '+articleUrl.slice(0,60)+'…','req');
+    const t0=performance.now();
+    const article=await fetchArticleViaProxy(articleUrl,20000);
+    btn.disabled=false;btn.textContent=origText;
+    if(article&&article.length>200){
+      logMsg('✅ ดึงบทความ '+article.length+' chars ('+((performance.now()-t0)/1000).toFixed(1)+'s)','ok');
+      inp.value=`"${title}"\n\n[เนื้อหาบทความจากต้นทาง]\n${article}\n\n---\n${action}`;
+    }else{
+      const note=article?'':'\n(หมายเหตุ: ดึงเนื้อหาจาก URL ไม่ได้ ใช้เฉพาะข้อมูลที่มี)';
+      inp.value=`"${title}"${snip.length>10?'\n'+snip.slice(0,400):''}${note}\n\n${action}`;
+    }
+  }else{
+    const contextNote=isReadTypeAction&&snip.length<=10?'\n(หมายเหตุ: มีแค่หัวข้อข่าว ไม่มีเนื้อหาเต็ม — สรุป/แปลเฉพาะหัวข้อและอธิบายว่าน่าจะเกี่ยวกับอะไร)':'';
+    inp.value=`"${title}"${snip.length>10?'\n'+snip.slice(0,400):''}${contextNote}\n\n${action}`;
+  }
+  inp.dispatchEvent(new Event('input'));
+  document.getElementById('feedDrawer').classList.remove('show');
+  if(autoTTS)window._feedAutoTTS=true;
+  document.getElementById('sendBtn').click();
+}
+
+async function translateFeedCard(btn){
+  const title=btn.dataset.t,snip=cleanFeedText(btn.dataset.s),url=btn.dataset.u||'';
+  btn.textContent='⏳';btn.disabled=true;
+  // ลองดึงบทความเต็มถ้ามี URL (10s timeout — อย่าให้ผู้ใช้รอนาน)
+  let body=snip.length>10?snip.slice(0,300):'';
+  if(url){
+    const article=await fetchArticleViaProxy(url,10000);
+    if(article&&article.length>200)body=article.slice(0,3000);   // จำกัด 3000 chars สำหรับปุ่มแปลเร็ว
+  }
+  try{
+    const r=await askModelOnce([
+      {role:'system',content:'สรุปและแปลบทความต่อไปนี้เป็นภาษาไทยกระชับ 2-4 ประโยค ตอบเฉพาะคำแปล ไม่ต้องอธิบายเพิ่ม ห้ามใช้อักษรจีน/ญี่ปุ่น/เกาหลี'},
+      {role:'user',content:'หัวข้อ: '+title+(body?'\n\nเนื้อหา:\n'+body:'')}
+    ],{temperature:0.1,num_predict:400});
+    const div=document.createElement('div');div.className='feed-xlated';div.textContent='🇹🇭 '+r.trim();
+    btn.closest('.feed-card').appendChild(div);btn.style.display='none';
+  }catch(e){btn.textContent='🌐';btn.disabled=false;logMsg('แปลไม่ได้: '+e.message,'err');}
+}
+function refreshFeed(){
+  // ขอข้อมูลจาก extension (ถ้าติดตั้งอยู่ content script จะตอบกลับ)
+  window.postMessage({type:'LOCALAI_FEED_REQUEST',keywords:feedKeywords},'*');
+  logMsg('📰 ขอฟีดจาก extension…','info');
+  // fallback: อ่าน feed.json จากโฟลเดอร์ไดรฟ์ที่เลือก (ถ้ามี)
+  (async()=>{try{if(dirHandle&&await ensurePerm(dirHandle)){const fh=await dirHandle.getFileHandle('feed.json');const f=await fh.getFile();mergeFeed(JSON.parse(await f.text()));}}catch(e){}})();
+}
+// รับฟีดจาก extension (content script postMessage)
+window.addEventListener('message',e=>{
+  if(e.source!==window)return;
+  const d=e.data;if(d&&d.type==='LOCALAI_FEED'&&d.items)mergeFeed(d.items);
+});
+
+/* ---------- Improvement log (สิ่งที่ควรปรับปรุง) ---------- */
+const LS_IMP='localai.improvements';
+let improvements=load(LS_IMP,[]);
+function saveImp(){save(LS_IMP,improvements);const b=document.getElementById('impBadge');if(b)b.textContent=improvements.length;}
+function openImprove(){renderImprove();document.getElementById('impOverlay').classList.add('show');}
+function closeImprove(){document.getElementById('impOverlay').classList.remove('show');}
+function addImprove(){
+  const t=document.getElementById('impInput').value.trim();if(!t)return;
+  improvements.unshift({ts:Date.now(),text:t,by:'user'});saveImp();
+  document.getElementById('impInput').value='';renderImprove();
+  logMsg('📝 บันทึกสิ่งที่ควรปรับปรุง','ok');
+}
+function delImprove(i){improvements.splice(i,1);saveImp();renderImprove();}
+function clearImprove(){if(!confirm('ล้างรายการทั้งหมด?'))return;improvements=[];saveImp();renderImprove();}
+function renderImprove(){
+  const el=document.getElementById('impList');if(!el)return;
+  el.innerHTML=improvements.map((it,i)=>`<div class="imp-item">
+    <span class="who ${it.by}">${it.by==='ai'?'AI':'คุณ'}</span>
+    <div class="tx">${esc(it.text)}<div class="ts">${new Date(it.ts).toLocaleString('th-TH')}</div></div>
+    <button class="x" onclick="delImprove(${i})">×</button></div>`).join('')
+    ||'<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px">— ยังไม่มีรายการ —</div>';
+  const b=document.getElementById('impBadge');if(b)b.textContent=improvements.length;
+}
+async function aiSuggestImprove(btn){
+  const model=document.getElementById('modelSelect').value;
+  if(!model){alert('ยังไม่มีโมเดล — รอโหลดโมเดลเสร็จ หรือเปิดโมเดลออนไลน์');return;}
+  const old=btn.textContent;btn.textContent='🤖 กำลังคิด…';btn.disabled=true;
+  logMsg('🤖 ขอ AI แนะนำการปรับปรุง…','req');
+  try{
+    const out=await askModelOnce([
+      {role:'system',content:'คุณเป็นผู้เชี่ยวชาญ UX/โปรแกรม ช่วยเสนอสิ่งที่ควรปรับปรุงของแอปแชท AI ในเครื่อง ตอบเป็นรายการสั้นๆ 3-5 ข้อ ภาษาไทย แต่ละข้อขึ้นบรรทัดใหม่ ขึ้นต้นด้วย "- " เท่านั้น ไม่ต้องมีคำอธิบายนำ'},
+      {role:'user',content:'แอปนี้เป็นหน้าแชท HTML ไฟล์เดียว คุยกับ Ollama มีฟีเจอร์: หลายห้อง, แนบไฟล์/รูป/PDF/Excel, เสียง, RAG คลังความรู้+อ้างอิง, ข่าว/social, เลือกโมเดล local/online. เสนอสิ่งที่ควรปรับปรุงเพิ่มเติม'}
+    ],{temperature:0.6});
+    const items=out.split('\n').map(l=>l.replace(/^[-*•]\s*/,'').trim()).filter(l=>l.length>4);
+    let n=0;for(const it of items){improvements.unshift({ts:Date.now(),text:it,by:'ai'});n++;}
+    saveImp();renderImprove();
+    logMsg(`🤖 AI แนะนำ ${n} ข้อ`,'ok');
+  }catch(e){alert('ขอคำแนะนำไม่ได้: '+e.message);logMsg('✖ AI แนะนำไม่ได้: '+e.message,'err');}
+  finally{btn.textContent=old;btn.disabled=false;}
+}
+function impToMarkdown(){
+  return '# สิ่งที่ควรปรับปรุง — LocalAI Chat\n\n'+improvements.map(it=>`- [ ] (${it.by==='ai'?'AI':'ผู้ใช้'} · ${new Date(it.ts).toLocaleDateString('th-TH')}) ${it.text}`).join('\n')+'\n';
+}
+function exportImprove(){
+  const blob=new Blob([impToMarkdown()],{type:'text/markdown'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='improvements.md';a.click();
+  logMsg('⬇ ส่งออก improvements.md','ok');
+}
+async function saveImproveToDrive(){
+  if(!dirHandle){await pickFolder();if(!dirHandle)return;}
+  try{if(!await ensurePerm(dirHandle))return;
+    const fh=await dirHandle.getFileHandle('improvements.md',{create:true});const w=await fh.createWritable();
+    await w.write(impToMarkdown());await w.close();
+    logMsg('💾 บันทึก improvements.md ลงไดรฟ์แล้ว','ok');alert('บันทึก improvements.md ลงโฟลเดอร์ที่เลือกแล้ว');
+  }catch(e){alert('บันทึกไม่ได้: '+e.message);}
+}
+
+/* ============================================================
+   Plugin system — วาง .js ใน ui/plugins/ + เปิดใน plugins.json
+   ต้องเปิดผ่าน http://localhost:11435/chat.html (ไม่ใช่ file://)
+   ============================================================ */
+const _pluginHooks={reply:[],send:[]};
+const _commands={};
+const _plugins=[];
+window.LocalAI={
+  register(p){try{if(p&&p.name)_plugins.push({name:p.name,version:p.version||'?'});p.init&&p.init();}catch(e){logMsg('✖ ปลั๊กอิน '+(p&&p.name||'')+' ล้มเหลว: '+e.message,'err');}},
+  addButton(label,onClick,title){const b=document.createElement('button');b.className='icon-btn';b.textContent=label;if(title)b.title=title;b.onclick=onClick;document.getElementById('pluginBtns').appendChild(b);return b;},
+  addCommand(name,fn){_commands[String(name).toLowerCase()]=fn;},
+  onReply(fn){_pluginHooks.reply.push(fn);},
+  onSend(fn){_pluginHooks.send.push(fn);},
+  insertInput(text){const i=document.getElementById('input');i.value=(i.value?i.value+' ':'')+text;autoGrow(i);i.focus();},
+  addAssistantMessage(text){if(!activeConv())newChat();const c=activeConv();c.messages.push({role:'assistant',content:text});saveConvs();renderMessages();},
+  send(text){const i=document.getElementById('input');i.value=text;onSend();},
+  speak(text){speak(text);},
+  addKnowledge(text,source){return kbAddText(text,source||'plugin');},
+  log(msg,level){logMsg(msg,level);},
+  get cfg(){try{return JSON.parse(JSON.stringify(cfg));}catch(e){return {};}}
+};
+function runCommandIfAny(text){
+  if(!text)return false;
+  const sp=text.indexOf(' ');
+  const cmd=(sp<0?text:text.slice(0,sp)).toLowerCase();
+  if(_commands[cmd]){
+    if(!activeConv())newChat();
+    const c=activeConv();c.messages.push({role:'user',content:text});
+    if(c.title==='แชทใหม่'||!c.title)c.title=text.slice(0,40);
+    const inp=document.getElementById('input');inp.value='';autoGrow(inp);
+    saveConvs();renderConvList();renderMessages();
+    try{_commands[cmd](sp<0?'':text.slice(sp+1));}catch(e){logMsg('✖ คำสั่ง '+cmd+': '+e.message,'err');}
+    return true;
+  }
+  return false;
+}
+async function loadPlugins(){
+  try{
+    const res=await fetch('plugins/plugins.json',{cache:'no-store'});
+    if(!res.ok)throw new Error('ไม่พบ manifest');
+    const man=await res.json();
+    let n=0;
+    for(const p of (man.plugins||[])){
+      if(p.enabled===false)continue;
+      await new Promise(resolve=>{
+        const s=document.createElement('script');s.src='plugins/'+p.file;
+        s.onload=()=>{n++;resolve();};
+        s.onerror=()=>{logMsg('✖ โหลดปลั๊กอินไม่ได้: '+p.file,'err');resolve();};
+        document.head.appendChild(s);
+      });
+    }
+    if(n)logMsg('🧩 โหลดปลั๊กอิน '+n+' ตัว','ok');
+  }catch(e){
+    logMsg('🧩 ไม่ได้โหลดปลั๊กอิน ('+e.message+') — ถ้าเปิดแบบ file:// ให้เปิดผ่าน http://localhost:11435/chat.html แทน','warn');
+  }
+}
+
+/* ---------- ปุ่ม "+" เมนูรวมเครื่องมือ ---------- */
+function toggleAddMenu(e){
+  if(e)e.stopPropagation();
+  const m=document.getElementById('addMenu');
+  const show=m.classList.toggle('show');
+  if(!show)document.querySelectorAll('.add-sub').forEach(s=>s.classList.remove('show'));
+}
+function closeAddMenu(){document.getElementById('addMenu').classList.remove('show');document.querySelectorAll('.add-sub').forEach(s=>s.classList.remove('show'));}
+document.addEventListener('click',e=>{if(!e.target.closest('.add-wrap'))closeAddMenu();});
+function addMenuAction(what){
+  closeAddMenu();
+  if(what==='files')document.getElementById('fileInput').click();
+  else if(what==='folder')openDrive();
+}
+function addMenuSub(kind){
+  const sub=document.getElementById('sub-'+kind);
+  const open=!sub.classList.contains('show');
+  document.querySelectorAll('.add-sub').forEach(s=>s.classList.remove('show'));
+  if(!open)return;
+  sub.classList.add('show');
+  if(kind==='cmd'){
+    const cmds=Object.keys(_commands);
+    sub.innerHTML=cmds.length?cmds.map(c=>`<div class="s-item" onclick="pickCmd(${JSON.stringify(c)})">${esc(c)}</div>`).join('')
+      :'<div class="s-empty">— ยังไม่มีคำสั่ง (มาจากปลั๊กอิน) —</div>';
+  }else if(kind==='conn'){
+    let html='';
+    for(const p of allProviders()){
+      const models=p.id==='local'?localModels:(Array.isArray(p.models)?p.models:String(p.models).split(',').map(s=>s.trim()).filter(Boolean));
+      html+=`<div class="s-head">${esc(p.label)}</div>`;
+      html+=models.length?models.map(m=>`<div class="s-item" onclick="pickModel(${JSON.stringify(p.id)},${JSON.stringify(m)})">• ${esc(m)}</div>`).join('')
+        :'<div class="s-empty">— ไม่มีโมเดล —</div>';
+    }
+    html+=`<div class="s-item" onclick="closeAddMenu();openSettings()">⚙ ตั้งค่า / เพิ่มผู้ให้บริการ…</div>`;
+    sub.innerHTML=html;
+  }else if(kind==='plug'){
+    sub.innerHTML=(_plugins.length?_plugins.map(p=>`<div class="s-item" style="cursor:default">✦ ${esc(p.name)} <span style="color:var(--muted);font-size:11px">v${esc(p.version)}</span></div>`).join('')
+      :'<div class="s-empty">— ไม่มีปลั๊กอิน —</div>')
+      +`<div class="s-item" onclick="closeAddMenu();LocalAI.log('ปลั๊กอินอยู่ที่ ui/plugins/ + plugins.json','info')">📁 จัดการที่ ui/plugins/</div>`;
+  }
+}
+function pickCmd(c){closeAddMenu();const i=document.getElementById('input');i.value=c+' ';autoGrow(i);i.focus();}
+function pickModel(pid,m){
+  closeAddMenu();
+  const sel=document.getElementById('modelSelect');const v=pid+'::'+m;
+  if([...sel.options].some(o=>o.value===v)){sel.value=v;cfg.sel=v;saveCfg();logMsg('🔌 เปลี่ยนโมเดล → '+v,'ok');}
+  else logMsg('เลือกโมเดลไม่ได้ (อาจต้องเปิดผู้ให้บริการในตั้งค่า)','warn');
+}
+
+/* ---------- Init ---------- */
+(function init(){
+  const th=load(LS_THEME,'light');
+  document.documentElement.setAttribute('data-theme',th);
+  document.getElementById('themeBtn').textContent=th==='dark'?'☀':'🌙';
+  if(convs.length===0)newChat(); else {renderConvList();renderMessages();}
+  // console init
+  initConsoleResize();
+  if(load(LS_CONSOLE,false)){document.getElementById('consolePanel').classList.remove('collapsed');document.getElementById('consoleToggle').textContent='▼';}
+  logMsg('Local AI Chat พร้อมใช้งาน · UI โหลดสำเร็จ','ok');
+  renderImprove();renderQABar();
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&'speechSynthesis'in window&&speechSynthesis.speaking)stopSpeak();});
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='u'){e.preventDefault();document.getElementById('fileInput').click();}});
+  // โหลดรายการเสียง TTS (getVoices เป็น async)
+  if('speechSynthesis'in window){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>populateVoices();}
+  // RAG + Drive init
+  document.getElementById('ragBtn').classList.toggle('active',cfg.ragOn);
+  openIDB().then(async()=>{
+    await kbRefreshCount();
+    try{const m=await idbGet('meta','dirHandle');if(m&&m.v){dirHandle=m.v;logMsg('📁 พบโฟลเดอร์ที่เคยเลือก: '+dirHandle.name+' (กด 📁 ไดรฟ์ เพื่อใช้)','info');}}catch(e){}
+  }).catch(e=>logMsg('⚠️ เปิดฐานข้อมูลในเบราว์เซอร์ไม่ได้: '+e.message,'warn'));
+  loadPlugins();
+  // ลอง restore config จาก model.md ก่อน (ถ้า localStorage ว่าง) + backup ทันที
+  restoreCfgIfEmpty().then(restored=>{
+    refreshModels();            // local ขึ้นก่อน (เร็ว)
+    loadFreeModels();           // โมเดลฟรีตามมาหลังบ้าน
+    setTimeout(()=>refreshAllProviders(false),restored?1500:800);
+    setTimeout(backupCfgNow,3000);   // sync ให้ model.md ตรงกับ localStorage ปัจจุบัน
+  });
+  // ล้าง HTML/URL รกใน feed เก่าที่ค้างใน localStorage (Google News RSS ปนมา)
+  let dirty=0;for(const it of feedItems){if(it.snippet&&/<[a-z][^>]*>|href=|<font|&nbsp;/i.test(it.snippet)){it.snippet=cleanFeedText(it.snippet);dirty++;}}
+  if(dirty){save(LS_FEED,feedItems);renderFeed();logMsg('🧹 ล้าง feed เก่า '+dirty+' รายการ (HTML/URL รก)','info');}
+  setInterval(()=>{if(!generating)refreshModels();},15000); // keep connection status fresh
+})();
+</script>
+</body>
+</html>

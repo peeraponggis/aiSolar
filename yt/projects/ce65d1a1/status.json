@@ -1,0 +1,15 @@
+{
+  "project_id": "ce65d1a1",
+  "topic": "test media ordering",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "ทดสอบลำดับสื่อ รูปแรก คลิปที่สอง รูปที่สาม และคลิปสุดท้าย ควรจะแสดงตามลำดับที่อัพโหลด",
+  "audio_path": "projects\\ce65d1a1\\audio\\narration.mp3",
+  "video_path": "projects\\ce65d1a1\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\ce65d1a1\\output\\final_9x16.mp4"
+  },
+  "created_at": 1790070936.213533,
+  "updated_at": 1790070948.2234948
+}

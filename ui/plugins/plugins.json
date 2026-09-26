@@ -1,0 +1,6 @@
+{
+  "plugins": [
+    { "file": "example-datetime.js", "enabled": true },
+    { "file": "example-wordcount.js", "enabled": true }
+  ]
+}

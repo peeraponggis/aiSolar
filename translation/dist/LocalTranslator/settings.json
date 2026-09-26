@@ -1,0 +1,29 @@
+{
+ "level": "general",
+ "direction": "auto",
+ "topmost": false,
+ "clipwatch": false,
+ "model": "",
+ "floaticon": true,
+ "autospeak": true,
+ "ttsVoice": "เปรมวดี (หญิง)",
+ "ttsRate": "ปกติ",
+ "questions": [
+  "สรุปใจความสำคัญเป็นข้อๆ",
+  "หมายความว่าอะไร อธิบายโดยละเอียด",
+  "ตรวจไวยากรณ์และแนะนำการแก้ไข",
+  "มีคำศัพท์เทคนิคอะไรบ้าง อธิบายแต่ละคำ",
+  "แปลอีกสำนวนที่เป็นทางการกว่า",
+  "ร่างคำตอบกลับอีเมลนี้อย่างสุภาพ"
+ ],
+ "qaOpen": false,
+ "qaAutoSpeak": true,
+ "api": {
+  "mode": "auto",
+  "preset": "OpenTyphoon (SCB10X, ปรับจูนภาษาไทย - แนะนำ)",
+  "base": "",
+  "key": "",
+  "model": ""
+ },
+ "optsOpen": true
+}

@@ -1,0 +1,121 @@
+{
+  "PEA": {
+    "file_count": 11,
+    "pdfs": {
+      "connection_code_2016_20170928": {
+        "pages": 98,
+        "text_length": 50000
+      },
+      "Electricity_Tariff": {
+        "pages": 11,
+        "text_length": 30651
+      },
+      "FiTv_2569": {
+        "pages": 4,
+        "text_length": 64
+      },
+      "Ft surcharge SEP-DEC 2026_Final": {
+        "pages": 2,
+        "text_length": 2105
+      },
+      "operation_code_2016_2": {
+        "pages": 35,
+        "text_length": 50000
+      },
+      "Requesting-Modifications-Guidelines_PEAPowerGridSystemUser": {
+        "pages": 11,
+        "text_length": 11280
+      },
+      "service_code_2016_2": {
+        "pages": 34,
+        "text_length": 50000
+      },
+      "ประกาศ กฟภ. ข้อกำหนด Solar ภาคประชาชน 2569": {
+        "pages": 5,
+        "text_length": 342
+      },
+      "ประกาศค่าบริการเลือกใช้อัตรา TOU_0": {
+        "pages": 1,
+        "text_length": 16
+      },
+      "รายชื่อหน่วยทดสอบ-15-สิงหาคม-2569-2211": {
+        "pages": 4,
+        "text_length": 6229
+      },
+      "อัตราค่าไฟฟ้า_PEA_Electricity_Tariff_MAY_2023": {
+        "pages": 11,
+        "text_length": 30651
+      }
+    }
+  },
+  "MEA": {
+    "file_count": 14,
+    "pdfs": {
+      "file_1wjwzeeh": {
+        "pages": 32,
+        "text_length": 50000
+      },
+      "file_2rq7s58d": {
+        "pages": 1,
+        "text_length": 3293
+      },
+      "file_37ionog8": {
+        "pages": 1,
+        "text_length": 2462
+      },
+      "file_8cherq6o": {
+        "pages": 3,
+        "text_length": 48
+      },
+      "file_8ystbb33 (1)": {
+        "pages": 47,
+        "text_length": 50000
+      },
+      "file_8ystbb33": {
+        "pages": 47,
+        "text_length": 50000
+      },
+      "file_exflsryo": {
+        "pages": 62,
+        "text_length": 50000
+      },
+      "file_fgek7sf5": {
+        "pages": 2,
+        "text_length": 32
+      },
+      "file_lc8wk3rg": {
+        "pages": 31,
+        "text_length": 50000
+      },
+      "file_njjat1pe": {
+        "pages": 13,
+        "text_length": 212
+      },
+      "file_p2ifbwzc": {
+        "pages": 2,
+        "text_length": 32
+      },
+      "file_pd0xyh9j": {
+        "pages": 12,
+        "text_length": 20882
+      },
+      "file_sv0ak2q2": {
+        "pages": 2,
+        "text_length": 32
+      },
+      "PEA-Inverter-list-ครั้งที่-5-2565": {
+        "pages": 12,
+        "text_length": 195
+      }
+    }
+  },
+  "eit2564": {
+    "file_count": 1,
+    "pdfs": {
+      "eit2564": {
+        "pages": 378,
+        "text_length": 50000
+      }
+    }
+  }
+}

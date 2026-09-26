@@ -1,0 +1,13 @@
+{
+  "project_id": "eea149a6",
+  "topic": "Ollama AI ��� test 16:9",
+  "phase": "error",
+  "progress": 0,
+  "error": "t\\scripts\\fetch_images.py\", line 146, in fetch_background_media\n    print(f\"Media keywords: {keywords}\")\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\encodings\\cp874.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode characters in position 28-30: character maps to <undefined>\n",
+  "script": "������������� Ollama ���س�ѹ AI ������ͧ����ͧ���� ����ͧ���¤�� API �����ҷ���� ���ǹ���Ŵ�ҵԴ��� ������������ǡ��������ҹ����� �ͧ����",
+  "audio_path": "projects\\eea149a6\\audio\\narration.mp3",
+  "video_path": null,
+  "video_paths": null,
+  "created_at": 1790077269.4774253,
+  "updated_at": 1790077274.900769
+}

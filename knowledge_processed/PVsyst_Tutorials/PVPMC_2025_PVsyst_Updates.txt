@@ -1,0 +1,162 @@
+PVPMC 2025 PVsyst Updates (Oliosi, PVsyst SA Switzerland)
+Pages: 9
+============================================================
+
+
+--- Page 1 ---
+PVSYST SA - Route de la Maison Carrée, 30 - 1242 Satigny - Suisse
+www.pvsyst.com
+Any reproduction or copy of the course support, even partial, is forbidden without a written authorization of the author.
+PVsyst updates
+PVPMC Workshop
+13-15 May 2025
+Albuquerque, USA
+Michele Oliosi on behalf of the PVsyst development team 
+PVsyst SA, Switzerland
+
+--- Page 2 ---
+Page 2 / 9
+Overview
+November 2024
+PVsyst 8.0.0
+May 2025
+PVsyst 
+8.0.12
+End 2025
+PVsyst 8.1
+PVsystCLI
+Batch mode in PVsystCLI (8.0.12)
+PVsystCLI
+PVsystCLI
+In this presentation
+Orientation analysis tool (current status)
+Updated guidelines for partition shading
+Future outlook
+
+--- Page 3 ---
+Page 3 / 9
+Summary of PVsyst 8 features
+System design
+•
+Any orientation number / type within one 
+system
+•
+More flexible bifacial modeling
+•
+More flexible tracker modeling
+User interface improvements
+•
+New 3D scene tools (quality of life)
+Modeling
+•
+Optional sub-hourly clipping correction
+•
+General model improvements
+Example: two bifacial orientations
+See also our PVPMC 2024 presenta=on
+
+--- Page 4 ---
+Page 4 / 9
+PVsystCLI + batch (8.0.12)
+PVsystCLI + batch allows for automated parametric simulation
+Use case example : System optimization with custom algorithm
+System set-up
+User environment
+Run PVsystCLI batch
+Load results
+Op3miza3on algorithm
+Set batch 
+parameters
+• Site and weather
+• Variants
+Project
+• Variants
+• Orientation parameters
+• System definitions
+Batch
+params.
+• Synthetic
+• Timeseries
+Output
+variables
+Op+mized Design
+
+--- Page 5 ---
+Page 5 / 9
+On uneven terrains: Individual table orientation is impacted by the base slope.
+Yet, tables are modeled with an averaged orientation à modeling error.
+Orientation Analysis Tool (stage 1) : Analysis of impact on POA irradiance
+Future development step: Analysis of impact via electrical mismatch
+Orientation analysis tool
+Field orientation distribution : 
+Base slope spread across all tables
+Weighted Transposition error:
+How each bin contributes to the global error
+Transposition error :
+Error variation with the base slope 
+
+--- Page 6 ---
+Page 6 / 9
+Updated guidelines for partial shading 1/2
+• PVsyst shading models:
+– Detailed IV curve evaluation (not discussed here)
+– Faster "partition" approximation for regular PV 
+rows
+• Partition divides PV surfaces in "partitions" and 
+apply a shading factor, according to partial shading
+• See also e.g.
+Hobbs, Anderson, Mikofski, Ghiz, "An approach to modeling linear and non-linear self-shading losses with pvlib", 2024, PVPMC
+Martínez-Moreno, Muñoz, Lorenzo, "Experimental model to estimate shading losses on PV arrays", 2010, Sol. Energy Mater. Sol. Cells
+Oliosi, Bridel, Mermoud, Wittmer, "Modeling Electrical Shading Effects in PVsyst", 2022, PVPMC
+Oliosi, Mermoud, Wittmer, "Analysis of Electrical Shading Effects in PV Systems", 2021, PVSEC
+
+--- Page 7 ---
+Page 7 / 9
+Updated guidelines for partial shading 2/2
+• Main parameter : # of partitions
+• Shadings depend on :
+– DC array components and layout
+– Weather (e.g. diffuse fraction)
+• Updated guidelines for # of partitions 
+Configuration
+# of part.
+1 row landscape (1L)
+2
+1 row half-cut portrait (1T)
+2
+2 rows landscape in // (2L)
+2
+…
+…
+See rest of table in the  PVsyst help
+4 partitions
+More cloudy
+Sunnier
+best choice
+
+--- Page 8 ---
+Page 8 / 9
+Exciting features for 8.1
+• 🌦New interface for the weather data import
+• 🌦Major update of meteonorm
+• ⏱Sub-hourly import and simulation
+• ⛱Bifacial 3D
+• 🔌Expanded AC circuit
+• 📚Novelties for the batch mode
+
+--- Page 9 ---
+Page 9 / 9
+Outlook
+📣 Office hours on Thursday !
+End 2025
+PVsyst 8.1
+Full sub-hourly simulation
+3D bifacial model
+New batch mode
+and more…
+😊 Thank you !
+Solar glare
+Mismatch from orientations
+Measured data analysis
+New AC circuit
+New weather data import

@@ -1,0 +1,7541 @@
+ไฟล์: file_8ystbb33.pdf
+หมวดหมู่: MEA
+หน้าที่: 47
+============================================================
+
+
+--- Page 1 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+1/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+1 
+ABB/FIMER 
+UNO-DM-1.2-TL-PLUS-SB 
+230 V, 1ph, 50 Hz 
+1.2 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+2 
+ABB/FIMER 
+UNO-DM-1.2-TL-PLUS-SB-Q 
+230 V, 1ph, 50 Hz 
+1.2 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+3 
+ABB/FIMER 
+UNO-2.0-TL-OUTD 
+230 V, 1ph, 50 Hz 
+2 kW 
+C30C 
+4 
+ABB/FIMER 
+UNO-2.0-TL-OUTD-S 
+230 V, 1ph, 50 Hz 
+2 kW 
+C30C 
+5 
+ABB/FIMER 
+UNO-DM-2.0-TL-PLUS-SB 
+230 V, 1ph, 50 Hz 
+2 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+ 
+ 
+
+--- Page 2 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+2/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+6 
+ABB/FIMER 
+UNO-DM-2.0-TL-PLUS-SB-Q 
+230 V, 1ph, 50 Hz 
+2 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+7 
+ABB/FIMER 
+UNO-DM-3.3-TL-PLUS-SB 
+230 V, 1ph, 50 Hz 
+3.3 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+8 
+ABB/FIMER 
+UNO-DM-3.3-TL-PLUS-SB-Q 
+230 V, 1ph, 50 Hz 
+3.3 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+ 
+ 
+
+--- Page 3 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+3/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+9 
+ABB/FIMER 
+PVI-3.6-TL-OUTD 
+230 V, 1ph, 50 Hz 
+3.6 kW 
+C.0.3.5 
+C.0.3.6 
+C.0.3.7 
+10 
+ABB/FIMER 
+PVI-3.6-TL-OUTD-S 
+230 V, 1ph, 50 Hz 
+3.6 kW 
+C.0.3.5 
+C.0.3.6 
+C.0.3.7 
+11 
+ABB/FIMER 
+PVI-5000-TL-OUTD 
+230 V, 1ph, 50 Hz 
+5 kW 
+C.0.3.5 
+C.0.3.6 
+C.0.3.7 
+12 
+ABB/FIMER 
+PVI-5000-TL-OUTD-S 
+230 V, 1ph, 50 Hz 
+5 kW 
+C.0.3.5 
+C.0.3.6 
+C.0.3.7 
+13 
+ABB/FIMER 
+REACT2-UNO-5.0-TL 
+230 V, 1ph, 50 Hz 
+5 kW 
+1926A-0.4.7 
+14 
+ABB/FIMER 
+UNO-DM-5.0-TL-PLUS-SB 
+230 V, 1ph, 50 Hz 
+5 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+15 
+ABB/FIMER 
+UNO-DM-5.0-TL-PLUS-SB-QU 
+230 V, 1ph, 50 Hz 
+5 kW 
+1728A 
+1805A 
+1811A 
+1822A 
+1826A 
+1850C 
+1901A 
+1924A 
+2002A 
+2003A 
+2006A 
+2036A 
+2200A 
+2201A 
+ 
+ 
+
+--- Page 4 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+4/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+16 
+ABB/FIMER 
+TRIO-5.8-TL-OUTD-S-400 
+400 V, 3ph, 50 Hz 
+5.8 kW 
+FW rel. C09D 
+Update ver. 1736C 
+FW rel. C09D 
+Update ver. 1925A 
+FW rel. CAA3 
+Update ver. 2001F 
+FW rel. CAA7 
+Update ver. 2006A 
+FW rel. CAA8 
+Update ver. 2115A 
+17 
+ABB/FIMER 
+PVI-10.0-TL-OUTD 
+400 V, 3ph, 50 Hz 
+10 kW 
+C026 Update ver.1435D 
+C026 Update ver.1536F 
+C408 Update ver.1507D 
+C40C Update ver.1546C 
+C40C Update ver.1631B 
+C412 Update ver.1712E 
+C412 Update ver.1926B 
+CE15 Update ver.2008B 
+18 
+ABB/FIMER 
+PVI-10.0-TL-OUTD-FS 
+400 V, 3ph, 50 Hz 
+10 kW 
+C026 Update ver.1435D 
+C026 Update ver.1536F 
+C408 Update ver.1507D 
+C40C Update ver.1546C 
+C40C Update ver.1631B 
+C412 Update ver.1712E 
+C412 Update ver.1926B 
+CE15 Update ver.2008B 
+19 
+ABB/FIMER 
+PVI-10.0-TL-OUTD-S 
+400 V, 3ph, 50 Hz 
+10 kW 
+C026 Update ver.1435D 
+C026 Update ver.1536F 
+C408 Update ver.1507D 
+C40C Update ver.1546C 
+C40C Update ver.1631B 
+C412 Update ver.1712E 
+C412 Update ver.1926B 
+CE15 Update ver.2008B 
+20 
+ABB/FIMER 
+PVS-10-TL-SX 
+400 V, 3ph, 50 Hz 
+10 kW 
+2108C 
+2110D 
+2111A 
+2124B 
+2124D 
+2148C 
+2149C 
+ 
+ 
+
+--- Page 5 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+5/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+21 
+ABB/FIMER 
+PVS-10-TL-SY 
+400 V, 3ph, 50 Hz 
+10 kW 
+2108C 
+2110D 
+2111A 
+2124B 
+2124D 
+2148C 
+2149C 
+22 
+ABB/FIMER 
+PVS-12.5-TL-SX 
+400 V, 3ph, 50 Hz 
+12.5 kW 
+2108C 
+2110D 
+2111A 
+2124B 
+2124D 
+2148C 
+2149C 
+23 
+ABB/FIMER 
+PVS-12.5-TL-SY 
+400 V, 3ph, 50 Hz 
+12.5 kW 
+2108C 
+2110D 
+2111A 
+2124B 
+2124D 
+2148C 
+2149C 
+24 
+ABB/FIMER 
+PVS-15-TL-SX 
+400 V, 3ph, 50 Hz 
+15 kW 
+2108C 
+2110D 
+2111A 
+2124B 
+2124D 
+2148C 
+2149C 
+25 
+ABB/FIMER 
+PVS-15-TL-SY 
+400 V, 3ph, 50 Hz 
+15 kW 
+2108C 
+2110D 
+2111A 
+2124B 
+2124D 
+2148C 
+2149C 
+26 
+ABB/FIMER 
+PVS-20-TL-SX 
+400 V, 3ph, 50 Hz 
+20 kW 
+2045E 
+27 
+ABB/FIMER 
+PVS-20-TL-SXD 
+400 V, 3ph, 50 Hz 
+20 kW 
+2045E 
+2108B 
+2115E 
+2116E 
+2117E 
+2124B 
+2148A 
+2148B 
+ 
+ 
+
+--- Page 6 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+6/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+28 
+ABB/FIMER 
+PVS-20-TL-SY 
+400 V, 3ph, 50 Hz 
+20 kW 
+2045E 
+29 
+ABB/FIMER 
+TRIO-20.0-TL-OUTD-400 
+400 V, 3ph, 50 Hz 
+20 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+30 
+ABB/FIMER 
+TRIO-20.0-TL-OUTD-S2-400 
+400 V, 3ph, 50 Hz 
+20 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+31 
+ABB/FIMER 
+TRIO-20.0-TL-OUTD-S2F-400 
+400 V, 3ph, 50 Hz 
+20 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+32 
+ABB/FIMER 
+TRIO-20.0-TL-OUTD-S2X-400 
+400 V, 3ph, 50 Hz 
+20 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+33 
+ABB/FIMER 
+TRIO-27.6-TL-OUTD-400 
+400 V, 3ph, 50 Hz 
+27.6 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+34 
+ABB/FIMER 
+TRIO-27.6-TL-OUTD-S2-400 
+400 V, 3ph, 50 Hz 
+27.6 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+ 
+ 
+
+--- Page 7 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+7/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+35 
+ABB/FIMER 
+TRIO-27.6-TL-OUTD-S2F-400 
+400 V, 3ph, 50 Hz 
+27.6 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+36 
+ABB/FIMER 
+TRIO-27.6-TL-OUTD-S2X-400 
+400 V, 3ph, 50 Hz 
+27.6 kW 
+1506F 
+1711B 
+1721B 
+1731A 
+1743B 
+1844B 
+2000D 
+37 
+ABB/FIMER 
+PVS-30-TL-SX 
+400 V, 3ph, 50 Hz 
+30 kW 
+2045E 
+2108B 
+2115E 
+2116E 
+2117E 
+2124B 
+2148A 
+2148B 
+38 
+ABB/FIMER 
+PVS-30-TL-SY 
+400 V, 3ph, 50 Hz 
+30 kW 
+2045E 
+2108B 
+2115E 
+2116E 
+2117E 
+2124B 
+2148A 
+2148B 
+39 
+ABB/FIMER 
+PVS-33-TL-SI 
+400 V, 3ph, 50 Hz 
+33 kW 
+2045E 
+2108B 
+2115E 
+2116E 
+2117E 
+2124B 
+2148A 
+2148B 
+ 
+ 
+
+--- Page 8 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+8/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+40 
+ABB/FIMER 
+PVS-33-TL-SX 
+400 V, 3ph, 50 Hz 
+33 kW 
+2045E 
+2108B 
+2115E 
+2116E 
+2117E 
+2124B 
+2148A 
+2148B 
+41 
+ABB/FIMER 
+PVS-33-TL-SY 
+400 V, 3ph, 50 Hz 
+33 kW 
+2045E 
+2108B 
+2115E 
+2116E 
+2117E 
+2124B 
+2148A 
+2148B 
+42 
+ABB/FIMER 
+PVS-50-TL 
+400 V, 3ph, 50 Hz 
+50 kW 
+1828B 
+1844B 
+1901B 
+1929B 
+1940B 
+1942B 
+2024B 
+43 
+ABB/FIMER 
+TRIO-50.0-TL-OUTD 
+400 V, 3ph, 50 Hz 
+50 kW 
+1621F 
+1648E 
+1711C 
+1715D 
+1736B 
+44 
+ABB/FIMER 
+PVS-100-TL 
+400 V, 3ph, 50 Hz 
+100 kW 
+1808C 
+1811C 
+1814D 
+1816B 
+1911B 
+1912B 
+1927B 
+1938B 
+2011B 
+2034B 
+2040B 
+2117B 
+2201B 
+45 
+AE CONVERSION 
+INV315-50EU 
+230 V, 1ph, 50 Hz 
+0.3 kW 
+11-05-60058-57 
+46 
+Afore 
+HNS3000TL 
+230 V, 1ph, 50 Hz 
+3 kW 
+V2.36 
+47 
+Afore 
+AF5K-SLP 
+230 V, 1ph, 50 Hz 
+5 kW 
+CPU1:2.69; CPU2:1.01; HMI:1.55 
+ 
+ 
+
+--- Page 9 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+9/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+48 
+Afore 
+HNS5000TL 
+230 V, 1ph, 50 Hz 
+5 kW 
+H400S300 
+V2.36 
+49 
+Afore 
+AF6K-SLP 
+230 V, 1ph, 50 Hz 
+6 kW 
+CPU1:2.69; CPU2:1.01; HMI:1.55 
+50 
+Afore 
+AF10K-MTH 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Master_2.23, Slave_1.01, Hmi_1.55 
+51 
+Afore 
+BNT010KTL 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Master_1.72, Slave_1.01, Hmi_1.62 
+52 
+Afore 
+HNS10000TL 
+230 V, 1ph, 50 Hz 
+10 kW 
+V2.36 
+53 
+Afore 
+BNT020KTL 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+Master_1.72, Slave_1.01, Hmi_1.62 
+54 
+Afore 
+AF50K-TH 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Master: 1.72, Slave: 1.01, Hmi: 1.62 
+55 
+Afore 
+BNT050KTL 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Master_1.72, Slave_1.01, Hmi_1.62 
+56 
+Afore 
+BNT100KTL 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+Master: 10.01, Slave: 1.01, Hmi: 1.64 
+57 
+Alpha ESS 
+SMILE-G3-S5-INV 
+230 V, 1ph, 50 Hz 
+5 kW 
+V0.10.53 
+58 
+Alpha ESS 
+SMILE-T10-HV-INV 
+400 V, 3ph, 50 Hz 
+10 kW 
+V0.F7 
+59 
+AOTAI 
+ASP-50KTLC 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Hardware Version: V1.0 
+Software Version-CPU1: V1.0 
+Software Version-CPU2: V1.0 
+60 
+AOTAI 
+ASP-110KTLC 
+230/400 V, 3ph, 50 Hz 
+121 kVA 
+V1.0 
+61 
+APsystems 
+DS3 
+230 V, 1ph, 50 Hz 
+0.88 kW 
+V5 
+62 
+APsystems 
+DS3D-H 
+230 V, 1ph, 50 Hz 
+2 kW 
+V1 
+63 
+APsystems 
+QT2 
+400 V, 3ph, 50 Hz 
+2 kW 
+V1 
+64 
+APsystems 
+QS2 
+230 V, 1ph, 50 Hz 
+2.2 kW 
+V1 
+65 
+ATESS 
+PCS 1000HV 
+400 V, 3ph, 50 Hz 
+1,000 kW 
+PCS1000K_HV02_SV1.1.01_APP 
+66 
+ATESS 
+HPS30 
+400 V, 3ph, 50 Hz 
+30 kW 
+TI1.0 
+67 
+ATESS 
+HPS50 
+400 V, 3ph, 50 Hz 
+55 kW 
+TI1.0 
+68 
+ATESS 
+HPS100 
+400 V, 3ph, 50 Hz 
+100 kW 
+TI1.0 
+69 
+ATESS 
+HPS150 
+400 V, 3ph, 50 Hz 
+150 kW 
+TI1.0 
+70 
+ATESS 
+PCS 500 
+400 V, 3ph, 50 Hz 
+500 kW 
+TI1.0 
+71 
+ATESS 
+PCS 630 
+400 V, 3ph, 50 Hz 
+630 kW 
+TI1.0 
+72 
+ATMOCE 
+MI-500 
+230 V, 1ph, 50 Hz 
+0.5 kW 
+01.01.00 
+73 
+ATMOCE 
+MI-1250-2M 
+230 V, 1ph, 50 Hz 
+1.25 kW 
+01.02.00 
+74 
+ATMOCE 
+MS-7K-U 
+230 V, 1ph, 50 Hz 
+4.5 kW 
+01.01.00 
+75 
+ATMOCE 
+MS-7K-U 
+230/400 V, 3ph, 50 Hz 
+4.5 kW 
+01.01.00 
+76 
+ATMOCE 
+MS-16K-U 
+230 V, 1ph, 50 Hz 
+6 kVA 
+01.02.00 
+77 
+ATMOCE 
+MS-16K-U 
+230/400 V, 3ph, 50 Hz 
+8 kVA 
+01.02.00 
+78 
+ATMOCE 
+MI-500 (with external 
+protection relay model: 
+MC100-T) 
+230 V, 1ph, 50 Hz 
+500 W 
+01.01.00 
+79 
+ATMOCE 
+MI-500 (with external 
+protection relay model: 
+MC100L) 
+230 V, 1ph, 50 Hz 
+500 W 
+01.01.00 
+80 
+AURIS 
+MI-625 
+230 V, 1ph, 50 Hz 
+0.625 kW 
+01.01.00 
+81 
+AURIS 
+MS-7K-U 
+230 V, 1ph, 50 Hz 
+4.5 kW 
+01.01.00 
+82 
+AURIS 
+MS-7K-U 
+230/400 V, 3ph, 50 Hz 
+4.5 kW 
+01.01.00 
+ 
+ 
+
+--- Page 10 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+10/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+83 
+AURIS 
+MI-625 (with external 
+protection relay model: 
+MC100-T) 
+230 V, 1ph, 50 Hz 
+625 W 
+01.01.00 
+84 
+AURIS 
+MI-625 (with external 
+protection relay model: 
+MC100L) 
+230 V, 1ph, 50 Hz 
+625 W 
+01.01.00 
+85 
+AUXSOL 
+ASN-5SL-PLUS 
+230 V, 1ph, 50 Hz 
+5 kW 
+A3417;a1504;00000 
+86 
+AUXSOL 
+ASG-6SL-ZL 
+230 V, 1ph, 50 Hz 
+6 kW 
+DSP: T1001; ARM: T1001 
+87 
+AUXSOL 
+ASN-6TL-G2 
+230/400 V, 3ph, 50 Hz 
+6 kW 
+A3442;d1510;00103 
+88 
+AUXSOL 
+ASG-8SL-ZL 
+230 V, 1ph, 50 Hz 
+8 kW 
+DSP: T1001; ARM: T1001 
+89 
+AUXSOL 
+ASG-10SL-ZL 
+230 V, 1ph, 50 Hz 
+10 kW 
+DSP: T1001; ARM: T1001 
+90 
+AUXSOL 
+ASG-10TL-ZL 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+T1001 
+91 
+AUXSOL 
+ASN-10TL-G2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+A3302;d1507;00103 
+92 
+AUXSOL 
+ASG-15TL-ZL 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+DSP T1001, ARM T1001 
+93 
+AUXSOL 
+ASG-20TL-ZH 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+P3312;Q1145;0000 
+94 
+AUXSOL 
+ASN-20TL 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+A3442;d1510;00103 
+95 
+AUXSOL 
+ASN-30TL-G2 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+A3442;d1510;00103 
+96 
+AUXSOL 
+ASN-40TL 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+A3442;D1403;00001 
+97 
+AUXSOL 
+ASN-50TL-G2 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+A3442;D1403;00001 
+98 
+AUXSOL 
+ASN-110TL 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+A2301/D2301 
+99 
+BENY 
+BYM2400 
+230 V, 1ph, 50 Hz 
+2.4 kVA 
+V4.11(MI_M) / V4.09(MI_S) 
+100 
+Bluering 
+MI-1000-2M0 
+230 V, 1ph, 50 Hz 
+1 kW 
+01.02.00 
+101 Bonaire Energia 
+Bonaire XG50KTR 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+528-101-0-551 
+102 
+CanadianSolar 
+CSI-60K-T4001A-E 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+DSPM 1.10, ARMS 1.01 
+103 
+CanadianSolar 
+CSI-120K-T4001A-E 
+230/400 V, 3ph, 50 Hz 
+120 kW 
+2.40 
+104 
+CanadianSolar 
+CSI-120K-T4001B-E 
+230/400 V, 3ph, 50 Hz 
+120 kW 
+2.40 
+105 
+CEHE 
+EHE-N1K5TL-TM 
+230 V, 1ph, 50 Hz 
+1.5 kW 
+4038 
+106 
+CEHE 
+EHE-N2KTL-TM 
+230 V, 1ph, 50 Hz 
+2 kW 
+4038 
+107 
+CEHE 
+EHE-N3KTL-TM 
+230 V, 1ph, 50 Hz 
+3 kW 
+4038 
+108 
+CEHE 
+EHE-N4KTL-TM 
+230 V, 1ph, 50 Hz 
+4 kW 
+4038 
+109 
+CEHE 
+EHE-N4K6TL-TM 
+230 V, 1ph, 50 Hz 
+4.6 kW 
+4038 
+110 
+CHINT POWER 
+CPS SCA5KTL-PSM1/EU 
+230 V, 1ph, 50 Hz 
+5 kW 
+MEA 
+111 
+CHINT POWER 
+SCA10K-T-EU 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Thailand-MEA. 
+112 
+CHINT POWER 
+SCA15K-T-EU 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+Thailand-MEA. 
+113 
+CHINT POWER 
+SCA20K-T-EU 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+Thailand-MEA. 
+114 
+CHISAGE ESS 
+Jup-6G2-LE 
+230 V, 1ph, 50 Hz 
+6 kW 
+V0.2.0.0.1.6 
+115 
+CHISAGE ESS 
+Mars-14G2-LE 
+230/400 V, 3ph, 50 Hz 
+14 kW 
+V0.8.0.1.3.4 
+116 
+CHUPHOTIC 
+STT-10KTL-P 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+FW Version : V 1.00 
+117 
+CHUPHOTIC 
+STT-20KTL-P 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+FW Version : V 1.00 
+118 
+CLEANLINE 
+CL 5KHB-P1LV 
+230 V, 1ph, 50 Hz 
+5 kW 
+DSP: T1001; ARM: T1001 
+119 
+CLEANLINE 
+CL 5KTL-P1 
+230 V, 1ph, 50 Hz 
+5 kW 
+Master DSP Version 
+311931 
+Slave DSP Version 
+310400 
+ 
+ 
+
+--- Page 11 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+11/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+120 
+CLEANLINE 
+CL 5KTL-P3 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+Master DSP Version 
+212139 
+Slave DSP Version 
+212002 
+121 
+CLEANLINE 
+CL 10KHB-P3 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Master DSP Version 
+011012 
+Slave DSP Version 
+010401 
+122 
+CLEANLINE 
+CL 10KHB-P3LV 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+T1001 
+123 
+CLEANLINE 
+CL 10KTL-P3 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Master DSP Version 
+212137 
+Slave DSP Version 
+212001 
+124 
+CLEANLINE 
+CL 30KTL-P3 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+Master DSP Version 
+111013 
+Slave DSP Version 
+111004 
+125 
+CLEANLINE 
+CL 60KTL-P3 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+Master DSP Version 
+111013 
+Slave DSP Version 
+111004 
+126 
+CLENERGY 
+CGH S5.0L 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0.0.8 
+127 
+CLOU 
+CL215HX-IEC/UL 
+690 V, 3ph, 50 Hz 
+215 kW 
+1.1.2 
+128 
+CRRC 
+tPower-NM5-110K-T-F 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+V1.0 
+129 
+CRRC 
+tPower-NM5 
+800 V, 3ph, 50 Hz 
+225 kW 
+1.0.0 
+130 
+CRRC 
+tPower-NM5.350K 
+800 V, 3ph, 50 Hz 
+352 kW 
+S00245000080 
+MDSP_MALACHITE-S_V11_V01_A 
+131 
+Cyber Power 
+CPSPV5000ETL 
+230 V, 1ph, 50 Hz 
+5 kW 
+Firmware (C): V01.15 
+Firmware (M): V01.12 
+Firmware (R): V01.01 
+132 
+DAH Solar 
+DHN-SU1K5ED-G1 
+230 V, 1ph, 50 Hz 
+1.5 kVA 
+1.5KW SUAP3915ALL00241127 
+133 
+DAH Solar 
+DHN-SU1K5T-G0 
+230 V, 1ph, 50 Hz 
+1.5 kVA 
+DHN-SU1K5T-G0-SW V1.0 
+134 
+DAH Solar 
+DHN-SU2KED-G1 
+230 V, 1ph, 50 Hz 
+2 kVA 
+DHN-SU1K5T-G0-SW V1.0 
+135 
+DEC 
+DHSP3GC-150KTL-A1 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+V610-82003-04 
+136 
+DELTA 
+H4A_220 
+230 V, 1ph, 50 Hz 
+5 kVA 
+DSP: V4.50 
+DISPLAY :2.24 
+137 
+DELTA 
+RPI H5A_020 
+230 V, 1ph, 50 Hz 
+5 kVA 
+DSP : 0202 
+RED : 0200 
+COMM : 0206 
+138 
+DELTA 
+RPI H5A_120 
+230 V, 1ph, 50 Hz 
+5 kVA 
+DSP : 0202 
+RED : 0200 
+COMM : 0206 
+139 
+Delta 
+Delta 6000S 
+230 V, 1ph, 50 Hz 
+6 kW 
+V120 
+140 
+Delta 
+Delta 20000T 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V000 
+ 
+ 
+
+--- Page 12 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+12/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+141 
+DELTA 
+RPI-M20A 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+DSP : 2.03 
+RED : 1.51 
+COMM : 1.80 
+142 
+DELTA 
+M50A_260 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP1 : 1.37, 1.38, 1.40, 1.50, 1.60, 1.70 
+DSP2(ARC) : 1.18, 1.19, 1.30, 1.40, 1.50, 1.60 
+RED : 1.13, 1.14, 1.20, 1.30, 1.40, 1.50 
+COMM : 1.18, 1.19, 1.30, 1.40, 1.50, 1.60 
+143 
+DELTA 
+RPI M50A_020 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+144 
+DELTA 
+RPI M50A_021 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+145 
+DELTA 
+RPI M50A_022 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+146 
+DELTA 
+RPI M50A_120 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+147 
+DELTA 
+RPI M50A_121 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+148 
+DELTA 
+RPI M50A_122 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+149 
+DELTA 
+RPI M50A_12s 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+DSP: 1.32, 1.41, 1.50, 1.40, 1.60, 1.80, 2.00 
+RED: 1.20, 1.22, 1.40, 1.50, 1.70, 2.00 
+COMM: 1.18, 1.22, 1.50, 1.80, 2.20, 2.40 
+150 
+DELTA 
+PCS100HV 
+400 V, 3ph, 50 Hz 
+100 kVA 
+MCU377: 1.0.0.2 
+MCU207: 1.0.0.2 
+MCU3352: 1.1.0.5 
+151 
+DELTA 
+M100A_280 
+230/400 V, 3ph, 50 Hz 
+110 kVA 
+DSP1: 1.16, 1.17, 1.18, 1.20, 1.35, 1.40, 1.50 
+DSP2(ARC): 1.04, 1.05, 1.06, 1.07, 1.08, 1.09, 1.10 
+RED: 1.05, 1.06, 1.07, 1.08, 1.09, 1.10, 1.11 
+COMM: 1.12, 1.13, 1.20, 1.40, 1.50, 1.60, 1.80 
+152 
+Deye 
+SUN-M160G4-EU-Q0-I 
+230 V, 1ph, 50 Hz 
+1.6 kW 
+V1.4.2.6 
+153 
+Deye 
+SUN-M200G4-EU-Q0-I 
+230 V, 1ph, 50 Hz 
+2 kW 
+V1.4.2.6 
+154 
+Deye 
+SUN-M225G4-EU-Q0-I 
+230 V, 1ph, 50 Hz 
+2.25 kW 
+V1.4.2.6 
+155 
+Deye 
+SUN-3K-G04P1-EU-AM1 
+230 V, 1ph, 50 Hz 
+3 kW 
+Inv8341-0105 
+156 
+Deye 
+SUN-3K-G05P1-EU-CM1 
+230 V, 1ph, 50 Hz 
+3 kW 
+INV: 8351-0116 
+157 
+Deye 
+SUN-3.6K-SG04LP1-EU-SM2 
+230 V, 1ph, 50 Hz 
+3.6 kW 
+Ver 0-2387-1515 
+158 
+Deye 
+RW-F5.3-1H3 
+230 V, 1ph, 50 Hz 
+5 kW 
+MAIN: Ver 0-3386-1515 
+159 
+Deye 
+SUN-5K-G05P1-EU-AM2 
+230 V, 1ph, 50 Hz 
+5 kW 
+Inv8556-0105 
+ 
+ 
+
+--- Page 13 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+13/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+160 
+Deye 
+SUN-5K-SG04LP1-EU-SM2 
+230 V, 1ph, 50 Hz 
+5 kW 
+MAIN:Ver 0-3387-1515 
+161 
+Deye 
+SUN-5K-SG05LP1-EU 
+230 V, 1ph, 50 Hz 
+5 kW 
+Ver 0-5370-1515 
+Ver 0-3385-1515 
+162 
+Deye 
+SUN-5K-SG05LP3-EU-SM2 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+Ver 2107-1148-1807 
+163 
+Deye 
+SUN-5K-SG06LP1-EU-CM2 
+230 V, 1ph, 50 Hz 
+5 kW 
+HMI: Ver 0000-C384; MAIN: Ver 0-4389-1516 
+164 
+Deye 
+SUN-5K-SG06LP3-EU-CM2 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+Ver 2207-1175-1809 
+165 
+Deye 
+SUN-6K-G06P3-EU-BM2-P1 
+230/400 V, 3ph, 50 Hz 
+6 kW 
+Inv5612-0324 
+166 
+Deye 
+SUN-6K-SG04LP1-EU-SM2 
+230 V, 1ph, 50 Hz 
+6 kW 
+MAIN:Ver 0-4388-1516 
+167 
+Deye 
+SUN-6K-SG06LP1-EU-CM2 
+230 V, 1ph, 50 Hz 
+6 kW 
+HMI: Ver 0000-C384; MAIN: Ver 0-4389-1516 
+168 
+Deye 
+SUN-8K-SG05LP1-EU-SM2-P 
+230 V, 1ph, 50 Hz 
+8 kW 
+HMI: Ver 0000-C372 MAIN: Ver 0-5387-1515 
+169 
+Deye 
+SUN-8K-SG06LP1-EU-CM3 
+230 V, 1ph, 50 Hz 
+8 kW 
+HMI: Ver 0000-C384; MAIN: Ver 0-5389-1516 
+170 
+Deye 
+SUN-10K-G02P1-EU-AM2 
+230 V, 1ph, 50 Hz 
+10 kW 
+Inv8826-0105 
+171 
+Deye 
+SUN-10K-G06P3-EU-BM2-P1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Inv5612-0324 
+172 
+Deye 
+SUN-10K-SG02LP1-EU-AM3 
+230 V, 1ph, 50 Hz 
+10 kW 
+HMI: Ver 0000-C36E 
+MAIN: Ver 0-A026-1726 
+173 
+Deye 
+SUN-10K-SG02LP1-EU-AM3-P 
+230 V, 1ph, 50 Hz 
+10 kW 
+HMI: Ver 0000-C378 
+MAIN: Ver 0-A028-1727 
+174 
+Deye 
+SUN-10K-SG04LP3-EU 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Ver 2005-1090-1807 
+Ver 2005-1144-1807 
+175 
+Deye 
+SUN-10K-SG05LP1-EU 
+230 V, 1ph, 50 Hz 
+10 kW 
+Ver 0-8123-1725 
+Ver 0-B025-1726 
+176 
+Deye 
+SUN-10K-SG05LP3-EU-SM2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Ver 2107-1175-1809 
+177 
+Deye 
+SUN-10K-SG06LP1-EU-CM3 
+230 V, 1ph, 50 Hz 
+10 kW 
+HMI: Ver 0000-C384; MAIN: Ver 0-B389-1516 
+178 
+Deye 
+SUN-12K-SG04LP3-EU 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+Ver 2005-1115-1807 
+179 
+Deye 
+SUN-12K-SG05LP3-EU-SM2 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+Ver 2107-1175-1809 
+180 
+Deye 
+SUN-15K-G06P3-EU-BM2-P1 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+Inv5612-0324 
+181 
+Deye 
+SUN-15K-SG05LP3-EU-SM2 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+HMI: Ver 1001-C048 
+MAIN: Ver 2107-1148-1807 
+ARC: Ver0000 
+182 
+Deye 
+SUN-16K-SG01LP1-EU 
+230 V, 1ph, 50 Hz 
+16 kW 
+HMI: Ver 0000-C36D 
+MAIN: Ver 0-9026-1726 
+183 
+Deye 
+SUN-16K-SG01LP1-EU-AM3-P 
+230 V, 1ph, 50 Hz 
+16 kW 
+Ver 0-9029-1727 
+184 
+Deye 
+SUN-20K-G05 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+Ver 0324 
+185 
+Deye 
+SUN-20K-SG05LP3-EU-SM2 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+HMI: Ver 1001-C048 
+MAIN: Ver 2107-1148-1807 
+ARC: Ver0000 
+186 
+Deye 
+SUN-30K-G04 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+Inv5412-0341 
+187 
+Deye 
+SUN-30K-SG01HP3-EU-BM3 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+Ver 3103-1077-1D08 
+188 
+Deye 
+SUN-30K-SG02HP3-EU-AM3 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+Ver 3002-1098-1E10 
+189 
+Deye 
+SUN-40K-G04 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+Inv5412-0331 
+ 
+ 
+
+--- Page 14 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+14/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+190 
+Deye 
+SUN-40K-SG01HP3-EU-BM4 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+Ver 3103-1077-1D08 
+191 
+Deye 
+SUN-50K-G04 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Inv5412-0326 
+192 
+Deye 
+SUN-50K-SG01HP3-EU-BM4 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Ver 3103-1077-1D08 
+193 
+Deye 
+SUN-60K-SG02HP3-EU-EM6 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+Ver 3403-1407-1F10 
+194 
+Deye 
+SUN-80K-SG02HP3-EU-EM6 
+230/400 V, 3ph, 50 Hz 
+80 kW 
+HMI: Ver 2001-C046, MAIN: Ver 3403-1406-2010 
+195 
+Deye 
+SUN-100K-G03 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+Ver5322-0331 
+196 
+Deye 
+SUN-100K-PCS01HP3 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+6011-1135-AB73 
+197 
+Deye 
+SUN-100K-SG02HP3-EU-GM10 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+3501-1005-0610 
+198 
+Deye 
+SUN-120K-G01P3-EU-AM8 
+230/400 V, 3ph, 50 Hz 
+120 kW 
+Inv5552-f133 
+199 
+Deye 
+SUN-125K-SG02HP3-EU-GM10 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+3501-1005-0610 
+200 
+Deye 
+SUN-136K-G01P3-EU-AM8 
+230/400 V, 3ph, 50 Hz 
+136 kW 
+Inv5552-f133 
+201 
+DSC 
+SUN-3K-G 
+230 V, 1ph, 50 Hz 
+3 kW 
+Ver : 0176 
+Ver : 5131 
+202 
+DSC 
+DSC-5K-G03 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+Inv5131 
+203 
+DSC 
+SUN-5K-G 
+230 V, 1ph, 50 Hz 
+5 kW 
+Ver : 0176 
+Ver : 5131 
+204 
+DSC 
+SUN-5K-SG03LP1-EU 
+230 V, 1ph, 50 Hz 
+5 kW 
+HMI: Ver5331 
+MAIN: Ver2136 
+205 
+DSC 
+DSC-10K-G03 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Inv5131 
+206 
+DSC 
+DSC-10K-SG04LP3-EU 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+HMI: Ver 1001-c018 
+MAIN: Ver 2003-f101-1807 
+207 
+DYNAVOLT 
+HI-TP10.0K-HV 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+30001.S44 
+208 
+eCACTUS 
+WH-SPHA6.0H-10.24kWh 
+230 V, 1ph, 50 Hz 
+6 kW 
+sDSP1_ver: 510-01001-01 
+Safety_ID: 25 
+209 
+elecod 
+Energy storage converter: 
+Monet-100 
+Power module: Monet-
+100AC 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+PCS-MAC-1 V3.13.11-3.2.2 
+210 
+elecod 
+Monet-125AC 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V3.225.2 
+211 
+elecod 
+Monet-125AC(IP65) 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V3.225.2 
+212 
+ENERGY LIB 
+LIB125MI 
+230 V, 1ph, 50 Hz 
+2.5 kVA 
+V4.0 
+213 
+ENERGY LIB 
+LIB-ROIP1L-1P6 
+230 V, 1ph, 50 Hz 
+6 kW 
+ES 8.60 
+214 
+ENERGY LIB 
+LIB108RH 
+230 V, 1ph, 50 Hz 
+8 kW 
+V05.10 
+215 
+ENERGY LIB 
+SH-PEI-PHS8 
+230 V, 1ph, 50 Hz 
+8 kW 
+V05.10 
+216 
+ENERGY LIB 
+LIB310RG 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Certificate version: NEW_V2.4.5 
+Host DSP Version: 120 Alcor DSP Version:101 
+CPLD Version:0 ARM Version:134 
+217 
+ENERGY LIB 
+LIB-ROIP1L-3P15 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+ES 8.60 
+218 
+ENERGY LIB 
+LIB315RH 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V05.12 
+219 
+ENERGY LIB 
+SH-PEI-PHT15 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V05.12 
+220 
+EneTelus 
+EPC-A-S35MPT 
+230 V, 1ph, 50 Hz 
+3.5 kW 
+1.02.01.04 
+A0.-.A1 
+ 
+ 
+
+--- Page 15 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+15/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+221 
+EneTelus 
+EPC-A-S55MPT 
+230 V, 1ph, 50 Hz 
+5.5 kW 
+1.02.01.04 
+A0.-.A1 
+222 
+ENJOY 
+EPCS105-AM 
+230/400 V, 3ph, 50 Hz 
+105 kW 
+DSP: V002B002D000 
+CPLD: V003B004D000 
+HMI: V001B002D017 
+223 
+ENPHASE 
+IQ7-60-2-INT 
+230 V, 1ph, 50 Hz 
+0.24 kW 
+520-00082-r01-v02.12.00 
+520-00082-r01-v04.30.23 
+224 
+ENPHASE 
+IQ7PLUS-72-2-INT 
+230 V, 1ph, 50 Hz 
+0.29 kW 
+520-00082-r01-v02.12.00 
+520-00082-r01-v04.28.07 
+520-00082-r01-v04.30.23 
+225 
+ENPHASE 
+IQ7A-72-2-INT 
+230 V, 1ph, 50 Hz 
+0.349 kW 
+1.2.4 
+520-00082-r01-v04.28.07 
+520-00082-r01-v04.27.04 
+520-00082-r01-v04.30.23 
+226 
+ENPHASE 
+IQ8P-72-2-INT 
+230 V, 1ph, 50 Hz 
+0.475 kW 
+521-00006-r07-v08.04.01 
+521-00006-r07-v08.05.02 
+521-00006-r07-v08.13.01 
+227 
+ENPHASE 
+IQ8P-72-M-INT 
+230 V, 1ph, 50 Hz 
+0.475 kW 
+521-00006-r07-v08.13.01 
+228 
+ENVERTECH 
+EVT2000 
+230 V, 1ph, 50 Hz 
+2 kW 
+4.1.4 
+229 
+EONLAND 
+EON-MI800S-2C 
+230 V, 1ph, 50 Hz 
+0.8 kW 
+V0.16.0 
+230 
+EONLAND 
+EON-MI800S-2F 
+230 V, 1ph, 50 Hz 
+0.8 kW 
+V0.16.0 
+231 
+ESSCO 
+AT50-3000 
+230 V, 1ph, 50 Hz 
+3 kW 
+Software version AC1.0 
+232 
+ESSCO 
+AT50-5000M 
+230 V, 1ph, 50 Hz 
+5 kW 
+Software version AA1.0 
+233 
+ESSCO 
+AT50-5048 PRO 
+230 V, 1ph, 50 Hz 
+5 kW 
+Software version AB1.0 
+234 
+ESSCO 
+AT50-10048T PRO 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V00.01 
+235 
+ESSCO 
+AT50-11000TM 
+230/400 V, 3ph, 50 Hz 
+11 kW 
+Software version AD1.0 
+236 
+EVE 
+EP1K5TL 
+230 V, 1ph, 50 Hz 
+1.5 kW 
+Ver1 : V2.00 
+Ver2 : V2.00 
+MCU : V1.15 
+237 
+EVE 
+EP3KTL 
+230 V, 1ph, 50 Hz 
+3 kW 
+Ver1 : V2.00 
+Ver2 : V2.00 
+MCU : V1.15 
+238 
+EVE 
+EP5KTL-2M3P 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+Control board: V2.41 
+Displayer board: V1.16 
+239 
+EVE 
+EP10KTL-2M3P 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Control board: V2.41 
+Displayer board: V1.16 
+240 
+EVE 
+EP20KTR-2M3P 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+Control board: V2.41 
+Displayer board: V1.16 
+241 
+EVE 
+EP30KTR-2M3P 
+230/400 V, 3ph, 50 Hz 
+30 kVA 
+Control board: V2.41 
+Displayer board: V1.16 
+242 
+EVE 
+EP50KTR-2M3P 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Control board: V3.02 
+Displayer board: V2.01 
+243 
+Felicitysolar 
+IVGM8KLP1G1 
+230 V, 1ph, 50 Hz 
+8 kW 
+100 
+244 
+Felicitysolar 
+IVGM10KLP3G2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+100 
+ 
+ 
+
+--- Page 16 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+16/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+245 
+Felicitysolar 
+IVGM20KLP3G1 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+100 
+246 
+FOX ESS 
+Q1-2400-E 
+230 V, 1ph, 50 Hz 
+2.4 kW 
+V1.00 
+247 
+FOX ESS 
+F3000-G2 
+230 V, 1ph, 50 Hz 
+3 kW 
+0.70/1.08/1.40 
+248 
+FOX ESS 
+T5-G3 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+1.44/1.02/1.08 
+249 
+FOX ESS 
+F6000 
+230 V, 1ph, 50 Hz 
+6 kW 
+0.09/1.00/1.01 
+250 
+FOX ESS 
+F6000-G2 
+230 V, 1ph, 50 Hz 
+6 kW 
+0.70/1.08/1.48 
+251 
+FOX ESS 
+H1-6.0-E-G2 
+230 V, 1ph, 50 Hz 
+6 kW 
+1.33/1.03/1.49 
+252 
+FOX ESS 
+P100-6-AC 
+230 V, 1ph, 50 Hz 
+6 kW 
+1.00 
+253 
+FOX ESS 
+P100-6-H 
+230 V, 1ph, 50 Hz 
+6 kW 
+1.00 
+254 
+FOX ESS 
+P100E-6-H 
+230 V, 1ph, 50 Hz 
+6 kW 
+1.15 
+255 
+FOX ESS 
+P3-10.0-SH 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.16 
+256 
+FOX ESS 
+T10-G3 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+1.44/1.02/1.08 
+257 
+FOX ESS 
+P3-15.0-SH 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V1.16 
+258 
+FOX ESS 
+P3-Pro-20.0 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V1.62 
+259 
+FOX ESS 
+T20-G3 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+1.44/1.02/1.08 
+260 
+FOX ESS 
+P3-Pro-30.0 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+V1.62 
+261 
+FOX ESS 
+T30-M 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+1.52/1.03/1.22/0.35 
+262 
+FOX ESS 
+V50 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Master Version V1.10 
+Slave Version V1.00 
+Manager Version V1.08 
+263 
+FOX ESS 
+P3-60-Plus 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+Manager: V1.05, Master: V1.05, Slave: V1.02, Afci: 
+V1.01, Bat: R0.000 
+264 
+FOX ESS 
+GM215kWh-100kW-2hF 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+DSP V1.00.7, ARM V1.00.5 
+265 
+FOX ESS 
+P3-100-Plus 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+Manager: V1.05, Master: V1.05, Slave: V1.02, Afci: 
+V1.01, Bat: R0.000 
+266 
+FOX ESS 
+R100-G2 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+V1.20/V1.10 
+267 
+FOX ESS 
+P3-125-Plus 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+Manager: V1.05, Master: V1.05, Slave: V1.02, Afci: 
+V1.01, Bat: R0.000 
+268 
+FOX ESS 
+R125-G2 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V1.20/V1.10 
+269 
+FRECON 
+F010i-4PVb 
+400 V, 3ph, 50 Hz 
+10 kVA 
+SW Version: 2.0 
+270 
+FRECON 
+F025i-4PVb 
+400 V, 3ph, 50 Hz 
+25 kVA 
+SW Version: 3.1 
+271 
+FRONIUS 
+FRONIUS IG PLUS35V-1 
+230 V, 1ph, 50 Hz 
+3.5 kW 
+5.11.09 VER 
+272 
+FRONIUS 
+Fronius Symo 5.0-3-M 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V1.1.4.0 
+273 
+FRONIUS 
+Primo 5.0-1 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.1.3.0 
+274 
+FRONIUS 
+Fronius Symo 6.0-3-M 
+230/400 V, 3ph, 50 Hz 
+6 kW 
+V1.1.14.1 
+275 
+FRONIUS 
+Fronius Symo 10.0-3-M 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V 0.3.23.0 
+276 
+FRONIUS 
+Symo GEN24 10.0 Plus 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V 01.00.06.00 
+277 
+FRONIUS 
+Fronius Symo 20.0-3-M 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V1.1.14.1 
+278 
+FRONIUS 
+Fronius Eco 27.0-3-S 
+400 V, 3ph, 50 Hz 
+27 kW 
+V 0.3.23.0 
+279 
+FRONIUS 
+Tauro Eco 100-3-D 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+1.13.5-1 
+280 
+FRONIUS 
+Tauro Eco 100-3-P 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+1.13.5-1 
+281 
+GOODWE 
+GW1500-XS 
+230 V, 1ph, 50 Hz 
+1.5 kW 
+V1.15.16 
+282 
+GOODWE 
+GW3000-NS 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.11.11 
+283 
+GOODWE 
+GW3000N-XS 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.15.16 
+ 
+ 
+
+--- Page 17 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+17/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+284 
+GOODWE 
+GW5000-DNS-30 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.07.05 
+285 
+GOODWE 
+GW5000-DT 
+400 V, 3ph, 50 Hz 
+5 kW 
+V1.10.00 
+286 
+GOODWE 
+GW5000-ES-20 
+230 V, 1ph, 50 Hz 
+5 kW 
+30304 
+287 
+GOODWE 
+GW5000-ES-C10 
+230 V, 1ph, 50 Hz 
+5 kW 
+000012 
+288 
+GOODWE 
+GW5000-SDT-20 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V1.06.06.01 
+289 
+GOODWE 
+GW5000D-NS 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.00.00 
+290 
+GOODWE 
+GW5K-DNS-G40 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.00.00 
+291 
+GOODWE 
+GW6000-ES-C10 
+230 V, 1ph, 50 Hz 
+6 kW 
+000012 
+292 
+GOODWE 
+GW10K-ES-C10 
+230 V, 1ph, 50 Hz 
+10 kW 
+030310 
+293 
+GOODWE 
+GW10K-ET 
+400 V, 3ph, 50 Hz 
+10 kW 
+6 
+294 
+GOODWE 
+GW10K-ET-20 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+6 
+295 
+GOODWE 
+GW10K-ET-L-G10 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+010101 
+296 
+GOODWE 
+GW10K-SDT-20 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.12.12.13 
+297 
+GOODWE 
+GW10K-SDT-30 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.04.04 
+298 
+GOODWE 
+GW10KN-DT 
+400 V, 3ph, 50 Hz 
+10 kVA 
+V1.10.00 
+299 
+GOODWE 
+GW12K-ES-C10 
+230 V, 1ph, 50 Hz 
+12 kW 
+030310 
+300 
+GOODWE 
+GW15K-ET-L-G10 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+010101 
+301 
+GOODWE 
+GW20K-ET-L-G10 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+010101 
+302 
+GOODWE 
+GW20K-SDT-20 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V1.12.12.13 
+303 
+GOODWE 
+GW30K-MT 
+400 V, 3ph, 50 Hz 
+30 kW 
+V1.11.11.12 
+304 
+GOODWE 
+GW30K-SDT-C30 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+V1.04.04 
+305 
+GOODWE 
+GW50K-ET-10 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+ARM: 09-403; DSP: 01-183 
+306 
+GOODWE 
+GW50K-SDT-C30 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V1.01.01 
+307 
+GOODWE 
+GW50KS-MT 
+400 V, 3ph, 50 Hz 
+50 kW 
+V1.02.02.12 
+308 
+GOODWE 
+GW60KN-MT 
+400 V, 3ph, 50 Hz 
+60 kVA 
+V1.06.06 
+309 
+GOODWE 
+GW100K-ET-G10 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+010101 
+310 
+GOODWE 
+GW120K-HT 
+230/400 V, 3ph, 50 Hz 
+120 kW 
+06.06.06 
+311 
+GOODWE 
+GW125/261-ESA-LCN-G10 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+010101 
+312 
+GOODWE 
+GW125/261-ESA-LCN-G11 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+010101 
+313 
+GOODWE 
+GW125K-GT 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V1.04.04 
+314 
+GOODWE 
+GW320K-UT 
+800 V, 3ph, 50 Hz 
+320 kW 
+V1.00.00 
+315 
+GRAVIC 
+G-4300TLS 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.0 
+316 
+GRAVIC 
+G-4500TLD 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0 
+317 
+GREE 
+ZQ1235A-1 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0 
+318 
+GREE 
+SGC15KTL/A 
+400 V, 3ph, 50 Hz 
+12.5 kW 
+ZQ3330R_SGmv_15kwIpm_V1.5 
+319 
+GREE 
+GIE-ADC20KE 
+230/400 V, 3ph, 50 Hz 
+18 kW 
+ZTS70A-N1V2 
+ZTS70A-N2V2 
+320 
+Growatt 
+Growatt 1000 
+220 V, 1ph, 50 Hz 
+1 kW 
+G.1.8 
+321 
+Growatt 
+Growatt 1500 
+220 V, 1ph, 50 Hz 
+1.6 kW 
+G.1.8 
+322 
+Growatt 
+Growatt 2000 
+220 V, 1ph, 50 Hz 
+2 kW 
+G.1.8 
+323 
+Growatt 
+NEO 2500M-X2 
+230 V, 1ph, 50 Hz 
+2.5 kW 
+GI1.0 
+324 
+Growatt 
+Growatt 3000 
+220 V, 1ph, 50 Hz 
+2.85 kW 
+G.1.8 
+325 
+Growatt 
+MIN 3000TL-X 
+230 V, 1ph, 50 Hz 
+3 kW 
+AK1.0 
+326 
+Growatt 
+Growatt 3600 MTL-10 
+220 V, 1ph, 50 Hz 
+3.6 kVA 
+AS1.0 
+ 
+ 
+
+--- Page 18 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+18/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+327 
+Growatt 
+Growatt 4200 MTL-10 
+220 V, 1ph, 50 Hz 
+4.2 kVA 
+AS1.0 
+328 
+Growatt 
+Growatt 5000 MTL-10 
+220 V, 1ph, 50 Hz 
+4.6 kVA 
+AS1.0 
+329 
+Growatt 
+MIN 5000TL-X 
+230 V, 1ph, 50 Hz 
+5 kW 
+AK1.0 
+330 
+Growatt 
+SPH 5000TL3 BH-UP 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+YA1.0 
+331 
+Growatt 
+Growatt SPH6000 
+230 V, 1ph, 50 Hz 
+6 kW 
+RA1.0 
+332 
+Growatt 
+SPM 6000TL-HU 
+230 V, 1ph, 50 Hz 
+6 kW 
+RIAA 
+333 
+Growatt 
+Growatt 10000TL3-S 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+dhaa0101 Build : dhaa-1908 
+dhaa0101 Build : dhaa-1010 
+dhaa0101 Build : dhaa-1110 
+dhaa0101 Build : dhaa-1112 
+dhaa0101 Build : dhaa-1213 
+dhaa0101 Build : dhaa-1413 
+334 
+Growatt 
+Growatt 10000UE 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+Main Ver: 0D0.9 
+CommVer: 0C0.9 
+335 
+Growatt 
+MOD 10KTL3-X 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+DL1.0 
+336 
+Growatt 
+SPH 10000TL3 BH-UP 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+YA1.0 
+337 
+Growatt 
+WIT 10K-HU 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+YE1.0 
+338 
+Growatt 
+Growatt 12000UE 
+230/400 V, 3ph, 50 Hz 
+12 kVA 
+Main Ver: 0D0.9 
+CommVer: 0C0.9 
+339 
+Growatt 
+Growatt 18000UE 
+230/400 V, 3ph, 50 Hz 
+18 kVA 
+Main Ver: 0D0.9 
+CommVer: 0C0.9 
+340 
+Growatt 
+Growatt 20000TL3-HE-TH 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+CAAA-1010 
+341 
+Growatt 
+Growatt 20000UE 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+Main Ver: 0D0.9 
+CommVer: 0C0.9 
+342 
+Growatt 
+MID 20KTL3-X 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+TJ1.0 
+343 
+Growatt 
+Growatt 40000TL3-NS 
+230/400 V, 3ph, 50 Hz 
+40 kVA 
+TH1.0-th1.0 
+344 
+Growatt 
+MID 40KTL3-X 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+DM1.0 
+345 
+Growatt 
+MAX 60KTL3 LV 
+230/400 V, 3ph, 50 Hz 
+60 kVA 
+TI1.0 
+346 
+Growatt 
+MAX 80KTL3 LV 
+230/400 V, 3ph, 50 Hz 
+80 kW 
+TI1.0 
+347 
+Growatt 
+MAX 125KTL3-X LV 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+TN1.0 
+348 
+Haier 
+HH1P-5KL-A 
+230 V, 1ph, 50 Hz 
+5 kW 
+MAIN1:0x6151 MAIN2:0x0622 
+349 
+Haier 
+HS1P-5K-T(C01) 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0.0.00 
+350 
+Haier 
+HH1P-10KL-A 
+230 V, 1ph, 50 Hz 
+10 kW 
+MAIN1:0xA141 MAIN2:0x0621 
+351 
+Haier 
+HS1P-10K-T(C01) 
+230 V, 1ph, 50 Hz 
+10 kW 
+V1.0.0.00 
+352 
+Haier 
+HS3P-20KA 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+214-0-0-16 
+353 
+Haier 
+HS3P-50KA 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+214-0-0-16 
+354 
+Haier 
+HS3P-125K-T 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+SN125PTU112: 2000000040 
+SN125PTU211: 2800000000 
+SN125PTU11SFT3: 0000530000 
+SN125PTU111A: 2510000000 
+SN125PTU111B: 0000000000 
+355 
+Haier Energy 
+HAH3P-6KB1/HU9 
+230/400 V, 3ph, 50 Hz 
+6 kVA 
+V0.10.26 
+ 
+ 
+
+--- Page 19 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+19/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+356 
+HERF 
+ESS-H-6.0H-10.24kWh 
+230 V, 1ph, 50 Hz 
+6 kW 
+DSP1 Version: 510-01001-0C 
+DSP2 Version: 510-01002-0C 
+357 
+hi-view 
+HVS-HYB-5K1P 
+230 V, 1ph, 50 Hz 
+5 kW 
+Ver 0-5370-1515 
+358 
+HITACHI 
+Hiverter Si-60K 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+V1.40 
+359 
+HITACHI 
+Hiverter Si-110K-N 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+V000001 
+360 
+HITACHI 
+Hiverter Si-125K-N 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+V000001 
+361 
+HITACHI 
+PS1000/3L.2(+TH) 
+690 V, 3ph, 50 Hz 
+1350 kW 
+Software version 4.4.1 
+362 
+Hopewind 
+HSSP5K-G01 
+230 V, 1ph, 50 Hz 
+5 kW 
+Gridcode Version 
+049.001.001 
+363 
+Hopewind 
+HSNV60K-G01 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+Grid side:108.002.003 
+Generator side:571.005.005 
+364 
+Hopewind 
+HSNV110K-G01 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+Grid side:108.005.006 
+Generator side:571.005.000 
+365 
+Hopewind 
+HSHV385K-G01 
+800 V, 3ph, 50 Hz 
+385 kW 
+Grid side:402.000.001 
+Generator side:402.000.004 
+366 
+hoymiles 
+HMS-1000W-2T 
+230 V, 1ph, 50 Hz 
+1 kW 
+V01.00.08 
+367 
+hoymiles 
+MI-1200 
+230 V, 1ph, 50 Hz 
+1.2 kW 
+LN 50Hz 2019.02.26 113038 V1.1.25 
+368 
+hoymiles 
+HM-1500 
+230 V, 1ph, 50 Hz 
+1.5 kVA 
+V01.XX.XX (1) 
+369 
+hoymiles 
+HM-1500T 
+230 V, 1ph, 50 Hz 
+1.5 kVA 
+V01.XX.XX (1) 
+370 
+hoymiles 
+HMS-2000-4T 
+230 V, 1ph, 50 Hz 
+2 kVA 
+V01.XX.XX (1) 
+371 
+hoymiles 
+HMS-2000D-4T 
+230 V, 1ph, 50 Hz 
+2 kVA 
+V01.XX.XX (1) 
+372 
+hoymiles 
+HMT-2000-4T 
+230/400 V, 3ph, 50 Hz 
+2 kVA 
+V01.XX.XX (1) 
+373 
+hoymiles 
+HMT-2250-6T 
+230/400 V, 3ph, 50 Hz 
+2.25 kVA 
+V01.XX.XX (1) 
+374 
+hoymiles 
+HAS-5.0LV-EUG1 
+230 V, 1ph, 50 Hz 
+5 kW 
+Power:V01.06.07 / Safety:V01.03.02 / 
+System:V02.03.00 
+Power:V01.XX .XX  / Safety:V01.XX .XX  / 
+System:V02.XX .XX (1) 
+375 
+hoymiles 
+HIS-5L-G3 
+230 V, 1ph, 50 Hz 
+5 kW 
+System:V01.01.06, Power:V00.00.03, 
+Safety:V00.00.01 
+System:V01.XX.XX, Power:V00.XXXX, 
+Safety:V0.XX.XX (1) 
+376 
+hoymiles 
+MIT-5000-8T 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V01.01.03-01.01.01 
+377 
+hoymiles 
+HIS-6L-G3 
+230 V, 1ph, 50 Hz 
+6 kW 
+System:V01.01.06, Power:V00.00.03, 
+Safety:V00.00.01 
+System:V01.XX.XX, Power:V00.XXXX, 
+Safety:V0.XX.XX (1) 
+378 
+hoymiles 
+HIT-6L-G3 
+230/400 V, 3ph, 50 Hz 
+6 kW 
+10043 
+379 
+hoymiles 
+HYS-6.0LV-EUG1 
+230 V, 1ph, 50 Hz 
+6 kW 
+POWER V01.04.31; SYSTEM V00.02.22; SAFETY 
+V01.02.19 
+380 
+hoymiles 
+HAT-10.0HV-EUG1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Power:V01.03.07 ; Safety:V01.04.00 ; 
+System:V02.02.10 
+Power:V01.XX .XX  ; Safety:V01.XX .XX  ; 
+System:V02.XX .XX (1) 
+ 
+ 
+
+--- Page 20 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+20/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+381 
+hoymiles 
+HIT-10L-G3 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+System:V00.01.10, Power:V00.03.35, 
+Safety:V00.03.05 
+System:V00.XX .XX  ; Power:V00.XX .XX  ; 
+Safety:V00.XX .XX (1) 
+382 
+hoymiles 
+HIT-10L-G3S 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+10043 
+383 
+hoymiles 
+HYS-10.0LV-EUG2 
+230 V, 1ph, 50 Hz 
+10 kW 
+V1.02.00 
+Power:V01.03.03 ; Safety:V01.03.03 ; 
+System:V02.06.04 
+Power:V01.XX .XX  ; Safety:V01.XX .XX  ; 
+System:V02.XX .XX (1) 
+384 
+hoymiles 
+HiOne-10S-G3 
+230 V, 1ph, 50 Hz 
+10 kW 
+System: V00.01.07, Power: V00.00.03, Safety: 
+V00.00.03 
+System: V00.XX .XX , Power: V00.XX .XX , 
+Safety: V00.XX .XX (1) 
+385 
+hoymiles 
+HYT-12.0HV-EUG1 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+POWER V00.04.22; SYSTEM V00.02.22; SAFETY 
+V00.04.13 
+386 
+hoymiles 
+HiOne-12T-G3 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+System: V00.01.15, Power: V01.00.21, Safety: 
+V01.00.12 
+System: V00.XX .XX , Power: V01.XX .XX , 
+Safety: V01.XX .XX (1) 
+387 
+hoymiles 
+HIT-15L-G3 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+System:V00.01.10, Power:V00.03.35, 
+Safety:V00.03.05 
+System:V00.XX .XX  ; Power:V00.XX .XX  ; 
+Safety:V00.XX .XX (1) 
+388 
+hoymiles 
+HIT-15L-G3S 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+10043 
+389 
+hoymiles 
+HIT-20L-G3 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+System:V00.01.10, Power:V00.03.35, 
+Safety:V00.03.05 
+System:V00.XX .XX  ; Power:V00.XX .XX  ; 
+Safety:V00.XX .XX (1) 
+390 
+hoymiles 
+HIT-20L-G3S 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+10043 
+391 
+hoymiles 
+HiOne-20T-G3 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+System: V00.01.15, Power: V01.00.21, Safety: 
+V01.00.12 
+System: V00.XX .XX , Power: V01.XX .XX , 
+Safety: V01.XX .XX (1) 
+392 
+hoymiles 
+HPCS125 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V2.10 
+V2.XX (1) 
+393 
+Huawei 
+SUN2000-2KTL-L0 
+230 V, 1ph, 50 Hz 
+2 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+394 
+HUAWEI 
+SUN2000-3K-LB0 
+230 V, 1ph, 50 Hz 
+3 kW 
+V300R024 
+V300R024CXX SPC XXX (1) 
+395 
+Huawei 
+SUN2000-3KTL-L0 
+230 V, 1ph, 50 Hz 
+3 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+396 
+Huawei 
+SUN2000-3KTL-L1 
+230 V, 1ph, 50 Hz 
+3 kVA 
+SUN2000LV200R001C00 
+V200R001C00SPC XXX (1) 
+ 
+ 
+
+--- Page 21 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+21/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+397 
+Huawei 
+SUN2000-4KTL-L0 
+230 V, 1ph, 50 Hz 
+4 kVA 
+V100R001C00 
+398 
+HUAWEI 
+SUN2000-5K-LB0 
+230 V, 1ph, 50 Hz 
+5 kW 
+V300R024 
+V300R024CXX SPC XXX (1) 
+399 
+Huawei 
+SUN2000-5K-MAP0 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V200R024C00 
+V200R024CXX SPC XXX (1) 
+400 
+Huawei 
+SUN2000-5KTL-L0 
+230 V, 1ph, 50 Hz 
+5 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+401 
+Huawei 
+SUN2000-5KTL-L1 
+230 V, 1ph, 50 Hz 
+5 kVA 
+SUN2000LV200R001C00 
+V200R001C00SPC XXX (1) 
+402 
+Huawei 
+SUN2000-5KTL-M0 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+403 
+Huawei 
+SUN2000-5KTL-M1 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+404 
+Huawei 
+SUN2000L-5KTL 
+230 V, 1ph, 50 Hz 
+5 kVA 
+V100R001C00 
+405 
+Huawei 
+SUN2000-10K-LC0 
+230 V, 1ph, 50 Hz 
+10 kW 
+V100R023 
+V100R023CXX SPC XXX (1) 
+406 
+Huawei 
+SUN2000-10K-MAP0 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V200R024C00 
+V200R024CXX SPC XXX (1) 
+407 
+Huawei 
+SUN2000-10KTL-M0 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+408 
+Huawei 
+SUN2000-10KTL-M1 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+409 
+Huawei 
+SUN2000-12KTL 
+230/400 V, 3ph, 50 Hz 
+12 kVA 
+V100R001 
+V100R001C00SPC XXX (1) 
+410 
+Huawei 
+SUN2000-12KTL-M0 
+230/400 V, 3ph, 50 Hz 
+12 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+411 
+Huawei 
+SUN2000-12KTL-M2 
+230/400 V, 3ph, 50 Hz 
+12 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+412 
+Huawei 
+SUN2000-12KTL-M5 
+230/400 V, 3ph, 50 Hz 
+12 kVA 
+V200R022C10SPC XXX (1) 
+V200RXXX CXX SPCXXX (1) 
+413 
+Huawei 
+SUN2000-15K-MB0 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V200 
+V200R023CXX SPC XXX (1) 
+414 
+Huawei 
+SUN2000-15KTL-M2 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+415 
+Huawei 
+SUN2000-15KTL-M5 
+230/400 V, 3ph, 50 Hz 
+15 kVA 
+V200R022C10SPC XXX (1) 
+V200RXXX CXX SPCXXX (1) 
+416 
+Huawei 
+SUN2000-20K-MB0 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V200 
+V200R023CXX SPC XXX (1) 
+417 
+Huawei 
+SUN2000-20KTL 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+V100R001 
+V100R001C00SPC XXX (1) 
+418 
+Huawei 
+SUN2000-20KTL-M0 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+419 
+Huawei 
+SUN2000-20KTL-M2 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+ 
+ 
+
+--- Page 22 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+22/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+420 
+Huawei 
+SUN2000-20KTL-M5 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+V200R022C10SPC XXX (1) 
+V200RXXX CXX SPCXXX (1) 
+421 
+HUAWEI 
+SUN2000-30K-MC0 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+SUN2000MC V800R025C00 
+V800R025C00SPC XXX (1) 
+422 
+Huawei 
+SUN2000-30KTL-M3 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+V100R001 
+V100R001C20SPC XXX (1) 
+423 
+Huawei 
+SUN2000-33KTL 
+400 V, 3ph, 50 Hz 
+30 kVA 
+V200R001 
+424 
+Huawei 
+SUN2000-36KTL 
+230/400 V, 3ph, 50 Hz 
+36 kVA 
+V200R002 
+V200R002C00SPC XXX (1) 
+425 
+Huawei 
+SUN2000-36KTL-M3 
+230/400 V, 3ph, 50 Hz 
+36 kW 
+V100R001 
+V100R001C20SPC XXX (1) 
+426 
+HUAWEI 
+SUN2000-40K-MC0 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+SUN2000MC V800R025C00 
+V800R025C00SPC XXX (1) 
+427 
+Huawei 
+SUN2000-40KTL-M3 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+V100R001 
+V100R001C20SPC XXX (1) 
+428 
+Huawei 
+SUN2000-42KTL 
+480 V, 3ph, 50 Hz 
+42 kVA 
+V200R002 
+V200R002C01SPC XXX (1) 
+429 
+HUAWEI 
+SUN2000-50K-MC0 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+SUN2000MC V800R025C00 
+V800R025C00SPC XXX (1) 
+430 
+Huawei 
+SUN2000-50KTL-M3 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+V200R023C00SPC XXX (1) 
+431 
+Huawei 
+SUN2000-60KTL-M0 
+230/400 V, 3ph, 50 Hz 
+60 kVA 
+V300R001 
+V300R001C00SPC XXX (1) 
+432 
+Huawei 
+SUN2000-60KTL-M0 
+480 V, 3ph, 50 Hz 
+60 kVA 
+V300R001 
+V300R001C00SPC XXX (1) 
+433 
+Huawei 
+SUN2000-65KTL-M0 
+480 V, 3ph, 50 Hz 
+65 kVA 
+V300R001 
+434 
+Huawei 
+LUNA2000-100KTL-M1 
+400 V, 3ph, 50 Hz 
+100 kW 
+V100R023C00 
+435 
+Huawei 
+SUN2000-100KTL-M1 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+V500R001 
+V500RXXXC00SPC XXX (1) 
+436 
+Huawei 
+SUN2000-100KTL-M1 
+480 V, 3ph, 50 Hz 
+100 kW 
+V500R001 
+V500RXXXC00SPC XXX (1) 
+437 
+Huawei 
+SUN2000-100KTL-M2 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+V500R023C00SPC XXX (1) 
+438 
+Huawei 
+SUN2000-105KTL-H1 
+800 V, 3ph, 50 Hz 
+105 kVA 
+V200R001 
+V200R001C30SPC XXX (1) 
+439 
+Huawei 
+PCS2000-108K-MB1 
+230/400 V, 3ph, 50 Hz 
+108 kW 
+LUNA2000BV200R024C00 
+LUNA2000B_V200R024C00SPC XXX (1) 
+440 
+Huawei 
+SUN2000-115KTL-M2 
+230/400 V, 3ph, 50 Hz 
+115 kW 
+V500R023C00SPC XXX (1) 
+441 
+Huawei 
+SUN2000-150K-MG0 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+SUN2000MG V600R023C10 
+SUN2000MG V600R023C10SPC XXX (1) 
+442 
+Huawei 
+SUN5000-150K-MG0 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+SUN2000MG V600R023C10 
+SUN2000MG V600R023C10SPC XXX (1) 
+443 
+Huawei 
+SUN2000-185KTL-H1 
+800 V, 3ph, 50 Hz 
+175 kW 
+V300R001 
+V300R001C00SPC XXX (1) 
+444 
+Huawei 
+LUNA2000-200KTL-H0 
+800 V, 3ph, 50 Hz 
+200 kW 
+FusionSolar V800R021C10SPC030 
+ 
+ 
+
+--- Page 23 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+23/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+445 
+Huawei 
+LUNA2000-200KTL-H1 
+800 V, 3ph, 50 Hz 
+200 kW 
+PCS2000HA V100R023C10 
+PCS2000HA V100R023C00SPC XXX (1) 
+446 
+Huawei 
+SUN2000-215KTL-H0 
+800 V, 3ph, 50 Hz 
+200 kW 
+V300R001 
+447 
+Huawei 
+SUN2000-215KTL-H3 
+800 V, 3ph, 50 Hz 
+200 kW 
+V300R001 
+448 
+Huawei 
+SUN2000-330KTL-H1 
+800 V, 3ph, 50 Hz 
+300 kW 
+V500R023C00SPC XXX (1) 
+449 
+Huawei 
+SUN2000-506KTL-H3 
+1000 V, 3ph, 50 Hz 
+460 kW 
+V100R025 
+V100R026CXX SPC XXX (1) 
+450 
+Hypontech 
+HMS-2000W 
+230 V, 1ph, 50 Hz 
+2 kW 
+V1.01.22 
+451 
+Hypontech 
+HPK-3000 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.0.0.6 
+452 
+Hypontech 
+HPS-5000P 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0.0.12 
+453 
+Hypontech 
+HES-6000 
+230 V, 1ph, 50 Hz 
+6 kW 
+V1.0.0.38 
+454 
+Hypontech 
+HPS-10000P 
+230 V, 1ph, 50 Hz 
+10 kW 
+V1.0.0.10 
+455 
+Hypontech 
+HPT-10000P 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.0.0.45 
+456 
+HYXiPOWER 
+HYX-M2000-S 
+230 V, 1ph, 50 Hz 
+2 kW 
+V02.02.09.0D 
+457 
+HYXiPOWER 
+HYX-H5K-HS 
+230 V, 1ph, 50 Hz 
+5 kW 
+V03.02.01.40 
+458 
+HYXiPOWER 
+HYX-S5K-S 
+230 V, 1ph, 50 Hz 
+5 kW 
+V01.03.01.05 
+459 
+HYXiPOWER 
+HYX-H6K-HT 
+230/400 V, 3ph, 50 Hz 
+6 kW 
+V1.0 
+460 
+HYXiPOWER 
+HYX-H8K-HS 
+230 V, 1ph, 50 Hz 
+8 kW 
+V03.02.01.40 
+461 
+HYXiPOWER 
+HYX-H10K-HT 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+V1.0 
+462 
+HYXiPOWER 
+HYX-S10K-T 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.0 
+463 
+HYXiPOWER 
+HYX-H12K-HT 
+230/400 V, 3ph, 50 Hz 
+13.2 kVA 
+V1.0 
+464 
+HYXiPOWER 
+HYX-H25K-HT 
+230/400 V, 3ph, 50 Hz 
+25 kW 
+V1.0 
+465 
+HYXiPOWER 
+HYX-S30K-T 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+V01.03.04.10 
+466 
+HYXiPOWER 
+HYX-S50K-T 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V01.03.04.10 
+467 
+HYXiPOWER 
+HYX-S125K-T2 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V01.02.00.0F 
+468 
+IN-power 
+INPPCS-100/0.4-W-24-C1-OS 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+ARM:679.6, FPGA:78.2 
+469 
+IN-power 
+INPPCS-125/0.4-W-14-A2-OS 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+Ctrl SW: 1.1.9.7 Comm SW: 1.8.5.2 
+470 
+INVT 
+iMars MG1K5TL 
+230 V, 1ph, 50 Hz 
+1.5 kVA 
+Control board: V1.2 
+Displayer board: V1.15 
+Ver1 : V1.21 
+Ver2 : V1.21 
+MCU : V1.16 
+471 
+INVT 
+iMars MG3KTL 
+230 V, 1ph, 50 Hz 
+3 kVA 
+Ver1 : V1.01 
+Ver2 : V1.01 
+MCU : V1.00 
+Ver1 : V1.21 
+Ver2 : V1.21 
+MCU : V1.16 
+472 
+INVT 
+iMars XG3KTL-S 
+230 V, 1ph, 50 Hz 
+3 kW 
+1202~0~0~205 
+ 
+ 
+
+--- Page 24 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+24/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+473 
+INVT 
+iMars MG5KTL-2M 
+230 V, 1ph, 50 Hz 
+4.6 kVA 
+Ver1 : V1.01 
+Ver2 : V1.01 
+MCU : V1.00 
+Ver1 : V3.01.05 
+Ver2 : V3.01.05 
+MCU : V1.16 
+474 
+INVT 
+iMars BG5KTR 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+Control board: V2.41 
+Displayer board: V1.15 
+Ver1 : V2.41.76 
+Ver2 : V2.41.76 
+MCU : V1.16 
+475 
+INVT 
+iMars XG5KTL 
+230 V, 1ph, 50 Hz 
+5 kW 
+1202~0~0~205 
+476 
+INVT 
+iMars MG6KTL-2M 
+230 V, 1ph, 50 Hz 
+6 kW 
+Control board: V3.01 
+Displayer board: V1.16 
+Ver1 : V3.01.05 
+Ver2 : V3.01.05 
+MCU : V1.16 
+477 
+INVT 
+iMars XD6KTL 
+230 V, 1ph, 50 Hz 
+6 kVA 
+0447-0448-000-1108 
+478 
+INVT 
+iMars XG6KTR-S 
+230/400 V, 3ph, 50 Hz 
+6 kW 
+ARM: A0543 
+DSP: A0406 
+479 
+INVT 
+iMars BG10KTR 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+Version1 : V1.20 
+Version2 : V1.20 
+MCU Version : V1.20 
+Ver1 : V2.41.76 
+Ver2 : V2.41.76 
+MCU : V1.16 
+480 
+INVT 
+iMars XD10KTL 
+230 V, 1ph, 50 Hz 
+10 kW 
+321-323-0-716 
+481 
+INVT 
+iMars XG10KTR-S 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+ARM: A0543 
+DSP: A0406 
+482 
+INVT 
+iMars BG15KTR 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+Control board: V2.41 
+Displayer board: V1.06 
+Version1 : V2.41.76 
+Version2 : V2.41.76 
+MCU Version : V2.01 
+483 
+INVT 
+iMars BG20KTR 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+Control board: V2.41 
+Displayer board: V2.01 
+Version1 : V2.41.76 
+Version2 : V2.41.76 
+MCU Version : V2.01 
+484 
+INVT 
+iMars BG30KTR 
+230/400 V, 3ph, 50 Hz 
+30 kVA 
+Control board: V2.41 
+Displayer board: V2.01 
+Version1 : V2.41.76 
+Version2 : V2.41.76 
+MCU Version : V2.01 
+ 
+ 
+
+--- Page 25 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+25/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+485 
+INVT 
+iMars BG50KTR 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+Control board: V3.02 
+Displayer board: V2.01 
+486 
+INVT 
+iMars XG100KTR 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+V1.00 
+487 
+ISUNA 
+Isuna 6000S 
+230 V, 1ph, 50 Hz 
+6 kW 
+V120 
+488 
+ISUNA 
+Isuna 20000T 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V000 
+489 
+JFY 
+JSI-1500TL 
+230 V, 1ph, 50 Hz 
+1.5 kW 
+V1.2 
+490 
+JFY 
+JSI-2000TL 
+230 V, 1ph, 50 Hz 
+2 kW 
+V1.2 
+491 
+JFY 
+JSI-3000TL 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.2 
+492 
+JFY 
+SUNTWINS 5000TL 
+230 V, 1ph, 50 Hz 
+5 kW 
+E1.0 
+493 
+JFY 
+SUNTREE 10000TL 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+M1.00_S1.00 
+494 
+JFY 
+SUNTREE 15000TL 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+M1.00--S1.00 
+495 
+JFY 
+SUNTREE 20000TL 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+M1.00_S1.00 
+496 
+JFY 
+SUNTREE 30000TL 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+M1.00--S1.00 
+497 
+Jinko 
+JKS-5K-SG03LP1-EU 
+230 V, 1ph, 50 Hz 
+5 kW 
+Ver 0-5370-1515 
+498 
+Jinko 
+JKS-10K-SG04LP3-EU 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Ver 2005-1090-1807 
+499 
+KACO 
+blueplanet 5.0 TL3 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+PKT : V3.28 
+ARM : V3.46 (DA29) 
+CFG : V5.0690 (AF34) 
+DSP : V1.08 (A9A2) 
+500 
+KACO 
+blueplanet 6.5 TL3 M2 WM 
+OD IIG0 
+400 V, 3ph, 50 Hz 
+6.5 kVA 
+PKT : V3.25 
+ARM : V3.34 (BC95) 
+CFG : V5.0600 (14D6) 
+DSP : V1.05 (E715) 
+501 
+KACO 
+blueplanet 7.5 TL3 M2 WM 
+OD IIG0 
+400 V, 3ph, 50 Hz 
+7.5 kVA 
+PKT : V3.25 
+ARM : V3.34 (BC95) 
+CFG : V5.0600 (14D6) 
+DSP : V1.05 (E715) 
+502 
+KACO 
+Powador 10.0 TL3- INT 
+400 V, 3ph, 50 Hz 
+9.0 kW 
+PKT : V3.01 
+ARM : V3.48 (7CA5) 
+CFG : V5.0862 (4863) 
+DSP-AC : V1.72 (3F7B) 
+DSP-DC : V1.60 (13EE) 
+503 
+KACO 
+blueplanet 9.0 TL3 M2 WM 
+OD IIG0 
+400 V, 3ph, 50 Hz 
+9.0 kVA 
+PKT : V3.25 
+ARM : V3.34 (BC95) 
+CFG : V5.0600 (14D6) 
+DSP : V1.05 (E715) 
+504 
+KACO 
+Powador 20.0 TL3- INT 
+400 V, 3ph, 50 Hz 
+17 kW 
+PKT : V3.01 
+ARM : V3.48 (7CA5) 
+CFG : V5.0862 (4863) 
+DSP-AC : V1.72 (3F7B) 
+DSP-DC : V1.60 (13EE) 
+ 
+ 
+
+--- Page 26 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+26/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+505 
+KACO 
+Blueplanet 20.0 TL3 M2 WM 
+OD IIG0 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+PKT: V4.14 
+ARM: V5.14 (2745) 
+CFG: V6.0748 (A3DF) 
+DSP-AC: V4.12 (2BEC) 
+DSP-DC: V4.03 (C141) 
+PKT: V5.20 
+ARM: V6.20 (FC25) 
+CFG: V6.0838 (A69E) 
+DSP-AC: V4.13 (62AF) 
+DSP-DC: V4.03 (C141) 
+506 
+KACO 
+Powador 30.0 TL3 - M – INT 
+230/400 V, 3ph, 50 Hz 
+25 kVA 
+PKT : V3.25 
+ARM : V3.78 (2780) 
+CFG : V5.1700 (7AD2) 
+DSP-AC : V2.18 (4CBA) 
+DSP-DC : V2.04 (7740) 
+507 
+KACO 
+Powador 30.0 TL3 - XL - F - 
+INT 
+230/400 V, 3ph, 50 Hz 
+25 kVA 
+PKT : V3.25 
+ARM : V3.78 (2780) 
+CFG : V5.1700 (7AD2) 
+DSP-AC : V2.18 (4CBA) 
+DSP-DC : V2.04 (7740) 
+508 
+KACO 
+Powador 30.0 TL3 - XL - F - 
+SPD 1+2 
+230/400 V, 3ph, 50 Hz 
+25 kVA 
+PKT : V3.25 
+ARM : V3.78 (2780) 
+CFG : V5.1700 (7AD2) 
+DSP-AC : V2.18 (4CBA) 
+DSP-DC : V2.04 (7740) 
+509 
+KACO 
+Powador 30.0 TL3 - XL - INT 
+- SPD 1+2 
+230/400 V, 3ph, 50 Hz 
+25 kVA 
+PKT : V3.25 
+ARM : V3.78 (2780) 
+CFG : V5.1700 (7AD2) 
+DSP-AC : V2.18 (4CBA) 
+DSP-DC : V2.04 (7740) 
+510 
+KACO 
+Powador 30.0 TL3 - XL – INT 
+230/400 V, 3ph, 50 Hz 
+25 kVA 
+PKT : V3.25 
+ARM : V3.78 (2780) 
+CFG : V5.1700 (7AD2) 
+DSP-AC : V2.18 (4CBA) 
+DSP-DC : V2.04 (7740) 
+ 
+ 
+
+--- Page 27 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+27/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+511 
+KACO 
+Powador 39.0 TL3-XL-INT 
+230/400 V, 3ph, 50 Hz 
+33.3 kVA 
+PKT : V2.20 
+ARM : V2.30 (C576) 
+CFG : V5.0696 (9677) 
+DSP-AC : V1.64 (E199) 
+DSP-DC : V1.54 (8678) 
+512 
+KACO 
+Powador 60.0 TL3-XL-INT 
+230/400 V, 3ph, 50 Hz 
+49.9 kVA 
+PKT : V2.20 
+ARM : V2.30 (C576) 
+CFG : V5.0696 (9677) 
+DSP-AC : V1.64 (E199) 
+DSP-DC : V1.54 (8678) 
+513 
+KACO 
+Blueplanet 50.0 TL3 M1 WM 
+OD IIGM 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+PKT : V3.12 
+ARM : V3.70 (9D01) 
+CFG : V5.1608 (5D88) 
+DSP : V2.11 (3391) 
+514 
+KACO 
+Blueplanet 50.0 TL3 M1 WM 
+OD IIGX 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+PKT : V4.09 
+ARM : V5.08 
+CFG : V6.0572 
+DSP-AC : V4.09 
+DSP-DC : V4.02 
+PKT : V4.13 
+ARM : V5.10 (1A80) 
+CFG : V6.0692 (8A13) 
+DSP : V4.12 (3DC1) 
+PKT : V5.24 
+ARM : V6.21 (9CC3) 
+CFG : V6.0718 (17D2) 
+DSP : V4.17 (E538) 
+515 
+KEHUA TECH 
+SPI5000-B2 
+230 V, 1ph, 50 Hz 
+5 kW 
+HMI whole version V2.05.00.220329D 
+Full version of control software 1 
+V2.05.000.220419I 
+516 
+KEHUA TECH 
+iStoragE3 10K 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V 1 
+517 
+KEHUA TECH 
+SPI20K-B 
+230/400 V, 50 Hz 
+20 kW 
+HMI Version: V1.00 
+DSP1 Version: V1.00 
+DSP2 Version: V1.00 
+518 
+KEHUA TECH 
+SPI125K-B 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+Control software 1 version V1, Control software 
+2 version V1, HMI software version V1 
+519 
+KOSTAL 
+PIKO 5.5 
+230/400 V, 3ph, 50 Hz 
+5.5 kVA 
+FW 05.35 UI 06.11 
+HW 0100 PAR 02.49 
+520 
+KOSTAL 
+PIKO 20 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+FW 05.31 UI 06.02 
+HW 0100 PAR 02.46 
+ 
+ 
+
+--- Page 28 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+28/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+521 
+KSTAR 
+BluE-G 3000S-G2-M1 
+230 V, 1ph, 50 Hz 
+3 kW 
+ARM VER : 1.9 
+DSP VER : 2.5 
+522 
+KSTAR 
+BluE-G 5000D-M1 
+230 V, 1ph, 50 Hz 
+5 kW 
+ARM VER : 1.9 
+DSP VER : 2.5 
+523 
+KSTAR 
+BluE-S 5000D 
+230 V, 1ph, 50 Hz 
+5 kW 
+ARM VER : 1.4.00 
+DSP VER : 1.4.14 
+524 
+KSTAR 
+KSG-5K-DM 
+230 V, 1ph, 50 Hz 
+5 kW 
+DSP V1.0, ARM V1.0 
+525 
+KSTAR 
+BluE-10KT-M1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+ARM : 1.0.00 
+I-DSP : 0.7.01 
+B-DSP : 0.0.00 
+526 
+KSTAR 
+E10KT 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+ARM VER : 1.0.00 
+DSP VER : 1.0.00 
+DSP2 : 1.0.00 
+527 
+KSTAR 
+BluE-20KT-M1 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+DSP : 1.2 
+ARM : 1.5 
+528 
+KSTAR 
+KSG-20K 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+DSP V1.8, ARM V1.6 
+529 
+KSTAR 
+KAC50DP 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V160B000D000 
+530 
+KSTAR 
+KAC50DP2 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V030B050D010 
+531 
+KSTAR 
+KSG-50K 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+DSP V1.8, ARM V1.6 
+532 
+KSTAR 
+G60KT 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+ARM: 0.3.07 
+I-DSP: 0.2.00 
+B-DSP: 0.2.00 
+533 
+KSTAR 
+G125KT7 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+ARM : V3.0.0 
+DSP1 : V0.1.0 
+DSP2 : V1.3.0 
+534 
+LANPWR 
+LANPWR 20000T 
+230/400 V, 3ph, 50 Hz 
+22 kVA 
+V000 
+535 
+LANPWR 
+UHC 50KT-U2 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V5.704 
+536 
+LEAD SOLAR 
+LS1400S 
+230 V, 1ph, 50 Hz 
+1.4 kW 
+LS1400_DCAC_20161222 
+LS1400_DCDC_20161222 
+537 
+LEONICS 
+APOLLO G-4300TL(M) 
+230 V, 1ph, 50 Hz 
+3 kW 
+DSP : 1.0; MCU : 0.20 
+538 
+LEONICS 
+APOLLO G-4500TL(M) 
+230 V, 1ph, 50 Hz 
+5 kW 
+DSP : 1.0; MCU : 0.20 
+539 
+LEONICS 
+APOLLO GTP-4010TL 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+ARM VER : 1.3 
+DSP VER : 1.5 
+540 
+LEONICS 
+APOLLO GTP-4020TL 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+ARM VER : 1.3 
+DSP VER : 1.5 
+541 
+LESSO 
+LSBH20KTL3-OC1 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V2.0 
+542 
+Litto 
+LS 3000HD 
+230 V, 1ph, 50 Hz 
+3 kVA 
+ARM:V1.050 DSP:V1.023 
+543 
+Litto 
+LS 5000HD 
+230 V, 1ph, 50 Hz 
+5 kVA 
+ARM:V1.038 DSP:V1.025 
+544 
+Litto 
+LT 10000HD 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+V1.050/V1.031/V1.0 
+545 
+Litto 
+LT 20000HD 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+V1.038/V1.040/V1.0 
+546 
+LIVOLTEK 
+HP1-6KS2 
+230 V, 1ph, 50 Hz 
+6 kVA 
+HP1LTKHP11LTK2CO 
+547 
+LIVOLTEK 
+HP1-12KS2 
+230 V, 1ph, 50 Hz 
+12 kW 
+HP1LTKHP11LTK2CO 
+548 
+LIVOLTEK 
+PCS-125KG1 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+HP3LTKHP33LTK1CO 
+549 
+LUX POWER 
+SNA6000 WPV 
+230 V, 1ph, 50 Hz 
+6 kW 
+cbaa-1F96 
+ 
+ 
+
+--- Page 29 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+29/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+550 
+LVTOPSUN 
+SUN-5K-SG03LP1-EU 
+230 V, 1ph, 50 Hz 
+5 kW 
+Ver 0-5370-1515 
+551 
+Maktronic 
+MG-3000TH 
+230 V, 1ph, 50 Hz 
+3 kW 
+D262-A247 
+552 
+Maktronic 
+MG-5000TH 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.01.03.1375 
+553 
+MARSROCK 
+2000G7 
+230 V, 1ph, 50 Hz 
+2 kW 
+20.02 
+554 
+MARSTEK 
+MST-BIE5-2500 
+230 V, 1ph, 50 Hz 
+2.5 kW 
+139 
+555 
+MaxSky Solar 
+SUNT-6.0kW-S 
+230 V, 1ph, 50 Hz 
+6 kW 
+V22.61 
+556 
+Midea 
+MEI2-HS5H-AIO 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0.00 
+557 
+Midea 
+MEI2-HS5L 
+230 V, 1ph, 50 Hz 
+5 kW 
+1.0.0 
+558 
+Midea 
+MEI2-HS6L 
+230 V, 1ph, 50 Hz 
+6 kW 
+1.0.0 
+559 
+Midea 
+MEI2-HS8H-AIO 
+230 V, 1ph, 50 Hz 
+8 kW 
+V1.0.00 
+560 
+Midea 
+MEI2-HT10H-AIO 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.0.00 
+561 
+Midea 
+MEI2-HT15H 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V1.0.0 
+562 
+Midea 
+MEI2-HT15H-AIO 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V1.0.00 
+563 
+Midea 
+MEI2-HT20H 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V1.0.0 
+564 
+Midea 
+MEI2-HT30H 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+V1.0.0 
+565 
+MUST 
+PH50-3000M 
+230 V, 1ph, 50 Hz 
+3 kVA 
+AC 1.0 
+566 
+MUST 
+PH11-6048PRO 
+230 V, 1ph, 50 Hz 
+6 kW 
+V00.01 
+567 
+MUST 
+PH11-10KL3-EU 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V00.01 
+568 
+NEOVOLT 
+BW-INV-SPH3.6K 
+230 V, 1ph, 50 Hz 
+3.6 kVA 
+Master: CPU_U23 
+Slave: CPU_U31 
+569 
+NEOVOLT 
+BW-INV-SPH5K 
+230 V, 1ph, 50 Hz 
+5 kVA 
+Master: CPU_U23 
+Slave: CPU_U31 
+570 
+NEP 
+BDM-2000 
+230 V, 1ph, 50 Hz 
+2 kW 
+E2 
+571 
+PEC 
+PCS-VACON-3-20G 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+ARFIF106V165 
+ 
+ 
+
+--- Page 30 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+30/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+572 
+Pixii 
+PowerShaper 2 ACU OD AUS 
+Pole Top 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+Main app 
+Part no : 13040 
+Revision : 2.0 
+Build : 22 
+SW Ident : 127c284d 
+Frontend 
+Part no : 13041 
+Revision : 2.0 
+Build : 8 
+SW Ident : 43c66935 
+IO Main app 
+Part no : 13042 
+Revision : 2.0 
+Build : 3 
+SW Ident : 9f099a6 
+Main app 
+Part no : 13040 
+Revision : 2.2 
+Build : 36 
+SW Ident : 4eb17318 
+Frontend 
+Part no : 13041 
+Revision : 2.2 
+Build : 36 
+SW Ident : e780ad20 
+IO Main app 
+Part no : 13042 
+Revision : 2.0 
+Build : 5 
+SW Ident : da49d76 
+573 
+PrimeVOLT 
+PV-3000N-V 
+230 V, 1ph, 50 Hz 
+3 kVA 
+BT0101 
+574 
+PrimeVOLT 
+PV-5000W-HV 
+230 V, 1ph, 50 Hz 
+5 kW 
+TW0101 
+575 
+PrimeVOLT 
+PV-5000W-V 
+230 V, 1ph, 50 Hz 
+5 kW 
+DE0101 
+576 
+PrimeVOLT 
+PV-10000T-U 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+TA0101 
+577 
+PrimeVOLT 
+PV-20000T-U 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+AR0101 
+578 PROJOY electric 
+PSOL-MS3000H 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.0 
+579 
+PSI 
+P16 
+230 V, 1ph, 50 Hz 
+1.6 kW 
+V3.05 
+ 
+ 
+
+--- Page 31 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+31/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+580 
+PSI 
+P16V1 
+230 V, 1ph, 50 Hz 
+1.6 kW 
+M Ver: 9.74 
+S Ver: 1.01 
+H Ver: 1.16 
+581 
+PSI 
+P33 
+230 V, 1ph, 50 Hz 
+3.3 kW 
+V3.05 
+M: 0.10 S: 0.10 
+582 
+PSI 
+P33V1 
+230 V, 1ph, 50 Hz 
+3.3 kW 
+M Ver: 1.33 
+S Ver: 1.01 
+H Ver: 1.18 
+583 
+PSI 
+P50 
+230 V, 1ph, 50 Hz 
+5 kW 
+040-001-0601 
+M: 1.21 S: 1.21 
+584 
+PSI 
+P50-3 
+400 V, 3ph, 50 Hz 
+5 kW 
+M: 1.45 S: 1.45 
+585 
+PSI 
+P50V1 
+230 V, 1ph, 50 Hz 
+5 kW 
+M Ver: 1.37 
+S Ver: 1.01 
+H Ver: 1.29 
+586 
+PSI 
+H6LV 
+230 V, 1ph, 50 Hz 
+6 kW 
+DSP Version: V1.010 
+ARM Version: V1.010 
+LCD Version: V1.010 
+587 
+PSI 
+P100 
+230 V, 1ph, 50 Hz 
+10 kW 
+M Ver: 1.38 
+S Ver: 1.01 
+H Ver: 1.31 
+588 
+PSI 
+P100-3 
+400 V, 3ph, 50 Hz 
+10 kW 
+M: 1.44 S: 1.43 
+589 
+PSI 
+P100-3V1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+M Ver: 1.12 
+S Ver: 1.01 
+H Ver: 1.29 
+590 
+PSI 
+P250 
+230/400 V, 3ph, 50 Hz 
+25 kW 
+M Ver: 1.06 
+S Ver: 1.00 
+H Ver: 1.11 
+591 
+PSI 
+P300 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+V2.70 
+592 
+PSI 
+P500 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+M Ver: 1.06 
+S Ver: 1.00 
+H Ver: 1.11 
+593 
+PSI 
+P600 
+400 V, 3ph, 50 Hz 
+60 kW 
+V2.00 
+594 
+RAPD 
+RPD-S-HB6KLP1 
+230 V, 1ph, 50 Hz 
+6 kW 
+EMS: G9514-060104-02_340403 
+MDSP: G9514-060100-02_340404 
+SDSP: G9514-060101-01_340200 
+595 
+Redpulse 
+RPMI-2300-4T 
+230 V, 1ph, 50 Hz 
+2.3 kW 
+V0.1.38 
+596 
+RENAC 
+R1-3K3-SS 
+230 V, 1ph, 50 Hz 
+3.3 kVA 
+M: 1.45 S: 1.45 
+597 
+RENAC 
+N1-LV-5K 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.000 
+598 
+RENAC 
+NAC5K-DS 
+230 V, 1ph, 50 Hz 
+5.5 kVA 
+M: 1.21 S: 1.21 
+599 
+RENAC 
+R3-5K-DT 
+400 V, 3ph, 50 Hz 
+5.5 kVA 
+M: 1.45 S: 1.45 
+600 
+RENAC 
+N1-LV-8K 
+230 V, 1ph, 50 Hz 
+8 kW 
+V1.000 
+601 
+RENAC 
+R3-10K-DT 
+400 V, 3ph, 50 Hz 
+11 kVA 
+M: 1.44 S: 1.43 
+ 
+ 
+
+--- Page 32 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+32/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+602 
+RENAC 
+NAC33K-DT 
+230/400 V, 3ph, 50 Hz 
+33 kVA 
+DSP-M: V1.17 
+DSP-S: V1.17 
+MCU-H: V1.20 
+603 
+REPT BATTERO 
+L1000C-AC-125-261-G 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+010101 
+604 
+Repulsor 
+HOME ULTIMATE 
+230 V, 1ph, 50 Hz 
+5 kW 
+1.0.73.R 
+605 
+RICHSOLAR 
+SUN-10K-SG05LP1-EU 
+230 V, 1ph, 50 Hz 
+10 kW 
+HMI: Ver 0000-C36B MAIN: Ver 0-B025-1726 
+606 
+Rockcore 
+Electronics 
+MI2S-800D 
+230 V, 1ph, 50 Hz 
+0.8 kVA 
+30.03 
+607 
+Rockcore 
+Electronics 
+MI2S-2500Q 
+230 V, 1ph, 50 Hz 
+2.5 kW 
+21.20 
+608 
+SAJ 
+M2-2.25K-S4 
+230 V, 1ph, 50 Hz 
+2.25 kW 
+v1.008 
+609 
+SAJ 
+R5-3K-S2-15 
+230 V, 1ph, 50 Hz 
+3 kW 
+V 1.193 
+610 
+SAJ 
+R5-5K-S2-15 
+230 V, 1ph, 50 Hz 
+5 kW 
+V 1.193 
+611 
+SAJ 
+R6-5K-T2 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V2.200 
+612 
+SAJ 
+H2-6K-LS2 
+230 V, 1ph, 50 Hz 
+6 kW 
+Display Board: V1.048 / Control Board: V0.465 
+613 
+SAJ 
+H2-6K-LS2-S 
+230 V, 1ph, 50 Hz 
+6 kW 
+DSP_V1.014 
+614 
+SAJ 
+HS3-6K-S2-W-P 
+230 V, 1ph, 50 Hz 
+6 kW 
+V1.001 
+615 
+SAJ 
+H2-10K-LS2 
+230 V, 1ph, 50 Hz 
+10 kW 
+ARM V1.048 DSP V0.465 
+616 
+SAJ 
+R6-10K-T2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V2.200 
+617 
+SAJ 
+H2-12K-LT2 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+V1.027 
+618 
+SAJ 
+HS3-12K-T2-W-P 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+V0.922 
+619 
+SAJ 
+H2-16K-LT2 
+230/400 V, 3ph, 50 Hz 
+16 kW 
+V1.027 
+620 
+SAJ 
+H2-20K-LT2 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V1.027 
+621 
+SAJ 
+CH2-50K-T6 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V1.212 
+622 
+SAJ 
+R6-50K-T4-32 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V2.551 
+623 
+SAJ 
+C6-100K-T9-40 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+V 1.000 
+624 
+Satcon 
+EQX1000PV400XN/P 
+400 V, 3ph, 50 Hz 
+1000 kW 
+3.467 
+625 Schneider Electric 
+Conext RL 3000 E 
+230 V, 1ph, 50 Hz 
+3 kVA 
+DSP : 2.02, 2.5 
+RED : 2.00 
+COMM : 2.00 
+DSP : 2.02, 2.5 
+RED : 2.00 
+COMM : 2.50 
+DSP : 2.70 
+RED : 2.00 
+COMM : 2.70 
+ 
+ 
+
+--- Page 33 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+33/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+626 Schneider Electric 
+Conext RL 3000 E-S 
+230 V, 1ph, 50 Hz 
+3 kVA 
+DSP : 2.02, 2.5 
+RED : 2.00 
+COMM : 2.00 
+DSP : 2.02, 2.5 
+RED : 2.00 
+COMM : 2.50 
+DSP : 2.70 
+RED : 2.00 
+COMM : 2.70 
+627 Schneider Electric 
+Conext CL 20000 E 
+400 V, 3ph, 50 Hz 
+20 kVA 
+COMM APPL : Ver02.02.01 
+CTRL DCAC : Ver02.02.01 
+CTRL DCDC : Ver02.02.01 
+COMM APPL : Ver02.05.01 
+CTRL DCAC : Ver02.05.01 
+CTRL DCDC : Ver02.05.01 
+COMM APPL : Ver02.08.01 
+CTRL DCAC : Ver02.08.01 
+CTRL DCDC : Ver02.08.01 
+628 Schneider Electric 
+Conext CL 25000 E 
+400 V, 3ph, 50 Hz 
+25 kVA 
+COMM APPL : Ver02.02.01 
+CTRL DCAC : Ver02.02.01 
+CTRL DCDC : Ver02.02.01 
+COMM APPL : Ver02.05.01 
+CTRL DCAC : Ver02.05.01 
+CTRL DCDC : Ver02.05.01 
+COMM APPL : Ver02.08.01 
+CTRL DCAC : Ver02.08.01 
+CTRL DCDC : Ver02.08.01 
+629 Schneider Electric 
+Conext CL36 
+230/400 V, 3ph, 50 Hz 
+36 kVA 
+MDSP_CL36_V11_V1_B 
+LCD_CL36_V11_V01_A_M 
+630 Schneider Electric 
+Conext CL-60 E 
+230/400 V, 3ph, 50 Hz 
+60 kVA 
+MDSP_CL-60E_V11_V1_C 
+LCD_CL-60E_V11_V03_R_M 
+631 
+Sigenergy 
+SigenMicro 1000 
+230 V, 1ph, 50 Hz 
+1 kW 
+V100R001C00 
+632 
+Sigenergy 
+Sigen Hybrid 5.0 SP2 
+230 V, 1ph, 50 Hz 
+5 kW 
+V100R001C00 
+633 
+Sigenergy 
+SigenStor EC 5.0 SP 
+230 V, 1ph, 50 Hz 
+5 kW 
+V100R001C00 
+634 
+Sigenergy 
+SigenStor Neo EC 6.0 SP 
+230 V, 1ph, 50 Hz 
+6 kW 
+V100R001C00 
+635 
+Sigenergy 
+Sigen Hybrid 10.0 TP2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V100R001 
+636 
+Sigenergy 
+SigenStor EC 10.0 SP 
+230 V, 1ph, 50 Hz 
+10 kW 
+V100R001C22 
+637 
+Sigenergy 
+SigenStor EC 10.0 TP 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V100R001C21 
+638 
+Sigenergy 
+SigenStor Neo EC 12.0 SP 
+230 V, 1ph, 50 Hz 
+12 kW 
+V100R001C00 
+639 
+Sigenergy 
+SigenStor EC 20.0 TP 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V100R001C21 
+640 
+Sigenergy 
+SigenStor EC 25.0 TP 
+230/400 V, 3ph, 50 Hz 
+25 kW 
+V100R001C21 
+641 
+Sigenergy 
+Sigen PV 50M1 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V100R001 
+642 
+Sigenergy 
+Sigen PV 50M1-HYA 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V100R001 
+643 
+Sigenergy 
+Sigen PV 50M1-HYB 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V100R001C00 
+ 
+ 
+
+--- Page 34 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+34/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+644 
+Sigenergy 
+Sigen PV 110M1 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+V100R001 
+645 
+Sigenergy 
+Sigen PV 110M1-HYA 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+V100R001 
+646 
+Sigenergy 
+Sigen PV 110M1-HYB 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+V100R001C00 
+647 
+Sigenergy 
+Sigen PV 125M1 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V100R001 
+648 
+Sigenergy 
+Sigen PV 125M1-HYA 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V100R001 
+649 
+SINENG 
+SN5.0HS-X 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.00 
+650 
+SINENG 
+SN10PT 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+2390000040 
+651 
+SINENG 
+SN20PT 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+2390000040 
+652 
+SINENG 
+SN30PT 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+2390000040 
+653 
+SINENG 
+SN50PT 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Control Software Version : V000B051D008 
+654 
+SINENG 
+SP-120K-BL 
+400 V, 3ph, 50 Hz 
+121 kW 
+Control Software Version 1 : 6280110040 
+Control Software Version 2 : 0000110040 
+655 
+SINENG 
+SN125PT 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V217B000D000 
+656 
+Sinexcel 
+PMG2-50K 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+1400 
+657 
+Sinexcel 
+PMG2-100K 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+1400 
+658 
+Sinexcel 
+PWS1-135M-EX 
+230/400 V, 3ph, 50 Hz 
+135 kW 
+V1.0 
+659 
+SINOSOAR 
+SP60HCG2 
+230/400 V, 3ph, 50 Hz 
+60 kVA 
+V00.00 
+660 
+SINOSOAR 
+SP125HCPS 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V05 
+661 
+SKYWORTH 
+SWH6000L-S1-G2 
+230 V, 1ph, 50 Hz 
+6 kW 
+000012 
+662 
+SKYWORTH 
+SWH010KL-T1-G2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+010101 
+663 
+SMA 
+SB 2500TLST-21 
+230 V, 1ph, 50 Hz 
+2.5 kW 
+FW PACK 2.55 HP2.52 
+664 
+SMA 
+SB 3000TLST-21 
+230 V, 1ph, 50 Hz 
+3 kW 
+FW PACK 2.55 HP2.52 
+665 
+SMA 
+SB3.0-1AV-40 
+230 V, 1ph, 50 Hz 
+3 kW 
+1.1.41.R 
+1.3.36.R 
+666 
+SMA 
+SB3.0-1AV-41 
+230 V, 1ph, 50 Hz 
+3 kW 
+1.1.21.R 
+667 
+SMA 
+SB 3600TL-21 
+230 V, 1ph, 50 Hz 
+3.68 kW 
+FW PACK 2.55 HP2.52 
+FW PACK 2.80 HP2.52 
+668 
+SMA 
+SB 5000TL-21 
+230 V, 1ph, 50 Hz 
+5 kW 
+FW PACK 2.55 HP2.52 
+FW PACK 2.80 HP2.52 
+669 
+SMA 
+SB5.0-1AV-40 
+230 V, 1ph, 50 Hz 
+5 kW 
+1.1.41.R 
+1.3.36.R 
+670 
+SMA 
+SB5.0-1AV-41 
+230 V, 1ph, 50 Hz 
+5 kW 
+1.1.21.R 
+1.1.32.R 
+3.10.14.R 
+3.10.18.R 
+3.10.28.R 
+3.10.36.R 
+3.10.42.R 
+671 
+SMA 
+STP 5000TL-20 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+FW PACK 2.56 HP2.51 
+672 
+SMA 
+STP5.0-3AV-40 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+3.10.10.R 
+3.10.16.R 
+3.10.42.R 
+3.11.3.R 
+3.11.11.R 
+ 
+ 
+
+--- Page 35 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+35/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+673 
+SMA 
+STP 9000TL-20 
+230/400 V, 3ph, 50 Hz 
+9 kW 
+FW PACK 2.51 HP2.50 
+FW PACK 2.53 HP2.50 
+FW PACK 2.56 HP2.51 
+674 
+SMA 
+STP10.0-3AV-40 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+3.10.8.R 
+3.10.11.R 
+3.10.15.R 
+3.10.42.R 
+3.11.3.R 
+3.11.11.R 
+675 
+SMA 
+STP 12-50 
+230/400 V, 3ph, 50 Hz 
+12 kVA 
+02.24.04.R 
+676 
+SMA 
+STP 15-50 
+230/400 V, 3ph, 50 Hz 
+15 kVA 
+02.24.04.R 
+677 
+SMA 
+STP 17000TL-10 
+230/400 V, 3ph, 50 Hz 
+17 kW 
+FW PACK 2.55 HP2.52 
+678 
+SMA 
+STP 20-50 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+02.24.04.R 
+679 
+SMA 
+STP 20000TL-30 
+400 V, 3ph, 50 Hz 
+20 kW 
+Software package 02.80.XX.R (1) 
+Software version 01.00.XX.R (1) 
+Software package 02.81.XX.R (1) 
+Software version 01.00.XX.R (1) 
+Software package 02.83.XX.R (1) 
+Software version 01.02.XX.R (1) 
+FW PACK 2.82 HP1.01 
+FW PACK 2.83 HP1.02 
+680 
+SMA 
+STP 20000TLEE-10 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+FW PACK 2.53 HP2.50 
+FW PACK 2.54 HP2.50 
+681 
+SMA 
+STP 25-50 
+230/400 V, 3ph, 50 Hz 
+25 kVA 
+02.24.04.R 
+682 
+SMA 
+STP 25000TL-30 
+400 V, 3ph, 50 Hz 
+25 kW 
+Software package 02.80.XX.R (1) 
+Software version 01.00.XX.R (1) 
+Software package 02.81.XX.R (1) 
+Software version 01.00.XX.R (1) 
+Software package 02.83.XX.R (1) 
+Software version 01.02.XX.R (1) 
+FW PACK 2.82 HP1.01 
+FW PACK 2.83 HP1.02 
+683 
+SMA 
+STP 50-40 
+400 V, 3ph, 50 Hz 
+50 kVA 
+1.03.08.R 
+1.03.12.R 
+1.03.20.R 
+1.05.05.R 
+1.05.09.R 
+03.01.XX.R (1) 
+03.10.XX.R (1) 
+03.11.XX.R (1) 
+684 
+SMA 
+STP 50-41 
+400 V, 3ph, 50 Hz 
+50 kVA 
+1.03.08.R 
+685 
+SmartGreen 
+EHP-000500-P00 
+230 V, 1ph, 50 Hz 
+5 kW 
+SMP:01.52.15.02, DCP:03.04.96.01, 
+FSP:02.03.70.00 
+ 
+ 
+
+--- Page 36 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+36/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+686 
+SmartGreen 
+EHP-00140T-P00 
+230/400 V, 3ph, 50 Hz 
+13.8 kW 
+SMP:01.52.81.15, DCP:03.01.42.07, 
+FSP:03.00.62.96 
+687 
+SmartGreen 
+ESI-006000-P00 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+SMP:01.51.91.00, DCP:01.88.25.08, 
+FSP:01.33.17.00 
+688 
+SmartGreen 
+ECB-PM-100-P00 
+230/400 V, 3ph, 50 Hz 
+100 kVA 
+SMP:01.52.45.00, DCP:01.88.34.00, 
+FSP:01.33.21.00 
+689 
+SOFAR 
+SOFAR 1.6KTL2-G3 
+230 V, 1ph, 50 Hz 
+1.6 kW 
+V1.00 
+690 
+SOFAR 
+SOFAR 3.3KTL2-G3 
+230 V, 1ph, 50 Hz 
+3.3 kW 
+V1.00 
+691 
+SOFAR 
+SOFAR 3300TL-G3 
+230 V, 1ph, 50 Hz 
+3.3 kVA 
+V2.90 
+G420 V420 V420 
+692 
+SOFAR 
+ESI 5K-S1 
+230 V, 1ph, 50 Hz 
+5 kW 
+V000001 
+693 
+SOFAR 
+HYD-5K-LS1-PRO 
+230 V, 1ph, 50 Hz 
+5 kW 
+V000001 
+694 
+SOFAR 
+HYD-5K-LT1 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V000001 
+695 
+SOFAR 
+SOFAR 5.5KTLX-G3 
+400 V, 3ph, 50 Hz 
+5 kW 
+V000001 
+696 
+SOFAR 
+SOFAR 5KTLM-G3 
+230 V, 1ph, 50 Hz 
+5 kW 
+V000001 
+697 
+SOFAR 
+HYD 6000-EP 
+230 V, 1ph, 50 Hz 
+6 kW 
+V010000 
+698 
+SOFAR 
+HYD-8K-LS1-PRO 
+230 V, 1ph, 50 Hz 
+8 kW 
+V000001 
+699 
+SOFAR 
+HYD-8K-LT1 
+230/400 V, 3ph, 50 Hz 
+8 kW 
+V000001 
+700 
+SOFAR 
+HYD-10K-LS1 
+230 V, 1ph, 50 Hz 
+10 kW 
+V000001 
+701 
+SOFAR 
+HYD-10K-LT1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V000001 
+702 
+SOFAR 
+SOFAR 11KTLX-G3 
+400 V, 3ph, 50 Hz 
+10 kW 
+V000001 
+703 
+SOFAR 
+HYD-15K-LT1 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V000001 
+704 
+SOFAR 
+SOFAR 20KTLX-G3 
+400 V, 3ph, 50 Hz 
+20 kW 
+V010000 
+705 
+SOFAR 
+SOFAR 20KTLX2-G3P 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V010000 
+706 
+SOFAR 
+SOFAR 30KTLX-G3 
+400 V, 3ph, 50 Hz 
+30 kW 
+V010000 
+707 
+SOFAR 
+SOFAR 50KTLX-G3 
+400 V, 3ph, 50 Hz 
+50 kW 
+V010000 
+708 
+SOFAR 
+SOFAR 110KTLX-G4 
+230/400 V, 3ph, 50 Hz 
+110 kVA 
+V000001 
+709 
+SOFAR 
+SOFAR 125KTLX-G4 
+230/400 V, 3ph, 50 Hz 
+125 kVA 
+V000001 
+710 
+SOFAR 
+SOFAR 125KTLX-G4-ESS 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V000001 
+711 
+Solar Edge 
+SE3000H 
+230 V, 1ph, 50 Hz 
+3 kVA 
+DSP1/2: 1.0000/2.0000 
+DSP1/2: 1.0.XXXX/2.0.XXXX (1) 
+DSP1/2: 1.100.XXXX/2.100.XXXX (1) 
+712 
+Solar Edge 
+SE5000 
+230 V, 1ph, 50 Hz 
+5 kW 
+DSP1/2:1.0210/2.0052 
+713 
+Solar Edge 
+SE5000H 
+230 V, 1ph, 50 Hz 
+5 kVA 
+DSP1/2: 1.0000/2.0000 
+DSP1/2: 1.0.XXXX/2.0.XXXX (1) 
+DSP1/2: 1.100.XXXX/2.100.XXXX (1) 
+714 
+Solar Edge 
+SE5K-RWB 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+715 
+Solar Edge 
+SE10K 
+400 V, 3ph, 50 Hz 
+10 kW 
+DSP1/2:1.0013/2.0019 
+DSP1 Version 1.13.XXXX (1) 
+DSP2 Version 2.19.XXXX (1) 
+DSP1 Version 1.20.XXXX (1) 
+DSP2 Version 2.20.XXXX (1) 
+ 
+ 
+
+--- Page 37 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+37/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+716 
+Solar Edge 
+SE10K-RWB48 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+Main DSP 1.20 
+AUX DSP 2.20 
+DSP1 Version 1.20.XXXX (1) 
+DSP2 Version 2.20.XXXX (1) 
+717 
+Solar Edge 
+SE27.6K 
+230/400 V, 3ph, 50 Hz 
+27.6 kVA 
+DSP1/2:1.0013/2.0019 
+DSP1 Version 1.13.XXXX (1) 
+DSP2 Version 2.19.XXXX (1) 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+DSP1 Version 1.0020.XXX (1) 
+DSP2 Version 2.0020.XXX (1) 
+718 
+Solar Edge 
+SE30K 
+230/400 V, 3ph, 50 Hz 
+30 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+DSP1 Version 1.0020.XXX (1) 
+DSP2 Version 2.0020.XXX (1) 
+719 
+Solar Edge 
+SE33.3K 
+230/400 V, 3ph, 50 Hz 
+33.3 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+DSP1 Version 1.0020.XXX (1) 
+DSP2 Version 2.0020.XXX (1) 
+720 
+Solar Edge 
+PCS050 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V050BxxxDxxx 
+721 
+Solar Edge 
+SE66.6K 
+230/400 V, 3ph, 50 Hz 
+66.6 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+722 
+Solar Edge 
+SE82.8K 
+230/400 V, 3ph, 50 Hz 
+82.8 kVA 
+DSP1/2:1.0013/2.0019 
+DSP1 Version 1.13.XXXX (1) 
+DSP2 Version 2.19.XXXX (1) 
+723 
+Solar Edge 
+SE90K 
+230/400 V, 3ph, 50 Hz 
+90 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+724 
+Solar Edge 
+SE100K 
+230/400 V, 3ph, 50 Hz 
+100 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+725 
+Solar Edge 
+SE120K 
+480 V, 3ph, 50 Hz 
+120 kVA 
+DSP1 Version 1.20.XXX (1) 
+DSP2 Version 2.20.XXX (1) 
+726 
+Solar Edge 
+SE330K 
+690 V, 3ph, 50 Hz 
+330 kW 
+2.3 
+DSP1 Version 1.3.XXX (1) 
+DSP2 Version 2.3.XXX (1) 
+727 
+SOLAR ENERGY 
+Sunlight-6000S 
+230 V, 1ph, 50 Hz 
+6 kW 
+110 
+120.1 
+728 
+SOLAR ENERGY 
+Sunlight -12KTL 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+DSP1:V000; DSP2:V000; ARM: V000; CPLD: V000 
+729 
+SOLAR ENERGY 
+Sunlight-20KTH 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+DSP1 V000 
+DSP2 V000 
+ARM V000 
+CPLD V000 
+730 
+SOLAX POWER 
+X1-Micro 1200 
+230 V, 1ph, 50 Hz 
+1.2 kVA 
+DSP 001.00 
+Module Version 001.00 
+ 
+ 
+
+--- Page 38 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+38/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+731 
+SOLAX POWER 
+X1-1.5-S-D(L) 
+230 V, 1ph, 50 Hz 
+1.5 kW 
+Master: 1.08 
+Manager: 1.07 
+732 
+SOLAX POWER 
+X1-MINI-1.5K-G4 
+230 V, 1ph, 50 Hz 
+1.5 kW 
+Master: 1.00 
+Manager: 1.00 
+733 
+SOLAX POWER 
+X1-Micro 2000 
+230 V, 1ph, 50 Hz 
+2 kVA 
+DSP 001.00 
+Slave DSP 001.00 
+734 
+SOLAX POWER 
+X1-Micro 2400 
+230 V, 1ph, 50 Hz 
+2.4 kVA 
+DSP 001.00 
+Slave DSP 001.00 
+735 
+SOLAX POWER 
+X1-3K-S-D(L) 
+230 V, 1ph, 50 Hz 
+3 kW 
+Master: 1.08 
+Manager: 1.07 
+736 
+SOLAX POWER 
+X1-MINI-3.0K-G4 
+230 V, 1ph, 50 Hz 
+3 kW 
+Master: 1.00 
+Manager: 1.00 
+737 
+SOLAX POWER 
+X1-LX3600 
+230 V, 1ph, 50 Hz 
+3.68 kW 
+DSP1:2.17 
+DSP2:2.02 
+738 
+SOLAX POWER 
+X1-LX4600 
+230 V, 1ph, 50 Hz 
+4.2 kW 
+DSP1:2.17 
+DSP2:2.02 
+739 
+SOLAX POWER 
+X1-5.0-T-D 
+230 V, 1ph, 50 Hz 
+4.6 kVA 
+Master: 3.17 
+Slave: 1.05 
+Manager: 1.07 
+740 
+SOLAX POWER 
+X1-LX5200 
+230 V, 1ph, 50 Hz 
+4.6 kW 
+DSP1:2.17 
+DSP2:2.02 
+741 
+SOLAX POWER 
+X1-5.0-T-D(L) 
+230 V, 1ph, 50 Hz 
+5 kVA 
+Master: 1.08 
+Manager: 1.07 
+742 
+SOLAX POWER 
+X1-BOOST-5K-G4 
+230 V, 1ph, 50 Hz 
+5 kVA 
+Master: 1.00 
+Manager: 1.00 
+743 
+SOLAX POWER 
+X1-IES-5K 
+230 V, 1ph, 50 Hz 
+5 kVA 
+DSP 2.07 
+ARM 2.03 
+744 
+SOLAX POWER 
+X3-5.0-T-D 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+Master: V1.10 
+Master: V1.10 
+Slave: V1.02 
+745 
+SOLAX POWER 
+X3-MIC-5K-G2 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+Master: 1.00 
+Manager: 1.00 
+746 
+SOLAX POWER 
+X1-HYB-6.0-LV 
+230 V, 1ph, 50 Hz 
+6 kW 
+MDSP ARM SMCU 
+Version 005.00 005.00 005.00 
+BootVer 001.01 002.98 003.03 
+747 
+SOLAX POWER 
+X1-Hybrid-7.5 
+230 V, 1ph, 50 Hz 
+7.5 kVA 
+DSP1: 2.07 
+DSP2: 2.01 
+ARM: 2.03 
+748 
+SOLAX POWER 
+X1-IES-8K 
+230 V, 1ph, 50 Hz 
+8 kVA 
+DSP 2.07 
+ARM 2.03 
+749 
+SOLAX POWER 
+X3-8.0-T-D 
+230/400 V, 3ph, 50 Hz 
+8 kVA 
+Master: V1.10 
+Master: V1.10 
+Slave: V1.02 
+ 
+ 
+
+--- Page 39 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+39/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+750 
+SOLAX POWER 
+X1-SMT-10K-G2 
+230 V, 1ph, 50 Hz 
+9.999 kVA 
+Master:1.00 
+Manager:1.00 
+751 
+SOLAX POWER 
+X3-10.0-T-D 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+Master: V1.10 
+Master: V1.10 
+Slave: V1.02 
+752 
+SOLAX POWER 
+X3-IES-10K 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+DSP: 2.07 
+ARM: 2.03 
+753 
+SOLAX POWER 
+X3-MIC-10K-G2 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+Master: 1.00 
+Manager: 1.00 
+754 
+SOLAX POWER 
+X3-NEO-10K-LV 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+ARM 6.88-0.02 
+DSP 6.88 
+Slave DSP 6.88 
+Module 3.015.02 
+755 
+SOLAX POWER 
+X1-Lite-12K-LV 
+230 V, 1ph, 50 Hz 
+12 kW 
+ARM 001.62 
+DSP 008.09 
+Slave DSP 000.00 
+Module version 3.006.04 
+756 
+SOLAX POWER 
+X3-Hybrid-15.0 
+230/400 V, 3ph, 50 Hz 
+15 kVA 
+DSP1: 2.07 
+DSP2: 2.01 
+ARM: 2.03 
+757 
+SOLAX POWER 
+X3-IES-15K 
+230/400 V, 3ph, 50 Hz 
+15 kVA 
+DSP: 2.07 
+ARM: 2.03 
+758 
+SOLAX POWER 
+X3-MIC-15K-G2 
+230/400 V, 3ph, 50 Hz 
+15 kVA 
+Master: 1.00 
+Manager: 1.00 
+759 
+SOLAX POWER 
+X3-NEO-15K-LV 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+ARM 6.88-0.02 
+DSP 6.88 
+Slave DSP 6.88 
+Module 3.015.02 
+760 
+SOLAX POWER 
+X3-PRO-20K-G2 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+Master:1.00 
+Manager:1.00 
+761 
+SOLAX POWER 
+X3-ULT-20K 
+230/400 V, 3ph, 50 Hz 
+20 kVA 
+DSP: 2.07 
+ARM: 2.03 
+762 
+SOLAX POWER 
+X3-PRO-30K-G2 
+230/400 V, 3ph, 50 Hz 
+30 kVA 
+Master: 1.00 
+Manager: 1.00 
+763 
+SOLAX POWER 
+X3-ULT-30K 
+230/400 V, 3ph, 50 Hz 
+30 kVA 
+DSP: 2.07 
+ARM: 2.03 
+764 
+SOLAX POWER 
+X3-MGA-40K-G2 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+Master: V003.00 
+Manager: V003.00 
+765 
+SOLAX POWER 
+X3-MGA-50K-G2 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Master: V003.00 
+Slaver: V003.00 
+Manager: V003.00 
+766 
+SOLAX POWER 
+X3-AELIO-60K 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+Master:1.00 Manger:1.00 
+ 
+ 
+
+--- Page 40 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+40/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+767 
+SOLAX POWER 
+X3-MGA-60K-G2 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+Master: V003.00 
+Slaver: V003.00 
+Manager: V003.00 
+768 
+SOLAX POWER 
+X3-FTH-100K 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+Master: V005.00 
+Slaver: V005.00 
+Manager: V005.00 
+769 
+SOLAX POWER 
+X3-TRENE-100K 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+Master:1.00 Manger:1.00 
+770 
+SOLAX POWER 
+X3-FTH-120K 
+230/400 V, 3ph, 50 Hz 
+120 kW 
+Master: V005.00 
+Slaver: V005.00 
+Manager: V005.00 
+771 
+SOLAX POWER 
+X3-FTH-150K-P 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+Master:V006.00 
+772 
+SOLAX POWER 
+X3-GRD-350K-HV 
+800 V, 3ph, 50 Hz 
+352 kW 
+ARM: V006.88, MDSP: V006.88, SDSP: V006.88, 
+CPLD: V007.17 
+773 
+SOLINTEG 
+M2HT-50K-150 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V1.00 
+774 
+solis 
+S6-GR1P3K-M 
+230 V, 1ph, 50 Hz 
+3 kW 
+DSP Current Ver. : 32 
+HMI Current Ver. : 4B 
+775 
+solis 
+Solis-mini-3000-4G 
+230 V, 1ph, 50 Hz 
+3 kW 
+370020 
+46002D 
+48002E 
+776 
+solis 
+S5-GR3P5K 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+330035 
+9D020000DD03 
+A1 
+777 
+solis 
+S6-GR1P5K 
+230 V, 1ph, 50 Hz 
+5 kW 
+DSP Current Ver. : 32 
+HMI Current Ver. : 4B 
+840038 
+840200003806 
+AD0300006704 
+A1 
+778 
+solis 
+S6-GR1P5K-S 
+230 V, 1ph, 50 Hz 
+5 kW 
+A1 
+779 
+solis 
+Solis-1P5K-4G 
+230 V, 1ph, 50 Hz 
+5 kW 
+370020 
+46002D 
+48002E 
+780 
+solis 
+S6-EH1P6K-L-EU 
+230 V, 1ph, 50 Hz 
+6 kVA 
+A1 
+781 
+solis 
+S6-EH1P6K-L-PLUS 
+230 V, 1ph, 50 Hz 
+6 kVA 
+V00A1 
+782 
+solis 
+S6-EH1P6K-L-PLUS(21A) 
+230 V, 1ph, 50 Hz 
+6 kW 
+V00A1 
+783 
+solis 
+S7-EH1P6K02-NV-YD-L 
+230 V, 1ph, 50 Hz 
+6 kVA 
+V00A1 
+784 
+solis 
+S6-EH1P8K-L-PLUS 
+230 V, 1ph, 50 Hz 
+8 kVA 
+V00A1 
+785 
+solis 
+S6-EH1P8K-L-PLUS(21A) 
+230 V, 1ph, 50 Hz 
+8 kW 
+V00A1 
+786 
+solis 
+S5-GR1P10K 
+230 V, 1ph, 50 Hz 
+10 kVA 
+A1 
+ 
+ 
+
+--- Page 41 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+41/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+787 
+solis 
+S5-GR3P10K 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+230033 
+260032 
+800038 
+801400003808 
+9D020000DD03 
+A1 
+788 
+solis 
+S6-EH1P10K-L-PLUS(21A) 
+230 V, 1ph, 50 Hz 
+10 kW 
+A1 
+789 
+solis 
+S6-EH3P10K02-NV-YD-L 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V00A1 
+790 
+solis 
+S6-EH3P10K2-H 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V00A1 
+791 
+solis 
+S6-GR3P10K02-NV-ND 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+A1 
+792 
+solis 
+S6-EH3P15K02-NV-YD-L 
+230/400 V, 3ph, 50 Hz 
+15 kVA 
+V00A1 
+793 
+solis 
+S6-EH3P18K02-NV-YD-L 
+230/400 V, 3ph, 50 Hz 
+18 kW 
+V00A1 
+794 
+solis 
+S5-GR3P20K 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+DSP Current Ver. : 33 
+84003B 
+840300003B01 
+9D020000DD03 
+A1 
+795 
+solis 
+S5-GR3P20K(21A) 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+Safety Ver:A1 
+796 
+solis 
+S6-GC3P30K03-NV-ND 
+230/400 V, 3ph, 50 Hz 
+30 kW 
+A1 
+797 
+solis 
+S6-GC3P36K03-NV-ND 
+230/400 V, 3ph, 50 Hz 
+36 kW 
+A1 
+798 
+solis 
+S5-GC40K 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+DSP Current Ver. : 31 
+HMI Current Ver. : 12 
+740232 
+750235 
+75210200350A 
+A4020200EF05 
+A1 
+799 
+solis 
+S6-GC3P40K04-NV-ND 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+V00A1 
+800 
+solis 
+S6-EH3P50K-H 
+230/400 V, 3ph, 50 Hz 
+50 kVA 
+V00A1 
+801 
+solis 
+S6-EH3P50K-H(21A) 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V00A1 
+802 
+solis 
+S5-GC60K 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+DSP Current Ver. : E0 
+HMI Current Ver. : 10 
+11CEE4 
+1110CE10E401 
+9505E510F803 
+A1 
+803 
+solis 
+S6-EH3P60K-H(21A) 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+V00A1 
+804 
+solis 
+S6-GC3P60K05-NV-ND 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+V00A1 
+805 
+solis 
+S6-EH3P80K10-NV-YD-H 
+230/400 V, 3ph, 50 Hz 
+80 kW 
+V00A1 
+806 
+solis 
+S6-EH3P99.9K10-NV-YD-H 
+230/400 V, 3ph, 50 Hz 
+99.9 kW 
+V00A0 
+ 
+ 
+
+--- Page 42 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+42/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+807 
+solis 
+S5-GC110K 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+DSP Current Ver. : 29 
+HMI Current Ver. : 14 
+0F0E1F 
+1C1137 
+1C0311003700 
+72113A 
+721611003A00 
+751140 
+750111004000 
+73183A 
+730318003A00 
+751840 
+750118004000 
+A1 
+808 
+solis 
+S6-GC110K 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+A1 
+809 
+solis 
+S6-EH3P125K10-NV-YD-H 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V00A1 
+810 
+solis 
+S6-GC3P150K07-NV-ND 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+V00A1 
+811 
+solis 
+Solis-255K-EHV-5G-PLUS 
+800 V, 3ph, 50 Hz 
+255 kW 
+DSP Current Ver. : 90 
+HMI Current Ver. : 81 
+812 
+solis 
+S6-GU3P350K06-EV-ND 
+800 V, 3ph, 50 Hz 
+350 kW 
+V00A1 
+813 
+Solplanet 
+ASW3680-S-G2 
+230 V, 1ph, 50 Hz 
+3.68 kW 
+Master: V610-01055-05 
+814 
+Solplanet 
+ASW5000-S-G2 
+230 V, 1ph, 50 Hz 
+5 kW 
+Master: V610-01055-05 
+815 
+Solplanet 
+ASW5000H-S2 
+230 V, 1ph, 50 Hz 
+5 kW 
+Master: V610-02003-04 
+816 
+Solplanet 
+ASW5K-LT-G2 Pro 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+Master: V610-03043-13 
+Slave: V610-60015-00 
+Safety: V610-11009-04 
+817 
+Solplanet 
+ASW10K-LT-G2 Pro 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+Master: V610-03043-06 
+818 
+Solplanet 
+ASW150K-LT 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+V610-82003-04 
+819 
+SOLTA 
+Energy 1 S6000SL 
+230 V, 1ph, 50 Hz 
+5.5 kW 
+M V0.104 / S-- / C-- 
+820 
+SRNE 
+HESP4860S100-H 
+230V, 1ph, 50Hz 
+6 kW 
+V2.85 
+821 
+SRNE 
+HESP48120S200-H 
+230 V, 1ph, 50 Hz 
+12 kW 
+V8.31 
+822 
+SRNE 
+HESP48120SH3 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+V9.40 
+823 
+SRNE 
+HESP48200SH3 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V9.60 
+824 
+SRNE 
+IESP600SH3 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+V9.10 
+825 
+SRP 
+SRP-10KRS-H1 
+230 V, 1ph, 50 Hz 
+10 kW 
+Primary DSP firmware version: 010708 
+Secondary DSP firmware version: 010400 
+EMS firmware version: 010906 
+826 
+Steca 
+StecaGrid 3010 
+230V, 1ph, 50Hz 
+3 kW 
+BFAPI: 2.5.4 
+FBL: 1.1.2 
+APP: 3.50.0 
+PAR: 21.0.29 
+ 
+ 
+
+--- Page 43 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+43/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+827 
+Steca 
+StecaGrid 4200 
+230 V, 1ph, 50 Hz 
+4.2 kW 
+BFAPI: 2.5.4 
+FBL: 1.1.1 
+APP: 3.51.0 
+PAR: 21.0.29 
+828 
+SUNGROW 
+S1000S-L 
+230 V, 1ph, 50 Hz 
+1 kW 
+MDSP_MICROINVERTER_V1_V01_S 
+829 
+SUNGROW 
+S2000S-L 
+230 V, 1ph, 50 Hz 
+2 kW 
+MDSP_MICROINVERTER_V1_V01_S 
+830 
+SUNGROW 
+SG3.0RS 
+230 V, 1ph, 50 Hz 
+3 kW 
+ARM_SUNSTONE-S_V11_V01_A 
+MDSP_SUNSTONE-S_V11_V01_A 
+831 
+SUNGROW 
+SG3K-S 
+230 V, 1ph, 50 Hz 
+3 kVA 
+LCD: LCD_CrysG2S_V31_V30 
+MDSP: MDSP_CrysG2S_V31_V71 
+SDSP: SDSP_CrysG2S_V31_V16 
+832 
+SUNGROW 
+MG5RL 
+230 V, 1ph, 50 Hz 
+5 kW 
+BARITE-H_B001.V001.P001 
+833 
+SUNGROW 
+SG5.0RS 
+230 V, 1ph, 50 Hz 
+5 kW 
+ARM_SUNSTONE-S_V11_V01_A 
+MDSP_SUNSTONE-S_V11_V01_A 
+834 
+SUNGROW 
+SG5.0RT-P2 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+835 
+SUNGROW 
+SG5K-D 
+230 V, 1ph, 50 Hz 
+5 kVA 
+Main DSP: MDSP_CryG20_V31_V71 
+Salve DSP: SDSP_CrysG2D_V31_V16 
+LCD: LCD_CryG2D_V31_V30 
+836 
+SUNGROW 
+SG5RT 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+837 
+SUNGROW 
+SH5.0RS-20 
+230 V, 1ph, 50 Hz 
+5 kW 
+ARM_SUNSTONE-H_V11_V01_A 
+MDSP_SUNSTONE-H_V11_V01_A 
+838 
+SUNGROW 
+SH5.0RT 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+LCD: SAPPHIRE-H_01011.01.12 
+MDSP: SAPPHIRE-H_03011.01.09 
+SDSP: SUBCTL-S_04011.01.01 
+839 
+SUNGROW 
+SH5K-30 
+230 V, 1ph, 50 Hz 
+5 kVA 
+SH5K-30_V01_V00A 
+840 
+SUNGROW 
+MG10RL 
+230 V, 1ph, 50 Hz 
+10 kW 
+BARITE-H_B001.V001.P005 
+841 
+SUNGROW 
+SG10KTL-M 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+DSP_MOONSTONE_V11V_A 
+LCD_MOONSTONE_V01_A_M 
+842 
+SUNGROW 
+SG10RT 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+843 
+SUNGROW 
+SG10RT-P2 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+844 
+SUNGROW 
+SH10RT 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+LCD: SAPPHIRE-H_01011.01.10 
+MDSP: SAPPHIRE-H_03011.01.07 
+SDSP: SUBCTL-S_04011.01.01 
+845 
+SUNGROW 
+SH10T 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+ARM_PEARL-H_V11_V01_A, MDSP_PEARL-
+H_V11_V01_A 
+846 
+SUNGROW 
+SG12KTL-M 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+DSP_MOONSTONE_V11V_A 
+LCD_MOONSTONE_V01_A_M 
+DSP_MOONSTONE_V11-XXXX (1) 
+LCD_MOONSTONE_V01_X_M (1) 
+ 
+ 
+
+--- Page 44 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+44/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+847 
+SUNGROW 
+SG15RT 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+LCD: BERYL-S_01011.01.32 
+MDSP: BERYL-S_03011.01.68 
+848 
+SUNGROW 
+SG15RT-P2 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+849 
+SUNGROW 
+SG20RT 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+LCD: BERYL-S_01011.01.32 
+MDSP: BERYL-S_03011.01.64 
+850 
+SUNGROW 
+SG20RT-P2 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+LCD_BERYL-S_V11_V01_A 
+MDSP_BERYL-S_V11_V01_A 
+851 
+SUNGROW 
+SH25T 
+230/400 V, 3ph, 50 Hz 
+25 kW 
+ARM_PEARL-H_V11_V01_A, MDSP_PEARL-
+H_V11_V01_A 
+852 
+SUNGROW 
+SG36CX-P2 
+230/400 V, 3ph, 50 Hz 
+36 kW 
+Software version 1: LCD_EMERALD-S_V11_V01_A 
+Software version 2: MDSP_EMERALD-
+S_V11_V01_A 
+853 
+SUNGROW 
+SG36KTL-M 
+230/400 V, 3ph, 50 Hz 
+36 kW 
+DSP_SG36KTL-M_V11_A 
+LCD_SG36KTL-M_V01_A_M 
+854 
+SUNGROW 
+SC 50HV 
+400 V, 3ph, 50 Hz 
+50 kW 
+LCD_OPAL-B_V11_V01_A 
+MDSP_AGATE-S_V11_V01_A 
+855 
+SUNGROW 
+SG50CX 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+LCD: LCD_AGATE-S_V11VV01VA 
+MDSP: MDSP_AGATE-S_V11_V01_A 
+LCD: AGATE-S_01011.01.32 
+MDSP: AGATE-S_03011.01.31 
+856 
+SUNGROW 
+SG50CX-P2 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+LCD_EMERALD-S_V11_V01_A 
+MDSP_EMERALD-S_V11_V01_A 
+LCD: EMERALD-S_01011.01.19 
+MDSP: EMERALD-S_03011.01.21 
+857 
+SUNGROW 
+SG60KTL 
+230/400 V, 3ph, 50 Hz 
+60 kW 
+DSP_SG60KTL_V11_A 
+LCD_SG60KTL_V03_A_M 
+DSP_SG60KTL_V11_B 
+LCD_SG60KTL_V03_B_M 
+DSP_SG60KTL_V11_C 
+LCD_SG60KTL_V03_C_M 
+858 
+SUNGROW 
+SG110CX 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+LCD_AMBER-S_V11_V01_A 
+MDSP_AMBER-S_V11_V01_A 
+LCD: AMBER-S_01011.01.26 
+MDSP: AMBER-S_03011.01.24 
+859 
+SUNGROW 
+SC125CX-V241 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+DSP: MDSP_DIOPSIDE-B_V11_V01_A 
+ARM: LCD_DIOPSIDE-B_V11_V01_A 
+860 
+SUNGROW 
+SC125CX-V242 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+DSP: MDSP_DIOPSIDE-B_V11_V01_A 
+ARM: LCD_DIOPSIDE-B_V11_V01_A 
+ 
+ 
+
+--- Page 45 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+45/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+861 
+SUNGROW 
+SG125CX-P2 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+LCD_GARNET-S_V11_V01_A 
+MDSP_GARNET-S_V11_V01_A 
+LCD: GARNET-S_01011.01.21 
+MDSP: GARNET-S_03011.01.19 
+862 
+SUNGROW 
+SG150CX 
+230/400 V, 3ph, 50 Hz 
+150 kW 
+Software version 1: LCD_MARBLE-S_V11_V01_A 
+Software version 2: MDSP_MARBLE-
+S_V11_V01_A 
+863 
+SUNGROW 
+SC210HX 
+690 V, 3ph, 50 Hz 
+210 kW 
+Software version 1: LCD_DIAMOND-
+B_V11_V01_A; 
+Software version 2: MDSP_DIAMOND-
+B_V11_V01_A. 
+864 
+SUNGROW 
+SC210HX-FM 
+690 V, 3ph, 50 Hz 
+210 kW 
+Software version 1: LCD_DIAMOND-
+B_V11_V01_A; 
+Software version 2: MDSP_DIAMOND-
+B_V11_V01_A. 
+865 
+SUNGROW 
+SG350HX 
+800 V, 3ph, 50 Hz 
+320 kW 
+Software version 1: LCD_EUCLASE-S_V11_V01_A 
+Software version 2: MDSP_EUCLASE-
+S_V11_V01_A 
+866 
+sunways 
+STS-3KTL-P 
+230 V, 1ph, 50 Hz 
+3 kVA 
+V1.00 
+867 
+sunways 
+STH-5KTL-LS 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.00 
+868 
+sunways 
+STS-5KTL-P 
+230 V, 1ph, 50 Hz 
+5 kVA 
+V1.00 
+869 
+sunways 
+STS-5KTL-SE-S 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.00 
+870 
+sunways 
+STH-8KTL-LS 
+230 V, 1ph, 50 Hz 
+8 kW 
+V1.00 
+871 
+sunways 
+STH-10KTL-LS 
+230 V, 1ph, 50 Hz 
+10 kW 
+Master firmware version V5.3.0.0 
+Slave firmware version V0.13.0.0 
+872 
+sunways 
+STT-10KTL-P 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+V1.00 
+873 
+sunways 
+STT-110KTL 
+230/400 V, 3ph, 50 Hz 
+110 kW 
+V1.00 
+874 
+SVOLT 
+AE5K-L1-S 
+230 V, 1ph, 50 Hz 
+5 kVA 
+V1.01.10 
+875 
+TBEA 
+TS50KTL_PLUS 
+540 V, 3ph, 50 Hz 
+50 kVA 
+DSP Master: V1.0.0.0.B1.1.12 
+DSP Slaver: V1.0.0.0.B1.1.12 
+876 
+TBEA 
+TS100KTL-A10 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+Master: V610-04001-09, Safety: V610-12001-05, 
+AFCI: V610-60023-00 
+877 
+TCL 
+TCL-GS5K-G1 
+230 V, 1ph, 50 Hz 
+5 kW 
+V610-01055-05 
+878 
+TCL 
+BlueArk X1 6K-SP 
+230 V, 1ph, 50 Hz 
+6 kW 
+DSP: 0.0.3.9, ARM: 0.0.1.16 
+879 
+TCL 
+BlueArk X1 8K-SP 
+230 V, 1ph, 50 Hz 
+8 kW 
+DSP: 0.0.3.9, ARM: 0.0.1.16 
+880 
+TCL 
+TCL-GT12K-G1 
+230/400 V, 3ph, 50 Hz 
+12 kW 
+master V610-03043-19 
+881 
+TCL 
+BlueArk X5-50k-100 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+0.5.0.13.7 
+882 
+Tesla 
+1092170-XX-X (1) 
+230 V, 1ph, 50 Hz 
+5 kW 
+3700B98CF516D8D8421D23891E9AD8D5 
+883 
+Tesla 
+2012170-XX-X (1) 
+230 V, 1ph, 50 Hz 
+5 kW 
+3700B98CF516D8D8421D23891E9AD8D5 
+884 
+Tesla 
+3012170-XX-X (1) 
+230 V, 1ph, 50 Hz 
+5 kW 
+3700B98CF516D8D8421D23891E9AD8D5 
+885 
+Thai Tabuchi 
+TPD-T250P6-TH 
+230/400 V, 3ph, 50 Hz 
+25 kW 
+N1D0.01 
+886 
+ThinkPower 
+S6000TL 
+230 V, 1ph, 50 Hz 
+6 kW 
+103 
+ 
+ 
+
+--- Page 46 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+46/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+887 
+TMDA 
+TM1K6-1P 
+230 V, 1ph, 50 Hz 
+1.6 kVA 
+Ver1 : V1.00 
+Ver2 : V1.00 
+MCU : V1.00 
+888 
+TMDA 
+SUN-3K-G 
+230 V, 1ph, 50 Hz 
+3 kW 
+Ver : 6151 
+889 
+TMDA 
+TM3K3-1P 
+230 V, 1ph, 50 Hz 
+3.3 kVA 
+Ver1 : V1.00 
+Ver2 : V1.00 
+MCU : V1.00 
+890 
+TMDA 
+R5KL1 
+230 V, 1ph, 50 Hz 
+5 kVA 
+ARM : V1.00.28 
+DSP : V1.01.20 
+891 
+TMDA 
+SUN-5K-G 
+230 V, 1ph, 50 Hz 
+5 kW 
+Ver : 7151 
+892 
+TMDA 
+R6KH3 
+400 V, 3ph, 50 Hz 
+6 kVA 
+ARM : V1.03.02 
+DSP : V1.02.02 
+893 
+TMDA 
+SUN-6K-G03 
+400 V, 3ph, 50 Hz 
+6 kW 
+Ver : 5116 
+894 
+TMDA 
+R10KH3 
+400 V, 3ph, 50 Hz 
+10 kVA 
+ARM : V1.03.02 
+DSP : V1.02.02 
+895 
+TMDA 
+SUN-10K-G 
+230 V, 1ph, 50Hz 
+10 kW 
+V5.1.5.6 
+896 
+TMDA 
+SUN-10K-G03 
+400 V, 3ph, 50 Hz 
+10 kW 
+Ver : 5116 
+897 
+TMDA 
+SUN-15K-G03 
+400 V, 3ph, 50 Hz 
+15 kW 
+Ver : 5116 
+898 
+TMDA 
+SUN-20K-G03 
+400 V, 3ph, 50 Hz 
+20 kW 
+Ver : 3116 
+899 
+TMDA 
+SUN-30K-G03 
+400 V, 3ph, 50 Hz 
+30 kW 
+Ver : 3116 
+900 
+TMDA 
+SUN-40K-G04 
+230/400 V, 3ph, 50 Hz 
+40 kW 
+Inv5412-0324 
+901 
+TMDA 
+SUN-50K-G03 
+400 V, 3ph, 50 Hz 
+50 kW 
+Ver : 3116 
+902 
+TMDA 
+SUN-100K-G03 
+400 V, 3ph, 50 Hz 
+100 kW 
+Ver : 3266 
+903 
+TNK 
+CGH S5.0L 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0.0.8 
+904 
+TOSOT 
+SGC15KTLA 
+380 V, 3ph, 50 Hz 
+12.5 kW 
+ZQ3330R_SGmv_15kwIpm_V1.5 
+905 
+Trannergy 
+PVI3000TL 
+230 V, 1ph, 50 Hz 
+2.8 kW 
+E1.00 
+906 
+Trannergy 
+PVI5400TL 
+230 V, 1ph, 50 Hz 
+4.6 kW 
+E1.00 
+907 
+Trannergy 
+TRI017KTL 
+230/400 V, 3ph, 50 Hz 
+17 kW 
+Master : V W07 
+Slaver : V W07 
+HMI : V1.0.7 
+908 
+Trannergy 
+TRM033KTL 
+230/400 V, 3ph, 50 Hz 
+33 kW 
+Master : M15 
+Slaver : M15 
+HMI : V1.24 
+909 
+Transpower 
+TIN-1P5K 
+230 V, 1ph, 50 Hz 
+5 kW 
+48002E 
+910 
+Trinasolar 
+TS-3K1SJ 
+230 V, 1ph, 50 Hz 
+3 kW 
+0.00E+00 
+911 
+Trinasolar 
+TS-5K2SJ 
+230 V, 1ph, 50 Hz 
+5 kW 
+0.00E+00 
+912 
+TSUN 
+TSOL-MX2250 
+230 V, 1ph, 50 Hz 
+2.25 kW 
+V1.0 
+913 
+TSUN 
+TSOL-MP3000 
+230 V, 1ph, 50 Hz 
+3 kW 
+V1.0 
+914 
+TSUN 
+TSOL-MX3300D 
+230 V, 1ph, 50 Hz 
+3.3 kW 
+V1.0 
+915 
+URECO 
+IS050B1 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+Inv5412-0326 
+916 
+V SOLAR 
+3000-DS-S 
+230 V, 1ph, 50 Hz 
+3 kW 
+2 
+917 
+V SOLAR 
+VSOLAR-3K-1PH 
+230 V, 1ph, 50 Hz 
+3 kW 
+Ver.11.15 
+918 
+V SOLAR 
+VSOLAR-4K-1PH 
+230 V, 1ph, 50 Hz 
+4 kW 
+Ver.11.14 
+919 
+V SOLAR 
+ESC5000-DS 
+230 V, 1ph, 50 Hz 
+4.6 kW 
+2.8-E 
+ 
+ 
+
+--- Page 47 ---
+ 
+รายชื่อผลิตภัณฑ์อินเวอร์เตอร์ที่ผ่านการทดสอบตาม 
+ข้อกำหนดสำหรับอินเวอร์เตอร์ที่ใช้ในระบบผลิตไฟฟ้าประเภทเชื่อมต่อกับโครงข่ายของการไฟฟ้านครหลวง 
+ 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+47/47 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+920 
+V SOLAR 
+VSOLAR-5K-1PH 
+230 V, 1ph, 50 Hz 
+4.9 kW 
+Ver.11.14 
+921 
+V SOLAR 
+R3-10K-DT 
+400 V, 3ph, 50 Hz 
+10 kW 
+M: 1.45 S: 1.45 
+922 
+V SOLAR 
+VSOLAR 33K 
+230/400 V, 3ph, 50 Hz 
+33 kVA 
+DSP-M: V1.17 
+DSP-S: V1.17 
+MCU-H: V1.20 
+923 
+VaySunic 
+VM2250W-P4 
+230 V, 1ph, 50 Hz 
+2.25 kW 
+VM2.0.1 
+924 
+VEICHI 
+VHT-50K-100-H 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+V1.00 
+925 
+VESTWOODS 
+VW6KSLES 
+230 V, 1ph, 50 Hz 
+6 kW 
+Master DSP Version: 020301 
+Slave DSP Version: 010400 
+CSB Version: 020300 
+DC-DC converter Version: 010602 
+926 
+Wattsonic 
+5.0K-30A-1P 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.0.0.0-V23.17.2.0 
+927 
+WEIHENG 
+Energy storage converter: 
+WH-BEC-100-A 
+Power module: WH-BEC-
+100AC 
+230/400 V, 3ph, 50 Hz 
+100 kW 
+PCS-MAC-1 V3.13.11-3.2.2 
+928 
+YUNT 
+Mars-125KT 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+300 
+929 
+YUNT 
+Mars-125KT-F 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+300 
+930 
+ZEEDA ENERGY 
+ZEEDA-5K-S 
+230 V, 1ph, 50 Hz 
+5 kW 
+V120 
+931 
+ZONERGY 
+Venus 5000-S1 
+230 V, 1ph, 50 Hz 
+4.999 kW 
+ARM Version : 1.0.1.15 
+DSP Version : 1.0.1.17;1.0.1.5 
+932 
+ZONERGY 
+Mercury 5000-S1 
+230 V, 1ph, 50 Hz 
+5 kW 
+ARM Version : 1.0.0.6 
+DSP Version : 1.0.0.7 
+933 
+ZONERGY 
+Apollo 10K-T1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+DSP: 1.0.0.42, ARM: 0.0.5.39 
+934 
+ZONERGY 
+Venus 10K-T1 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+DSP:1.0.4.12, ARM:0.0.1.43 
+935 
+ZONERGY 
+Apollo 15K-T1 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+ARM Version 0.0.5.34 
+DSP Version 0.3.9.39 
+936 
+ZONERGY 
+Venus15K-T1 
+400 V, 3ph, 50 Hz 
+15 kW 
+ARM Version 0.01.32 
+DSP Version 0.11.1.247 
+937 
+ZONERGY 
+Mars 50k 
+230/400 V, 3ph, 50 Hz 
+50 kW 
+DSP: V1.0.0.4; ARM: V1.0.0.1 
+938 
+ZTE 
+ZXEPG E260C8 
+230/400 V, 3ph, 50 Hz 
+125 kW 
+V200B000D000 
+หมายเหตุ :   (1)  X ที่ระบุใน Software package และ Software version เป็นหมายเลขหรือตัวอักษรใดก็ได้ 
+ 
+ 
+สอบถามข้อมูลเพิ่มเติมโปรดติดต่อ : กองทดสอบอุปกรณ์ไฟฟ้า ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า การไฟฟ้านครหลวง 
+หมายเลขโทรศัพท์ 02-242-5173 
+ 
