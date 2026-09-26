@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Translator FREE — พูดแล้วแปลเป็นเสียงทันที ไทย ↔ อังกฤษ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F6F1;
+  --card:#FFFFFF;
+  --ink:#1C2733;
+  --ink-soft:#4A5A68;
+  --line:#DCE0D6;
+  --teal:#0E6B5B;
+  --teal-deep:#0A4F44;
+  --teal-wash:#E4F0EC;
+  --amber:#B97C1E;
+  --amber-wash:#F7EEDD;
+  --red:#B23B2E;
+  --radius:14px;
+  --font-en:'Spectral',Georgia,serif;
+  --font-th:'Sarabun',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--font-th);min-height:100%}
+body{display:flex;flex-direction:column;align-items:center;padding:0 16px 64px}
+
+header{width:100%;max-width:880px;padding:28px 0 18px;border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px}
+.brand-en{font-family:var(--font-en);font-size:1.7rem;font-weight:600;letter-spacing:-0.01em}
+.brand-en em{color:var(--teal);font-style:italic}
+.brand-th{color:var(--ink-soft);font-size:.95rem}
+header .tag{margin-left:auto;font-family:var(--font-mono);font-size:.72rem;color:var(--teal-deep);
+  background:var(--teal-wash);border:1px solid #C4DED6;border-radius:999px;padding:4px 12px}
+
+main{width:100%;max-width:880px}
+
+/* direction */
+.direction{display:flex;align-items:center;justify-content:center;gap:14px;margin:28px 0 8px}
+.lang-chip{border:1.5px solid var(--line);background:var(--card);border-radius:12px;
+  padding:10px 20px;text-align:center;min-width:150px;transition:all .25s}
+.lang-chip .code{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;color:var(--ink-soft)}
+.lang-chip .name{font-weight:600;font-size:1.02rem}
+.lang-chip.src{border-color:var(--teal);background:var(--teal-wash)}
+.lang-chip.src .code{color:var(--teal-deep)}
+.swap-btn{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);
+  cursor:pointer;font-size:1.15rem;color:var(--teal);display:grid;place-items:center;transition:transform .3s,border-color .2s}
+.swap-btn:hover{border-color:var(--teal);transform:rotate(180deg)}
+.swap-btn:focus-visible,button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2.5px solid var(--teal);outline-offset:2px}
+.direction-note{text-align:center;color:var(--ink-soft);font-size:.85rem;margin-bottom:8px}
+
+/* auto-speak toggle */
+.auto-row{display:flex;justify-content:center;margin-bottom:18px}
+.toggle{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:.92rem;color:var(--ink-soft);
+  border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:8px 18px;user-select:none}
+.toggle input{display:none}
+.toggle .knob{width:38px;height:21px;border-radius:999px;background:#CBD2C8;position:relative;transition:background .2s}
+.toggle .knob::after{content:"";position:absolute;top:2.5px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.toggle input:checked + .knob{background:var(--teal)}
+.toggle input:checked + .knob::after{transform:translateX(16px)}
+.toggle b{color:var(--teal-deep)}
+
+/* mic */
+.mic-stage{display:flex;flex-direction:column;align-items:center;gap:14px;margin:6px 0 26px}
+.mic-wrap{position:relative;width:118px;height:118px;display:grid;place-items:center}
+.mic-btn{width:96px;height:96px;border-radius:50%;border:none;cursor:pointer;z-index:2;
+  background:var(--teal);color:#fff;display:grid;place-items:center;transition:background .2s,transform .15s;
+  box-shadow:0 6px 18px rgba(14,107,91,.28)}
+.mic-btn:hover{transform:scale(1.04)}
+.mic-btn svg{width:38px;height:38px}
+.mic-btn.listening{background:var(--red);box-shadow:0 6px 18px rgba(178,59,46,.3)}
+.pulse{position:absolute;inset:0;border-radius:50%;border:2px solid var(--red);opacity:0;z-index:1}
+.listening-on .pulse{animation:pulse 1.6s ease-out infinite}
+.listening-on .pulse:nth-child(2){animation-delay:.55s}
+@keyframes pulse{0%{transform:scale(.82);opacity:.75}100%{transform:scale(1.45);opacity:0}}
+@media (prefers-reduced-motion:reduce){.listening-on .pulse{animation:none;opacity:.4}
+  .swap-btn:hover{transform:none}.mic-btn:hover{transform:none}}
+.mic-hint{color:var(--ink-soft);font-size:.9rem;text-align:center;min-height:1.4em}
+.mic-hint b{color:var(--teal-deep)}
+.mic-hint.err{color:var(--red)}
+.wave{display:flex;gap:4px;height:26px;align-items:flex-end;visibility:hidden}
+.wave.on{visibility:visible}
+.wave i{width:4px;background:var(--red);border-radius:2px;animation:wv 1s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.12s}.wave i:nth-child(3){animation-delay:.24s}
+.wave i:nth-child(4){animation-delay:.36s}.wave i:nth-child(5){animation-delay:.48s}
+.wave i:nth-child(6){animation-delay:.6s}.wave i:nth-child(7){animation-delay:.72s}
+@keyframes wv{0%,100%{height:6px}50%{height:26px}}
+@media (prefers-reduced-motion:reduce){.wave i{animation:none;height:12px}}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px}
+.card h2{font-size:.78rem;font-family:var(--font-mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.card h2::after{content:"";flex:1;height:1px;background:var(--line)}
+textarea{width:100%;min-height:96px;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;
+  font-family:var(--font-th);font-size:1.05rem;line-height:1.65;resize:vertical;color:var(--ink);background:#FCFCFA}
+textarea:focus{border-color:var(--teal)}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+.btn{border:none;border-radius:10px;padding:11px 22px;font-family:var(--font-th);font-size:.98rem;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .2s,opacity .2s}
+.btn.primary{background:var(--teal);color:#fff}
+.btn.primary:hover{background:var(--teal-deep)}
+.btn.ghost{background:transparent;color:var(--ink-soft);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--ink-soft);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.interim{color:var(--ink-soft);font-style:italic;font-size:.92rem;min-height:1.3em;margin-top:8px}
+
+/* result */
+.result-main{font-size:1.28rem;line-height:1.75;padding:6px 0 4px}
+.result-main.en{font-family:var(--font-en)}
+.speak-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.rate-ctl{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:.85rem}
+.rate-ctl input{accent-color:var(--teal)}
+.engine-tag{font-family:var(--font-mono);font-size:.68rem;color:var(--ink-soft);margin-top:10px}
+
+.alt{border-left:3px solid var(--amber);background:var(--amber-wash);border-radius:0 10px 10px 0;
+  padding:12px 16px;margin-top:12px}
+.alt .alt-text{font-size:1.06rem;line-height:1.65}
+.alt .alt-text.en{font-family:var(--font-en)}
+.alt .alt-note{color:var(--ink-soft);font-size:.85rem;margin-top:6px}
+.alt .alt-actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+.mini-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;font-size:.8rem;
+  cursor:pointer;color:var(--ink-soft);font-family:var(--font-th)}
+.mini-btn:hover{border-color:var(--teal);color:var(--teal-deep)}
+
+.loading{display:flex;align-items:center;gap:12px;color:var(--ink-soft);padding:8px 0}
+.spinner{width:22px;height:22px;border:2.5px solid var(--line);border-top-color:var(--teal);border-radius:50%;
+  animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-box{border:1px solid #E4C4BF;background:#FBEFED;color:var(--red);border-radius:10px;padding:12px 16px;font-size:.92rem}
+
+/* history */
+.hist-item{border-bottom:1px dashed var(--line);padding:12px 2px}
+.hist-item:last-child{border-bottom:none}
+.hist-src{color:var(--ink-soft);font-size:.9rem}
+.hist-dst{font-size:1rem;margin-top:3px}
+.hist-dst.en{font-family:var(--font-en)}
+.hist-meta{font-family:var(--font-mono);font-size:.68rem;color:#98A29B;margin-top:5px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.empty{color:#9AA59E;font-size:.9rem;text-align:center;padding:14px 0}
+
+footer{margin-top:30px;color:#9AA59E;font-size:.78rem;text-align:center;max-width:880px;line-height:1.7}
+.hidden{display:none!important}
+@media (max-width:560px){
+  .lang-chip{min-width:110px;padding:8px 12px}
+  .result-main{font-size:1.15rem}
+  header .tag{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand-en">Voice <em>Translator</em> — Free Edition</div>
+    <div class="brand-th">พูดแล้วแปลเป็นเสียงทันที · ไทย ↔ อังกฤษ · ฟรี ไม่ต้องใช้ API key</div>
+  </div>
+  <span class="tag">100% FREE · NO KEY</span>
+</header>
+
+<main>
+
+  <!-- direction -->
+  <div class="direction">
+    <div class="lang-chip src" id="chipA">
+      <div class="code" id="codeA">TH · ต้นทาง</div>
+      <div class="name" id="nameA">ภาษาไทย</div>
+    </div>
+    <button class="swap-btn" id="swapBtn" title="สลับทิศทางการแปล" aria-label="สลับทิศทางการแปล">⇄</button>
+    <div class="lang-chip" id="chipB">
+      <div class="code" id="codeB">EN · ปลายทาง</div>
+      <div class="name" id="nameB">English</div>
+    </div>
+  </div>
+  <div class="direction-note" id="dirNote">พูดภาษาไทย → แปลเป็นภาษาอังกฤษ แล้วอ่านเสียงให้ทันที</div>
+
+  <div class="auto-row">
+    <label class="toggle">
+      <input type="checkbox" id="autoSpeak" checked>
+      <span class="knob"></span>
+      <span>โหมด <b>พูดจบ → แปล → อ่านเสียงทันที</b> (Auto-speak)</span>
+    </label>
+  </div>
+  <div class="auto-row" style="margin-top:-8px">
+    <label class="toggle">
+      <input type="checkbox" id="autoTranslateTyping">
+      <span class="knob"></span>
+      <span><b>แปลอัตโนมัติ</b>เมื่อหยุดพิมพ์/พูดผ่านไมค์คีย์บอร์ด 2 วิ<br>
+      <small style="color:#9AA59E">สำหรับใช้ไมค์ของคีย์บอร์ด (Gboard บนมือถือ / Win+H บน PC) พูดไทยลงช่องข้อความ</small></span>
+    </label>
+  </div>
+
+  <!-- mic -->
+  <div class="mic-stage">
+    <div class="mic-wrap" id="micWrap">
+      <span class="pulse"></span><span class="pulse"></span>
+      <button class="mic-btn" id="micBtn" aria-label="เริ่มพูด">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/>
+          <path d="M18 11a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.92V19H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.08A6 6 0 0 0 18 11z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="mic-hint" id="micHint">กดปุ่มไมค์ → พูด → กดอีกครั้ง ระบบจะแปลและอ่านเสียงให้ทันที</div>
+  </div>
+
+  <!-- input -->
+  <section class="card">
+    <h2>ข้อความต้นทาง · Source</h2>
+    <textarea id="srcText" placeholder="พูดผ่านไมโครโฟน หรือพิมพ์ข้อความที่ต้องการแปลที่นี่..."></textarea>
+    <div class="interim" id="interim"></div>
+    <div class="row">
+      <button class="btn primary" id="translateBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+        แปลและอ่านเสียง
+      </button>
+      <button class="btn ghost" id="clearBtn">ล้างข้อความ</button>
+    </div>
+  </section>
+
+  <!-- output -->
+  <section class="card hidden" id="resultCard">
+    <h2>คำแปล · Translation</h2>
+    <div id="loadBox" class="loading hidden"><div class="spinner"></div><span>กำลังแปล...</span></div>
+    <div id="errBox" class="error-box hidden"></div>
+    <div id="resultBody" class="hidden">
+      <p class="result-main" id="mainTrans"></p>
+      <div class="engine-tag" id="engineTag"></div>
+      <div class="speak-row">
+        <button class="btn primary" id="speakBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4-.91 7-4.49 7-8.77s-3-7.86-7-8.77z"/></svg>
+          ฟังเสียงอีกครั้ง
+        </button>
+        <button class="btn ghost" id="stopSpeakBtn">หยุดเสียง</button>
+        <button class="btn ghost" id="copyBtn">คัดลอก</button>
+        <label class="rate-ctl">ความเร็วเสียง
+          <input type="range" id="rate" min="0.6" max="1.3" step="0.05" value="0.92">
+          <span id="rateVal">0.92×</span>
+        </label>
+      </div>
+
+      <div id="altSection" class="hidden">
+        <h2 style="margin-top:26px">สำนวนเปรียบเทียบ · Alternative Renderings</h2>
+        <div id="altList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- voice settings -->
+  <section class="card">
+    <h2>เลือกเสียงอ่าน · Voice Selection</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+      <div>
+        <div style="font-size:.85rem;color:var(--ink-soft);margin-bottom:6px">🇹🇭 เสียงอ่านภาษาไทย</div>
+        <select id="voiceThSel" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--font-th);font-size:.95rem;background:#FCFCFA;color:var(--ink)"></select>
+      </div>
+      <div>
+        <div style="font-size:.85rem;color:var(--ink-soft);margin-bottom:6px">🇬🇧 เสียงอ่านภาษาอังกฤษ (English)</div>
+        <select id="voiceEnSel" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--font-th);font-size:.95rem;background:#FCFCFA;color:var(--ink)"></select>
+      </div>
+    </div>
+    <div style="font-size:.8rem;color:#9AA59E;margin-top:10px;line-height:1.7">
+      จำนวนเสียงขึ้นกับที่ติดตั้งในเครื่อง — เพิ่มเสียงชาย/หญิงได้: <b>Windows</b> Settings → Time &amp; Language → Speech → Add voices ·
+      <b>Android</b> ตั้งค่า → ระบบ → การอ่านออกเสียง (Text-to-speech) · เบราว์เซอร์ <b>Edge</b> มีเสียง Neural ชาย-หญิงให้เลือกมากที่สุด
+    </div>
+  </section>
+
+  <!-- system check -->
+  <section class="card">
+    <h2>ตรวจสอบระบบ · System Check</h2>
+    <div id="sysCheck" style="font-size:.9rem;line-height:2;color:var(--ink-soft)">กำลังตรวจสอบ...</div>
+    <div class="row">
+      <button class="btn primary" id="sttThaiTest">🎙️ ทดสอบถอดเสียงไทย (พูด "สวัสดี")</button>
+      <button class="btn ghost" id="testThVoice">🔊 ทดสอบเสียงอ่านไทย</button>
+      <button class="btn ghost" id="testEnVoice">🔊 Test English voice</button>
+    </div>
+    <div id="sttTestResult" style="margin-top:10px;font-size:.9rem;line-height:1.8"></div>
+  </section>
+
+  <!-- history -->
+  <section class="card">
+    <h2>ประวัติการแปล · Session History</h2>
+    <div id="histList"><div class="empty">ยังไม่มีประวัติในเซสชันนี้</div></div>
+  </section>
+
+</main>
+
+<footer>
+  ถอดเสียง: Web Speech API (ในตัวเบราว์เซอร์ · แนะนำ Chrome/Edge) · แปลภาษา: Google Translate (สาธารณะ) + MyMemory API — ฟรีทั้งคู่ ไม่ต้องสมัคร ไม่ต้องใช้ key ·
+  เสียงอ่าน: Speech Synthesis ของระบบ · ใช้งานต้องต่ออินเทอร์เน็ต
+</footer>
+
+<script>
+/* ================= state ================= */
+let direction = 'th2en';
+let listening = false;
+let recognition = null;
+let history = [];
+
+const $ = id => document.getElementById(id);
+const srcText=$('srcText'), interim=$('interim'), micBtn=$('micBtn'), micWrap=$('micWrap'),
+      micHint=$('micHint'), wave=$('wave'), resultCard=$('resultCard'), loadBox=$('loadBox'),
+      errBox=$('errBox'), resultBody=$('resultBody'), mainTrans=$('mainTrans'),
+      altList=$('altList'), altSection=$('altSection'), histList=$('histList'), engineTag=$('engineTag');
+
+/* ================= direction ================= */
+function langPair(){ return direction==='th2en' ? {src:'th',dst:'en',srLang:'th-TH',ttsLang:'en-US'} 
+                                                 : {src:'en',dst:'th',srLang:'en-US',ttsLang:'th-TH'}; }
+function renderDirection(){
+  const th2en = direction==='th2en';
+  $('codeA').textContent = th2en ? 'TH · ต้นทาง' : 'EN · Source';
+  $('nameA').textContent = th2en ? 'ภาษาไทย' : 'English';
+  $('codeB').textContent = th2en ? 'EN · ปลายทาง' : 'TH · ปลายทาง';
+  $('nameB').textContent = th2en ? 'English' : 'ภาษาไทย';
+  $('dirNote').textContent = th2en
+    ? 'พูดภาษาไทย → แปลเป็นภาษาอังกฤษ แล้วอ่านเสียงให้ทันที'
+    : 'Speak English → แปลเป็นภาษาไทย แล้วอ่านเสียงให้ทันที';
+  srcText.placeholder = th2en
+    ? 'พูดผ่านไมโครโฟน หรือพิมพ์ข้อความภาษาไทยที่นี่...'
+    : 'Speak via microphone, or type English text here...';
+}
+$('swapBtn').addEventListener('click', ()=>{
+  if(listening) stopListening(true);
+  direction = direction==='th2en' ? 'en2th' : 'th2en';
+  renderDirection();
+});
+
+/* ================= speech recognition ================= */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR){
+  micBtn.disabled = true;
+  micHint.classList.add('err');
+  micHint.innerHTML = 'เบราว์เซอร์นี้ไม่รองรับการถอดเสียง — กรุณาใช้ <b>Chrome</b> หรือ <b>Edge</b> หรือพิมพ์ข้อความแทน';
+}
+
+let finalTranscript = '';     // ข้อความที่ยืนยันแล้ว
+let interimTranscript = '';   // ข้อความระหว่างพูด (ภาษาไทยมักค้างอยู่ตรงนี้จนจบ)
+let pendingTranslate = false; // รอแปลหลัง recognition ปิดตัวสมบูรณ์
+
+function commitTranscript(){
+  const combined = (finalTranscript + ' ' + interimTranscript).replace(/\s+/g,' ').trim();
+  if(combined){
+    srcText.value = (srcText.value ? srcText.value.replace(/\s+$/,'')+' ' : '') + combined;
+  }
+  finalTranscript=''; interimTranscript='';
+  interim.textContent='';
+}
+
+/* ตรวจว่าข้อความที่ถอดได้ตรงกับภาษาต้นทางที่ตั้งไว้หรือไม่ */
+function detectMismatch(text){
+  const hasThai = /[\u0E00-\u0E7F]/.test(text);
+  if(direction==='th2en' && !hasThai && text.length > 3){
+    return 'ระบบถอดเสียงออกมาเป็นภาษาอังกฤษ ทั้งที่ตั้งค่าฟังภาษาไทยไว้ — สาเหตุที่พบบ่อย: '
+      + '(1) เบราว์เซอร์นี้ไม่รองรับถอดเสียงภาษาไทย กรุณาใช้ Google Chrome '
+      + '(2) หากต้องการพูดอังกฤษ ให้กดปุ่ม ⇄ สลับทิศทางก่อน — ระบบยังไม่แปลข้อความนี้ให้ เพราะน่าจะถอดเสียงผิด';
+  }
+  if(direction==='en2th' && hasThai){
+    return 'ระบบถอดเสียงออกมาเป็นภาษาไทย ทั้งที่ตั้งค่าฟังภาษาอังกฤษไว้ — หากต้องการพูดไทย กดปุ่ม ⇄ สลับทิศทางก่อน — ระบบยังไม่แปลข้อความนี้ให้';
+  }
+  return null;
+}
+
+function startListening(){
+  if(!SR) return;
+  stopAllAudio();
+  finalTranscript=''; interimTranscript=''; pendingTranslate=false;
+
+  recognition = new SR();
+  recognition.lang = langPair().srLang;
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onaudiostart = ()=>{ micHint.innerHTML += ' <span style="color:var(--teal-deep)">· ไมค์พร้อม ✓</span>'; };
+  recognition.onspeechstart = ()=>{ micHint.innerHTML = '<b>ได้ยินเสียงพูดแล้ว</b> — กำลังถอดความ...'; };
+  recognition.onresult = e=>{
+    let f='', im='';
+    for(let i=0;i<e.results.length;i++){
+      const t = e.results[i][0].transcript;
+      if(e.results[i].isFinal) f += t + ' ';
+      else im += t;
+    }
+    finalTranscript = f;
+    interimTranscript = im;
+    interim.textContent = im ? '… ' + im : (f ? '✓ ' + f.trim() : '');
+  };
+  recognition.onerror = e=>{
+    micHint.classList.add('err');
+    micHint.textContent = e.error==='not-allowed'
+      ? 'ไม่ได้รับอนุญาตให้ใช้ไมโครโฟน — กรุณาอนุญาตการเข้าถึงไมค์ในเบราว์เซอร์'
+      : (e.error==='no-speech'
+        ? 'ไม่ได้ยินเสียงพูด — ลองพูดใกล้ไมค์ขึ้นอีกนิด'
+        : 'เกิดข้อผิดพลาดในการรับเสียง: ' + e.error);
+    pendingTranslate = false;
+    stopListening(true);
+  };
+  /* สำคัญสำหรับภาษาไทย: ผลถอดเสียงสุดท้ายมาถึงก่อน onend
+     จึงต้อง commit ข้อความและแปล "หลัง" onend เท่านั้น */
+  recognition.onend = ()=>{
+    commitTranscript();
+    if(listening){ stopListening(true); }
+    if(pendingTranslate){
+      pendingTranslate = false;
+      const t = srcText.value.trim();
+      if(t){
+        const warn = detectMismatch(t);
+        if(warn){ micHint.classList.add('err'); micHint.textContent = warn; }
+        else { micHint.textContent='กำลังแปล...'; translate(); }
+      }
+      else micHint.textContent='ไม่พบข้อความจากเสียง — ลองพูดใหม่หรือพิมพ์ข้อความ';
+    }
+  };
+
+  recognition.start();
+  listening = true;
+  micBtn.classList.add('listening');
+  micWrap.classList.add('listening-on');
+  wave.classList.add('on');
+  micBtn.setAttribute('aria-label','หยุดพูด');
+  micHint.classList.remove('err');
+  micHint.innerHTML = direction==='th2en'
+    ? 'กำลังฟังเป็น<b>ภาษาไทย (th-TH)</b> — พูดได้เลย แล้วกดปุ่มอีกครั้งเพื่อ<b>แปลและฟังเสียง</b>'
+    : 'Listening in <b>English (en-US)</b> — speak, then press again to <b>translate &amp; hear</b>';
+}
+
+function stopListening(skipTranslate){
+  listening = false;
+  micBtn.classList.remove('listening');
+  micWrap.classList.remove('listening-on');
+  wave.classList.remove('on');
+  micBtn.setAttribute('aria-label','เริ่มพูด');
+  if(!skipTranslate){
+    /* ไม่แปลทันที — ตั้งธงรอให้ onend ทำงาน (จำเป็นสำหรับภาษาไทย) */
+    pendingTranslate = true;
+    micHint.textContent = 'กำลังประมวลผลเสียง...';
+    try{ recognition && recognition.stop(); }catch(_){ 
+      /* ถ้า stop ล้มเหลว ให้ commit และแปลเอง */
+      commitTranscript();
+      pendingTranslate=false;
+      if(srcText.value.trim()) translate();
+    }
+    /* กันกรณี onend ไม่ยิง (บางเครื่อง): fallback หลัง 1.2 วินาที */
+    setTimeout(()=>{
+      if(pendingTranslate){
+        pendingTranslate=false;
+        commitTranscript();
+        const t = srcText.value.trim();
+        if(t){
+          const warn = detectMismatch(t);
+          if(warn){ micHint.classList.add('err'); micHint.textContent = warn; }
+          else { micHint.textContent='กำลังแปล...'; translate(); }
+        }
+        else micHint.textContent='ไม่พบข้อความจากเสียง — ลองพูดใหม่หรือพิมพ์ข้อความ';
+      }
+    },1200);
+  }else{
+    try{ recognition && recognition.stop(); }catch(_){}
+  }
+}
+micBtn.addEventListener('click', ()=> listening ? stopListening() : startListening());
+
+/* ================= FREE translation engines ================= */
+/* 1) Google Translate public endpoint (ฟรี ไม่ต้องใช้ key) */
+async function googleTranslate(text, src, dst){
+  const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + src +
+              '&tl=' + dst + '&dt=t&q=' + encodeURIComponent(text);
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('Google HTTP ' + res.status);
+  const data = await res.json();
+  const out = (data[0]||[]).map(seg=>seg[0]).join('');
+  if(!out) throw new Error('Google: empty result');
+  return out.trim();
+}
+
+/* 2) MyMemory API (ฟรี ไม่ต้องใช้ key ~5,000 ตัวอักษร/วัน) */
+async function myMemoryTranslate(text, src, dst){
+  const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) +
+              '&langpair=' + src + '|' + dst;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('MyMemory HTTP ' + res.status);
+  const data = await res.json();
+  const out = data.responseData && data.responseData.translatedText;
+  if(!out || /QUERY LENGTH LIMIT|INVALID/i.test(out)) throw new Error('MyMemory: ' + (out||'empty'));
+  return out.trim();
+}
+
+let effectiveTtsLang = 'en-US'; // ภาษาเสียงอ่านตามผลแปลจริง
+
+async function translate(){
+  const text = srcText.value.trim();
+  if(!text) return;
+  /* ตรวจภาษาจริงจากตัวอักษร เพื่อกันกรณีทิศทางบนจอไม่ตรงกับข้อความ */
+  const hasThai = /[\u0E00-\u0E7F]/.test(text);
+  const src = hasThai ? 'th' : 'en';
+  const dst = hasThai ? 'en' : 'th';
+  effectiveTtsLang = hasThai ? 'en-US' : 'th-TH';
+  stopAllAudio();
+  resultCard.classList.remove('hidden');
+  resultBody.classList.add('hidden');
+  errBox.classList.add('hidden');
+  loadBox.classList.remove('hidden');
+  altSection.classList.add('hidden');
+  resultCard.scrollIntoView({behavior:'smooth', block:'start'});
+
+  /* เรียกทั้งสองตัวพร้อมกัน: ตัวหลัก + ตัวเทียบสำนวน */
+  const [g, m] = await Promise.allSettled([
+    googleTranslate(text, src, dst),
+    myMemoryTranslate(text, src, dst)
+  ]);
+
+  let main=null, engine='', alt=null, altEngine='';
+  if(g.status==='fulfilled'){ main=g.value; engine='Google Translate'; 
+    if(m.status==='fulfilled' && normalize(m.value)!==normalize(g.value)){ alt=m.value; altEngine='MyMemory'; } }
+  else if(m.status==='fulfilled'){ main=m.value; engine='MyMemory (สำรอง)'; }
+
+  loadBox.classList.add('hidden');
+  if(!main){
+    errBox.classList.remove('hidden');
+    errBox.textContent = 'แปลไม่สำเร็จ — กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่ (' +
+      (g.reason?g.reason.message:'') + (m.reason?' / '+m.reason.message:'') + ')';
+    micHint.textContent = 'แปลไม่สำเร็จ';
+    return;
+  }
+  renderResult(text, main, engine, alt, altEngine);
+
+  /* พูดแล้วแปลเป็นเสียงเลย */
+  if($('autoSpeak').checked) speak(main);
+}
+function normalize(s){ return (s||'').toLowerCase().replace(/[\s\.,!?"'“”]+/g,''); }
+
+$('translateBtn').addEventListener('click', translate);
+$('clearBtn').addEventListener('click', ()=>{
+  srcText.value=''; interim.textContent='';
+  resultCard.classList.add('hidden');
+  micHint.textContent='กดปุ่มไมค์ → พูด → กดอีกครั้ง ระบบจะแปลและอ่านเสียงให้ทันที';
+  micHint.classList.remove('err');
+});
+srcText.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); translate(); }
+});
+
+/* ================= แปลอัตโนมัติเมื่อพูด/พิมพ์ผ่านคีย์บอร์ดแล้วหยุด 2 วิ =================
+   ทางสำรองที่ไม่พึ่งเอนจินถอดเสียงของเบราว์เซอร์:
+   ใช้ไมค์ของคีย์บอร์ด (Gboard บนมือถือ / Win+H บน Windows) ซึ่งรองรับภาษาไทยแน่นอน */
+const autoTyping = $('autoTranslateTyping');
+if(/Android|iPhone|iPad/i.test(navigator.userAgent)) autoTyping.checked = true; /* มือถือเปิดให้เลย */
+let typeTimer = null;
+let lastTranslated = '';
+srcText.addEventListener('input', ()=>{
+  if(!autoTyping.checked || listening) return;
+  clearTimeout(typeTimer);
+  const t = srcText.value.trim();
+  if(t.length < 2 || t === lastTranslated) return;
+  micHint.classList.remove('err');
+  micHint.textContent = '⌨️ รับข้อความแล้ว — จะแปลอัตโนมัติเมื่อหยุด 2 วินาที...';
+  typeTimer = setTimeout(()=>{
+    const now = srcText.value.trim();
+    if(now && now !== lastTranslated){
+      lastTranslated = now;
+      translate();
+    }
+  }, 2000);
+});
+autoTyping.addEventListener('change', ()=>{
+  if(!autoTyping.checked){ clearTimeout(typeTimer); }
+});
+
+/* ================= render ================= */
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function renderResult(srcTextVal, main, engine, alt, altEngine){
+  const en = effectiveTtsLang === 'en-US';
+  resultBody.classList.remove('hidden');
+  mainTrans.textContent = main;
+  mainTrans.className = 'result-main' + (en?' en':'');
+  engineTag.textContent = 'ENGINE: ' + engine;
+
+  altList.innerHTML='';
+  if(alt){
+    altSection.classList.remove('hidden');
+    const div=document.createElement('div');
+    div.className='alt';
+    div.innerHTML = `
+      <div class="alt-text${en?' en':''}">${esc(alt)}</div>
+      <div class="alt-note">สำนวนจาก ${esc(altEngine)} — ใช้เปรียบเทียบการใช้คำ</div>
+      <div class="alt-actions">
+        <button class="mini-btn" id="altSpeak">🔊 ฟัง</button>
+        <button class="mini-btn" id="altUse">ใช้เป็นคำแปลหลัก</button>
+      </div>`;
+    altList.appendChild(div);
+    $('altSpeak').addEventListener('click',()=>speak(alt));
+    $('altUse').addEventListener('click',()=>{ mainTrans.textContent=alt; });
+  }
+
+  addHistory(srcTextVal, main);
+  micHint.textContent = $('autoSpeak').checked ? 'แปลเสร็จ — กำลังอ่านเสียง 🔊' : 'แปลเสร็จแล้ว';
+}
+
+/* ================= speech synthesis =================
+   ตัวหลัก: Google Translate TTS (สตรีมเสียงจากเซิร์ฟเวอร์ ฟรี ไม่ต้องใช้ key
+            อ่านภาษาไทยได้ทุกเบราว์เซอร์ ไม่ต้องติดตั้งชุดเสียงในเครื่อง)
+   ตัวสำรอง: speechSynthesis ของระบบ (ถ้าสตรีมล้มเหลว) */
+const rate=$('rate'), rateVal=$('rateVal');
+rate.addEventListener('input', ()=> rateVal.textContent = (+rate.value).toFixed(2)+'×');
+
+let currentAudio = null;
+let speakQueue = [];
+let speaking = false;
+
+function stopAllAudio(){
+  speakQueue = [];
+  speaking = false;
+  if(currentAudio){ try{currentAudio.pause();}catch(_){} currentAudio = null; }
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+/* แบ่งข้อความเป็นท่อน ๆ (endpoint จำกัด ~200 ตัวอักษรต่อครั้ง) */
+function chunkText(text, max){
+  const out = [];
+  let rest = text.trim();
+  while(rest.length > max){
+    let cut = -1;
+    for(const sep of ['. ','? ','! ','; ',', ',' ']){
+      const i = rest.lastIndexOf(sep, max);
+      if(i > cut) cut = i + sep.length - 1;
+    }
+    if(cut < 20) cut = max;            /* ภาษาไทยไม่มีช่องว่าง: ตัดตรง ๆ */
+    out.push(rest.slice(0, cut+1).trim());
+    rest = rest.slice(cut+1).trim();
+  }
+  if(rest) out.push(rest);
+  return out;
+}
+
+function googleTTSUrl(text, lang){
+  const tl = lang.startsWith('th') ? 'th' : 'en';
+  return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + tl +
+         '&q=' + encodeURIComponent(text);
+}
+
+function playNextChunk(lang, onAllDone, onFail){
+  if(!speakQueue.length){ speaking=false; currentAudio=null; if(onAllDone) onAllDone(); return; }
+  const chunk = speakQueue.shift();
+  const audio = new Audio(googleTTSUrl(chunk, lang));
+  currentAudio = audio;
+  audio.playbackRate = +rate.value;
+  audio.onended = ()=> playNextChunk(lang, onAllDone, onFail);
+  audio.onerror = ()=>{ speaking=false; currentAudio=null; if(onFail) onFail(chunk); };
+  audio.play().catch(()=>{ speaking=false; currentAudio=null; if(onFail) onFail(chunk); });
+}
+
+function pickVoice(lang){
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v=>v.lang===lang)
+      || vs.find(v=>v.lang && v.lang.replace('_','-').startsWith(lang.split('-')[0]))
+      || null;
+}
+
+/* ================= เลือกเสียงอ่าน ================= */
+const voiceThSel = $('voiceThSel'), voiceEnSel = $('voiceEnSel');
+const GENDER_MAP = {
+  premwadee:'หญิง', achara:'หญิง', kanya:'หญิง', narisa:'หญิง',
+  niwat:'ชาย', pattara:'ชาย',
+  zira:'หญิง', aria:'หญิง', jenny:'หญิง', michelle:'หญิง', ana:'หญิง', emma:'หญิง', ava:'หญิง',
+  sonia:'หญิง', libby:'หญิง', samantha:'หญิง', karen:'หญิง', moira:'หญิง', victoria:'หญิง', natasha:'หญิง',
+  david:'ชาย', mark:'ชาย', guy:'ชาย', eric:'ชาย', steffan:'ชาย', andrew:'ชาย', brian:'ชาย',
+  ryan:'ชาย', thomas:'ชาย', daniel:'ชาย', alex:'ชาย', fred:'ชาย', rishi:'ชาย', william:'ชาย'
+};
+function genderOf(name){
+  const n = (name||'').toLowerCase();
+  for(const k in GENDER_MAP){ if(n.includes(k)) return ' · เสียง' + GENDER_MAP[k]; }
+  return '';
+}
+function fillVoiceSelect(sel, voices, streamLabel){
+  const prev = sel.value;
+  sel.innerHTML = '';
+  const o0 = document.createElement('option');
+  o0.value = 'stream';
+  o0.textContent = streamLabel;
+  sel.appendChild(o0);
+  voices.forEach(v=>{
+    const o = document.createElement('option');
+    o.value = 'local:' + v.name;
+    o.textContent = v.name + genderOf(v.name) + (/natural|neural/i.test(v.name) ? ' ★' : '');
+    sel.appendChild(o);
+  });
+  if(prev && [...sel.options].some(o=>o.value===prev)) sel.value = prev;
+}
+function populateVoices(){
+  if(!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  const norm = v => (v.lang||'').replace('_','-').toLowerCase();
+  fillVoiceSelect(voiceThSel, vs.filter(v=>norm(v).startsWith('th')),
+    '🌐 เสียงสตรีม Google (หญิง · ออนไลน์) — ค่าเริ่มต้น');
+  fillVoiceSelect(voiceEnSel, vs.filter(v=>norm(v).startsWith('en')),
+    '🌐 Google stream (female · online) — default');
+}
+voiceThSel.addEventListener('change', ()=>{ effectiveTtsLang='th-TH'; speak('สวัสดีค่ะ นี่คือเสียงที่คุณเลือก'); });
+voiceEnSel.addEventListener('change', ()=>{ effectiveTtsLang='en-US'; speak('Hello, this is the voice you selected.'); });
+
+/* เสียงในเครื่อง (เลือกเสียงเฉพาะได้) */
+function speakLocal(text, lang, voiceName){
+  if(!('speechSynthesis' in window)) return false;
+  const vs = speechSynthesis.getVoices();
+  const v = (voiceName && vs.find(x=>x.name===voiceName)) || pickVoice(lang);
+  if(!v && lang==='th-TH'){
+    micHint.classList.add('err');
+    micHint.innerHTML = '⚠️ ไม่พบเสียงอ่าน<b>ภาษาไทย</b>ในเครื่อง และสตรีมไม่สำเร็จ — '
+      + 'ตรวจสอบอินเทอร์เน็ต หรือติดตั้งเสียงไทย (Windows: Settings → Time &amp; Language → Speech → Add voices → "ไทย")';
+    return false;
+  }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang; if(v) u.voice = v;
+  u.rate = +rate.value;
+  u.onstart = ()=>{ micHint.classList.remove('err'); micHint.textContent='กำลังอ่านเสียง ('+(v?v.name:'เสียงในเครื่อง')+') 🔊'; };
+  u.onend = ()=>{ micHint.textContent='พร้อมแปลประโยคถัดไป'; };
+  speechSynthesis.speak(u);
+  setTimeout(()=>{ if(speechSynthesis.paused) speechSynthesis.resume(); }, 300);
+  return true;
+}
+
+function speak(text){
+  if(!text) return;
+  stopAllAudio();
+  const lang = effectiveTtsLang;
+  const sel = lang==='th-TH' ? voiceThSel : voiceEnSel;
+  const choice = (sel && sel.value) || 'stream';
+  micHint.classList.remove('err');
+
+  if(choice.startsWith('local:')){
+    /* ผู้ใช้เลือกเสียงในเครื่อง */
+    const name = choice.slice(6);
+    if(!speakLocal(text, lang, name)){
+      /* เสียงหาย → กลับไปใช้สตรีม */
+      micHint.textContent='เสียงที่เลือกใช้ไม่ได้ — สลับไปเสียงสตรีม';
+      speakQueue = chunkText(text, 180); speaking = true;
+      playNextChunk(lang, ()=>{ micHint.textContent='พร้อมแปลประโยคถัดไป'; }, ()=>{});
+    }
+    return;
+  }
+
+  /* ค่าเริ่มต้น: เสียงสตรีม Google */
+  micHint.textContent = 'กำลังอ่านเสียง 🔊';
+  speakQueue = chunkText(text, 180);
+  speaking = true;
+  playNextChunk(lang,
+    ()=>{ micHint.textContent='พร้อมแปลประโยคถัดไป — กดไมค์ได้เลย'; },
+    (failedChunk)=>{
+      micHint.textContent='สตรีมเสียงไม่สำเร็จ — กำลังลองเสียงในเครื่อง...';
+      speakLocal(text, lang, null);
+    });
+}
+if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }
+$('speakBtn').addEventListener('click', ()=> speak(mainTrans.textContent));
+$('stopSpeakBtn').addEventListener('click', ()=> stopAllAudio());
+$('copyBtn').addEventListener('click', async ()=>{
+  try{ await navigator.clipboard.writeText(mainTrans.textContent); $('copyBtn').textContent='คัดลอกแล้ว ✓';
+    setTimeout(()=>$('copyBtn').textContent='คัดลอก',1500);}catch(_){}
+});
+
+/* ================= history ================= */
+function addHistory(src,dst){
+  history.unshift({src,dst,dir:direction,t:new Date()});
+  history = history.slice(0,12);
+  histList.innerHTML='';
+  history.forEach(h=>{
+    const en = h.dir==='th2en';
+    const d = document.createElement('div');
+    d.className='hist-item';
+    d.innerHTML = `
+      <div class="hist-src">${esc(h.src)}</div>
+      <div class="hist-dst${en?' en':''}">${esc(h.dst)}</div>
+      <div class="hist-meta">
+        <span>${en?'TH → EN':'EN → TH'}</span>
+        <span>${h.t.toLocaleTimeString()}</span>
+        <button class="mini-btn hist-speak">🔊 ฟัง</button>
+      </div>`;
+    d.querySelector('.hist-speak').addEventListener('click',()=>{
+      effectiveTtsLang = /[\u0E00-\u0E7F]/.test(h.dst) ? 'th-TH' : 'en-US';
+      speak(h.dst);
+    });
+    histList.appendChild(d);
+  });
+}
+
+/* ================= system diagnostics ================= */
+function runDiagnostics(){
+  const box = $('sysCheck');
+  const isEdge = /Edg\//.test(navigator.userAgent);
+  const isChrome = /Chrome\//.test(navigator.userAgent) && !isEdge;
+  const vs = speechSynthesis.getVoices();
+  const thVoices = vs.filter(v=>/^th/i.test((v.lang||'').replace('_','-')));
+  const enVoices = vs.filter(v=>/^en/i.test((v.lang||'').replace('_','-')));
+
+  const ok = t=>'<span style="color:var(--teal-deep)">✓ '+t+'</span>';
+  const bad = t=>'<span style="color:var(--red)">✗ '+t+'</span>';
+  const warn = t=>'<span style="color:var(--amber)">⚠ '+t+'</span>';
+
+  let rows = [];
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if(location.protocol === 'file:'){
+    rows.push(isMobile
+      ? bad('<b>เปิดจากไฟล์ในเครื่อง (file://)</b> — มือถือจะบล็อกไมโครโฟนเสมอในโหมดนี้ ต้องอัปโหลดไฟล์ขึ้นโฮสต์ฟรี (เช่น Netlify Drop) แล้วเปิดผ่านลิงก์ https แทน')
+      : warn('เปิดจากไฟล์ในเครื่อง (file://) — บน PC ใช้ไมค์ได้ แต่ถ้านำไปเปิดบนมือถือ ไมค์จะถูกบล็อก ต้องโฮสต์เป็น https ก่อน'));
+  }
+  rows.push('เบราว์เซอร์: ' + (isChrome ? ok('Google Chrome — รองรับถอดเสียงไทยดีที่สุด')
+    : isEdge ? warn('Microsoft Edge — <b>ถอดเสียงภาษาไทยมักไม่ทำงาน</b> แนะนำเปิดไฟล์นี้ด้วย Google Chrome')
+    : warn('เบราว์เซอร์อื่น — หากถอดเสียงไทยไม่ได้ ให้ใช้ Google Chrome')));
+  rows.push('ระบบถอดเสียง (STT): ' + (SR ? ok('รองรับ') : bad('ไม่รองรับ — พิมพ์ข้อความแทนได้')));
+  rows.push('เสียงอ่าน (TTS): ' + ok('ใช้เสียงสตรีมจากเซิร์ฟเวอร์ Google — อ่านไทย/อังกฤษได้ทุกเบราว์เซอร์ (ต้องต่ออินเทอร์เน็ต)'));
+  rows.push('เสียงสำรองในเครื่อง — ไทย: ' + (thVoices.length
+    ? ok('พบ ' + thVoices.length + ' เสียง')
+    : warn('ไม่พบ (ไม่เป็นไร — ใช้เสียงสตรีมแทนได้)'))
+    + ' · อังกฤษ: ' + (enVoices.length ? ok('พบ ' + enVoices.length + ' เสียง') : warn('ไม่พบ')));
+  box.innerHTML = rows.join('<br>');
+}
+if('speechSynthesis' in window){
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = ()=>{ runDiagnostics(); populateVoices(); };
+  setTimeout(()=>{ runDiagnostics(); populateVoices(); }, 600);   /* บางเครื่องรายชื่อเสียงมาช้า */
+  setTimeout(()=>{ runDiagnostics(); populateVoices(); }, 2000);
+}
+$('testThVoice').addEventListener('click', ()=>{
+  effectiveTtsLang='th-TH'; speak('สวัสดีครับ นี่คือการทดสอบเสียงอ่านภาษาไทย');
+});
+$('testEnVoice').addEventListener('click', ()=>{
+  effectiveTtsLang='en-US'; speak('Hello, this is an English voice test.');
+});
+
+/* ทดสอบเอนจินถอดเสียงไทยของเบราว์เซอร์แบบชี้ขาด */
+$('sttThaiTest').addEventListener('click', ()=>{
+  const out = $('sttTestResult');
+  if(!SR){ out.innerHTML = '<span style="color:var(--red)">✗ เบราว์เซอร์นี้ไม่มีระบบถอดเสียงเลย — ใช้ Google Chrome หรือใช้ Win + H แทน</span>'; return; }
+  stopAllAudio();
+  if(listening) stopListening(true);
+
+  out.innerHTML = '🎙️ <b>กำลังฟัง 6 วินาที — พูดว่า "สวัสดี" ชัด ๆ ได้เลย</b>';
+  let gotAudio=false, heardSpeech=false, transcriptAll='';
+  const r = new SR();
+  r.lang='th-TH'; r.continuous=true; r.interimResults=true;
+  r.onaudiostart = ()=>{ gotAudio=true; };
+  r.onspeechstart = ()=>{ heardSpeech=true; out.innerHTML='🎙️ ได้ยินเสียงแล้ว — กำลังถอดความ...'; };
+  r.onresult = e=>{
+    let t=''; for(let i=0;i<e.results.length;i++) t += e.results[i][0].transcript;
+    transcriptAll = t;
+    out.innerHTML = '🎙️ ถอดได้: <b>'+t.replace(/</g,'&lt;')+'</b>';
+  };
+  r.onerror = e=>{ transcriptAll = transcriptAll || ''; out.dataset.err = e.error; };
+  const verdict = ()=>{
+    try{ r.stop(); }catch(_){}
+    const hasThai = /[\u0E00-\u0E7F]/.test(transcriptAll);
+    const err = out.dataset.err; delete out.dataset.err;
+    if(hasThai){
+      out.innerHTML = '<span style="color:var(--teal-deep)">✓ <b>เบราว์เซอร์นี้ถอดเสียงภาษาไทยได้!</b> (ถอดได้: '+transcriptAll.replace(/</g,'&lt;')+')</span><br>'
+        + 'ปุ่มไมค์หลักของโปรแกรมใช้ได้แน่นอน — ตรวจว่าชิปซ้ายเป็น "TH · ต้นทาง" ก่อนพูด';
+    }else if(transcriptAll){
+      out.innerHTML = '<span style="color:var(--red)">✗ <b>เอนจินของเบราว์เซอร์นี้ไม่รองรับภาษาไทย</b> — พูดไทยแต่ถอดเป็นอักษรอังกฤษ ("'+transcriptAll.replace(/</g,'&lt;')+'")</span><br>'
+        + '<b>ทางแก้:</b> (1) ติดตั้งและเปิดไฟล์นี้ด้วย <b>Google Chrome ตัวจริง</b> (google.com/chrome) '
+        + '(2) หรือคลิกในช่องข้อความ สลับคีย์บอร์ดเป็นไทย (Win+Space) แล้วกด <b>Win+H</b> พูดไทยผ่าน Windows Voice Typing แทน แล้วกดปุ่มแปล';
+    }else if(err==='not-allowed'){
+      out.innerHTML = '<span style="color:var(--red)">✗ เบราว์เซอร์ไม่ได้รับอนุญาตใช้ไมโครโฟน</span> — กดไอคอนแม่กุญแจ/กล้องข้างช่อง URL แล้วอนุญาต Microphone';
+    }else if(!gotAudio){
+      out.innerHTML = '<span style="color:var(--red)">✗ ไมโครโฟนไม่ส่งสัญญาณเข้าเบราว์เซอร์</span> — ตรวจไมค์ใน Windows: Settings → Privacy → Microphone'+(err?' (error: '+err+')':'');
+    }else if(!heardSpeech){
+      out.innerHTML = '<span style="color:var(--amber)">⚠ ไมค์ทำงานแต่ไม่ได้ยินเสียงพูด</span> — ลองพูดดังขึ้น/ใกล้ไมค์ขึ้น แล้วกดทดสอบใหม่'+(err?' (error: '+err+')':'');
+    }else{
+      out.innerHTML = '<span style="color:var(--red)">✗ ได้ยินเสียงแต่<b>ไม่มีผลถอดความภาษาไทยออกมาเลย</b> — เอนจินของเบราว์เซอร์นี้ไม่รองรับภาษาไทย</span><br>'
+        + '<b>ทางแก้:</b> (1) เปิดไฟล์นี้ด้วย <b>Google Chrome ตัวจริง</b> (2) หรือใช้ <b>Win+H</b> (Windows Voice Typing รองรับภาษาไทย): '
+        + 'คลิกในช่องข้อความ → Win+Space สลับคีย์บอร์ดเป็นไทย → Win+H → พูด → กดปุ่มแปล';
+    }
+  };
+  r.onend = ()=>{ if(!out.dataset.done){ out.dataset.done='1'; verdict(); setTimeout(()=>delete out.dataset.done, 100); } };
+  setTimeout(()=>{ try{ r.stop(); }catch(_){} }, 6000);
+  try{ r.start(); }catch(e){ out.innerHTML='✗ เริ่มทดสอบไม่สำเร็จ: '+e.message; }
+});
+
+renderDirection();
+</script>
+</body>
+</html>

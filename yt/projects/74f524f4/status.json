@@ -1,0 +1,13 @@
+{
+  "project_id": "74f524f4",
+  "topic": "สร้างวิดีโอ  ในหัวข้อ “แก่ลอรี่@เกาะเกร็ด ” โดยใช้สื่อที่แนบเป็นเนื้อหาหลัก พร้อมจังหวะตัดแบบภาพยนตร์ โทนเป็นกันเอง ความยาว 50 วินาที",
+  "phase": "error",
+  "progress": 0,
+  "error": "\\pythoncore-3.14-64\\Lib\\site-packages\\edge_tts\\communicate.py\", line 588, in stream\n    async for message in self.__stream():\n        yield message\n  File \"C:\\Users\\Lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\edge_tts\\communicate.py\", line 562, in __stream\n    raise NoAudioReceived(\n        \"No audio was received. Please verify that your parameters are correct.\"\n    )\nedge_tts.exceptions.NoAudioReceived: No audio was received. Please verify that your parameters are correct.\n",
+  "script": "เมื่อ ลูกค้าแวะเวียนมา พี่อ้อมก็จะดูแลเป็นพิเศษทุกคน เลย\nวันนี้เช่นกัน มี หนุ่ม สาว อังกฤษ มาเที่ยว\nพี่อ้อมก็ ดูแล ลูกค้า ให้สนุก สนาน หลังจาก ทานอาหาร แสนอร่อย \nลูกค้าทุกคน ต้องได้รับ ความประทับใจกลับไป  และ ยินดีต้อนรับทุกคน  ที่ แก่ ลอ รี่ เกาะ เกร็ด",
+  "audio_path": null,
+  "video_path": null,
+  "video_paths": null,
+  "created_at": 1790071527.4930942,
+  "updated_at": 1790071538.6246076
+}

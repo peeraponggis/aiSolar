@@ -1,0 +1,352 @@
+ไฟล์: รายชื่อหน่วยทดสอบ-15-สิงหาคม-2569-2211.pdf
+หมวดหมู่: PEA
+หน้าที่: 4
+============================================================
+
+
+--- Page 1 ---
+รายชื่อหน่วยทดสอบ ที่ได้รับการรับรองโดยการไฟฟ้าส่วนภูมิภาค
+ข้อมูล ณ วันที่ 15 ส.ค. 69
+ลำดับ
+ชื่อหน่วยงาน
+ที่อยู่
+ประเทศ
+พิกัดขนาดทดสอบ 
+(kW)
+1
+ABB Finland
+Hiomotie 13, 00380 Helsinki
+Finland
+630 kW
+2
+ABB Italy
+Via S. Giorgio, 642, 52028
+Terranuova Bracciolini Arezzo
+Italy
+400 kW
+3
+Bureau Veritas Consumer Products
+Services (Hong Kong) Limited, Taoyuan
+Branch
+No.19, Hwa Ya 2nd Rd., Wen Hwa
+Vil., Kwei Shan Dist., Taoyuan City
+Taiwan
+100 kVA
+4
+Bureau Veritas GmbH
+Silvastraße 1 86842 Türkheim,
+Unterallgäu, Bayern
+Germany
+30 kW
+5
+Bureau Veritas LCIE China Company (BV
+LCIE Lab)
+Building 4, No. 518, Xinzhuan
+Road, Caohejing, Songjiang High-
+Tech Park, Shanghai
+China
+400 kW
+6
+Bureau Veritas Shenzhen Co., Ltd.
+(Dongguan Branch)
+96, Guantai Road (Houjie Section)
+Houjie Town, Dongguan City,
+Guangdong
+China
+200 kW
+7
+CCIC-SET
+WGX+2FF, Shahe Rd, Xili,
+Nanshan, Shenzhen, Guangdong
+China
+500 kW
+8
+CES Solar Cells Testing Center (CSSC)
+49 Soi Thian Thale 25, Bang Khun
+Thian Chai Thale Road, Tha Kham,
+Bang Khun Thian, Bangkok
+Thailand
+30 kW
+9
+CQC-Guochuang Testing Technology
+(Jiangsu) Co., Ltd.
+Building 5 and Building 7 , No. 67
+Fuyang Road, Tianning District,
+Changzhou, Jiangsu
+China
+1,000 kW
+10
+CQC-Trusted Testing Technology Co.,Ltd.
+No.99 Wenlan Road, Xianlin
+University Zone, Xianlin Street,
+Qixia District, Nanjing
+China
+100 kW
+11
+CVC Testing Technology Co., Ltd.
+Building B5 & B6, No.16, Yufeng
+Road, Huadu District,
+Guangzhou, Guangdong
+China
+1,000 kW
+12
+CVC Testing Technology (Shenzhen) Co.,
+Ltd.
+No. 1301-14&16, Guanguang
+Road, Xinlan Community,
+Guanlan Subdistrict, Longhua
+District, Shenzhen, Guangdong
+China
+400 kW
+13
+Danfoss
+Runsorintie 7, 65380 Vaasa
+Finland
+266 kW
+14
+DEKRA Testing and Certification (Suzhou)
+Co., Ltd.
+No.99, Hongye Road, Suzhou
+Industrial Park, Suzhou, Jiangsu
+China
+114.6 kW
+
+--- Page 2 ---
+รายชื่อหน่วยทดสอบ ที่ได้รับการรับรองโดยการไฟฟ้าส่วนภูมิภาค
+ข้อมูล ณ วันที่ 15 ส.ค. 69
+ลำดับ
+ชื่อหน่วยงาน
+ที่อยู่
+ประเทศ
+พิกัดขนาดทดสอบ 
+(kW)
+15
+Electrical and electronic products testing
+center (PTEC)
+111 Thailand Science Park (TSP),
+Phahonyothin Road, Khlong
+Nueng, Khlong Luang, Pathum
+Thani
+Thailand
+90 kW
+16
+EMTEK (SHENZHEN) Co.,Ltd.
+Unit 01, 6/F, Building 11A,
+Shenzhen bay Eco-Technology
+Park, Keji South Road, Nanshan
+District, Shenzhen, Guangdong
+China
+630 kW
+17
+Energy Wave Co.,Ltd.
+18 Foshan, Guangdong
+China
+100 kW
+18
+Japan Electrical Safety & Environment
+Technology (JET)
+2-5-1 Machiikedai Koriyama-City
+Fukushima-Prefecture
+Japan
+3,000 kW
+19
+KEHUA Laboratory
+NO.457, Malong Road, Huli District
+Torch High-Tech Industrial Zone
+Xiamen, Fujian
+China
+500 kW
+20
+LEONICS Co., Ltd.
+Wellgrow Industrial Estate 113
+Moo 5, Bangna-Trad Rd., Km.36,
+Bang Samak, Bang Pakong,
+Chachoengsao
+Thailand
+680 kW
+21
+Lyns-tci Technology Guangdong
+Room 1201, Unit 2, Building 18
+No.7, Science and Technology
+Boulevard, Houjie Town,
+Dongguan City, Guangdong,
+523960
+China
+312 kW
+22
+Metropolitan Electricity Authority (MEA)
+256 Nakhonchaisri Road, Tanon
+Nakhonchaisri, Dusit, Bangkok,
+10300
+Thailand
+60 kW
+23
+National Energy Solar Center (NESC)
+Gaoxin Rd, Pukou District,
+Nanjing, Jiangsu
+China
+1,300 kW
+24
+Perfect Galaxy International Limited
+Baoan, Shenzhen
+China
+1,000 kW
+25
+Raychem
+Safari Crossing, Near Halol GIDC,
+Village-Kanjari, Taluka:Halol,
+Halol, Gujarat
+India
+250 kW
+26
+Sainuotek (Jiaxing) Service Co., Ltd.
+Building 1, No. 1515, Shunze
+Road, Daqiao Town, Nanhu
+District, Jiaxing, Zhejiang, 314006
+China
+500 kW
+27
+Shanghai Institute of Quality Inspection
+and Technical Research
+Building 4, No.900, Jiang Yue
+Road, Minhang District, Shanghai
+China
+52.5 kW
+
+--- Page 3 ---
+รายชื่อหน่วยทดสอบ ที่ได้รับการรับรองโดยการไฟฟ้าส่วนภูมิภาค
+ข้อมูล ณ วันที่ 15 ส.ค. 69
+ลำดับ
+ชื่อหน่วยงาน
+ที่อยู่
+ประเทศ
+พิกัดขนาดทดสอบ 
+(kW)
+28
+Shanghai Testing & Inspection Institute for
+Electrical Equipment Co., Ltd. (STIEE)
+505 Wu Ning Road, Shanghai
+China
+3,300 kW
+29
+Shenzhen Chengxin Technology Service
+Co., Ltd.
+Factory Building, Dafu Factory,
+No. 13, North of Aiqun Road,
+Shangwu, Shiyan Subdistrict,
+Bao’an District, Shenzhen,
+Guangdong
+China
+280 kW
+30
+SMA Solar Technology GV
+Sonnenallee 1, 34266 Niestetal,
+Kassel
+Germany
+1,000 kW
+31
+Sungrow Power Supply
+No.1699 Xiyou Rd., High-tech
+Industry Development Zone,
+Hefei, 230088
+China
+3,000 kW
+32
+SUZHOU ELECTRICAL APPARATUS
+SCIENCE RESEARCH INSTITUTE CO. LTD.
+No.5 Qianzhu Road, Yuexi,
+Wuzhong District SUZHOU,
+Jiangsu
+China
+1,000 kW
+33
+Suzhou Tuzhe Technology Co., Ltd.
+1/F., Plant 5, No. 118, Shengpu
+Road, Suzhou Industrial Park,
+Suzhou, Jiangsu
+China
+100 kW
+34
+TÜV NORD Testing (Suzhou) Co., Ltd.
+Zone E, 1/F, East Side of South
+Building, Building 3, No.50,
+Beiguandu Road, Yuexi
+Subdistrict, Suzhou, Jiangsu
+China
+60 kW
+35
+TÜV Rheinland (Shanghai) Co., Ltd.
+No. 177, 178, Lane 777,
+Guangzhong West Road, Jing’an
+District, Shanghai
+China
+300 kW
+36
+TÜV Rheinland (Shenzhen) Co., Ltd.
+1F, Block 5, No. 1100, Huanli
+Road, Yungu Community, Xinhu
+Street, Guangming District,
+Shenzhen, Guangdong
+China
+1,000 kW
+37
+TÜV SÜD
+Electronic Testing Building, No.43
+Shahe Road, Xili Jiedao, Nanshan
+District, Shenzhen, Guangdong
+China
+60 kW
+38
+TÜV SÜD Certification and Testing (China)
+Co.,Ltd., Guangzhou Branch
+D1 Building, No.63 Chuangqi
+Road, Shilou Town, Panyu District,
+GUANGZHOU, 511447
+China
+6,000 kW
+
+--- Page 4 ---
+รายชื่อหน่วยทดสอบ ที่ได้รับการรับรองโดยการไฟฟ้าส่วนภูมิภาค
+ข้อมูล ณ วันที่ 15 ส.ค. 69
+ลำดับ
+ชื่อหน่วยงาน
+ที่อยู่
+ประเทศ
+พิกัดขนาดทดสอบ 
+(kW)
+39
+TÜV SÜD New Energy Vehicle Testing
+(Jiangsu) Co.,Ltd.
+Building A, No.15 Factory, Jintong
+International Industrial Park,
+No.8, Xihu Road, Wujin National
+Hi-tech Industrial Development
+Zone, Changzhou, Jiangsu
+China
+500 kW
+40
+Wuxi Institute of Inspection, Testing and
+Certifcation (Wuxi Institute of Metrology
+and Testing, Wuxi Center of Fiber
+Inspection) National Center of Inspection
+on Solar Photovoltaic Products Quality
+(CPVT)
+No.5 Xinhua Road, New District,
+Wuxi, Jiangsu
+China
+1,024 kW
+41
+Zhejiang Fangyuan Test Group Co., Ltd.
+No.400, Guangqiong Road,
+Jiaxing, Zhejiang
+China
+1,250 kW
+42
+สถาบันไฟฟ้าและอิเล็กทรอนิกส์ (ELECTRICAL
+AND ELECTRONICS INSTITUTE ; EEI)
+975 Moo 4, Bangpoo Industrial
+Estate Soi 8, Sukhumvit Road
+km.37, Phraek Sa, Mueang Samut
+Prakan, Samut Prakan, 10280
+Thailand
+45 kW

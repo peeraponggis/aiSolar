@@ -1,0 +1,17 @@
+# รายการเว็บเลขเด็ด/เลขดัง — ใส่ URL บรรทัดละ 1
+# บรรทัดที่ขึ้นต้นด้วย # = คอมเมนต์ (ไม่ถูกกวาด)
+# ⚠️ เลขดังเป็นกระแส/ความเชื่อ ไม่ใช่การทำนายผลออกจริง
+
+# ── เว็บที่ตรวจแล้วว่าเข้าได้ (2026-09-17) ──
+https://lottery.kapook.com/luckynumber
+https://www.myhora.com/lottery/lucky-number.aspx
+https://thethaiger.com/th/check-lottery/lucky-number
+
+# ── เว็บเพิ่มเติมจากผลค้นหา ──
+https://today.line.me/th/page/number
+https://www.komchadluek.net/lottery/lotto
+https://www.thairath.co.th/lottery/news
+https://www.dohora.com/lottery/predictions
+https://www.sanook.com/lotto/
+
+# ── ใส่เว็บของคุณเองเพิ่มด้านล่างนี้ ──

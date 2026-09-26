@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+.mypy_cache/
+*.egg-info/
+
+# Logs
+*.log
+*.err
+
+# OS
+.DS_Store
+Thumbs.db
+*.lnk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# LocalAI specific
+ollama-data/
+models/
+clips/_work/
+knowledge/.rag_cache.json
+*.bak*
+
+# Large files
+*.mp4
+*.wav
+*.mp3
+*.ogg
+
+# Temp
+tmp/
+temp/
+*.tmp

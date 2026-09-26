@@ -1,0 +1,372 @@
+PVsyst Tutorial: pvsyst_tutorial_components
+Pages: 13
+============================================================
+
+
+--- Page 1 ---
+ 
+ 
+
+--- Page 2 ---
+ PVsyst SA – Components Databases 
+Page 2 
+ 
+Contents 
+ 
+1 
+Components Management ................................................................................. 3 
+1.1 
+Defining PV modules in PVsyst .................................................................... 3 
+1.2 
+Defining PV modules from Datasheets ......................................................... 3 
+2 
+Grid Inverter definition in PVsyst ......................................................................... 8 
+2.1 
+Defining an inverter from Datasheets ........................................................... 8 
+
+--- Page 3 ---
+  PVsyst SA – Components Databases 
+Page 3 
+ 
+1 Components Management 
+1.1 Defining PV modules in PVsyst 
+We will analyse the definition of PV modules in PVsyst (PAN files) by defining a new 
+module from the datasheet. Here, we are going to define a Generic 325Wp module. To 
+do so, first, click on the “Databases” button under Utilities from the main PVsyst screen. 
+Then, click on the “PV modules” button under the components database. Once in the PV 
+module’s database click “New” to create a new PV Module in the system. 
+ 
+NB: in practice, it is much easier to start from an existing similar component present in 
+the database, modify its parameters according to the datasheets and save it under a new 
+file name, therefore creating a new component in your database. 
+ 
+1.2 Defining PV modules from Datasheets 
+Typically, the first page of a PV module datasheet gives the general features (usually 
+rather "promotional") and the second page gives the technical specifications.  
+When opening a new PV module, we start by defining the "basic data", such as:  
+• the model, 
+• the manufacturer (if already existing in the database, exactly the same 
+name), 
+• the data source (and possibly date of recording) 
+• the file name, which is the primary key in the database, and should be 
+unique. 
+The convention in PVsyst is to define the filename as “Manufacturer_Model.PAN”.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 4 ---
+  PVsyst SA – Components Databases 
+Page 4 
+ 
+Next, define the “Manufacturer Specifications" of the module:  
+From the second page of the Datasheet:  
+• Nom power:   the nameplate definition of the module (here 250 Wp). 
+• Tolerance: 
+usually specified as % of PNom; here through  
+o «Pmpp range from … to". 
+• The technology:   
+here Poly-crystalline (as mentioned elsewhere on the 
+datasheet). 
+ 
+• The STC values:  
+ Impp, Vmpp, Isc, Voc. 
+o NB: The product   Vmpp * Impp should match the PNom (nameplate) 
+within 0.2%., otherwise:   change the Impp value to PNom / Vmpp. 
+• Efficiency at STC:  not a parameter in PVsyst. 
+• NOCT:  never specified in PVsyst!  
+• Reverse current feed:  property of the by-pass diodes, not used in PVsyst.  
+ 
+ 
+Many datasheets mention operating parameters (Impp, Vmpp, Isc, Voc) under NOCT 
+conditions.  
+This information is not well standardized; we do not use it in PVsyst. 
+
+--- Page 5 ---
+  PVsyst SA – Components Databases 
+Page 5 
+ 
+The second tab of the dialog to be completed is the "Sizes and technology" of the 
+modules.  
+ 
+Usually you will find all these informations on the datasheet:  
+ 
+ 
+• Module size: mandatory, the area will determine the efficiency of the module. 
+• Cells number: the number in series is mandatory, as the model is defined for one 
+cell. 
+• Cells size: if defined, the cell's area may be used for defining the efficiency at cell 
+level. 
+• Usual values:  Poly 6" = 15.6 cm x 15.6 cm = 243.3 cm², Mono: idem - 6 cm2 = 237.3 
+cm² 
+• Maximum IEC or UL voltage:  used for the array sizing (may be 1'500V for new 
+modules). 
+• Number of by-pass diodes: used for the "Module layout" electrical losses 
+calculation. 
+You can add some informative features in the "Modul technology and specificities” (5 
+lines of free text). 
+ 
+
+--- Page 6 ---
+  PVsyst SA – Components Databases 
+Page 6 
+ 
+The third tab is the "Model parameters” 
+We start by defining the “Rshunt - Rserie".  
+On this page, you should leave the Rserie and Rshunt at their default value (checkboxes). 
+Sometimes, you will have to check them several times.  
+ 
+This page summarizes other parameters, as calculated when establishing the one-diode 
+model. 
+NB: here the "muVoc" temperature coefficient is a result of the model. It cannot be 
+matched to the datasheet's specified value.  This coefficient in only used during the sizing 
+(safety low-temperature condition), it is not involved in the simulation.  
+Proceeding to define the “Rshunt exponential". In absence of real measured values, 
+leave the parameters at their default value.  
+Lastly the “Temperature coefficient", is defined by Pmpp temperature coefficient, as 
+specified on the datasheet: 
+ 
+ 
+This is a fundamental parameter for the simulation. PVsyst modifies slightly the usual 
+One-diode model to get the exact specified value. 
+
+--- Page 7 ---
+  PVsyst SA – Components Databases 
+Page 7 
+ 
+NB: The Current Isc temperature coefficient has been specified on the first page.  
+ 
+The Voltage Uoc temperature coefficient may not match the value calculated by the 
+model (Page "Model parameters > Rshunt-RSerie).  
+ 
+This is not important, only used during the sizing for the voltage limits. If you want to 
+use the value specified by the manufacturer, you can define on the page "Additional 
+data” and choose to use it in the project's parameters.  
+ 
+"Graphs” tab:  
+Now the model is fully determined: you can see the results either as graphs or on the 
+"Basic data" page > "Internal Model result tool", for any Irradiance and temperature 
+conditions. 
+"Additional Data” tab consists of:  
+• "Secondary parameters": sometimes useful parameter. 
+• "IAM": if you want to define a specific IAM profile for this module (special AR 
+coating, etc.). 
+• "Low-light data":  Explicitly specify low-light performances if measured.  
+• "Measured I/V curve": allows to determine the model parameters from a 
+measured I/V curve. 
+Do not mind unless special requirements. 
+The "Commercial" tab gives the following information:  
+• Coordinates of the manufacturer (web site). 
+• Availability (years of introduction and possible retrieval from the market). 
+• Prices of the component (you may specify them by yourself). 
+"Show optimization" button: Allows to modify the parameters and immediately see the 
+effect on the behaviour of the module.  
+"Copy to table" button: Exports the PAN file definitions as one line to an EXCEL 
+document. 
+
+--- Page 8 ---
+  PVsyst SA – Components Databases 
+Page 8 
+ 
+2 Grid Inverter definition in PVsyst 
+ 
+We will define the Inverter in PVsyst (.OND file) by defining a new inverter from the  
+datasheet.  
+NB: in practice, it is much easier to start from a similar component that exists in the 
+database, modify its parameters according to the datasheets, and save it under a new file 
+name, therefore creating a new component in your database. 
+ 
+2.1 Defining an inverter from Datasheets 
+Typically, the first page gives the general features and the second page gives the technical 
+specifications.  
+When opening a new inverter, we start by defining the "basic data" (similarly to the PV 
+module):  
+• the model, 
+• the manufacturer (the same name if already existing in the database), 
+• the data source (and possibly date of recording), 
+• the file name, which is the primary key in the database, and should be unique. 
+ 
+The convention in PVsyst is to define the filename as” Manufacturer_Model.OND. “ 
+ 
+Then, we have to complete the main parameters on the datasheet, i.e., the input side, 
+output side and efficiency.  
+
+--- Page 9 ---
+  PVsyst SA – Components Databases 
+Page 9 
+ 
+Input side: mainly concerns the voltage conditions.  
+ 
+ 
+ 
+• "Minimum /Maximum MPP voltage":  the voltage range for the MPP operation. 
+• In the PVsyst model, when attaining one of these limits, the inverter will "clip" 
+the operating voltage to the limit voltage.  We suppose that this corresponds 
+to the «Rated MPP voltage range".  
+• We don't know exactly what the behaviour of the real inverter is outside of this 
+range (what is specified as "MPP operating voltage range", 150 … 1000V). This 
+is not involved in PVsyst. 
+• "Minimum voltage for PNom”:  this is specified for some inverters: under this 
+voltage the inverter will not be able to yield its full nominal power. This 
+corresponds indeed to an input current limitation.  
+• "Nominal MPP Voltage": sometimes specified, not used in PVsyst.  
+• "Absolute Maximum PV voltage": this is the voltage which should not be 
+exceeded, under the worst conditions: lower possible temperature and 1000 
+W/m2. 
+• "Power threshold": when using an automatic efficiency profile, this value is 
+necessary and cannot be lower than 0.5% of Pnom. 
+• "Nominal and Maximum PV power" are not used in PVsyst, except when they 
+are a contractual condition which affects the guarantee of the device (case 
+"Required" checked).  In this case they prevent simulation of the system.   
+• "Maximum PV current» is sometimes specified (ISC of the array)), but not used 
+in PVsyst. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 10 ---
+  PVsyst SA – Components Databases 
+Page 10 
+ 
+Output side: grid-connection conditions.  
+ 
+ 
+• "Frequency": 
+ Here "Rated AC grid frequency" is 60Hz (for US market); we 
+do not understand well what is meant by "AC grid frequency range". 
+• "Grid voltage" is specific for US. The usual voltage is 400 V (in Europe). This 
+voltage may be used in the simulation if AC losses are defined.  
+• "Nominal AC Power":  if phase shift is allowed, this limitation is usually 
+applied to the apparent power, and therefore expressed as [kVA]. 
+• "Maximum AC Power":  some manufacturers allow to overcome the Pnom 
+value if the temperature is not too high. This behaviour will be specified on the 
+4th page "Output parameters". 
+• "Nominal and Maximum AC current" are not used in PVsyst.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 11 ---
+  PVsyst SA – Components Databases 
+Page 11 
+ 
+Efficiency variables:  
+• "Maximum and Euro or CEC efficiency» values are a result of the second page 
+(not editable here).  
+• "Efficiency defined for 3 voltages" should be checked here when using this 
+feature.  
+ 
+After completing the basic data, we proceed to the "Efficiency curve" tab.   
+Since we do not have the description of a full curve, we define the efficiency profile 
+according to the datasheet: 
+ 
+• Max efficiency = 98.2 % 
+• CEC efficiency = 97.5 % 
+ 
+ 
+ 
+NB: For the PVsyst database, the manufacturers usually specify their efficiency profiles 
+as curves, often for 3 voltages.  However, these values are not present on the datasheets. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 12 ---
+  PVsyst SA – Components Databases 
+Page 12 
+ 
+ 
+The "Additional parameters" tab gives miscellaneous information that you have to 
+gather on the Datasheets. Among these information, only the "multi-MPPT capability" and 
+"number of MPPT inputs" are really used for the system definition and simulation.  
+The "Auxiliary consumptions" are marginally used as default when defining the detailed 
+losses. 
+You will get a warning if you use a transformer-less inverter with amorphous modules.  
+ 
+ 
+"Output parameters" tab includes:  
+• Power factor that specifies the capabilities of this inverter for producing reactive 
+energy. Producing reactive energy (Phase shift) may be a requirement of the grid 
+manager.  
+It is normally an operating parameter (command) set by the operator of the plant. 
+- 
+"Tan(phi) min/max» or «Cos(phi) Leading/Lagging": the limits which may be set for 
+this inverter.  But the real value to be used for the simulation will be specified in 
+the "Miscellaneous parameters" of the calculation version. 
+"Nominal AC power (PNom) defined as …": specifies whether the nominal output power 
+Pnom applies to the Active power [kW] or the Apparent power [kVA].  
+ 
+
+--- Page 13 ---
+  PVsyst SA – Components Databases 
+Page 13 
+ 
+In practice, this is most often applied to the Apparent power, as this corresponds to an 
+output current limitation.   
+ 
+ 
+ 
+• Max. AC power f(Temperature) 
+- 
+Many inverters specify a "PNom" value, and a “PMax value", representing a power 
+attainable when the temperature is not too high. 
+- 
+"Allows overpower" specifies if this is implemented for this inverter. 
+- 
+The involved PMax is specified on the "Main parameters" page.  
+- 
+If not defined or equal to the PNom value, this option is disabled. 
+- 
+"High temperature limitations": defines other limitations as f(Temperature) on 
+PNom. 
+ 
+ 
+NB: The temperature involved in these specifications during the simulation is specified in 
+the "Miscellaneous Tools". It may be the ambient temperature (outdoor installation), the 
+ambient plus a constant, or a fixed (room) temperature. 
+"Sizes and Technology" tab:  
+- 
+"Technology specificities" allows to specify some features in 5 lines of free text 
+maximum.  
+- 
+"Operating conditions – Behavior at limits": Never modified, don't mind.  
+"Commercial" tab: Identical to the corresponding page for PV modules.  
+ 

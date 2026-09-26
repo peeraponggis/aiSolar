@@ -1,0 +1,15 @@
+ง่ายที่สุด 3 วิธี (เรียงจากง่ายไปซับซ้อน):
+
+1. Windows Built-in: Quick Assist (ง่ายสุด ไม่ติดตั้งอะไร)
+Host (คุณ): กด Win + Ctrl + Q → เลือก "Assist another person" → ได้ รหัส 6 หลัก
+Client (เพื่อน): เปิด Quick Assist → ใส่รหัส → กด "Share screen"
+✅ Built-in Windows 10/11, ไม่ต้องตั้งค่า firewall, ทำงานทุก network
+2. Chrome Remote Desktop (เว็บเบราว์เซอร์อย่างเดียว)
+ทั้งคู่: เข้า remotedesktop.google.com → ล็อกอิน Google → "Share this screen" → ได้รหัส 12 หลัก
+✅ Cross-platform (Win/Mac/Linux/ChromeOS), ไม่ติดตั้ง app เพิ่ม
+3. RustDesk (Open Source, Self-hosted option)
+ทั้งคู่: ดาวน์โหลดจาก rustdesk.com → รัน → ให้เพื่อนใส่ ID + Password ที่โชว์บนหน้าจอคุณ
+✅ ฟรี, ไม่ต้องล็อกอิน, รองรับ file transfer, ทำงานบน LAN โดยตรง
+🎯 แนะนำ: Quick Assist
+เปิดใช้ได้ทันที ไม่ต้องดาวน์โหลด ไม่ต้องสมัครสมาชิก
+Latency ต่ำบน WiFi เดียวกัน (ใช้ RDP protocol)

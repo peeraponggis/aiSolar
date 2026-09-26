@@ -1,0 +1,15 @@
+{
+  "project_id": "4b1c7b82",
+  "topic": "Ollama AI test 16:9",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "������������� Ollama ���س�ѹ AI ������ͧ����ͧ���� ����ͧ���¤�� API �����ҷ���� ���ǹ���Ŵ�ҵԴ��� ������������ǡ��������ҹ����� �ͧ����",
+  "audio_path": "projects\\4b1c7b82\\audio\\narration.mp3",
+  "video_path": "projects\\4b1c7b82\\output\\final_16x9.mp4",
+  "video_paths": {
+    "16:9": "projects\\4b1c7b82\\output\\final_16x9.mp4"
+  },
+  "created_at": 1790077375.235799,
+  "updated_at": 1790077384.3534586
+}

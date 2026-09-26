@@ -1,0 +1,15 @@
+{
+  "project_id": "89545a98",
+  "topic": "2งานออกแบบติดตั้งโซล่าร์เซลล์บนหลังคา",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "เอ๊าเตรียมงานเสร็จแล้ว\nดูว่าติดตั้งแล้วเป็น อย่างไรบ้าง น่าจะไม่มีปัญหา\nมาดูกันสิว่า ช่างจะติดตั้งได้ตามที่ ออกแบบหรือไม่\n\"มันทำอะไรกันว่ะ เฮ้อ ปวดหัว\"",
+  "audio_path": "projects\\89545a98\\audio\\narration.mp3",
+  "video_path": "projects\\89545a98\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\89545a98\\output\\final_9x16.mp4"
+  },
+  "created_at": 1790081950.9978511,
+  "updated_at": 1790081959.3775945
+}

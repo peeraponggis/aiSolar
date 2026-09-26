@@ -1,0 +1,2415 @@
+PVsyst Tutorial: pvsyst_tutorial_grid
+Pages: 83
+============================================================
+
+
+--- Page 1 ---
+ 
+ 
+ 
+
+--- Page 2 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 2 
+ 
+ 
+ 
+Introduction 
+PVsyst is a comprehensive software tool designed for the simulation and analysis of 
+photovoltaic systems. It allows users to design and optimize solar energy projects by 
+providing detailed assessments of system performance, energy yields, and financial 
+viability.  
+With PVsyst, users can model various types of PV installations with location-specific 
+climate data and component specifications, while considering factors such as shading 
+effects on the system, battery storage, grid unavailability and panel degradation.  
+This document can be seen as a user’s manual, aiming to describe the different windows 
+and feature of the software. The complete reference manual for PVsyst is the online help 
+that is accessible from the program through the “Help” entry in the menu, by pressing 
+the F1 key or by clicking on the help icons 
+inside the windows and dialogs. 
+ 
+ 
+
+--- Page 3 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 3 
+ 
+Contents 
+1 
+PVsyst Main page .............................................................................................. 5 
+1.1 
+Project design and Simulation ..................................................................... 5 
+1.2 
+Utilities ...................................................................................................... 6 
+1.3 
+Documentation .......................................................................................... 7 
+1.4 
+Toolbar and Workspace .............................................................................. 7 
+2 
+My first simulation ............................................................................................. 8 
+2.1 
+Project definition ........................................................................................ 8 
+3 
+Orientations ................................................................................................... 11 
+3.1 
+Fixed orientations .................................................................................... 12 
+3.1.1 
+Fixed plane systems .......................................................................... 12 
+3.1.2 
+Seasonal tilt adjustment .................................................................... 12 
+3.1.3 
+Domes ............................................................................................. 13 
+3.1.4 
+Unlimited sheds ................................................................................ 13 
+3.1.5 
+Unlimited sun-shields ....................................................................... 14 
+3.2 
+Tracking plane definitions ......................................................................... 14 
+3.2.1 
+Unlimited trackers, horizontal axis ..................................................... 14 
+3.2.2 
+Tracking, horizontal and tilted axis ...................................................... 15 
+3.2.3 
+Tracking, vertical axis ........................................................................ 15 
+3.2.4 
+Tracking sun-shields.......................................................................... 16 
+3.2.5 
+Tracking, horizontal axis East/West .................................................... 16 
+3.3 
+Two axis trackers...................................................................................... 16 
+3.3.1 
+Tracking two axis ............................................................................... 16 
+3.3.2 
+Tracking 2-axis, frame North/South and East/West .............................. 17 
+4 
+System ........................................................................................................... 17 
+4.1 
+Sub-arrays ............................................................................................... 17 
+4.2 
+Design the array ....................................................................................... 19 
+4.3 
+Multi MPPT and Power sharing feature ....................................................... 20 
+5 
+Detailed losses ............................................................................................... 22 
+5.1 
+Thermal parameters ................................................................................. 22 
+5.2 
+Ohmic Losses .......................................................................................... 23 
+5.2.1 
+DC circuit: ohmic losses for the subfield ............................................. 23 
+5.2.2 
+AC losses after the inverter ................................................................ 24 
+
+--- Page 4 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 4 
+ 
+5.3 
+Module quality – LID - Mismatch ................................................................ 26 
+5.3.1 
+Module quality loss ........................................................................... 26 
+5.3.2 
+LID – Light Induced Degradation ......................................................... 26 
+5.3.3 
+Module mismatch losses ................................................................... 27 
+5.3.4 
+Strings voltage mismatch ................................................................... 27 
+5.4 
+Soiling loss .............................................................................................. 28 
+5.5 
+IAM Losses .............................................................................................. 28 
+5.6 
+Auxiliaries ................................................................................................ 30 
+5.7 
+Aging ....................................................................................................... 30 
+5.8 
+Unavailability of the System ...................................................................... 31 
+5.9 
+Spectral correction .................................................................................. 32 
+5.10 
+Losses graph ........................................................................................... 33 
+6 
+Self-consumption ........................................................................................... 33 
+7 
+Storage .......................................................................................................... 34 
+7.1 
+Self-consumption with storage ................................................................. 36 
+7.2 
+Peak shaving ............................................................................................ 37 
+7.3 
+Weak grid islanding .................................................................................. 38 
+8 
+Horizon .......................................................................................................... 40 
+9 
+Near shading .................................................................................................. 42 
+9.1 
+Compatibility between the 3D Scene and System-Orientation ..................... 43 
+9.2 
+Simulation Parameter ............................................................................... 44 
+9.3 
+Orientations, table, graph buttons ............................................................. 46 
+9.4 
+Construction/Perspective, 3D scene ......................................................... 48 
+9.5 
+Create Menu ............................................................................................ 51 
+9.6 
+Edit Menu ................................................................................................ 54 
+9.7 
+Transform Menu ....................................................................................... 54 
+9.8 
+Tools Menu .............................................................................................. 55 
+9.9 
+Main Menu ............................................................................................... 63 
+10 
+Energy management .................................................................................... 77 
+10.1 
+Inverter Temperature ................................................................................ 77 
+10.2 
+Power Factor ........................................................................................... 78 
+10.3 
+Grid Power limitation ................................................................................ 81 
+10.4 
+P50 - P90 Estimation ................................................................................ 82 
+ 
+
+--- Page 5 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 5 
+ 
+1 PVsyst Main page 
+At the first main page you have an overview of the different main components in the 
+software, such as the Project design and Simulation, Utilities, Documentation as well as 
+your recent projects and your workspace.  
+ 
+1.1 Project design and Simulation 
+Project design and simulation is the main part of the software and is used for the 
+complete study of a project. It involves the choice of meteorological data, system design, 
+shading studies, losses determination, and economic evaluation. The simulation is 
+performed over a full year in hourly steps and provides a complete report and many 
+detailed results. 
+Within the project design and simulation section, PVsyst allows you to create and 
+simulate three types of systems. 
+• Grid-Connected allows you to create a system design that is connected to the 
+grid. You also have the possibility to define a self-consumption profile and battery 
+storage with various strategies are possible.  
+
+--- Page 6 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 6 
+ 
+• Standalone is reserved for a system unconnected to the grid, you are forced to 
+have a storage option. Production that you cannot utilize, or store will be 
+curtailed. 
+• Solar pumping systems are common in certain areas where solar panels are 
+used to run a pump from a well or a lake that then can be stored in an elevated 
+tank and the water can then be used for various things at various times.  
+Recent projects will allow you to quickly find and modify your recent projects. 
+1.2 Utilities 
+The Utilities section in PVsyst offers a range of tools and functions designed to enhance 
+the understanding and the precision of your PV system analysis. 
+• 
+In Databases you can find all the sites and components already stored in PVsyst. 
+You can also generate new sites, import weather data and create new 
+components.  
+ 
+
+--- Page 7 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 7 
+ 
+• In Tools you have some advanced parameters for solar geometry and electrical 
+optimization instruments. 
+• In Measured data it is possible to add measured data and to compare 
+simulations with measurements.  
+1.3 Documentation 
+In the Documentation section you find a direct access to the PVsyst Help, the complete 
+reference manual for PVsyst, also accessible from pvsyst.com/help. Throughout the 
+software, context-sensitive online help is available via the F1 key and small question 
+mark icons
+ inside the windows and dialogs, providing more specific information in 
+certain cases. By using the F1 key, or clicking at the question mark icon, you arrive at the 
+PVsyst help tool where you can find useful articles with precise information, 
+explanations and step by step description of how to use different function the PVsyst 
+software. 
+You also find the access to the PVsyst forum where you can post your questions and 
+PVsyst collaborators and other Pvsyst users will guide you forward.  
+In the PVsyst video channels you find educative videos and tutorials. You also find these 
+printable users manuals and tutorials here.  
+1.4 Toolbar and Workspace 
+It is from the Main page that the settings are made for your entire workspace.  
+When files are saved, they will automatically be saved in the workspace, in a precise 
+folder structure. In the workspace you also find a set of templates with the correct 
+configuration, to be used for instance to define a self-consumption profile. PV 
+components will be saved to ComposPV, project files will be saved to Projects, etc.  
+• Under File you find the for example the options to import and export projects and 
+components.  
+• The Preliminary design is an easy and basic simulation tool for small and 
+simplified projects.  
+• You can start a new project through the Project tab. Here you also find a fourth 
+type of project not visualized in the Project design and simulation window, that is 
+the DC-grid project, for the use case of certain public transport companies. From 
+the Project tab you can also load a project in your workspace or a DEMO project 
+defined by Pvsyst, that showcase various features and examples of utilization.  
+• In the Settings you have Preferences where you could for instance define user 
+info, units to be used as default and possible API keys for certain weather file 
+providers. In the Advanced parameters, almost all the default values and 
+thresholds that generates error messages can be modified, but should be 
+modified only by experts. 
+• Language can be changed in this language tab, or by clicking the F9 button.   
+• In the License tab you find all the information about your Account, activation key 
+etc.  
+
+--- Page 8 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 8 
+ 
+• The Help will guide you to the various documentation possibilities available. 
+2 My first simulation 
+For this first explanatory tutorial, we choose a Grid connected system, but the majority 
+of steps and information will be relevant also for standalone and pumping systems.  
+The Workflow in PVsyst is to work in Projects and in Variants. This also illustrates the 
+hierarchy of the software.  
+Project contains the geographical site of your system, the reference to a file with the 
+meteorological data and some general parameters like the albedo definition and 
+parameters specific to this project. The project will be the central object that allows the 
+basic definitions in which you then will construct different variants of your system.  
+The system variant contains all the detailed definitions of your system, which will result 
+in a simulation calculation. These definitions include the choice and number of solar 
+panels and inverters, geometrical layout and possible shadings, electrical connections, 
+different economic scenarios, etc. 
+ 
+2.1 Project definition 
+By Clicking Grid connected System on the welcome page, PVsyst will automatically open 
+the most reason project (It’s possible to change the default behavior for opening new 
+projects. Go to “Settings - Preferences - Default Values,” then modify the “Automatic 
+Project Loading” section). 
+You can start a new project by clicking New. You can Load existing projects through the 
+Load option. You can Import or Export projects through the Import and Export. You also 
+have the possibility to define a Client for the project and later choose if you wish to print 
+the Company details on the report.  
+
+--- Page 9 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 9 
+ 
+In the Project settings you can define overall parameters and preferences for the 
+project. Note the difference between the Project settings here, that will affect only this 
+specific project, and the Advanced parameters in the Main page that will be implemented 
+in all the Projects in your workspace.  
+In the Project setting you can define for instance the far Albedo, e.g. the albedo around 
+your site (the albedo under the panels will be defined in the system window in case of 
+bifacial panels). In the Design conditions you can among other values set the lowest 
+possible temperature at your site to generate a warning message for the Absolute Voltage 
+limit, other relevant temperatures to generate graphs in the sizing tool (note that the 
+simulation will use temperatures from your site, these values is to help you define your 
+system). 
+ 
+ 
+It is in the Project settings you set the limit overload loss for your design, that per default 
+is set at 3%. If you wish to design a system with a high Pnom ratio, you can increase this 
+value to avoid warning messages.   You here also have the possibility to change other 
+design parameters, such as the transposition model. 
+In the Project you must first define the Project’s name, choose your site and define a 
+weather data File. The site file contains the coordinates of your project, that is used to 
+calculate the sun position each hour of the calendar year. The site file created will also 
+include a fallback monthly weather data which is used for fast and rough calculations in 
+the design part of the program.  
+There are 2 ways to define a project site. You can either choose a site from the list 
+  or 
+create a new site 
+ by typing the name or using the interactive map. You can also import 
+site if you have data from somewhere, or from another project.  
+
+--- Page 10 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 10 
+ 
+In the Geographical Coordinates dialog, you can verify the coordinates for the chosen 
+site and the sun paths corresponding to this site. The sun paths illustrate the position of 
+the sun at each hour throughout the year.   
+ 
+When creating a geographical site, you can directly import Weather data from a list of 
+weather data providers, such as Meteonorm, PVGIS, Solcast, Solar Anywhere and 
+Salargis. For the import to work, you need to have a working internet access. The imports 
+are automatic based on the coordinates of your site.  
+It is up to you as a user to evaluate which weather source provider that is most accurate 
+for your project. For certain providers you need an additional license to have access. 
+Meteonorm data is included with the PVsyst license, using ground and satellite data and 
+utilizes monthly averages to create synthetic hourly values using stochastic models. TMY 
+(Typical Metrological Year) data on the other hand are meteorological hourly data files 
+constructed on the basis of real measured data series chosen among at least 10 years of 
+real measurements, according to several statistical criteria. 
+The data imported are in hourly values, the values are then averaged and displayed as 
+monthly values. Depending on weather source, you are also provided with Global 
+horizontal irradiation year-to-year variability, thus the natural fluctuations in the amount 
+of solar energy received on a horizontal surface from one year to another, that can be 
+used to calculate statistical analysis such as P50 and P90 of the energy yield predictions 
+of solar PV systems. 
+By clicking OK, you will be prompted to save the geographical site, and the synthetical 
+hourly weather data that have been generated (if your weather source is based on 
+synthetic data). By clicking open
+  a summary of your weather data is available. Note 
+that PVsyst is labeling a generic year as 1990. 
+ 
+
+--- Page 11 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 11 
+ 
+ 
+ 
+3 Orientations 
+To define the orientation, you must choose the field type. There are 3 categories of field 
+types, Fixed orientation Planes, One Axis tracking plane as well as a Two Axis tracking 
+planes.  
+You may define multiple field types by clicking  
+Add Orientation at the top of the dialog. 
+To define an Orientation, choose the Field type in the drop down list. The header will show 
+the name of this orientation. If the box on the right is checked, this will define a name 
+according to the main parameters of the orientation; but you may give any customized 
+name. 
+ 
+The field types have in common that you must define the plane tilt and azimuth. In 
+general, the plane tilt is defined as the angle between the collector plane and the 
+horizontal. The plane azimuth is the angle between the collector plane and the direction 
+toward the equator. In the northern hemisphere, this means the azimuth is measured 
+from due south (toward the equator), with positive values toward the west 
+(counterclockwise): south = 0°, west = 90°, north = 180°, and east = -90°. In the southern 
+hemisphere, the azimuth is measured from due north (toward the equator), with negative 
+values toward the east (clockwise): north = 0°, west = 90°, south = 180°, and east = -90°. 
+
+--- Page 12 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 12 
+ 
+3.1 Fixed orientations 
+3.1.1 Fixed plane systems 
+This is the simplest kind of orientation, it defines the plane tilt and the plane azimuth.  
+If tables (rectangular fields) are defined in the 3D scene, the base of these tables may be 
+inclined with respect to horizontal: this is the Base tilt angle, which is usually 
+named base slope in the 3D scene. In this case the real plane orientation is altered. 
+ 
+In the fixed planes definition, PVsyst displays a quick optimization tool, indicating the 
+energy yield as a function of the tilt and the azimuth. This is a rough estimation meant for 
+judging how your orientation choice (violet point) will affect the yield with respect to the 
+optimum. This may show the annual, summer or winter yield.  
+ 
+3.1.2 Seasonal tilt adjustment 
+In the seasonal tilt adjustment, you have the possibility to optimize the PV production, by modifying 
+the tables tilt depending on the season. This option allows to define two seasons with a 
+corresponding plane tilt and you must specify the months for the winter and the summer position. 
+ 
+
+--- Page 13 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 13 
+ 
+3.1.3 Domes 
+Domes corresponds to a system with two opposite arrays of tables. In this case, PVsyst 
+automatically creates a second orientation for the opposite part of the array.  
+The spacing between the 2 rows of domes is usually very small and no significant 
+irradiance will be allowed to fall on the ground underneath the dome. Therefore, such a 
+configuration is not suited for bi-facial systems. 
+ 
+3.1.4 Unlimited sheds 
+The unlimited sheds are an extension of the fixed tilted plane orientation that adds 
+geometrical parameters defining the tables arrangement (in regularly arranged rows).  
+This allows the application of a simplified 2D model of mutual shadings based on these 
+parameters. This approach is generally faster than defining a 3D shading scene and can 
+therefore be used for example in more preliminary studies. “Unlimited sheds” refers to 
+the 2D representation, where the extremities of the rows are ignored in the calculations. 
+Besides the orientation, this mode specifies parameters describing the PV system, such 
+as the number of rows (sheds) and parameters such as the width of the (active) collector 
+band, mechanical top and bottom inactive bands, and the pitch. The number of rows is 
+necessary for the calculation to take into account that the first row is not shaded. The 
+collector band width is the width of your sensitive area. For instance, if you have one row 
+of modules where the panel measures 1x1.5m, if the panels are placed in landscape this 
+will be 1m, and in portrait this will be 1.5m. The inactive band refers to a physical 
+structure extending out past the modules, which will cast shadows. The pitch is the 
+distance between rows. 
+ 
+
+--- Page 14 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 14 
+ 
+The ground covering ratio (GCR) and the limit angle (the profile angle for which you begin 
+to have mutual shadings) is calculated based on the parameters you choose and shown 
+in the top of the window. As there are shadings, this tool also allows for some advanced 
+options to define number of partitions for the calculation of the electrical shading 
+effects. 
+3.1.5 Unlimited sun-shields 
+It is possible to define unlimited sun-shields on a façade. The sun-shield rows parameters are 
+defined in a similar way as the unlimited sheds.  
+3.2 Tracking plane definitions 
+3.2.1 Unlimited trackers, horizontal axis 
+In a similar way as for unlimited sheds, you may define "unlimited trackers" for 
+parametric study of a PV trackers system, without using the 3D scene construction.  
+The axis azimuth refers to the orientation of the axis, where an azimuth of 0 correspond 
+to an axis running in the north to south direction. The rotation angle around the axis is 
+called Phi. Mechanical limits on the Phi stroke are required. Phi 0 corresponds to a 
+horizontal axis; the minimum phi is the lowest angle authorized (counter clockwise from 
+the horizontal axis) and the maximum phi contrary is the highest angle authorized 
+(clockwise from the horizontal axis).  
+The backtracking option will prevent shading between rows of panels by adjusting their 
+tilt angle based on the sun’s position. The irradiance optimization option will evaluate the 
+optimal tracking angle on the basis of the transposition model: the angle is adjusted in 
+order to get the best transposition result of GlobInc, considering the Beam and Diffuse 
+components.  
+The other parameters are the same as for “Unlimited sheds”. Note that the electrical 
+shading parameters are only visible when the backtracking is not activated, as by 
+definition there are no mutual shadings in backtracking mode. 
+ 
+
+--- Page 15 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 15 
+ 
+By dragging the sun, you have the opportunity of visualizing the tracker's behavior 
+according to the sun position. This tool will show, namely, the behavior of 
+the backtracking mode. 
+3.2.2 Tracking, horizontal and tilted axis 
+As in “Unlimited Trackers”, you must define the axis orientation and tracking limit angles. 
+You also have the possibility to add an Axis tilt. You must define the Phi limits 
+(mechanical stroke), the backtracking strategy, and the tracking calculation mode 
+(astronomic calculation or irradiance optimization) to be used during the simulation. An 
+additional parameter, Wind stow defines a security rest position, to be set during the 
+simulation when the wind speed is too high. 
+When defining an array of trackers, the construction in the 3D scene is mandatory, as 
+this is the only way of calculating the mutual shading losses. 
+ 
+ 
+3.2.3 Tracking, vertical axis 
+With trackers with a vertical axis, the collector is kept at a fixed tilt but rotating according 
+to the sun azimuth. This configuration may be used with "dish" arrangements, when a big 
+rotating support holds several rows of modules; this particular case is made possible as 
+the rotating axis of one row may be displaced with respect to the collector. The plane tilt 
+and the azimuth mechanical limits of the tracker must be defined. 
+ 
+
+--- Page 16 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 16 
+ 
+3.2.4 Tracking sun-shields 
+It’s possible to define a tracking sun-shield. You need to specify the facade orientation, 
+as well as the minimum and maximum tilt. Optimizing the balance between sun 
+protection and PV production is challenging. The backtracking strategy is likely the only 
+reasonable approach for operating sun-shield trackers. 
+ 
+3.2.5 Tracking, horizontal axis East/West 
+The tracking horizontal East/West refers to system where the rotation axis normally is 
+running east/west. With an Axis orientation of 0° in the northern hemisphere, the panels 
+will be oriented south and the minimum and maximum tilt will define the mechanical 
+strokes to follow the height of the sun in the southern direction, i.e. mainly the seasonal 
+variations. This is available in PVsyst, though is only used in very special situations.  
+3.3 Two axis trackers  
+3.3.1 Tracking two axis 
+Two-axis solar trackers adjust both the tilt and orientation of solar panels to stay 
+perpendicular to the sun's rays throughout the day. You must define the stroke limits for 
+both the tilt and the azimuth. 
+ 
+
+--- Page 17 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 17 
+ 
+3.3.2 Tracking 2-axis, frame North/South and East/West 
+There are specific scenarios of 2-axis tracking system. The plane is always perpendicular 
+to the sun's rays, the tracker orientation within this plane is different. This may lead to 
+different mutual shadings. You have to define here the parameters related to the 
+orientation. The mechanical frame characteristics (size, width, etc) will be defined when 
+creating the 3D field representation. The backtracking may be done between trackers 
+within the frame, not between adjacent frames. 
+ 
+ 
+4 System 
+In a grid-connected projects, the system is defined as the set of components constituting 
+the PV-array, i.e. the PV modules, inverters and the design of the array, here separated in 
+the different background colors. 
+4.1 Sub-arrays 
+The system is organized as a set of sub-arrays: one sub-array is constituted of 
+• 
+A PV module model, chosen in the database, 
+• 
+An inverter model, chosen in the database, 
+• 
+The number of inverter inputs,  
+o either full inverters or  
+
+--- Page 18 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 18 
+ 
+o number of MPPT inputs, 
+• 
+The number of modules in series, and the number of module strings. 
+o The number of strings should ideally be a multiple of the number of MPPT 
+inputs. However, PVsyst will accept uneven number of strings, and will 
+distribute them in the most balanced way across the MPPT inputs. A 
+warning will be issued when the imbalance is too high and you should 
+consider precising the distribution for a balanced system.  
+• 
+In some cases, additional devices may be added to the sub-array: for example 
+Module or String Optimizers. 
+ 
+You can manage (add, copy, rename, move and delete) in the list on the left of the dialog.  
+There is a Pre-sizing help available, in the upper right corner in the system window. This 
+tool will suggest an automatic sizing of each sub-array, where you can specify either the 
+desired nominal power, or the available area for your modules.  
+ 
+As a consequence of this organization in sub-arrays, all the strings of modules connected 
+to the input of an inverter (or a MPPT input) are homogeneous, identical modules and 
+inverters, same number of modules in series, same orientation. These homogeneity 
+requirements in PVsyst are a general rule for any real installation, for instance not to put 
+a different number of modules in series on a same inverter input since this could have 
+negative consequences on the operating conditions of your system (namely for the MPP 
+research). Nor is mixing different module models on a MPPT input advised. Studying 
+arrays with different module kinds (for example a mix of power classes) is not possible in 
+PVsyst in the present time. 
+
+--- Page 19 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 19 
+ 
+Each sub-array will be associated to an orientation. Normally all modules of a sub-array 
+should be in the same orientation. Mixing PV modules of different orientations within a 
+given string is not acceptable, as you may have big mismatch current losses due to 
+different irradiances (the current of a string is governed by the worst cell). However, you 
+can mix strings in different orientations, because the mismatch in voltage (strings in 
+parallel) is usually very low. PVsyst allows the creation of sub-arrays with 2 orientations 
+on a same inverter input.  
+4.2 Design the array 
+PV panels have a temperature coefficient, which indicates how their output voltage and 
+current change with variations in temperature. Typically, as the temperature increases, 
+the output voltage of the panels decreases. 
+Voltage at Maximum Power Point (VMPP) changes with temperature due to the 
+temperature coefficient, so it's crucial to consider the temperature while sizing the 
+voltage for the PV system. 
+Inverter Performance: The inverter converts the DC power generated by the PV panels 
+into AC power for use in the electrical system. Inverters also have temperature limits and 
+efficiency considerations. If the voltage is not appropriately sized for the temperature 
+conditions, the inverter may not operate optimally, leading to reduced energy production 
+or even potential damage to the inverter. 
+ 
+When designing the array, the number of modules in series has to stay within the 
+requirements of  
+
+--- Page 20 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 20 
+ 
+• Staying above the minimum inverter’s operation voltage Vmin of MPPT range (i.e. 
+at max. module operating temperature, 60°C by default) 
+• Staying below the maximum inverter’s operating voltage (i.e. at min. module 
+operating temperature, 20°C by default) 
+• To stay below the absolute maximum inverter’s input voltage (i.e. Voc at min. 
+temperature, -10°C by default) 
+• Not exceed the maximum system voltage specified for the PV module.  
+By clicking Sizing, you find a specific tool that gathers all the constraints relating to the 
+sizing of a specific system. 
+• For the number of modules in series and strings: the upper diagram shows the 
+I/V curve of the PV array, together with the MPPT range, voltage, power, and 
+current limits of the inverter. The little black dot should be within the safety 
+limits. In Project setting, these numbers can be modified if needed, this will not 
+affect the simulation, but the sizing and the IV curve.  
+• For the inverter sizing: the second graph, known as the system output power 
+distribution graph, illustrates the annual distribution of power generated by the 
+photovoltaic system. The horizontal axis displays power intervals, while the 
+vertical axis shows the total energy produced within each interval. This graph 
+highlights the most common power ranges, offering insights for optimizing 
+inverter sizing and assessing possible overload losses. 
+The optimal sizing of the inverter is based on the acceptable overload loss throughout 
+the year. It usually leads to over-size the power ratio (PV array nominal power with 
+respect to the inverter nom. AC power), by a factor of 1.25. Note that this is a first rough 
+estimation and that you later can define different losses such as near and far shadings. 
+Specialized tools are also provided to evaluate different losses due to wiring, module 
+quality, mismatch between modules, soiling, thermal behavior, mechanical mounting, 
+system unavailability, etc. 
+4.3 Multi MPPT and Power sharing feature  
+The MPPT technology, short for Maximum Power Point Tracking, enables a solar inverter 
+to independently track the maximum power point for each string or group of panels. Thus, 
+in the case of different length of strings or panels oriented differently on your site, in the 
+case of partial shading due to objects nearby or in the case of soiling; the multi-MPPT 
+allows the system to mitigate the impact by adjusting the operation of the affected 
+strings without affecting the others.  
+Choosing the option Pnom sharing within the inverter, PVsyst will equally distribute the 
+Power over the MPPT inputs automatically. If you have different configurations at the 
+input of Multi-MPPT inverters, you should define a sub-array for each kind of 
+configuration.  
+
+--- Page 21 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 21 
+ 
+ 
+By selecting Independent MPPT inputs it is possible to consider the single MPPT inputs. 
+Below the inverter model selection, one thus selects a given number of inputs instead of 
+a number of inverters. If the inverter has the capability to shift part of the nominal power 
+between the MPPT inputs, this can be configured in the Power Sharing window. The 
+Power sharing ensures that the power generated by each MPPT controller is efficiently 
+distributed across the different strings or groups of panels by assigning each sub-array 
+to a power sharing group. 
+
+--- Page 22 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 22 
+ 
+ 
+To the left in Power sharing window, you have the inverter configuration. By dragging a 
+subarray from the list to from the right the Inverter configuration window we can 
+associate sub-arrays for the same inverter. A summary of the characteristics of the sub 
+arrays will appear, that is the number of MPPTs, the nominal power at the specific MPPT, 
+the % of the total nominal power of the inverter, the installed PV power in the subarray as 
+well as the nominal power ratio in the sub-array. The power sharing will be balanced 
+automatically if “Auto-equal. Pnom” is checked. You also the option to manually balance 
+and/or adjust the power allocated to each sub-array if you untick this option. By clicking 
+the weight icon, the Pnom ratio is balanced and by clicking the rubber it re-sets the pnom 
+ratio.  
+5 Detailed losses 
+There are several parameters that are initialized by PVsyst with reasonable default values 
+for the first simulation, but that you should modify according to the specificities of your 
+system to add more accuracy to the simulation. These parameters are accessible with 
+the button "Detailed losses" in the project dashboard. 
+5.1 Thermal parameters 
+The thermal behavior of the array is computed in each simulation step by a thermal 
+balance. This establishes the instantaneous operating temperature used for the 
+modeling of the PV modules. 
+The thermal balance involves the Heat loss factor:  
+
+--- Page 23 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 23 
+ 
+U = Uc + Uv · WindSpeed [W/m²·K]  
+In practice, we advise not to use the wind dependency, as the wind speed is usually not 
+well defined in the weather data, and the parameter Uv is not well known. Therefore, we 
+put Uv = 0 and include an average wind effect in the constant term.  
+According to our own measurements on several systems, PVsyst proposes: 
+• Uc = 29 W/m²K for completely free air circulation around the collectors (free-
+standing collectors). 
+• Uc = 27 W/m²K for domes, a manufacturer has measured the U-value on several 
+installations (height about 40 to 70 cm above the ground) 
+• Uc = 20 W/m²K for semi-integrated modules with an air duct on the back. 
+• Uc = 15 W/m²K for integrated modules (back insulated), as only one surface 
+participates to the convection/radiation cooling. 
+ 
+The thermal loss effect is shown on the array loss diagram in the final report.  
+The ‘Standard NOCT factor’ (Nominal Operating Cell Temperature) is the temperature 
+that the module reaches in equilibrium for very specific surrounding and operating 
+conditions. It can often be found together with the module specifications supplied by the 
+manufacturers. It has no real relevance for the simulation because the conditions for 
+which it is specified are far from a realistic module operation. PVsyst only mentions it for 
+completeness and for comparison with the manufacturer’s specifications. 
+5.2 Ohmic Losses 
+The wiring ohmic resistance induces losses (R · I²) between the power available from the 
+modules and that at the terminals of the array. These losses can be characterized by just 
+one parameter R defined for the global array. 
+5.2.1 DC circuit: ohmic losses for the subfield 
+The program proposes a default global wiring loss fraction of 1.5% with respect to the 
+STC running conditions. But you have a specific tool to establish and optimize the ohmic 
+losses through the Detailed computation button. This tool asks for the average length of 
+wires for the string loops and between the intermediate junction boxes and the inverter 
+and helps the determination of the wire sections. 
+
+--- Page 24 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 24 
+ 
+ 
+NB: remember that the wiring loss behaves as the square of the current. Therefore, 
+operating at half power will lead to only a quarter of the relative loss. The effective loss 
+during a given period will be given as a simulation result and shown on the loss diagram. 
+It is usually of the order of 50-60% of the above specified relative loss when operation at 
+MPP.  
+In older PV installations, it was common practice to include a blocking diode in series 
+with each string to prevent reverse current from neighboring strings in the event of a 
+mismatch. However, this approach is now considered unnecessary. Even when a string 
+is heavily shaded, its voltage typically remains near its open-circuit voltage (Voc), 
+rendering the diode ineffective. Additionally, these diodes were prone to failures, which 
+often went undetected. As far as we know, the use of blocking diodes in modern systems 
+has been largely abandoned and the Voltage drop across series diode can be left at 0. 
+5.2.2 AC losses after the inverter 
+It is also possible to include losses between the output of the inverter and the injection 
+point (energy counter). You just have to define the distance, and the loss will also appear 
+in the loss diagram.  
+ 
+In many large PV installations (in the MWp range), the transformer is not part of the 
+inverter, but an external device directly connected to the MV or even the HV grid. 
+• 
+One or several Medium Voltage transformers for the whole system. PVsyst will 
+distribute equally the power output of all inverters to all transformers. 
+• 
+One Medium Voltage transformer in each sub-array. The transformer properties 
+may be different in different sub-arrays, but each sub-array has to have one 
+transformer. 
+• 
+There is the possibility to add a High Voltage transformer that steps up the voltage 
+before the injection point. 
+
+--- Page 25 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 25 
+ 
+Note that, when including transformers, the distance from the inverter to injection 
+instead correspond to the distance from inverter to Transformer.  
+ 
+The main losses associated with a transformer are: 
+• 
+The iron losses, which are mostly due to hysteresis and eddy currents in the 
+transformer core, are proportional to the square of the core flux, i.e. to the square 
+of the voltage. Since the grid voltage is constant, this will also be a constant loss. 
+As default value, PVsyst will use 0.1% of the reference nominal power. 
+• 
+Night disconnect: The iron loss remains active and constant as long as the 
+transformer is connected to the grid, and this may represent a significant 
+energy loss. In the simulation results, this will show up as negative a E_Grid 
+system yield during the night. It may be economically profitable to foresee 
+a switch that disconnects the transformer from the grid during the night. 
+To activate this behaviour in the simulation, please check the option "Night 
+disconnect" next to the number of transformers. This option is global for all 
+transformers in the system. 
+• 
+The ohmic losses, also named copper losses, are originated by the resistance of 
+the primary and the secondary windings of the transformer coils. These may be 
+represented by a single equivalent resistance R, and in the simulation this loss 
+will be computed as R * I². Like for the cable losses, this means that the relative 
+loss is proportional to the current (or power). 
+You can also specify the actual parameters of the selected transformer (recommended). 
+The essential information needed includes: 
+• 
+the Nominal power, 
+• 
+the Iron loss (often referred to as "no-load loss"), 
+• 
+and the Copper loss. 
+Datasheets may provide either the overall loss at PNom or the total efficiency, from 
+which PVsyst can calculate the copper loss. Setting these real parameters based on the 
+transformer's datasheet will override the generic values. 
+
+--- Page 26 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 26 
+ 
+Note: The generic Iron and Copper losses used in the simulation differ from the 
+transformer datasheet values, as they relate to PVsyst’s Reference PNom rather than the 
+transformer’s Nominal power. 
+ 
+5.2.2.1 AC ohmic losses: reference power 
+PVsyst proposes a generic Ohmic loss initial relative value, for the early stage of the 
+project's development. You can choose the reference power as either: 
+• 
+PNomPV(ac): The nominal power of the PV array at STC (PNomPV [kWp]), 
+adjusted by the inverter’s efficiency. This was the default option in PVsyst before 
+version 7.2. 
+• 
+PNom(Inv): The nominal output power of the inverter(s), without applying a 
+temperature correction. 
+This choice is done for each project, in the project's settings dialog. 
+In the main menu Settings > Preferences > Physical models > AC Loss references, you 
+may define the default initial value when creating a new project. 
+5.3 Module quality – LID - Mismatch 
+5.3.1 Module quality loss 
+The aim of this parameter is to reflect the confidence that you put in the matching of your 
+real module set performance with respect to the manufacturer's specification. By 
+default, PVsyst initializes the "Module Quality Loss" according to the PV module 
+manufacturer's tolerance specification. PVsyst will choose a quarter of the difference 
+between these values. For example, with -3...+3%, it will be 1.5%, and with positive 
+sorting 0..+3%, it will be -0.75% (i.e. a negative loss value, representing a gain). Note that, 
+this value of a quarter between low and high tolerance is the PVsyst choice. We usually 
+consider a conservative option (i.e. the modules will never be better than announced). It 
+doesn't have any other background reasons. 
+5.3.2 LID – Light Induced Degradation 
+LID (Light Induced Degradation) is a loss of performances arising in the very first hours of 
+exposition to the sun, with Crystalline modules. It may namely affect the real 
+performance with respect to the final factory flash tests data delivered by some PV 
+module providers. 
+It is unclear how it affects the performance with respect to the specified STC values. If 
+the modules are sorted according to their final factory flash test for determining their 
+Nominal Power class, the LID will indeed represent a loss with respect to STC. 
+The LID loss is related to the quality of the wafer manufacturing and may be of the order 
+of 1% to 3% (or even more). 
+
+--- Page 27 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 27 
+ 
+ 
+It is very difficult to obtain data about the LID effect on a given module sample. This is 
+never referenced by the manufacturers of course. It depends on the origin of the Silicon 
+wafers, and may vary from product to product, but also may depend on batches of a given 
+production. As it is not sufficiently established, the LID loss is not proposed as default by 
+PVsyst. If you specify it explicitly, the proposed default value is 2%. 
+The LID effect occurs only with conventional p-type boron-doped wafers. Alternative 
+technologies using n-type doped wafers are not affected. 
+5.3.3 Module mismatch losses 
+Now when installing real modules in the field, the characteristics of each module are 
+never rigorously identical. The Module mismatch loss is mainly due to the fact that in a 
+string of modules (or cells), the lowest current drives the current of the whole string. This 
+parameter acts as a constant loss during the simulation. It is lower for thin film modules. 
+It can become almost zero if the modules are well sorted according to their real 
+performance (flash-test results provided by the manufacturer). 
+PVsyst includes a tool for understanding, and statistically estimating the corresponding 
+power loss (Detailed calculation). This tool first creates a statistical sample of modules, 
+setting Voc and Isc values according to a gaussian or square distribution. Then it adds 
+the I/V characteristics of each module in each string (add voltages) and then gathers the 
+strings in the array (add currents). Finally, it draws the resulting I/V curve of the array, 
+and identifies the MPP value, which is then compared to the MPP value of an array with 
+identical modules. 
+NB: There is probably a correlation between the Module mismatch losses and the 
+Module quality loss and LID. The Module quality loss is rather related to the average of 
+the module's distribution, while the mismatch refers to its width. 
+5.3.4 Strings voltage mismatch 
+The mismatch between strings is related to the voltage differences and involves a 
+displacement on the I/V curves. This results in general in very low power losses. Reasons 
+for voltage mismatch can be:  
+• 
+That the string wire length is different from string to string, especially with big 
+systems (centralized inverters). 
+• 
+That the temperature may be different from part to part of a big system (colder at 
+the edges). 
+• 
+With big systems, the irradiance may be varying from part to part of a system in 
+case of clouds etc passages. 
+
+--- Page 28 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 28 
+ 
+This is a transient effect, affecting usually some few seconds or minutes within the hour. 
+PVsyst neglect this in the present time. 
+5.4 Soiling loss 
+Accumulation of dirt and its effect on the system performance is an uncertainty which 
+strongly depends on the environment of the system, raining conditions, etc. Soiling loss 
+may become significant in some industrial environments or in desert climates. The 
+soiling loss can be defined individually for each month to consider periodical cleaning or 
+rainy periods. This parameter may also be used for describing the effect of snow covering 
+the panels.  
+ 
+5.5 IAM Losses 
+The incidence effect (the designated term is IAM, for Incidence Angle Modifier) 
+corresponds to the decrease of the irradiance really reaching the PV cells’ surface, with 
+respect to irradiance under normal incidence. This decrease is mainly due to reflections 
+on the glass cover, which increases with the incidence angle. 
+The transmission loss (passage of light through materials) is a general phenomenon, due 
+to the reflection and transmission of the sun's ray at each material interface (air-glass, 
+glass-EVA, EVA-cell), as well as some absorption in the glass. The IAM only concerns 
+the angular dependency of this effect, i.e. it is normalized to the transmission at 
+perpendicular incidence (0° incidence angle).  
+ 
+
+--- Page 29 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 29 
+ 
+ 
+PVsyst uses an IAM function, which describes the deficit of transmission as a function of 
+the incidence angle. This function is applied to the beam component, and to the diffuse 
+and albedo, using an integral over all seen directions, supposing an isotropic distribution 
+of the diffuse irradiance. 
+In principle, this phenomenon obeys the Fresnel's Laws describing transmission and 
+reflections at the interface of two transparent materials of different refraction indexes. 
+This is a very general behavior, derived from the general Maxwell's equations describing 
+all electric phenomena. These laws allow to calculate the light effectively reaching the 
+cell's surface below the protective layer (usually glass), as a function of the incidence 
+angle. Now you can add an anti-reflective coating on the top interface air-glass. This thin 
+layer has a lower refraction index than the glass, which limits the first reflection. 
+ 
+The IAM model is defined with the PV module parameters, page Additional data, 
+Customized IAM. If the IAM curve is highly over evaluated with respect to the Fresnel’s 
+laws, you will have a warning message while opening the .PAN file. An over evaluated IAM 
+curve could lead to an overestimation of your system’s production. 
+ 
+In the Additional Data, Customized IAM you can modify an over evaluated IAM curve by 
+choosing the Default Fresnel. This manipulation can also be done through the detailed 
+losses window, IAM Losses tab.  
+
+--- Page 30 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 30 
+ 
+5.6 Auxiliaries 
+Auxiliary consumption refers to the energy required to operate the system, including 
+components such as fans, air conditioning, electronic devices, lighting, or any other 
+energy usage. This consumption must be subtracted from the PV energy produced before 
+it is injected into the grid. 
+ It is defined globally for the entire system and is only taken into account in the 
+simulation if the "Auxiliaries consumption defined" option is activated. 
+  
+5.7 Aging 
+The PV module degradation gives rise to a progressive loss of efficiency, which we will 
+characterize by a Degradation Loss factor. 
+The simulation may be run for a specified year of the PV system life and will apply the 
+degradation for this year. The degradation means a decrease of the PV array yield. It may 
+sometimes have some "positive" effect on the full system behavior, which may lessen a 
+little bit the degradation effects. This may be namely a diminution of the overpower 
+losses when the inverter is strongly undersized. 
+The Manufacturer's warranty should be understood as a lower limit for any individual PV 
+module. In this tool we define an average degradation rate (for a set of modules). This 
+loss value may be much lower than this guaranteed limit. Some experimental studies 
+mention degradation rates of the order of -0.3%/year measured as an average on several 
+modules (and measured with very old modules manufactured in the years 80-90, with 
+old technologies). Long-term degradation rate measurements are relatively scarce. 
+NB: Nothing prevents to limit the lifetime of the PV modules to 25 years. A well-
+maintained PV system may probably stay operational over much longer periods. 
+
+--- Page 31 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 31 
+ 
+Moreover, all the modules will not degrade with the same rate. If you have a distribution 
+of loss rates around this average, this will produce an additional loss due to mismatch, 
+increasing with time. 
+In PVsyst, you can specify the RMS of this distribution (supposed gaussian), and the 
+program will evaluate the mismatch as function of the age of the system. This calculation 
+is performed using a Monte-Carlo method (choice of a great number of random 
+distributions), with the following hypothesis: 
+• 
+the degradation rate of each module is constant over the years, 
+• 
+the distribution choice is limited to 2 sigmas (95% of the hits); because high 
+discrepancies result in very high mismatch losses. 
+You can choose to tick the box Keep calculated Mismatch values, to ensure that you run 
+the same Monte Carlo generated values in every simulation. You can also save them as 
+a model and apply the same random distribution to other projects.  
+5.8 Unavailability of the System 
+It is sometimes useful to consider system failures or maintenance stops in the 
+production expectations. You can define system unavailability as a fraction of time, or 
+number of days. As this is usually unpredictable, you have the possibility to define 
+specific periods of unavailability of the system and generate these periods in a random 
+way. The effective energy loss depends on the season and the weather during the 
+unavailability periods. Therefore, the unavailability loss has only a statistical meaning. 
+
+--- Page 32 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 32 
+ 
+ 
+5.9 Spectral correction 
+Spectral correction accounts for changes in the solar spectrum caused by scattering and 
+absorption in the atmosphere. These changes depend on factors such as atmospheric water 
+content, aerosols, and the distance light travels through the atmosphere—expressed as Air Mass 
+(AM). 
+PVsyst implements several models to describe spectral correction: 
+1. The CREST model: Used for amorphous silicon modules, this correction is applied 
+automatically when spectral correction is activated. 
+2. Spectral correction for PV modules in the Sandia database: This correction is also 
+applied automatically when spectral correction is activated. 
+3. The FirstSolar spectral correction model: Disabled by default, but it can be enabled by 
+the user. 
+ 
+When spectral correction is enabled, the simulation by default uses the set of 
+coefficients associated with the PV module technology. However, it is possible to modify 
+this setting by unchecking the corresponding box and selecting another set of 
+coefficients from the available options. In this case, the coefficient set will no longer 
+adapt to any changes in the PV module in the system definitions, and it is the user’s 
+responsibility to ensure a relevant set is chosen for the simulation. 
+The FirstSolar spectral correction model uses the Air Mass and Precipitable Water 
+Column as input variables. The air mass is computed from altitude and sun position, 
+while the precipitable water has either to be present in the weather data file, or be 
+estimated from relative humidity. Therefore, this correction can only be applied in the 
+simulation, if either the precipitable water or the relative humidity are present in the 
+weather data variables. For synthetic hourly weather data files created with PVsyst 6.7.4 
+or later, the relative humidity is always present. 
+
+--- Page 33 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 33 
+ 
+If the spectral correction is used in the simulation, this will be mentioned on the final 
+report. The system summary will list the set of coefficients that was used, and the loss 
+diagram will feature a contribution called 'spectral losses'. 
+5.10 Losses graph 
+To visualize the impact of losses on the I/V behavior of the PV system, click on "Loss 
+Graph" located at the bottom of the detailed losses settings window. This will open a new 
+window titled "PV Field Behavior for Each Loss effect." In the new window, at the top right, 
+you can define the external conditions of the array. In the field below, select the type of 
+loss you wish to display. The red curve indicates the nominal conditions, representing 
+the upper limit of the system's performance. For each selected loss, a curve in a different 
+color will appear. 
+ 
+6 Self-consumption 
+The self-consumption in PVsyst allows users to assess how much of the solar energy 
+generated by the PV system is consumed locally within a specific building or facility. This 
+analysis helps to understand the proportion of their electricity needs that can be met by 
+solar energy. This type of system is connected to the grid, and any excess energy can be 
+fed back into the grid when it is not being consumed by the user. 
+There are various options to define the load profile: 
+• Fixed constant consumption is the most straight forward method to define the 
+user's needs. You simply specify a constant power or yearly energy. 
+• Monthly values allow you to define monthly averages, which the simulation will 
+treat as constants throughout each month. There is no daily modulation. 
+- Values are defined using the graphic tool in the "monthly values" tab. 
+
+--- Page 34 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 34 
+ 
+• Daily profiles allow users define hourly values that can be modulated according 
+to 4 different profiles: 
+o Constant over the year: The same profile is used throughout the year 
+o Seasonal modulation: Different daily profiles for each season 
+o Monthly normalization: where a daily profile can be defined for each 
+month 
+o Weekly modulation: Separate daily profiles for "working days" and 
+"weekends." 
+• Probability profiles allow you to establish the probability that you will consume 
+a certain level of power 
+• Household consumers provide a list of common domestic appliances, 
+including unit power and daily usage duration. 
+• Load values from a CSV hourly/daily file to define custom load profiles. You 
+can select a template from a predefined list, which can be rescaled to match 
+your specific consumption needs or upload your own profile, following the 
+required format.  
+o The first column should contain the date. For sub-hourly data, PVsyst will 
+automatically convert it into hourly values for the simulation. 
+o The date format must include the day, month, year, hour, and minute. 
+o The second column should contain the load values, with the unit 
+specified in the second row of this column. 
+o The file must be a CSV format with semi-colon delimiters.  
+By running the simulation, we will get results concerning the non consumed energy that 
+is injected to the grid, the energy consumed by the user and the energy consumption from 
+the grid, representing the energy needed when there is not sufficient production, for 
+instance at night.  
+7 Storage 
+The battery storage implementation in PVsyst include to 3 storage strategies: 
+• Increased Self-consumption 
+• Peak shaving, when the grid-injection power is limited 
+• Weak grid recovery, for ensuring an electricity supply when the grid is failing.  
+Each of these strategies have different constraints. For instance, the self-consumption 
+and Weak grid recovery require the definition of a user's needs hourly profile, where Peak 
+shaving doesn't involve a user's needs profile. The battery energy will not be used for 
+feeding the grid, except with peak shaving. The time of release of the battery energy 
+(discharge) may be different according to the strategies, cost optimizations, etc. 
+The sizing of the different parts of the system (PV array, battery pack, as function of the 
+load profile and the electricity price), is a complex problem, specific to each of these 
+
+--- Page 35 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 35 
+ 
+strategies. PVsyst provide rough sizing rules until some experience has been 
+accumulated. 
+After selecting a strategy, you will have one window for the Storage Pack and others for 
+the specific strategy. The Storage pack window is consistent across all strategies. To 
+specify the battery set, begin by choosing the battery technology, and selecting a specific 
+battery from the database. Next, define the number of batteries in series and parallel to 
+configure a battery pack with the characteristics required. The configuration suggested 
+by PVsyst will be based on the size of your system, the strategy, the consumption profile 
+etc and should not be seen as the optimum configuration, but a suggestion.  
+ 
+On the right side of the battery configuration, you can see several figures that summarize 
+the properties of the battery pack.  
+• The Battery pack voltage will be rounded to an integer value.  
+• The global capacity (C10) of a battery refers to the battery's total energy storage 
+capacity when discharged over a 10-hour period. In this context, "C10" indicates 
+the amount of energy in ampere-hours (Ah), the battery can supply continuously 
+for 10 hours before its voltage drops below a specified threshold. This value 
+helps characterize the battery's performance under a moderate discharge rate, 
+commonly used for evaluating storage systems.  
+
+--- Page 36 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 36 
+ 
+• Stored energy at 80% depth of discharge (DOD) refers to the amount of energy 
+that can be drawn from a battery when it is discharged to 80% of its total 
+capacity. In this context, the term highlights the battery's usable energy when 
+80% of its capacity is utilized, leaving 20% as reserve. The state of Charge (SOC) 
+can be defined in the next window. If you change the Minimum discharge (OFF) 
+from the default value of 20%, the DOD in the storage pack window will adapt 
+accordingly. For Lithium-Ion batteries the charging cycle should never be 100% DOD, since 
+a deep discharge or an overcharge reduce the battery lifetime or can even cause 
+irreversible damage.  
+• The total weight is also displayed for information, to give a rough idea of the 
+physical size of the battery.  
+• The next line shows the number of cycles that can be performed at 50% Depth of 
+Discharge, before the battery reaches the end of its life.  
+• Finally you can read off the total energy that can be stored over the battery 
+lifetime. 
+In the bottom left box, you can choose the battery operating temperature that will be 
+used in the simulation. The battery temperature is used in the aging model of the battery. 
+An increase of 10°C in the operating temperature reduces the "static" battery life by a 
+factor of two. In the System information box, you find additional information about your 
+defined system as well as some estimation about the behaviour of the battery pack.  
+7.1 Self-consumption with storage 
+The self-consumption strategy with storage has the objective to increase self-
+consumption by storing excess energy, that can be consumed when the production is 
+not enough to fulfill the users need. Excess energy from PV generators can also be 
+injected into the grid when the batteries are fully charged, but in this strategy, the energy 
+in the batteries will only be for self-consumption and will never be injected into the grid. 
+The load profile must be defined beforehand, and the battery charging will start as soon 
+as there is an excess PV generation. 
+By default, PVsyst set up the battery state of charge thresholds for maximum charging 
+and minimum charging such that when the battery attains 95 percent of his capacity, we 
+will stop charging and we will discharge, after 20 percent of his capacity, we will stop 
+discharging. 
+In Operating conditions, we can read an explanation on how batteries will be charged 
+and discharged. Also, you have the option to allow or not to inject solar energy to the grid. 
+In Battery input charger, PVsyst suggests a default value of the maximum charging power 
+based on the possible charging power at maximum irradiance value and charging time 
+during full sun conditions. Increasing the Maximum charging power will reduce the time 
+of full charge duration. The battery should not charge too fast: for Lithium-Ion batteries, 
+a full charge in 1 hour is the minimum reasonable to not compromise the lifetime of the 
+battery. The possible excess power will be injected into the grid. By default, PVsyst sets 
+the maximum discharge power based on the load profile predefined in self-
+consumption. In order to optimize the lifetime of the battery, please refer to the 
+datasheet to know the adequate discharge time without damaging the battery. If you for 
+
+--- Page 37 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 37 
+ 
+instance reduce your discharging power and increase the discharge duration of the 
+batteries, when you need more power, your system will take it from the grid. 
+ 
+ 
+7.2 Peak shaving 
+If the grid operator limits the power that can be injected into the grid, a battery pack can 
+store energy during periods of overproduction and inject it at a time when the PV 
+generation drops below the injection limit. The Peak shaving strategy cannot be used in 
+combination with a self-consumption profile. 
+In the Operating condition you must define a Grid power limit and a discharging strategy, 
+you can choose between 4 options: 
+• The first option, which is also the default, is “As soon as power is needed”. With 
+this option selected, the battery will start injecting energy to the grid as soon as 
+the generated AC power is less than the grid power limit 
+• The second option is “after sunset”. Here, the grid injection only starts when the 
+PV generation has dropped to zero at the end of the day. 
+• The third option is “from a specified hour”. If you select this option, a field will 
+appear, allowing you to input an hour of the day. Injection from the battery to the 
+grid will only happen from that hour onwards 
+
+--- Page 38 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 38 
+ 
+• The fourth and last option is “during a specified hourly period”. With this option 
+two fields will appear, allowing you to input specific hours of the day. The battery 
+discharging will only be possible between these two values. 
+ 
+ 
+7.3 Weak grid islanding 
+This option concerns regions where the grid is not reliable (numerous cuts due to load 
+shedding). This strategy requires the definition of a consumption profile and of a 
+schedule of grid unavailability. 
+The PV energy is stored in a battery and returned to the user when the grid is unavailable. 
+Technologically, this is far from being simple, as the usual solar inverters for feeding the 
+grid require the presence of the grid for working. There may be several ways for avoiding 
+this problem.  
+For the energy fluxes  
+• 
+When the sun power is sufficient for feeding the user's needs, the rest is used for 
+charging the battery. If the battery is full the excess will be injected into the grid if 
+this is allowed, otherwise this energy will be lost (i.e. the inverter will operate at 
+reduced energy level). 
+
+--- Page 39 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 39 
+ 
+• 
+When the sun is not sufficient (or during night) the user may be fed by the battery. 
+However we should keep a storage reserve for the case of grid unavailability. 
+Therefore we have to define a limit DOD for using the energy in any case, and 
+another one for supplementing the grid when it is down. 
+• 
+In case of grid failure, the switch should immediately open, and the user will be 
+fed by the sun's energy + battery through the SA inverter. 
+• 
+The control device should be able to limit the solar inverter's power if the injection 
+into the grid is not allowed. 
+You have first to define the grid unavailability. This may be done: 
+• 
+either by specifying the unavailability fraction of time, the number of periods and 
+the minimum / maximum duration of each period. Then the program can propose 
+a random distribution of unavailability periods along the year. 
+• 
+or define an hourly sequence of unavailability for the whole year in a CSV 
+(msExcel) l file. 
+ 
+The battery pack capacity is closely related to the user's needs. Ideally, the remaining 
+energy below the SOC higher level should allow to cover the maximum needs for the 
+longer unavailability period. You can obviously diminish this capacity, at the risk of 
+feeding failure. 
+
+--- Page 40 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 40 
+ 
+You can choose to define the unavailability as random periods or by reading a file. By 
+clicking on "Show graph," you can visualize the unavailability periods throughout the 
+year. 
+8 Horizon 
+The horizon profile is suited for shading objects that are located sufficiently far away from 
+your PV system, so that the shadings may be considered global on your array. This is the 
+case when the distance of the shading object is more than about 10 times the PV system 
+size. The Horizon Profile is a curve that is defined by a set of (Height, Azimuth) points. 
+The Far Shadings operate in an ON/OFF mode: i.e., at a given time, the sun is or is not 
+present on the field. When the sun is behind the horizon, the beam component becomes 
+null. The effect on the diffuse component will be explained below. 
+Clicking the "Horizon" button will open a graph of the sun paths for the site of the project.  
+ 
+The horizon profile may be defined manually by a set of (Azimuth/Height) points in 
+degrees. These may be from on-site measurements (using land-surveyors instruments 
+like compass and inclinometer). They can be imported from several sources, either as a 
+file or from web sources by clicking: 
+ 
+A PVsyst internal file is a horizon line already saved in your workspace. A standard CSV 
+can be any text file containing properly structured data. PVsyst will recognize files as 
+valid horizon profiles if they meet following characteristics: 
+• 
+File with text or CSV format, containing columns separated with comma, 
+semicolon, tabulation or space. 
+• 
+Header/comments: 
+- 
+All lines containing text are considered comment lines 
+
+--- Page 41 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 41 
+ 
+- 
+Comment line containing text such as "Latitude 25.3°, Longitude 44.1°" will be 
+used as a comment for the generated horizon. This comment can later be 
+manually edited. 
+• 
+Data: 
+- 
+One line per defined point. Each point defined as an Azimuth and 
+a Height value, expressed in degrees. 
+• 
+Before import, you can define the angular reference for your file with the Direction 
+of rotation of azimuth as Clockwise or Counterclockwise and the North azimuth 
+angle. 
+• 
+The Meteonorm software produces Horizon profiles, which you can also import in 
+PVsyst. The file name of these profiles holds the exact coordinates of the site 
+evaluated. 
+The horizon line can also be imported from web sources directly (with an active internet 
+connection): 
+• 
+The free service PVGIS provides worldwide horizons. This service is completely 
+integrated in PVsyst, manually downloading the profile from the web page is not 
+necessary. Simply choose "PVGIS Horizon From WEB" and press the Import from 
+web button. 
+• 
+The included Meteonorm web service for horizon profiles provides worldwide 
+horizons. 
+ 
+For horizon profiles established using a geo-reference grid (like PVGIS and Meteonorm), 
+the exact location should be carefully defined. You can edit the latitude and longitude in 
+
+--- Page 42 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 42 
+ 
+this window to be as precise as possible: keep in mind that a degree in latitude is 111 km, 
+the second decimal is 1.1km and the 4th decimal is 11m. The 4th decimal can still have 
+a big impact in places with high slope.  
+9 Near shading 
+The "Near Shading" window is the main dialog providing access to the 3D editor for 
+constructing scenes representing nearby shading. This functionality is essential for 
+simulating the shading impact on photovoltaic (PV) modules, thereby calculating the 
+resulting energy losses. 
+The "Construction/Perspective" button is the key element for accessing the 3D scene 
+editor. This allows defining surrounding objects that may create shading, such as 
+buildings, trees, or other obstacles, to accurately model the PV modules' environment. 
+ 
+It is important to note that the primary objective of near shading is to precisely represent 
+irradiance losses due to nearby objects and to help optimize the solar panel installation 
+to minimize these losses. When defining objects that may create shading, as well as the 
+topography, it is advised not to get too detailed and avoid spending time drawing every 
+object precisely. The more detailed the 3D scene, the longer the software will take to 
+calculate shading on the PV scene. Therefore, it is preferable to keep the drawing simple 
+and representative of the project to ensure efficient calculations. 
+
+--- Page 43 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 43 
+ 
+9.1 Compatibility between the 3D Scene and System-Orientation 
+Once the 3D scene is constructed, the program will check this construction’s 
+compatibility with the previously defined PV system parameters, such as the orientation 
+and layout of the modules. This ensures a consistent and reliable simulation of losses 
+due to near shading. 
+In this section, several important pieces of information allow control over compatibility 
+between the 3D scene and the system definition, as well as orientation. 
+ 
+First, there is a dropdown list for the different existing orientations. Next, information 
+about the number of sub-fields, the surface area of existing PV modules, and, finally, the 
+total number of PV modules is displayed. 
+Matching orientation between the 3D scene and the orientation definition is mandatory. 
+If an incompatibility is detected, the program will ask if you want to update the orientation 
+definition to match the 3D scene. 
+Regarding the PV modules' surface area, the software accepts a tolerance for differences 
+between the system definition and the 3D scene. This tolerance accounts for slight 
+variations that may occur during scene construction while ensuring consistent surface 
+areas. 
+Finally, the total number of PV modules should be close between the system definition 
+and the 3D scene, with a small tolerance accepted. 
+
+--- Page 44 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 44 
+ 
+9.2 Simulation Parameter 
+Three parameters calculate shading-related losses: 
+ 
+Linear Shading 
+This mode only considers the irradiance deficit on the PV field without electrical effect. 
+It represents a lower limit of total shading losses. You can run this simulation quickly (by 
+interpolating values from the shading factors table at each step) or more accurately but 
+slower, calculating the complete shading factor at each simulation step. 
+By Module String 
+While creating the 3D scene, you can group the modules into distinct strings. With this 
+option, a shading factor is calculated for each string, and the electrical losses related to 
+shading on each string are estimated individually. This provides a more detailed estimate 
+of the electrical effects than a simple linear shading calculation. 
+
+--- Page 45 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 45 
+ 
+ 
+For a more precise result, you can specify the electrical effect fraction from "pure linear" 
+calculation (fraction for electric effect of 0%) to full electrical effect (fraction for electric 
+effect of 100%).   
+The partition model estimates electrical loss but does not account for module bypass 
+diodes. 
+Detailed Electrical Calculation (acc. To module layout) 
+Finally, after specifying a detailed configuration of the "module arrangement" in the 3D 
+scene, you can perform shadow calculations based on detailed electrical losses. The 
+“module layout” tool is designed for precise mismatch shadow loss calculations. 
+This simulation type requires a precise description of each PV module's position in the 
+3D scene and the interconnection of modules into strings according to the inverters 
+defined in the "System" section. This allows highly accurate modeling of shading effects 
+on each module, including losses due to current mismatches between strings.   
+The advantage of this model is that it calculates shading on inverter-connected strings 
+and considers bypass diodes, which circumvent shaded zones and thus reduce power 
+losses. This model allows for a more precise shading-related electrical loss calculation 
+than the partition model. 
+ 
+ 
+
+--- Page 46 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 46 
+ 
+9.3 Orientations, table, graph buttons 
+Orientations 
+The "Orientation" button opens the orientation management window without having to 
+leave this window, enabling additional orientation management operations. 
+ 
+Table 
+The Table button enables you to build the shading factor table, which calculates the 
+shading factor for different directions from which sunlight comes. 
+This process calculates the diffuse and albedo attenuation factors, which remain the 
+same throughout the year. 
+Following this, you can view the Iso-shading diagram and start the simulation. 
+If you set up a partition in module strings when building your 3D model, two tables will be 
+generated at the same time: one for the standard "irradiance" or "linear" shading factor, 
+and another based on the module strings. 
+
+--- Page 47 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 47 
+ 
+ 
+The Shading Factor represents the proportion of the PV field that is shaded relative to its 
+total sensitive area, for a specific sun orientation (where 0 means no shading and 1 
+means completely shaded). 
+Calculating this at every step of the simulation could be time-consuming. To address 
+this, the program creates tables with pre-calculated Shading Factor values at intervals 
+of 10° for sun height and 20° for azimuth. These tables allow quick interpolation to 
+determine the Shading Factor for any direction of sunlight, a method known as "Fast 
+calculation" mode. 
+It’s possible to calculate the Shading Factor at every step of the simulation to avoid errors 
+from interpolation, referred to as "Slow calculation" mode. In this scenario, the pre-
+calculated tables are not used for determining the shading on the beam and circumsolar 
+components. 
+Graph 
+The iso-shading diagram visually represents the shading factor table. It displays contour 
+lines for specific shading factors, overlaid on the paths that the sun takes through the 
+sky. 
+ 
+
+--- Page 48 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 48 
+ 
+ 
+Blue lines on the diagram mark the points where the sun’s rays are parallel to the surface. 
+This diagram provides a concise overview of how shading varies with the seasons and 
+times of day throughout the year. 
+The irregular look of the lines is due to the interpolations across discrete calculation 
+points. 
+Remember that this loss factor applies to the beam component reaching the PV plane. 
+When the incident angle is high, even high loss factors will act on very low irradiance 
+component, giving rise to reasonable effects on the overall efficiency. 
+ 
+9.4 Construction/Perspective, 3D scene 
+Clicking on the "Construction/Perspective" button opens a new window where the 3D 
+scene is located. 
+
+--- Page 49 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 49 
+ 
+ 
+ 
+To begin, there are several strategies for creating a 3D scene in PV. 
+ 
+First Strategy: You can create your PV tables as well as objects that will cast shadows 
+on the PV tables. 
+ 
+Second Strategy: You can import a 3D scene created with another software. The 
+following formats are supported for import:   
+3DS, DAE, PVC, H2P.   
+ 
+
+--- Page 50 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 50 
+ 
+ 
+More information can be found in the tutorial "Exporting 3D Scene to PVsyst." 
+ 
+Third Strategy: This involves combining the first and second strategies. You can import 
+a PV scene and then modify it in PVsyst by adding additional objects that may create 
+shading. 
+It is also possible to import a topography with a satellite image of your site specified in 
+the "Project" section. 
+ 
+File menu 
+Several actions are available: 
+ 
+ 
+ 
+ 
+ 
+ 
+New Scene: Allows you to create a new 
+scene by clearing the previous one. 
+Read 
+Scene: 
+Loads 
+a 
+previously 
+exported scene using the "Export Scene" 
+function. 
+Read 
+Building: 
+Loads 
+a 
+building 
+exported with the "Export Selected 
+Element" function. 
+Read Object: Loads an object exported 
+with the "Export Selected Element" 
+function. 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 51 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 51 
+ 
+ 
+ 
+Export Scene: Allows exporting the 
+entire scene to save it for future projects. 
+Export Selected Objects: Exports the 
+selected object for later re-import. 
+Save Scene View: Saves the scene view 
+to record it as an image. 
+Print: Prints the 3D scene. 
+ 
+9.5 Create Menu 
+The "Create" menu is divided into two main sections: 
+ 
+Object Creation 
+The first section is dedicated to creating different scene objects. PVsyst allows creating 
+a variety of 2D and 3D objects to represent elements like buildings, trees, roofs, and other 
+architectural obstacles. You can choose from a library of basic objects (2D and 3D 
+shapes, construction elements) and assemble them to build more complex objects. It's 
+also possible to customize the terrain topography by creating specific ground objects. 
+Created objects can be adjusted in terms of dimensions and position to fit your PV 
+installation layout. 
+In the shape type, several models are available: 
+First, there are surface models, which are simple, elementary 2D shapes, and surface 
+models, which are elementary 3D models. 
+ 
+ 
+ 
+
+--- Page 52 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 52 
+ 
+In this list, the construction objects are basic, with trees being a useful model example. 
+Lastly, there are special shapes like a wind turbine  
+ 
+ 
+and an electric pylon. 
+
+--- Page 53 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 53 
+ 
+ 
+ 
+PV Element Creation 
+The second part of the "Create" menu concerns creating photovoltaic elements. This 
+includes creating different types of PV fields, such as: 
+ 
+Single PV Table: A rectangular area intended to host PV modules. 
+Tracker Row: One or more tables that follow the sun to maximize irradiance reception. 
+Table Row: Multiple tables placed one behind the other, commonly used in ground 
+installations. 
+Dome Row: Groups of tables in an East-West opposing configuration. 
+
+--- Page 54 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 54 
+ 
+Sunshade Row: Vertically aligned tables, suitable for facades. 
+Rectangular PV Plane (single or multiple): Frame-less sensitive rectangles that can be 
+created in multiple instances within the same plane. 
+Polygonal PV Plane: A field of any shape drawn with the mouse, allowing maximum 
+flexibility. 
+For each PV field type, you can define specific parameters like orientation, the number 
+of tables, layout, spacing between tables, etc. These parameters can be adjusted to 
+meet your installation’s needs and optimize energy production. 
+The created objects and PV fields can then be integrated into the 3D scene to simulate 
+shading effects and other environmental factors on your installation accurately. 
+9.6 Edit Menu 
+In the "Edit" menu, several tools allow you to manipulate a scene object. 
+ 
+Undo: Reverses actions, can be done with 
+"CTRL+Z". 
+Redo: Reapplies an action that was undone, can 
+be done with "CTRL+Y". 
+Copy: Copies an element, can be done with the 
+"CTRL+C" shortcut. 
+Paste: Pastes a copied element, can be done with 
+the "CTRL+V" shortcut. 
+Edit an Object: Allows modifying a scene object 
+by double-clicking on it. 
+Delete the Selected Object: Deletes the 
+selected object, can be done with the "DEL" 
+shortcut. 
+Move Selection: Moves the selected item, also accessible from the main menu. 
+Rotate Selection: Rotates the selected item, also accessible from the main menu. 
+Rotate whole scene: Applies azimuth rotation to all scene objects. 
+Modify selected objects: Opens the "List and Object Management" window for grouped 
+modifications, accessible with "CTRL+G." 
+Set Auto Altitude: Sets an object’s automatic altitude based on another object, useful 
+for automatically setting a PV object's altitude on a surface. 
+ 
+9.7 Transform Menu 
+The transform menu allows changing an object's surface into a PV surface. 
+
+--- Page 55 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 55 
+ 
+ 
+Transform to PV Faces: Selected faces can be transformed into a PV surface. 
+Transform to Objects: Converts PV surfaces to non-PV objects. 
+Convert Fixed Tables to Trackers: Converts the selected PV table into a tracker. 
+Transform Selected PV Tables to arrays of tables: Converts a single PV table into a PV 
+table field. 
+Transform Selected PV Tables to a Single array of table: Converts multiple single PV 
+tables into a single table row. 
+Transform to Ground Object: Converts an object into a ground object. 
+ 
+9.8 Tools Menu 
+Orientation understanding educational 
+tool: This tool opens an educational 
+resource to understand the orientation of PV 
+tables.  
+
+--- Page 56 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 56 
+ 
+ 
+In the Base slope tab, users can view a PV table with an initial orientation and apply a 
+base inclination, such as ground slope, to see the resulting tilt and azimuth. Users can 
+experiment by inputting a "Nominal Inclination," "Nominal Azimuth," and adjusting the 
+"Base Inclination," potentially representing terrain slope, to observe the final tilt and 
+azimuth after applying the base inclination. 
+ 
+The Angle Between Planes tab helps users understand the angle value between the 
+normal of two PV table planes by adjusting their orientations. Users can experiment to 
+see the angle difference between two PV planes, which appears in the "Angle Between 
+Planes" area. 
+
+--- Page 57 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 57 
+ 
+ 
+ 
+Thin objects shading analysis:  
+This tool demonstrates the effect of fine shading on a PV surface. Users can input 
+variables like the width of a narrow object, the distance from the object to the PV surface, 
+and the PV cell's size. This tool calculates and shows the maximum shading percentage 
+on a PV cell based on these parameters.  
+
+--- Page 58 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 58 
+ 
+ 
+ 
+Trackers diffuse shading definition:  
+Dedicated to PV field trackers, this tool defines the contribution of diffuse light on PV 
+tables. Users can set up a representative tracker to calculate shading factors for use in 
+simulations, reducing diffuse shading computation time compared to using all trackers. 
+Options include: 
+• 
+select the central tracker in the scene 
+• 
+select manually a tracker 
+• 
+select all trackers 
+
+--- Page 59 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 59 
+ 
+ 
+ 
+Shading Scene Summary: 
+Opens an informative window listing all objects in the project scene. 
+ 
+
+--- Page 60 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 60 
+ 
+List and Management of object (Ctrl+G):  
+Opens a window listing all scene objects for easy modification.
+ 
+ 
+Automatic Altitude: Opens a tool to place PV objects above other objects automatically. 
+ 
+Orientation Management (Ctrl+Shift+O): 
+The Orientation Management window lets users view a list of scene orientations and 
+check for consistency between the 3D scene and system definition. Users can review the 
+matching PV surfaces and module count between the definitions, reassign existing 
+orientations to new ones, and see orphan orientations to reassign. 
+ 
+ 
+Backtracking Management 
+PVsyst’s backtracking management tool optimizes the backtracking strategy to minimize 
+mutual shading between PV trackers. It identifies two reference trackers to calculate the 
+backtracking angle for all scene trackers. This tool is accessible in the PVsyst 3D editor, 
+
+--- Page 61 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 61 
+ 
+helping users select optimal parameters based on distances between trackers, 
+supporting irregular configurations, and minimizing electrical losses from shading. 
+ 
+When defining a backtracking strategy, PVsyst identifies two reference trackers to 
+establish the backtracking relationship (tracker width and distance). During simulation, 
+the same backtracking angle applies to all trackers based on this reference. 
+ 
+In 3D scenes, trackers are often defined independently in external CAD software, but 
+PVsyst groups them into tables, making it necessary to identify a reference tracker pair 
+for full backtracking calculations. 
+ 
+This tool lists distances between neighbouring trackers in descending order. Selecting a 
+tracker with the highest ground coverage ratio (GCR) allows for a recommended 
+neighbour tracker (highlighted in orange) to associate with. Users can set backtracking 
+reference parameters automatically or select specific tracker fields in the list. 
+
+--- Page 62 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 62 
+ 
+ 
+The selected tracker series appears in green, both in the scene and in the list. 
+ 
+ 
+
+--- Page 63 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 63 
+ 
+Check Scene Validity: Verifies the validity of the 3D scene. 
+Disable Field Interpretation Check: Sometimes, objects touch PV surfaces in the 
+scene, despite minimal spacing, such as a roof and PV module. PVsyst flags this as a 3D 
+interpenetration error, which can be ignored by disabling this setting. Use caution as 
+shading calculations may be impacted. 
+Use Partial Shading Calculations: Calculates shading on an entire scene over a small 
+selected PV area. This reduces computation time for large, resource-heavy scenes and 
+is useful for homogeneous shading scenes. 
+9.9 Main Menu 
+This chapter explains the main menu visible on the 3D scene window. 
+ 
+History: Actions like creating, selecting, or modifying objects are logged, 
+allowing undo/redo. 
+• Undo : Ctrl+Z 
+• Redo : Ctrl+Y 
+ Selection: 
+• Default Selection: Press Esc to deselect an object. 
+• Click any object to select it; click edges in technical view to select an object. 
+• Rectangle Selection: Shift+Ctrl+R  
+o Click and drag to draw a selection rectangle. 
+o You can specify whether you wish to select all objects touching the 
+rectangle, or only those inside it. 
+• Lasso Selection: Ctrl+L 
+o Click and drag to draw a selection area. 
+o You can specify whether you wish to select all objects touching the area, 
+or only those insides. 
+• Add to Selection: Hold Shift 
+• Remove from Selection: Hold Ctrl 
+• Select All: Ctrl+A 
+ 
+ Point of view 
+
+--- Page 64 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 64 
+ 
+Move View: Click and drag to move the viewpoint. 
+Rotate Camera: Click and drag to rotate around the current target. 
+Perspective View**: F2 
+Top View: F3 
+Front View: F4 
+Side View: F5 
+Sun View: F6 - Aligns the view to the current sun position; adjust in the right-side "Tool" 
+tab. 
+ 
+ Zoom Options  
+Zoom In: F7 
+Zoom Out: F8 
+Zoom by Rectangle: Click and drag to define the viewing area. 
+Fit Zoom: Ctrl+F - Zooms to see all selected objects. 
+All these tools are also accessible in the View menu. 
+
+--- Page 65 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 65 
+ 
+ 
+ 
+Additional Tools 
+Observer Position: Opens the "tools" tab on 
+the right, allowing a precise observer viewpoint. 
+Center on Selected Object: Centers the view on a selected object. 
+Back to Default View: Resets the observer to the default 
+position, looking towards the scene origin (X=0; Y=0; Z=0). 
+ 
+ 
+
+--- Page 66 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 66 
+ 
+ Rendering Options 
+Technical View/Realistic View:  
+• Technical View: 
+o  Displays objects in wireframe; selectable by edges only. Colours are 
+defined by object type and selection state, without real-time lighting or 
+shadows. 
+• Realistic View:  
+o Objects appear more realistic; selectable on any visible part. Colors are 
+customizable for each object, with real-time lighting. 
+• Perspective / Orthogonal Projection 
+o Orthogonal Projection: This is the default and is recommended when 
+constructing the scene. 
+o Perspective Projection: Provides a more realistic view of the scene, useful 
+for creating shadow videos or reports. 
+ 
+Module Chains: Displays the module chains defined in the module layout. 
+ 
+ 
+
+--- Page 67 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 67 
+ 
+Other Rendering Options 
+ 
+ 
+In the "View / Rendering Options" menu, you can enable/disable the following: 
+• Enable anti-aliasing: Smooths object edges. Availability may depend on your 
+hardware and could reduce performance. 
+• Enable real-time shadows: Enables real-time shadow viewing. Activating this 
+option may reduce performance. 
+• Enable camera animation: Animates the transition when switching views. 
+Activating this option may slightly reduce performance. 
+• Show backfaces: Shows or hides the back faces of objects, meaning those not 
+oriented toward the viewpoint. Hiding them increases performance. 
+Measure 
+Measure a Distance: Ctrl+L - Click to set the starting point, then click again to set the 
+end point. Hold Ctrl to snap to an object vertex. 
+Measure an Angle: Ctrl+K - Click to set the vertex, then points #1 and #2. Hold Ctrl to 
+snap to an object vertex. 
+Modify 
+Edit Objects: Ctrl+M 
+Move Objects: Ctrl+B 
+
+--- Page 68 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 68 
+ 
+Rotate Objects: Ctrl+R 
+Rotate Entire Scene: Ctrl+Alt+R 
+ 
+Additional Tools 
+ Drawing: Draw objects with the mouse 
+The freehand drawing tool allows you to create objects directly in the scene using the 
+mouse. This tool currently allows drawing the following objects: 
+• 
+Triangle 
+• 
+Parallelepiped 
+• 
+House 
+• 
+Tree 
+• 
+Cable 
+• 
+Extruded Polygon (by defining the 2D outline 
+and height) 
+• 
+Rectangular PV Table 
+To start, click the button to open the object selection menu and choose the desired 
+object type. Then follow the instructions in the tooltip for each object. 
+Field zones: In the shading scene, you can define areas that will be filled with PV 
+tables. These zones are defined on the X-Y plane as drawn on the ground, with tables 
+dynamically placed in the scene. The tables are positioned based on the objects they lie 
+on, so if a zone is drawn on a roof, tables will be positioned accordingly at the correct 
+altitude. This also applies to zones on topographies. You can specify if you want the 
+tables to automatically tilt according to the object they are on. 
+Creating Zones: To create or edit zones, click the **Zone tool**, then find the "Zone 
+Editing" section on the right side of the window 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 69 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 69 
+ 
+The button 
+ to create a rectangular 
+zone allows you to define the upper-left and 
+lower-right corners of the rectangle in the scene. 
+The button 
+ to create a polygonal zone 
+lets you define new points by left clicking in the 
+scene. To end the zone definition, right-click. 
+The button 
+ to draw a freeform zone lets 
+you click and drag the mouse. Right-click to 
+finish defining the zone. 
+This 
+button 
+opens the table field editing dialog to define 
+parameters for the tables generated within the 
+zone. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 70 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 70 
+ 
+Basic Settings Tab: The initial tab allows the following adjustments:
+ 
+• Description: Sets a custom label for the zone. 
+• Global table sizes: Summarizes the table’s dimensions. 
+• Orientation: Choose the orientation for table generation. 
+Table size tab: The Table size tab includes a dedicated area for photovoltaic modules. 
+When setting up a field, specify the associated PV module. A table can only hold PV 
+modules of the same size. 
+
+--- Page 71 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 71 
+ 
+ 
+Sizes definition: 
+• By Modules: This recommended option defines an area exactly suited for the 
+desired module count with specific spacing. 
+• By Sensitive Area: Specify the desired PV table size without constraints initially. 
+Later, retrieve the exact size for your modules by selecting "By Modules." 
+Both options can be adjusted by dragging red points with the mouse, with modules filling 
+the available space as sizes are modified. 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 72 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 72 
+ 
+Section “by modules” shows information 
+regarding the PV module chosen in the 
+system definition.  
+ It allows you to select the orientation of the 
+module by “Landscape” or “Portrait”. 
+It also lets you define the number of modules 
+the PV table will contain, as well as their 
+spacing. 
+ 
+ 
+ 
+After completing this setup, return to the Zone Editing section: 
+Pitch: Distance between the bases of tables in 
+consecutive rows. 
+Table 
+Spacing: 
+Distance 
+between 
+consecutive tables in the same row. 
+Align tables: Defines table alignment in each 
+row within the defined zone. 
+Distance from ground: Defines the height of 
+the PV planes relative to the ground. 
+Automatic Tilt: Enabling this option overrides 
+the tilt parameter, letting tables adopt the tilt 
+of the surface they’re on. 
+Automatic Length: Enabling this option 
+overrides the length parameter, extending a 
+single table in each row to fit the zone. 
+Create Trackers: When enabled, fills the area 
+with trackers. 
+ The "Fill Zone" 
+button calculates the required space for PV 
+tables based on the specified parameters.  
+ 
+ 
+After positioning the tables, the following buttons allow further 
+modifications:  
+Select all tables. 
+
+--- Page 73 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 73 
+ 
+Add or remove tables. 
+Move tables along their axis. 
+ 
+Exclusion Zone: Finally, it is possible to define exclusion zones where tables won’t be 
+added. 
+These zones can be drawn as previously 
+described. 
+ 
+ Ground Image: Reopens a section allowing image scaling and opacity 
+adjustments. 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 74 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 74 
+ 
+Geographic/Building Reference: 
+To ease complex system construction, you can build within a reference framework linked 
+to the building, where coordinates (X, Y, Z) match the architectural plan. This framework 
+enables scene rotation according to geographic coordinates, and you can toggle 
+between coordinate systems using dedicated 3D editor toolbar buttons. 
+The construction reference includes the following section: 
+This tool modifies the azimuth of the entire 
+scene. 
+ 
+Global Reference Orientations 
+The global reference system for the shading scene aligns with cardinal points: 
+Northern Hemisphere: X-direction is west, Y-direction is south, and Z points upward 
+(zenith). PV field azimuths are defined relative to the south (OY) and are positively 
+oriented clockwise toward the west. 
+Southern Hemisphere: X points east, Y north. Azimuths are measured from north (OY) 
+and oriented positively counterclockwise toward the west. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 75 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 75 
+ 
+In the 3D scene window, the right section contains two tabs: 
+ 
+Scene Objects: View scene objects, existing 
+orientations, and created groups, allowing 
+zone selection. 
+ 
+Tools: Access various tools previously 
+mentioned. 
+ 
+ 
+ 
+
+--- Page 76 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 76 
+ 
+Shading animation: 
+This tool displays the shadow animation in the scene for a given date. By default, it is set 
+to December 21, the day of the lowest sun height in the Northern Hemisphere. The 
+interval can be adjusted for a more precise shadow result.  
+Clicking this icon 
+starts the shadow animation. 
+ 
+For example, the linear shading on PV module surfaces on December 21 is 16.3%. 
+ 
+
+--- Page 77 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 77 
+ 
+The sun icon locks 
+the view to the sun's position, and the horizontal scroll bar lets 
+you navigate the hours of the day, adjusting the sun’s position simultaneously. The save 
+icon 
+enables video creation of the animation that can be saved. 
+10 Energy management 
+In PVsyst, energy management encompasses functions related to the inverter 
+temperature, power factor, grid power limitation, and P50/P90 energy yield analysis. 
+These features collectively aid users in optimizing and managing the energy performance 
+of photovoltaic systems in PVsyst.  
+10.1 Inverter Temperature 
+Inverters are responsible for converting the direct current (DC) electricity generated by 
+solar panels into alternating current (AC) electricity for use in the grid. Inverter efficiency 
+decreases as its temperature rises. Higher temperatures can result in increased losses 
+during the conversion process, leading to lower AC power output. By precisely choosing 
+the temperature model approach for the simulation of the inverter temperature, you can 
+more accurately estimate and evaluate the inverter's efficiency, system performance, 
+safety and reliability. The inverter’s temperature profil and evalauation for limits can be 
+found in the PVsyst inverter file (.OND file) under Output parameters tab.  
+ 
+In the simulation, by default the inverter temperature is the external ambient 
+temperature (outdoor installation). This strategy can be modified in Inverter Temperature 
+page in the Energy management.  
+
+--- Page 78 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 78 
+ 
+The reference inverter temperature may be specified in the output system parameters 
+by: 
+• 
+Ambient external temperature, the usual parameter admitted by manufacturers 
+for outdoor installation. 
+• 
+Ambient external temperature + specified shift 
+• 
+Fixed temperature + linear increase proportional to the power (represented by the 
+incident irradiance). This could be used for indoor inverters and not perfect 
+cooling installation. 
+ 
+ 
+10.2 Power Factor 
+Power factor control in PV systems is a critical aspect of modern grid management, as it 
+helps optimize the interaction between solar energy production and grid stability.  
+In alternating current (AC) circuits, power can be understood in three distinct forms: 
+active power, reactive power, and apparent power.  
+• 
+Active Power (𝑃𝑎𝑐𝑡𝑖𝑣𝑒): This is the real power that performs useful work, such as 
+producing movement or heat. It is the power that directly translates into energy 
+consumption, measured in kilowatts (kW). In an AC circuit, active power is 
+calculated by multiplying the effective values of voltage and current, and then 
+multiplying by the cosine of the phase angle (φ) between them: 
+𝑃𝑎𝑐𝑡𝑖𝑣𝑒= 𝑈𝑒𝑓𝑓∗𝐼𝑒𝑓𝑓∗𝑐𝑜𝑠(φ) 
+• 
+Reactive Power (𝑃𝑟𝑒𝑎𝑐𝑡𝑖𝑣𝑒): This is "virtual" power, representing the energy 
+temporarily stored and released by inductive (motors, transformers) or 
+capacitive devices. Reactive power, expressed in kilovolt-amperes reactive 
+(kVAr), does not contribute to actual energy consumption (no heat or movement 
+is produced). It is calculated using the sine of the phase angle (φ): 
+𝑃𝑟𝑒𝑎𝑐𝑡𝑖𝑣𝑒= 𝑈𝑒𝑓𝑓∗𝐼𝑒𝑓𝑓∗𝑠𝑖𝑛(φ) 
+• 
+Apparent Power (𝑃𝑎𝑝𝑝𝑎𝑟𝑒𝑛𝑡): This is the combined effect of both active and 
+reactive power. It represents the total power flowing in the circuit, measured in 
+
+--- Page 79 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 79 
+ 
+kilovolt-amperes (kVA), and is the product of voltage and current, irrespective of 
+their phase difference: 
+𝑃𝑎𝑝𝑝𝑎𝑟𝑒𝑛𝑡= 𝑈𝑒𝑓𝑓∗𝐼𝑒𝑓𝑓 
+ 
+The relationship between active and apparent power is quantified by the power factor 
+(PF), which is simply the cosine of the phase angle (φ). Power factor is crucial because it 
+indicates how efficiently electrical power is being used: 
+𝑃𝐹= 𝑐𝑜𝑠(φ) =
+𝑃𝑎𝑐𝑡𝑖𝑣𝑒
+𝑃𝑎𝑝𝑝𝑎𝑟𝑒𝑛𝑡
+ 
+In photovoltaic systems, inverters convert the direct current (DC) from solar panels into 
+alternating current (AC) for grid integration. With modern inverter technology is possible 
+to control the phase angle between voltage and current. This allows the inverter to 
+generate reactive power without additional energy consumption. By adjusting the phase 
+shift between voltage and current, PV systems can support grid needs for reactive power 
+without compromising their active energy production.  
+Reactive power plays an essential role in compensating for the reactive loads, typically 
+introduced by motors or transformers in the grid. This compensation is often a 
+requirement set by grid managers to maintain grid stability. By adjusting the phase angle 
+(φ), inverters can either "absorb" or "generate" reactive power, depending on the needs 
+of the grid: 
+ 
+Lagging reactive power: When the current lags behind the voltage, with a positive phase 
+angle, φ > 0. Defining a lagging PF in your inverter means the inverter will inject reactive 
+power into the grid to help compensate for reactive power demand of inductive loads 
+such as motors and transformers.  
+Leading reactive power: When the current leads the voltage, with a negative phase 
+angle, φ < 0. Defining a leading PF in your inverter means the inverter will absorb reactive 
+power from the grid (or “consume” it), helping to counterbalance the excess reactive 
+power generated by capacitive loads. 
+When inverters are required to produce reactive power, it does not affect the active 
+energy output directly. However, depending on whether the inverter’s nominal power 
+(PNom) is defined as active power (kW) or apparent power (kVA), the inverter’s capacity 
+to handle overloads may be affected. If PNom is based on apparent power, the maximum 
+available active power will be reduced by a factor of the power factor: 
+𝑃𝑁𝑜𝑚(𝑎𝑐𝑡𝑖𝑣𝑒) = 𝑃𝑁𝑜𝑚(𝑎𝑝𝑝𝑎𝑟𝑒𝑛𝑡) ∗cos ( φ)  
+
+--- Page 80 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 80 
+ 
+Grid operators may impose power limits based on either active or apparent power. If the 
+limit is set on apparent power, PV systems will need to adjust the power factor to comply, 
+potentially reducing the amount of active energy delivered to the grid. 
+When the power factor decreases (i.e., more reactive power is produced), the current in 
+the system must increase to maintain the same level of active power. Since ohmic losses 
+in cables and transformers are proportional to the square of the current, this leads to 
+higher energy losses in the system: 
+𝐼𝑒𝑓𝑓(𝑎𝑝𝑝𝑎𝑟𝑒𝑛𝑡) = 
+𝐼𝑒𝑓𝑓(𝑎𝑐𝑡𝑖𝑣𝑒)
+cos (φ) 
+ 
+In PVsyst simulations, the power factor is an adjustable parameter, typically fixed for a 
+given period or specified monthly. The simulation results focus on active energy (in 
+kWh), but when a power factor is defined, the apparent energy (in kVAh) is also 
+calculated: 
+𝐸𝐺𝑟𝑖𝑑𝐴𝑝𝑝= 𝐸𝐺𝑟𝑖𝑑
+cos (φ) 
+The apparent energy will always be greater than the active energy due to the inclusion of 
+reactive power. 
+ 
+The nominal power rating of inverters may be an active power or apparent power: 
+• 
+In the case of active power rating, reactive energy does not come at the cost of 
+active power. 
+• 
+In the case of an apparent power rating, reactive energy may come at the cost of 
+active power, when close or at the maximum power threshold. 
+  
+
+--- Page 81 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 81 
+ 
+Force as apparent/active power" will force all inverters to operate under this 
+conditions. This means that inverters may not operate like in the datasheet anymore.  
+This has been kept here for compatibility with old versions < 7.3.3, and for possible 
+tests. It is not recommended. 
+ 
+10.3 Grid Power limitation 
+To maximize energy production, one strategy is to over-size the PV installation, accepting 
+some energy losses during peak production hours (peak-shaving). The grid limitation 
+feature in PVsyst allows you to set limits on the power that your PV system injects into 
+the grid, based on requirements from the grid manager. This is often needed when grid 
+operators request a maximum limit to prevent overloading.  
+The power limitation must occur at the inverter level by adjusting the operating point on 
+the PV array’s I/V curve to produce only the necessary power. The inverter will ensure that 
+the power output matches the grid’s required limit. 
+ 
+In the Power limitation dialog, you can define one value for the grid limitation that will be 
+applied throughout the year. The limitation may be defined: 
+
+--- Page 82 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 82 
+ 
+• 
+either at the inverter level: the inverter power is limited to the rated value, and the 
+power injected into the grid is further reduced by the losses defined after the 
+inverter (auxiliaries, AC wiring, transformer). 
+• 
+or at the injection point level: the maximum power delivered to the grid is indeed 
+the rated limit, the inverter will have to deliver a higher power for compensating 
+the losses after the inverter. 
+This limitation may be required: 
+• 
+either as active power (expressed in kW), 
+• 
+or as apparent power [kVA]: in this case the effective active power [kW] is limited 
+at a lower value than the apparent power limit [kVA]. The Cos(Phi), specific for the 
+grid limitation, may be specified in yearly or monthly values. 
+The excess energy will be accounted as "Inverter loss over nominal power" or when 
+checking "Account as separate loss", the results will show separately the loss due to the 
+inverter limitation itself, and the loss (named EUnused) due to the additional condition 
+of grid limitation. This does not correspond exactly to the physical behavior of the 
+system, which will always clip at the inverter level, but it is meant to show explicitly the 
+part of the clipping losses due to the injection limitation. 
+10.4 P50 - P90 Estimation 
+The P50 - P90 evaluation is a probabilistic approach for the interpretation of the 
+simulation results over several years. This approach supposes that over several years of 
+operation, the distribution of the annual yields will follow a statistical law, which is 
+assumed to be the Gaussian (or "normal") distribution. 
+The normal/gaussian distribution describes the tendency for data to cluster around a 
+central value, this value is the mean. Some data will then fall below the mean and other 
+above the mean. The standard deviation Sigma describes the spread of the normal 
+distribution. The larger the Sigma, the more spread out the distribution will be. And the 
+contrary, with a smaller Sigma, the distribution is less spread out, accumulating more 
+data near the mean. 
+
+--- Page 83 ---
+ 
+                                                                      PVsyst SA – Grid Connected Systems – User’s manual 
+Page 83 
+ 
+ 
+The P50-P90 evaluation of the energy yield potential of a site, represent a statistical level 
+of confidence for which the probability that the production of a particular year is over this 
+value is 50%, resp. 90%. 
+The annual variability will be dominated by the weather year-to-year variability. Several 
+weather data providers can now deliver multi-year weather data (sets of 15 to 25 years), 
+that you can directly import in PVsyst (for example SolarGIS, 3-Tiers Vortex, Soda-
+Helioclim, or other). If you avail of such weather data for your site, you can calculate the 
+RMS of the annual GlobInc distribution. You have a tool for doing this in PVsyst: please 
+use "Databases > Compare Weather Data", and choose the corresponding .MET files for 
+different years. You have an option "Histo and Probabilities" which shows the gaussian 
+distribution, average and RMS. 
+If the data are representative of an average over several years (like monthly averages or 
+TMY), the result of the simulation can be considered as the average, and corresponds to 
+P50 (mean value of the Gaussian). If the data are for a specified year, these cannot be 
+considered as representative of the P50 value. In absence of further information you 
+cannot determine a reliable P50-P90 indicator. But if you have some information about 
+the usual average of the site, you can introduce an estimation of the deviation of this 
+particular year with respect to the average. 
+Additional uncertainties in the simulation process could eventually be taken into 
+account. These deviations should represent random variability of the uncertainty from 
+year to year, not absolute uncertainty. 
+The P50-P90 statistical estimations are based on yearly values. P90 for hourly or daily 
+values (or even for monthly accumulations) doesn't provide meaningful results due to 
+the high variability of short-term weather patterns. 
+ 
+ 

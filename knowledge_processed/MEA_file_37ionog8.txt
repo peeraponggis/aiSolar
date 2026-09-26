@@ -1,0 +1,170 @@
+ไฟล์: file_37ionog8.pdf
+หมวดหมู่: MEA
+หน้าที่: 1
+============================================================
+
+
+--- Page 1 ---
+ 
+รายชื่อผลิตภัณฑอินเวอรเตอรที่ผานการทดสอบตาม 
+ขอกำหนดสำหรับอินเวอรเตอรที่ใชในโครงการโซลารภาคประชาชน พ.ศ. 2569  
+ประเภทเชื่อมตอกับโครงขายของการไฟฟานครหลวง 
+ฝายวิจัยและนวัตกรรมระบบไฟฟา/กองทดสอบอุปกรณไฟฟา 
+1/1  
+ 
+    ปรับปรุงเมื่อ: 24 กรกฎาคม 2569 
+No 
+Brand 
+Model/Type 
+AC Voltage Rated 
+Rated Power 
+Firmware version 
+1 
+ENPHASE 
+IQ7PLUS-72-2-INT 
+230 V, 1ph, 50 Hz 
+0.29 kW 
+520-00082-r01-v02.12.00 
+520-00082-r01-v04.28.07 
+520-00082-r01-v04.30.23 
+2 
+ENPHASE 
+IQ7A-72-2-INT 
+230 V, 1ph, 50 Hz 
+0.349 kW 
+1.2.4 
+520-00082-r01-v04.28.07 
+520-00082-r01-v04.27.04 
+520-00082-r01-v04.30.23 
+3 
+ENPHASE 
+IQ8P-72-2-INT 
+230 V, 1ph, 50 Hz 
+0.475 kW 
+521-00006-r07-v08.04.01 
+521-00006-r07-v08.05.02 
+521-00006-r07-v08.13.01 
+4 
+GOODWE 
+GW5000-ES-C10 
+230 V, 1ph, 50 Hz 
+5 kW 
+000012 
+5 
+GOODWE 
+GW5K-DNS-G40 
+230 V, 1ph, 50 Hz 
+5 kW 
+V1.00.00 
+6 
+GOODWE 
+GW6000-ES-C10 
+230 V, 1ph, 50 Hz 
+6 kW 
+000012 
+7 
+GOODWE 
+GW10K-ES-C10 
+230 V, 1ph, 50 Hz 
+10 kW 
+030310 
+8 
+GOODWE 
+GW10K-SDT-30 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V1.04.04 
+9 
+GOODWE 
+GW12K-ES-C10 
+230 V, 1ph, 50 Hz 
+12 kW 
+030310 
+10 
+HUAWEI 
+SUN2000-3K-LB0 
+230 V, 1ph, 50 Hz 
+3 kW 
+V300R024 
+V300R024CXX SPC XXX (1) 
+11 
+Huawei 
+SUN2000-3KTL-L1 
+230 V, 1ph, 50 Hz 
+3 kVA 
+SUN2000LV200R001C00 
+V200R001C00SPC XXX (1) 
+12 
+HUAWEI 
+SUN2000-5K-LB0 
+230 V, 1ph, 50 Hz 
+5 kW 
+V300R024 
+V300R024CXX SPC XXX (1) 
+13 
+Huawei 
+SUN2000-5K-MAP0 
+230/400 V, 3ph, 50 Hz 
+5 kW 
+V200R024C00 
+V200R024CXX SPC XXX (1) 
+14 
+Huawei 
+SUN2000-5KTL-L1 
+230 V, 1ph, 50 Hz 
+5 kVA 
+SUN2000LV200R001C00 
+V200R001C00SPC XXX (1) 
+15 
+Huawei 
+SUN2000-5KTL-M1 
+230/400 V, 3ph, 50 Hz 
+5 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+16 
+Huawei 
+SUN2000-10K-LC0 
+230 V, 1ph, 50 Hz 
+10 kW 
+V100R023 
+V100R023CXX SPC XXX (1) 
+17 
+Huawei 
+SUN2000-10K-MAP0 
+230/400 V, 3ph, 50 Hz 
+10 kW 
+V200R024C00 
+V200R024CXX SPC XXX (1) 
+18 
+Huawei 
+SUN2000-10KTL-M1 
+230/400 V, 3ph, 50 Hz 
+10 kVA 
+V100R001C00 
+V100R001C00SPC XXX (1) 
+19 
+Huawei 
+SUN2000-15K-MB0 
+230/400 V, 3ph, 50 Hz 
+15 kW 
+V200 
+V200R023CXX SPC XXX (1) 
+20 
+Huawei 
+SUN2000-20K-MB0 
+230/400 V, 3ph, 50 Hz 
+20 kW 
+V200 
+V200R023CXX SPC XXX (1) 
+21 
+Huawei 
+SUN2000-25K-MB0 
+230/400 V, 3ph, 50 Hz 
+25 kW 
+V200R023C10SPC215 
+หมายเหตุ :   (1)  X ที่ระบุใน Software package และ Software version เปนหมายเลขหรือตัวอักษรใดก็ได 
+ 
+ 
+สอบถามขอมูลเพิ่มเติมโปรดติดตอ : กองทดสอบอุปกรณไฟฟา ฝายวิจัยและนวัตกรรมระบบไฟฟา การไฟฟานครหลวง 
+หมายเลขโทรศัพท 02-242-5173 

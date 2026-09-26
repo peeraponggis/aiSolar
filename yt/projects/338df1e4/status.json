@@ -1,0 +1,16 @@
+{
+  "project_id": "338df1e4",
+  "topic": "งานออกแบบติดตั้งโซล่าร์เซลล์บนหลังคา",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "เอ๊าเตรียมงานเสร็จแล้ว\nน่าจะไม่มีปัญหา\nมาดูกันสิว่า ช่างจะติดตั้งได้ตามที่ ออกแบบหรือไม่\n\nใส่เสียงลมเบาๆ\nใส่เสียงบ่นพึมพัม\n\"มันทำอะไรกันว่ะ เฮ้อ ปวดหัว",
+  "audio_path": "projects\\338df1e4\\audio\\narration.mp3",
+  "video_path": "projects\\338df1e4\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\338df1e4\\output\\final_9x16.mp4",
+    "16:9": "projects\\338df1e4\\output\\final_16x9.mp4"
+  },
+  "created_at": 1790079682.870834,
+  "updated_at": 1790079692.0802305
+}

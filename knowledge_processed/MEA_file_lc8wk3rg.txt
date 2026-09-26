@@ -1,0 +1,4450 @@
+ไฟล์: file_lc8wk3rg.pdf
+หมวดหมู่: MEA
+หน้าที่: 31
+============================================================
+
+
+--- Page 1 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+1/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+1 
+ 
+ 
+ 
+ 
+ยี่ห้อ ABB 
+รุ่น PVI-PMU 
+ 
+ 
+ 
+ยี่ห้อ Lovato 
+รุ่น DMG800 
+ 
+ 
+ 
+ยี่ห้อ ABB/FIMER รุ่น PVI-10.0-TL-OUTD 
+ยี่ห้อ ABB/FIMER รุ่น PVI-10.0-TL-OUTD-FS 
+ยี่ห้อ ABB/FIMER รุ่น PVI-10.0-TL-OUTD-S 
+ยี่ห้อ ABB/FIMER รุ่น PVI-3.6-TL-OUTD 
+ยี่ห้อ ABB/FIMER รุ่น PVI-3.6-TL-OUTD-S 
+ยี่ห้อ ABB/FIMER รุ่น PVI-5000-TL-OUTD 
+ยี่ห้อ ABB/FIMER รุ่น PVI-5000-TL-OUTD-S 
+โหลด 
+ 
+ 
+ 
+ 
+2 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ยี่ห้อ ABB รุ่น M4M 20 Ethernet 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ยี่ห้อ ABB/FIMER รุ่น PVS-10-TL-SX 
+ยี่ห้อ ABB/FIMER รุ่น PVS-10-TL-SY 
+ยี่ห้อ ABB/FIMER รุ่น PVS-100-TL 
+ยี่ห้อ ABB/FIMER รุ่น PVS-12.5-TL-SX 
+ยี่ห้อ ABB/FIMER รุ่น PVS-12.5-TL-SY 
+ยี่ห้อ ABB/FIMER รุ่น PVS-15-TL-SX 
+ยี่ห้อ ABB/FIMER รุ่น PVS-15-TL-SY 
+ยี่ห้อ ABB/FIMER รุ่น PVS-20-TL-SX 
+ยี่ห้อ ABB/FIMER รุ่น PVS-20-TL-SXD 
+ยี่ห้อ ABB/FIMER รุ่น PVS-20-TL-SY 
+ยี่ห้อ ABB/FIMER รุ่น PVS-30-TL-SX 
+ยี่ห้อ ABB/FIMER รุ่น PVS-30-TL-SY 
+ยี่ห้อ ABB/FIMER รุ่น PVS-33-TL-SI 
+ยี่ห้อ ABB/FIMER รุ่น PVS-33-TL-SX 
+ยี่ห้อ ABB/FIMER รุ่น PVS-33-TL-SY 
+ยี่ห้อ ABB/FIMER รุ่น PVS-50-TL 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+3 
+ยี่ห้อ ABB รุ่น M2M-Ethernet 
+ยี่ห้อ ABB/FIMER รุ่น PVS-50-TL 
+จุดเชื่อมต่อ 
+4 
+ยี่ห้อ ABB รุ่น REACT-MTR-1PH 
+ยี่ห้อ ABB/FIMER รุ่น REACT2-UNO-5.0-TL 
+จุดเชื่อมต่อ 
+5 
+ 
+ 
+ 
+ 
+ 
+ 
+ยี่ห้อ ABB 
+รุ่น PVI-PMU 
+ 
+ 
+ 
+ 
+ 
+ 
+ยี่ห้อ Lovato 
+รุ่น DMG800 
+ 
+ 
+ 
+ 
+ 
+ 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-20.0-TL-OUTD-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-20.0-TL-OUTD-S2-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-20.0-TL-OUTD-S2F-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-20.0-TL-OUTD-S2X-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-27.6-TL-OUTD-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-27.6-TL-OUTD-S2-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-27.6-TL-OUTD-S2F-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-27.6-TL-OUTD-S2X-400 
+ยี่ห้อ ABB/FIMER รุ่น TRIO-50.0-TL-OUTD 
+ยี่ห้อ ABB/FIMER รุ่น UNO-2.0-TL-OUTD 
+ยี่ห้อ ABB/FIMER รุ่น UNO-2.0-TL-OUTD-S 
+โหลด 
+ 
+ 
+ 
+ 
+ 
+ 
+6 
+ยี่ห้อ ABB รุ่น REACT-MTR-1PH 
+ยี่ห้อ ABB/FIMER รุ่น UNO-DM-5.0-TL-PLUS-SB 
+จุดเชื่อมต่อ 
+7 
+ยี่ห้อ AOTAI รุ่น ASP-
+110KTLC 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ AOTAI รุ่น ASP-110KTLC 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 2 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+2/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+8 
+ยี่ห้อ AOTAI รุ่น ASP-
+50KTLC 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ AOTAI รุ่น ASP-50KTLC 
+ 
+จุดเชื่อมต่อ 
+9 
+ยี่ห้อ APsystems รุ่น ECU-C 
+ยี่ห้อ APsystems รุ่น DS3 
+จุดเชื่อมต่อ 
+10 
+ยี่ห้อ APsystems 
+รุ่น ECU-R 
+ยี่ห้อ Chint 
+รุ่น DDSU666-CT 
+ยี่ห้อ APsystems รุ่น DS3 
+ 
+จุดเชื่อมต่อ 
+11 
+ยี่ห้อ APsystems รุ่น ECU-
+R 
+ยี่ห้อ Chint รุ่น DDSU666-
+CT 
+ยี่ห้อ APsystems รุ่น DS3D-H 
+ 
+จุดเชื่อมต่อ 
+12 
+ยี่ห้อ APsystems รุ่น ECU-
+R 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ APsystems รุ่น DS3D-H 
+ 
+จุดเชื่อมต่อ 
+13 
+ยี่ห้อ APsystems รุ่น ECU-
+R 
+ยี่ห้อ Chint รุ่น DDSU666-
+CT 
+ยี่ห้อ APsystems รุ่น QS2 
+ 
+จุดเชื่อมต่อ 
+14 
+ยี่ห้อ APsystems รุ่น ECU-
+R 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ APsystems รุ่น QS2 
+ยี่ห้อ APsystems รุ่น QT2 
+จุดเชื่อมต่อ 
+15 
+ยี่ห้อ APsystems รุ่น ECU-C 
+ยี่ห้อ APsystems รุ่น QT2 
+จุดเชื่อมต่อ 
+16 
+ยี่ห้อ ATESS รุ่น HPS30 
+ยี่ห้อ ATESS รุ่น HPS30 
+จุดเชื่อมต่อ 
+17 
+ยี่ห้อ ATESS รุ่น Bypass 630 
+ยี่ห้อ ATESS รุ่น PCS 630 
+จุดเชื่อมต่อ 
+18 
+ยี่ห้อ ATMOCE รุ่น MG100 
+ยี่ห้อ ATMOCE รุ่น MI-1250-2M 
+ยี่ห้อ ATMOCE รุ่น MI-500 
+จุดเชื่อมต่อ 
+19 
+ยี่ห้อ ATMOCE รุ่น MC100-T 
+ยี่ห้อ ATMOCE รุ่น MI-500 (with external protection relay model: 
+MC100-T) 
+จุดเชื่อมต่อ 
+20 
+ยี่ห้อ ATMOCE รุ่น MC100L 
+ยี่ห้อ ATMOCE รุ่น MI-500 (with external protection relay model: 
+MC100L) 
+จุดเชื่อมต่อ 
+21 
+ยี่ห้อ ATMOCE รุ่น MS-
+16K-U 
+ยี่ห้อ ATMOCE รุ่น MG100 ยี่ห้อ ATMOCE รุ่น MS-16K-U 
+ 
+จุดเชื่อมต่อ 
+22 
+ยี่ห้อ ATMOCE รุ่น MG100 
+ยี่ห้อ ATMOCE รุ่น MS-7K-U 
+จุดเชื่อมต่อ 
+23 
+ยี่ห้อ ATMOCE รุ่น MC100L 
+ยี่ห้อ ATMOCE รุ่น MS-7K-U 
+จุดเชื่อมต่อ 
+24 
+ยี่ห้อ ATMOCE รุ่น MC100-T 
+ยี่ห้อ ATMOCE รุ่น MS-7K-U 
+จุดเชื่อมต่อ 
+25 
+ยี่ห้อ ATMOCE รุ่น MG100 
+ยี่ห้อ AURIS รุ่น MI-625 
+จุดเชื่อมต่อ 
+26 
+ยี่ห้อ AURIS รุ่น MC100-T 
+ยี่ห้อ AURIS รุ่น MI-625 (with external protection relay model: 
+MC100-T) 
+จุดเชื่อมต่อ 
+27 
+ยี่ห้อ AURIS รุ่น MC100L 
+ยี่ห้อ AURIS รุ่น MI-625 (with external protection relay model: 
+MC100L) 
+จุดเชื่อมต่อ 
+28 
+ยี่ห้อ AURIS รุ่น MC100-T 
+ยี่ห้อ AURIS รุ่น MS-7K-U 
+จุดเชื่อมต่อ 
+29 
+ยี่ห้อ AURIS รุ่น MC100L 
+ยี่ห้อ AURIS รุ่น MS-7K-U 
+จุดเชื่อมต่อ 
+30 
+ยี่ห้อ AUXSOL รุ่น ASG-10SL-ZL 
+ยี่ห้อ AUXSOL รุ่น ASG-10SL-ZL 
+จุดเชื่อมต่อ 
+31 
+ยี่ห้อ AUXSOL รุ่น ASG-10TL-ZL 
+ยี่ห้อ AUXSOL รุ่น ASG-10TL-ZL 
+จุดเชื่อมต่อ 
+32 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ AUXSOL รุ่น ASG-20TL-ZH 
+จุดเชื่อมต่อ 
+33 
+ยี่ห้อ EASTRON รุ่น SDM120CT 100mA 
+ยี่ห้อ AUXSOL รุ่น ASG-6SL-ZL 
+ยี่ห้อ AUXSOL รุ่น ASG-8SL-ZL 
+จุดเชื่อมต่อ 
+34 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ AUXSOL รุ่น ASN-10TL-G2 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 3 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+3/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+35 
+ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ AUXSOL รุ่น ASN-110TL 
+จุดเชื่อมต่อ 
+36 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ AUXSOL รุ่น ASN-40TL 
+ยี่ห้อ AUXSOL รุ่น ASN-50TL-G2 
+จุดเชื่อมต่อ 
+37 
+ยี่ห้อ AUXSOL รุ่น ASN-5SL-PLUS 
+ยี่ห้อ AUXSOL รุ่น ASN-5SL-PLUS 
+จุดเชื่อมต่อ 
+38 
+ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ Afore รุ่น AF10K-MTH 
+ยี่ห้อ Afore รุ่น AF50K-TH 
+จุดเชื่อมต่อ 
+39 
+ยี่ห้อ Afore รุ่น AF5K-SLP ยี่ห้อ Chint รุ่น DDSU666-
+CT 
+ยี่ห้อ Afore รุ่น AF5K-SLP 
+ 
+จุดเชื่อมต่อ 
+40 
+ยี่ห้อ Chint รุ่น DDSU666-CT 
+ยี่ห้อ Afore รุ่น AF6K-SLP  
+จุดเชื่อมต่อ 
+41 
+ 
+ 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ 
+ยี่ห้อ Afore รุ่น BNT010KTL 
+ยี่ห้อ Afore รุ่น BNT020KTL 
+ยี่ห้อ Afore รุ่น BNT050KTL 
+ยี่ห้อ Afore รุ่น BNT100KTL 
+จุดเชื่อมต่อ 
+ 
+ 
+42 
+ยี่ห้อ Chint รุ่น DDSU666-CT 
+ยี่ห้อ Afore รุ่น HNS10000TL  
+จุดเชื่อมต่อ 
+43 
+ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ Afore รุ่น HNS3000TL 
+จุดเชื่อมต่อ 
+44 
+ยี่ห้อ Chint รุ่น DDSU666-CT 
+ยี่ห้อ Afore รุ่น HNS5000TL  
+จุดเชื่อมต่อ 
+45 
+ยี่ห้อ Alpha ESS รุ่น DTSU666 5(80)A 
+ยี่ห้อ Alpha ESS รุ่น SMILE-G3-S5-INV 
+ยี่ห้อ Alpha ESS รุ่น SMILE-T10-HV-INV 
+จุดเชื่อมต่อ 
+46 
+ยี่ห้อ Bluering รุ่น MG100L-BR 
+ยี่ห้อ Bluering รุ่น MI-1000-2M0 
+จุดเชื่อมต่อ 
+47 
+ 
+ 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ 
+ยี่ห้อ Bonaire Energia รุ่น Bonaire XG50KTR 
+ยี่ห้อ CHINT POWER รุ่น SCA10K-T-EU 
+ยี่ห้อ CHINT POWER รุ่น SCA15K-T-EU 
+ยี่ห้อ CHINT POWER รุ่น SCA20K-T-EU 
+จุดเชื่อมต่อ 
+ 
+ 
+48 
+ยี่ห้อ CHISAGE ESS รุ่น Jup-6G2-LE 
+ยี่ห้อ CHISAGE ESS รุ่น Jup-6G2-LE 
+จุดเชื่อมต่อ 
+49 
+ยี่ห้อ CHISAGE ESS รุ่น Mars-14G2-LE 
+ยี่ห้อ CHISAGE ESS รุ่น Mars-14G2-LE 
+จุดเชื่อมต่อ 
+50 
+ 
+ยี่ห้อ CHUPHOTIC รุ่น ST 
+logger 1000 
+ยี่ห้อ CHUPHOTIC รุ่น 
+ACR-DTSD1352-C1(6)A 
+ยี่ห้อ CHUPHOTIC รุ่น STT-10KTL-P 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+51 
+ยี่ห้อ CHUPHOTIC รุ่น 
+STT-10KTL-P 
+ยี่ห้อ CHUPHOTIC รุ่น 
+STM 
+ยี่ห้อ CHUPHOTIC รุ่น STT-10KTL-P 
+ 
+จุดเชื่อมต่อ 
+52 
+ 
+ยี่ห้อ CHUPHOTIC รุ่น ST 
+logger 1000 
+ยี่ห้อ CHUPHOTIC รุ่น 
+ACR-DTSD1352-C1(6)A 
+ยี่ห้อ CHUPHOTIC รุ่น STT-20KTL-P 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+53 
+ยี่ห้อ CHUPHOTIC รุ่น 
+STT-20KTL-P 
+ยี่ห้อ CHUPHOTIC รุ่น 
+STM 
+ยี่ห้อ CHUPHOTIC รุ่น STT-20KTL-P 
+ 
+จุดเชื่อมต่อ 
+54 
+ยี่ห้อ CLEANLINE รุ่น CL 
+10KHB-P3 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CLEANLINE รุ่น CL 10KHB-P3 
+ 
+จุดเชื่อมต่อ 
+55 
+ยี่ห้อ EASTRON รุ่น SDM630MCT (40mA) 
+ยี่ห้อ CLEANLINE รุ่น CL 10KHB-P3LV 
+จุดเชื่อมต่อ 
+56 
+ยี่ห้อ CLEANLINE รุ่น CL 
+10KTL-P3 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CLEANLINE รุ่น CL 10KTL-P3 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 4 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+4/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+57 
+ยี่ห้อ CLEANLINE รุ่น CL 
+30KTL-P3 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CLEANLINE รุ่น CL 30KTL-P3 
+ 
+จุดเชื่อมต่อ 
+58 
+ยี่ห้อ EASTRON รุ่น SDM120CT 100mA 
+ยี่ห้อ CLEANLINE รุ่น CL 5KHB-P1LV 
+จุดเชื่อมต่อ 
+59 
+ยี่ห้อ CLEANLINE 
+รุ่น CL 5KTL-P1 
+ยี่ห้อ Chint 
+รุ่น DDSU666-CT 
+ยี่ห้อ CLEANLINE รุ่น CL 5KTL-P1 
+ 
+จุดเชื่อมต่อ 
+60 
+ยี่ห้อ CLEANLINE รุ่น CL 
+5KTL-P3 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CLEANLINE รุ่น CL 5KTL-P3 
+ 
+จุดเชื่อมต่อ 
+61 
+ยี่ห้อ CLEANLINE รุ่น 
+V1000+ 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CLEANLINE รุ่น CL 60KTL-P3 
+ 
+จุดเชื่อมต่อ 
+62 
+ยี่ห้อ CLEANLINE รุ่น CL 
+60KTL-P3 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CLEANLINE รุ่น CL 60KTL-P3 
+ 
+จุดเชื่อมต่อ 
+63 
+ยี่ห้อ Acrel รุ่น ADL400N-CT 
+ยี่ห้อ CLOU รุ่น CL215HX-IEC/UL 
+จุดเชื่อมต่อ 
+64 
+ยี่ห้อ CanadianSolar รุ่น 
+CSCU-EPM-01 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ CanadianSolar รุ่น CSI-120K-T4001A-E 
+ยี่ห้อ CanadianSolar รุ่น CSI-120K-T4001B-E 
+จุดเชื่อมต่อ 
+65 
+ยี่ห้อ DAH Solar รุ่น DHN-
+SU1K5ED-G1 
+ยี่ห้อ Chint รุ่น DDSU666-
+Q 
+ยี่ห้อ DAH Solar รุ่น DHN-SU1K5ED-G1 
+ 
+จุดเชื่อมต่อ 
+66 
+ยี่ห้อ DAH Solar รุ่น DHN-
+SU1K5T-G0 
+ยี่ห้อ Chint รุ่น DDSU666-
+Q 
+ยี่ห้อ DAH Solar รุ่น DHN-SU1K5T-G0 
+ 
+จุดเชื่อมต่อ 
+67 
+ยี่ห้อ DAH Solar รุ่น DHN-
+SU2KED-G1 
+ยี่ห้อ Chint รุ่น DDSU666-
+Q 
+ยี่ห้อ DAH Solar รุ่น DHN-SU2KED-G1 
+ 
+จุดเชื่อมต่อ 
+68 
+ยี่ห้อ AISWEI รุ่น Ai-Logger 
+2000 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ DEC รุ่น DHSP3GC-150KTL-A1 
+ 
+จุดเชื่อมต่อ 
+69 
+ 
+ยี่ห้อ Thingnario รุ่น PT-
+2020 
+ยี่ห้อ Schneider Electric 
+รุ่น EasyLogic PM2230 
+ยี่ห้อ DELTA รุ่น M50A_260 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+70 
+ยี่ห้อ Acrel รุ่น ADL400N-CT 
+ยี่ห้อ Delta รุ่น Delta 20000T 
+จุดเชื่อมต่อ 
+71 
+ยี่ห้อ Acrel รุ่น ADL200N-CT 
+ยี่ห้อ Delta รุ่น Delta 6000S 
+จุดเชื่อมต่อ 
+72 
+ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น RW-F5.3-1H3 
+จุดเชื่อมต่อ 
+73 
+ยี่ห้อ Deye รุ่น RW-F5.3-1H3 
+ยี่ห้อ Deye รุ่น RW-F5.3-1H3 
+จุดเชื่อมต่อ 
+74 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-100K-G03 
+จุดเชื่อมต่อ 
+75 
+ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-100K-G03 
+จุดเชื่อมต่อ 
+76 
+ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-100K-G03 
+จุดเชื่อมต่อ 
+77 
+ยี่ห้อ Deye รุ่น SUN-100K-
+PCS01HP3 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-100K-PCS01HP3 
+ 
+จุดเชื่อมต่อ 
+78 
+ยี่ห้อ Deye รุ่น SUN-100K-
+PCS01HP3 
+ยี่ห้อ Acrel รุ่น ADL400/C ยี่ห้อ Deye รุ่น SUN-100K-PCS01HP3 
+ 
+จุดเชื่อมต่อ 
+79 
+ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-100K-SG02HP3-EU-GM10 
+จุดเชื่อมต่อ 
+80 
+ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-100K-SG02HP3-EU-GM10 
+จุดเชื่อมต่อ 
+81 
+ยี่ห้อ Deye รุ่น SUN-100K-SG02HP3-EU-GM10 
+ยี่ห้อ Deye รุ่น SUN-100K-SG02HP3-EU-GM10 
+จุดเชื่อมต่อ 
+82 
+ยี่ห้อ Deye รุ่น SUN-10K-G02P1-EU-AM2 
+ยี่ห้อ Deye รุ่น SUN-10K-G02P1-EU-AM2 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 5 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+5/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+83 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-10K-G06P3-EU-BM2-P1 
+จุดเชื่อมต่อ 
+84 
+ยี่ห้อ Deye รุ่น SUN-10K-SG02LP1-EU-AM3 
+ยี่ห้อ Deye รุ่น SUN-10K-SG02LP1-EU-AM3 
+จุดเชื่อมต่อ 
+85 
+ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น SUN-10K-SG02LP1-EU-AM3 
+จุดเชื่อมต่อ 
+86 
+ยี่ห้อ EASTRON รุ่น SDM120CT-M(40mA) 
+ยี่ห้อ Deye รุ่น SUN-10K-SG02LP1-EU-AM3-P 
+จุดเชื่อมต่อ 
+87 
+ยี่ห้อ Deye รุ่น SUN-10K-SG04LP3-EU 
+ยี่ห้อ Deye รุ่น SUN-10K-SG04LP3-EU 
+จุดเชื่อมต่อ 
+88 
+ยี่ห้อ Deye รุ่น SUN-10K-SG05LP1-EU 
+ยี่ห้อ Deye รุ่น SUN-10K-SG05LP1-EU 
+จุดเชื่อมต่อ 
+89 
+ยี่ห้อ Deye รุ่น SUN-10K-SG05LP3-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-10K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+90 
+ 
+ยี่ห้อ Deye รุ่น SUN-10K-
+SG05LP3-EU-SM2 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-10K-SG05LP3-EU-SM2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+91 
+ยี่ห้อ Deye รุ่น SUN-10K-SG06LP1-EU-CM3 
+ยี่ห้อ Deye รุ่น SUN-10K-SG06LP1-EU-CM3 
+จุดเชื่อมต่อ 
+92 
+ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ Deye รุ่น SUN-10K-SG06LP1-EU-CM3 
+จุดเชื่อมต่อ 
+93 
+ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-120K-G01P3-EU-AM8 
+จุดเชื่อมต่อ 
+94 
+ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-120K-G01P3-EU-AM8 
+จุดเชื่อมต่อ 
+95 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ Deye รุ่น SUN-125K-SG02HP3-EU-GM10 
+จุดเชื่อมต่อ 
+96 
+ยี่ห้อ Deye รุ่น SUN-125K-SG02HP3-EU-GM10 
+ยี่ห้อ Deye รุ่น SUN-125K-SG02HP3-EU-GM10 
+จุดเชื่อมต่อ 
+97 
+ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-125K-SG02HP3-EU-GM10 
+จุดเชื่อมต่อ 
+98 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-12K-SG04LP3-EU 
+จุดเชื่อมต่อ 
+99 
+ยี่ห้อ Deye รุ่น SUN-12K-SG04LP3-EU 
+ยี่ห้อ Deye รุ่น SUN-12K-SG04LP3-EU 
+จุดเชื่อมต่อ 
+100 
+ 
+ยี่ห้อ Deye รุ่น SUN-12K-
+SG05LP3-EU-SM2 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-12K-SG05LP3-EU-SM2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+101 ยี่ห้อ Deye รุ่น SUN-12K-SG05LP3-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-12K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+102 ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-136K-G01P3-EU-AM8 
+จุดเชื่อมต่อ 
+103 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-136K-G01P3-EU-AM8 
+จุดเชื่อมต่อ 
+104 ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-15K-G06P3-EU-BM2-P1 
+จุดเชื่อมต่อ 
+105 ยี่ห้อ Deye รุ่น SUN-15K-SG05LP3-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-15K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+106 ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-15K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+107 ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น SUN-16K-SG01LP1-EU 
+จุดเชื่อมต่อ 
+108 ยี่ห้อ Deye รุ่น SUN-16K-SG01LP1-EU 
+ยี่ห้อ Deye รุ่น SUN-16K-SG01LP1-EU 
+จุดเชื่อมต่อ 
+109 
+ 
+ยี่ห้อ Deye รุ่น SUN-16K-
+SG01LP1-EU-AM3-P 
+ยี่ห้อ EASTRON รุ่น 
+SDM120CTM 
+ยี่ห้อ Deye รุ่น SUN-16K-SG01LP1-EU-AM3-P 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+110 ยี่ห้อ Deye รุ่น SUN-16K-SG01LP1-EU-AM3-P 
+ยี่ห้อ Deye รุ่น SUN-16K-SG01LP1-EU-AM3-P 
+จุดเชื่อมต่อ 
+111 ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-20K-G05 
+ยี่ห้อ Deye รุ่น SUN-20K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+112 ยี่ห้อ Deye รุ่น SUN-20K-SG05LP3-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-20K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+113 ยี่ห้อ Deye รุ่น SUN-3.6K-SG04LP1-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-3.6K-SG04LP1-EU-SM2 
+จุดเชื่อมต่อ 
+114 ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น SUN-3.6K-SG04LP1-EU-SM2 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 6 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+6/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+115 ยี่ห้อ Deye รุ่น SUN-30K-
+G04 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-30K-G04 
+ 
+จุดเชื่อมต่อ 
+116 ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-30K-SG01HP3-EU-BM3 
+จุดเชื่อมต่อ 
+117 ยี่ห้อ Deye รุ่น SUN-30K-SG01HP3-EU-BM3 
+ยี่ห้อ Deye รุ่น SUN-30K-SG01HP3-EU-BM3 
+จุดเชื่อมต่อ 
+118 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ Deye รุ่น SUN-30K-SG02HP3-EU-AM3 
+จุดเชื่อมต่อ 
+119 ยี่ห้อ EASTRON รุ่น SDM120CTM 
+ยี่ห้อ Deye รุ่น SUN-3K-G04P1-EU-AM1 
+จุดเชื่อมต่อ 
+120 ยี่ห้อ Deye รุ่น SUN-3K-G04P1-EU-AM1 
+ยี่ห้อ Deye รุ่น SUN-3K-G04P1-EU-AM1 
+จุดเชื่อมต่อ 
+121 ยี่ห้อ Deye รุ่น SUN-3K-G05P1-EU-CM1 
+ยี่ห้อ Deye รุ่น SUN-3K-G05P1-EU-CM1 
+จุดเชื่อมต่อ 
+122 ยี่ห้อ EASTRON รุ่น SDM120CTM 
+ยี่ห้อ Deye รุ่น SUN-3K-G05P1-EU-CM1 
+จุดเชื่อมต่อ 
+123 ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-40K-G04 
+จุดเชื่อมต่อ 
+124 ยี่ห้อ Deye รุ่น SUN-40K-SG01HP3-EU-BM4 
+ยี่ห้อ Deye รุ่น SUN-40K-SG01HP3-EU-BM4 
+จุดเชื่อมต่อ 
+125 ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-40K-SG01HP3-EU-BM4 
+ยี่ห้อ Deye รุ่น SUN-50K-G04 
+จุดเชื่อมต่อ 
+126 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-50K-G04 
+จุดเชื่อมต่อ 
+127 ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-50K-SG01HP3-EU-BM4 
+จุดเชื่อมต่อ 
+128 ยี่ห้อ Deye รุ่น SUN-50K-SG01HP3-EU-BM4 
+ยี่ห้อ Deye รุ่น SUN-50K-SG01HP3-EU-BM4 
+จุดเชื่อมต่อ 
+129 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-50K-SG01HP3-EU-BM4 
+จุดเชื่อมต่อ 
+130 ยี่ห้อ Deye รุ่น SUN-5K-G05P1-EU-AM2 
+ยี่ห้อ Deye รุ่น SUN-5K-G05P1-EU-AM2 
+จุดเชื่อมต่อ 
+131 ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น SUN-5K-G05P1-EU-AM2 
+ยี่ห้อ Deye รุ่น SUN-5K-SG04LP1-EU-SM2 
+จุดเชื่อมต่อ 
+132 ยี่ห้อ Deye รุ่น SUN-5K-SG04LP1-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-5K-SG04LP1-EU-SM2 
+จุดเชื่อมต่อ 
+133 ยี่ห้อ Deye รุ่น SUN-5K-SG05LP1-EU 
+ยี่ห้อ Deye รุ่น SUN-5K-SG05LP1-EU 
+จุดเชื่อมต่อ 
+134 ยี่ห้อ Deye รุ่น SUN-5K-SG05LP3-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-5K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+135 ยี่ห้อ EASTRON รุ่น SDM630MCT 40mA 
+ยี่ห้อ Deye รุ่น SUN-5K-SG05LP3-EU-SM2 
+จุดเชื่อมต่อ 
+136 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ Deye รุ่น SUN-5K-SG06LP1-EU-CM2 
+จุดเชื่อมต่อ 
+137 ยี่ห้อ Deye รุ่น SUN-5K-SG06LP1-EU-CM2 
+ยี่ห้อ Deye รุ่น SUN-5K-SG06LP1-EU-CM2 
+จุดเชื่อมต่อ 
+138 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ Deye รุ่น SUN-5K-SG06LP3-EU-CM2 
+จุดเชื่อมต่อ 
+139 ยี่ห้อ Deye รุ่น SUN-5K-SG06LP3-EU-CM2 
+ยี่ห้อ Deye รุ่น SUN-5K-SG06LP3-EU-CM2 
+จุดเชื่อมต่อ 
+140 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-60K-SG02HP3-EU-EM6 
+จุดเชื่อมต่อ 
+141 ยี่ห้อ Deye รุ่น SUN-60K-SG02HP3-EU-EM6 
+ยี่ห้อ Deye รุ่น SUN-60K-SG02HP3-EU-EM6 
+จุดเชื่อมต่อ 
+142 
+ 
+ยี่ห้อ Deye รุ่น SUN-60K-
+SG02HP3-EU-EM6 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-60K-SG02HP3-EU-EM6 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+143 ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-6K-G06P3-EU-BM2-P1 
+จุดเชื่อมต่อ 
+144 ยี่ห้อ Deye รุ่น SUN-6K-SG04LP1-EU-SM2 
+ยี่ห้อ Deye รุ่น SUN-6K-SG04LP1-EU-SM2 
+จุดเชื่อมต่อ 
+145 ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น SUN-6K-SG04LP1-EU-SM2 
+จุดเชื่อมต่อ 
+146 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ Deye รุ่น SUN-6K-SG06LP1-EU-CM2 
+จุดเชื่อมต่อ 
+147 ยี่ห้อ Deye รุ่น SUN-6K-SG06LP1-EU-CM2 
+ยี่ห้อ Deye รุ่น SUN-6K-SG06LP1-EU-CM2 
+จุดเชื่อมต่อ 
+148 ยี่ห้อ Deye รุ่น SUN-80K-SG02HP3-EU-EM6 
+ยี่ห้อ Deye รุ่น SUN-80K-SG02HP3-EU-EM6 
+จุดเชื่อมต่อ 
+149 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ Deye รุ่น SUN-80K-SG02HP3-EU-EM6 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 7 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+7/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+150 ยี่ห้อ EASTRON รุ่น SDM630MCT V2 
+ยี่ห้อ Deye รุ่น SUN-80K-SG02HP3-EU-EM6 
+จุดเชื่อมต่อ 
+151 ยี่ห้อ EASTRON รุ่น SDM120CT-M (40mA) 
+ยี่ห้อ Deye รุ่น SUN-8K-SG05LP1-EU-SM2-P 
+จุดเชื่อมต่อ 
+152 ยี่ห้อ Deye รุ่น SUN-8K-SG05LP1-EU-SM2-P 
+ยี่ห้อ Deye รุ่น SUN-8K-SG05LP1-EU-SM2-P 
+จุดเชื่อมต่อ 
+153 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ Deye รุ่น SUN-8K-SG06LP1-EU-CM3 
+จุดเชื่อมต่อ 
+154 ยี่ห้อ Deye รุ่น SUN-8K-SG06LP1-EU-CM3 
+ยี่ห้อ Deye รุ่น SUN-8K-SG06LP1-EU-CM3 
+จุดเชื่อมต่อ 
+155 ยี่ห้อ Deye รุ่น SUN-
+M160G4-EU-Q0-I 
+ยี่ห้อ Deye รุ่น MR1-D5-W ยี่ห้อ Deye รุ่น SUN-M160G4-EU-Q0-I 
+ 
+จุดเชื่อมต่อ 
+156 ยี่ห้อ Deye รุ่น DDZY422-D2-W 
+ยี่ห้อ Deye รุ่น SUN-M160G4-EU-Q0-I 
+ยี่ห้อ Deye รุ่น SUN-M200G4-EU-Q0-I 
+จุดเชื่อมต่อ 
+157 ยี่ห้อ Deye รุ่น SUN-
+M200G4-EU-Q0-I 
+ยี่ห้อ Deye รุ่น MR1-D5-W ยี่ห้อ Deye รุ่น SUN-M200G4-EU-Q0-I 
+ 
+จุดเชื่อมต่อ 
+158 ยี่ห้อ Deye รุ่น SUN-
+M225G4-EU-Q0-I 
+ยี่ห้อ Deye รุ่น MR1-D5-W ยี่ห้อ Deye รุ่น SUN-M225G4-EU-Q0-I 
+ 
+จุดเชื่อมต่อ 
+159 ยี่ห้อ Deye รุ่น DDZY422-D2-W 
+ยี่ห้อ Deye รุ่น SUN-M225G4-EU-Q0-I 
+จุดเชื่อมต่อ 
+160 ยี่ห้อ ENERGY LIB รุ่น LIB-ROIP1L-1P6 
+ยี่ห้อ ENERGY LIB รุ่น LIB-ROIP1L-1P6 
+จุดเชื่อมต่อ 
+161 ยี่ห้อ ENERGY LIB รุ่น LIB-ROIP1L-3P15 
+ยี่ห้อ ENERGY LIB รุ่น LIB-ROIP1L-3P15 
+จุดเชื่อมต่อ 
+162 ยี่ห้อ ENERGY LIB รุ่น LIB108RH 
+ยี่ห้อ ENERGY LIB รุ่น LIB108RH 
+จุดเชื่อมต่อ 
+163 ยี่ห้อ ENERGY LIB รุ่น LIBDD001 
+ยี่ห้อ ENERGY LIB รุ่น LIB125MI 
+จุดเชื่อมต่อ 
+164 ยี่ห้อ Chint รุ่น DTSU666-Q 
+ยี่ห้อ ENERGY LIB รุ่น LIB310RG 
+จุดเชื่อมต่อ 
+165 ยี่ห้อ ENERGY LIB รุ่น LIB315RH 
+ยี่ห้อ ENERGY LIB รุ่น LIB315RH 
+จุดเชื่อมต่อ 
+166 ยี่ห้อ ENERGY LIB รุ่น SH-PEI-PHS8 
+ยี่ห้อ ENERGY LIB รุ่น SH-PEI-PHS8 
+จุดเชื่อมต่อ 
+167 ยี่ห้อ ENERGY LIB รุ่น SH-PEI-PHT15 
+ยี่ห้อ ENERGY LIB รุ่น SH-PEI-PHT15 
+จุดเชื่อมต่อ 
+168 ยี่ห้อ ENJOY รุ่น EPCS105-
+AM 
+ยี่ห้อ Janitza รุ่น UMG 
+512-PRO 
+ยี่ห้อ ENJOY รุ่น EPCS105-AM 
+ 
+จุดเชื่อมต่อ 
+169 
+ 
+ยี่ห้อ ENPHASE 
+รุ่น Meter Envoy-S-ENV-S-WM-230 
+ยี่ห้อ ENPHASE รุ่น IQ7A-72-2-INT 
+ยี่ห้อ ENPHASE รุ่น IQ7PLUS-72-2-INT 
+ยี่ห้อ ENPHASE รุ่น IQ8P-72-2-INT 
+จุดเชื่อมต่อ 
+ 
+170 ยี่ห้อ ENPHASE รุ่น ENV-S-WM-230 
+ยี่ห้อ ENPHASE รุ่น IQ8P-72-M-INT 
+จุดเชื่อมต่อ 
+171 ยี่ห้อ ENVERTECH รุ่น EVB300 
+ยี่ห้อ ENVERTECH รุ่น EVT2000 
+จุดเชื่อมต่อ 
+172 ยี่ห้อ TABUCHI 
+รุ่น DP01 
+ยี่ห้อ TABUCHI 
+รุ่น CT01 
+ยี่ห้อ EneTelus รุ่น EPC-A-S55MPT 
+ 
+โหลด 
+173 ยี่ห้อ FOX ESS รุ่น F3000-
+G2 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น F3000-G2 
+ 
+จุดเชื่อมต่อ 
+174 ยี่ห้อ FOX ESS รุ่น F6000 ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น F6000 
+ 
+จุดเชื่อมต่อ 
+175 ยี่ห้อ FOX ESS รุ่น F6000-
+G2 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น F6000-G2 
+ 
+จุดเชื่อมต่อ 
+176 
+ 
+ยี่ห้อ FOX ESS รุ่น 
+GM215kWh-100kW-2hF 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ยี่ห้อ FOX ESS รุ่น GM215kWh-100kW-2hF 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+
+--- Page 8 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+8/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+177 ยี่ห้อ FOX ESS รุ่น H1-6.0-
+E-G2 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น H1-6.0-E-G2 
+ 
+จุดเชื่อมต่อ 
+178 ยี่ห้อ FOX ESS รุ่น P100-
+6-AC 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น P100-6-AC 
+ 
+จุดเชื่อมต่อ 
+179 ยี่ห้อ FOX ESS รุ่น P100-
+6-H 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น P100-6-H 
+ 
+จุดเชื่อมต่อ 
+180 ยี่ห้อ FOX ESS รุ่น P100E-
+6-H 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น P100E-6-H 
+ 
+จุดเชื่อมต่อ 
+181 ยี่ห้อ FOX ESS รุ่น P3-
+10.0-SH 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-10.0-SH 
+ 
+จุดเชื่อมต่อ 
+182 ยี่ห้อ FOX ESS รุ่น P3-
+100-Plus 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-100-Plus 
+ 
+จุดเชื่อมต่อ 
+183 ยี่ห้อ FOX ESS รุ่น P3-
+125-Plus 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-125-Plus 
+ 
+จุดเชื่อมต่อ 
+184 ยี่ห้อ FOX ESS รุ่น P3-
+15.0-SH 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-15.0-SH 
+ 
+จุดเชื่อมต่อ 
+185 ยี่ห้อ FOX ESS รุ่น P3-60-
+Plus 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-60-Plus 
+ 
+จุดเชื่อมต่อ 
+186 ยี่ห้อ FOX ESS รุ่น P3-Pro-
+20.0 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-Pro-20.0 
+ 
+จุดเชื่อมต่อ 
+187 ยี่ห้อ FOX ESS รุ่น P3-Pro-
+30.0 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น P3-Pro-30.0 
+ 
+จุดเชื่อมต่อ 
+188 ยี่ห้อ FOX ESS รุ่น Q1-
+2400-E 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ FOX ESS รุ่น Q1-2400-E 
+ 
+จุดเชื่อมต่อ 
+189 ยี่ห้อ FOX ESS รุ่น R100-
+G2 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น R100-G2 
+ 
+จุดเชื่อมต่อ 
+190 ยี่ห้อ FOX ESS รุ่น R125-
+G2 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น R125-G2 
+ 
+จุดเชื่อมต่อ 
+191 ยี่ห้อ FOX ESS รุ่น T10-G3 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น T10-G3 
+ 
+จุดเชื่อมต่อ 
+192 ยี่ห้อ FOX ESS รุ่น T20-G3 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น T20-G3 
+ 
+จุดเชื่อมต่อ 
+193 ยี่ห้อ FOX ESS รุ่น T30-M ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น T30-M 
+ 
+จุดเชื่อมต่อ 
+194 ยี่ห้อ FOX ESS รุ่น T5-G3 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น T5-G3 
+ 
+จุดเชื่อมต่อ 
+195 ยี่ห้อ FOX ESS รุ่น V50 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ FOX ESS รุ่น V50 
+ 
+จุดเชื่อมต่อ 
+196 ยี่ห้อ FRECON 
+รุ่น PVMU 
+ยี่ห้อ Schneider 
+Electric รุ่น PM2200 
+ยี่ห้อ FRECON รุ่น F010i-4PVb 
+ยี่ห้อ FRECON รุ่น F025i-4PVb 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 9 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+9/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+197 ยี่ห้อ FRONIUS 
+รุ่น FRONIUS SMART METER 50kA-3 
+ยี่ห้อ FRONIUS รุ่น FRONIUS ECO 27.0-3-S 
+ยี่ห้อ FRONIUS รุ่น SYMO 20.0-3-M  
+จุดเชื่อมต่อ 
+198 ยี่ห้อ Felicitysolar รุ่น IVGM10KLP3G2 
+ยี่ห้อ Felicitysolar รุ่น IVGM10KLP3G2 
+จุดเชื่อมต่อ 
+199 ยี่ห้อ Felicitysolar รุ่น IVGM20KLP3G1 
+ยี่ห้อ Felicitysolar รุ่น IVGM20KLP3G1 
+จุดเชื่อมต่อ 
+200 ยี่ห้อ Felicitysolar รุ่น IVGM8KLP1G1 
+ยี่ห้อ Felicitysolar รุ่น IVGM8KLP1G1 
+จุดเชื่อมต่อ 
+201 ยี่ห้อ GOODWE รุ่น 
+GW100K-ET-G10 
+ยี่ห้อ GOODWE รุ่น 
+SEC3000C 
+ยี่ห้อ GOODWE รุ่น GW100K-ET-G10 
+ 
+จุดเชื่อมต่อ 
+202 ยี่ห้อ GOODWE รุ่น 
+GW100K-ET-G10 
+ยี่ห้อ GOODWE รุ่น 
+GM330 
+ยี่ห้อ GOODWE รุ่น GW100K-ET-G10 
+ 
+จุดเชื่อมต่อ 
+203 ยี่ห้อ GOODWE รุ่น GMK110 
+ยี่ห้อ GOODWE รุ่น GW10K-ES-C10 
+จุดเชื่อมต่อ 
+204 ยี่ห้อ GOODWE รุ่น GMK330 
+ยี่ห้อ GOODWE รุ่น GW10K-ES-C10 
+จุดเชื่อมต่อ 
+205 ยี่ห้อ GOODWE รุ่น GM3000 
+ยี่ห้อ GOODWE รุ่น GW10K-ET 
+จุดเชื่อมต่อ 
+206 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW10K-ET-20 
+จุดเชื่อมต่อ 
+207 ยี่ห้อ GOODWE รุ่น GW10K-ET-L-G10 
+ยี่ห้อ GOODWE รุ่น GW10K-ET-L-G10 
+จุดเชื่อมต่อ 
+208 ยี่ห้อ GOODWE รุ่น GMK330 
+ยี่ห้อ GOODWE รุ่น GW10K-SDT-30 
+จุดเชื่อมต่อ 
+209 ยี่ห้อ GOODWE รุ่น 
+SEC3000C 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-CT/C 
+ยี่ห้อ GOODWE รุ่น GW125/261-ESA-LCN-G10 
+ 
+จุดเชื่อมต่อ 
+210 
+ 
+ยี่ห้อ GOODWE รุ่น 
+GW125/261-ESA-LCN-
+G10 
+ยี่ห้อ GOODWE รุ่น 
+SEC3000C 
+ยี่ห้อ GOODWE รุ่น GW125/261-ESA-LCN-G10 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+211 ยี่ห้อ GOODWE รุ่น 
+SEC3000C 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-CT/C 
+ยี่ห้อ GOODWE รุ่น GW125/261-ESA-LCN-G11 
+ 
+จุดเชื่อมต่อ 
+212 ยี่ห้อ GOODWE รุ่น SEC3000C 
+ยี่ห้อ GOODWE รุ่น GW125/261-ESA-LCN-G11 
+จุดเชื่อมต่อ 
+213 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW125K-GT 
+จุดเชื่อมต่อ 
+214 ยี่ห้อ GOODWE รุ่น GMK110 
+ยี่ห้อ GOODWE รุ่น GW12K-ES-C10 
+จุดเชื่อมต่อ 
+215 ยี่ห้อ GOODWE รุ่น GMK330 
+ยี่ห้อ GOODWE รุ่น GW12K-ES-C10 
+จุดเชื่อมต่อ 
+216 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW15K-ET-L-G10 
+ยี่ห้อ GOODWE รุ่น GW20K-ET-L-G10 
+จุดเชื่อมต่อ 
+217 ยี่ห้อ GOODWE รุ่น GMK330 
+ยี่ห้อ GOODWE รุ่น GW30K-SDT-C30 
+จุดเชื่อมต่อ 
+218 ยี่ห้อ GOODWE รุ่น GMK110 
+ยี่ห้อ GOODWE รุ่น GW5000-DNS-30 
+จุดเชื่อมต่อ 
+219 ยี่ห้อ GOODWE รุ่น 
+GW5000-ES-20 
+ยี่ห้อ GOODWE รุ่น 
+GMK110 
+ยี่ห้อ GOODWE รุ่น GW5000-ES-20 
+ 
+จุดเชื่อมต่อ 
+220 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW5000-ES-C10 
+จุดเชื่อมต่อ 
+221 ยี่ห้อ GOODWE รุ่น GMK110 
+ยี่ห้อ GOODWE รุ่น GW5000-ES-C10 
+จุดเชื่อมต่อ 
+222 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW50K-ET-10 
+จุดเชื่อมต่อ 
+223 ยี่ห้อ GOODWE รุ่น SEC3000C 
+ยี่ห้อ GOODWE รุ่น GW50K-ET-10 
+จุดเชื่อมต่อ 
+224 ยี่ห้อ GOODWE รุ่น 
+GW50K-SDT-C30 
+ยี่ห้อ GOODWE รุ่น 
+GM330 
+ยี่ห้อ GOODWE รุ่น GW50K-SDT-C30 
+ 
+จุดเชื่อมต่อ 
+225 ยี่ห้อ GOODWE รุ่น 
+GW50K-SDT-C30 
+ยี่ห้อ GOODWE รุ่น 
+GMK330 
+ยี่ห้อ GOODWE รุ่น GW50K-SDT-C30 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 10 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+10/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+226 ยี่ห้อ GOODWE รุ่น GM3000 
+ยี่ห้อ GOODWE รุ่น GW50KS-MT 
+จุดเชื่อมต่อ 
+227 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW5K-DNS-G40 
+จุดเชื่อมต่อ 
+228 ยี่ห้อ GOODWE รุ่น GMK110 
+ยี่ห้อ GOODWE รุ่น GW5K-DNS-G40 
+จุดเชื่อมต่อ 
+229 ยี่ห้อ GOODWE รุ่น GW6000-ES-C10 
+ยี่ห้อ GOODWE รุ่น GW6000-ES-C10 
+จุดเชื่อมต่อ 
+230 ยี่ห้อ GOODWE รุ่น GMK110 
+ยี่ห้อ GOODWE รุ่น GW6000-ES-C10 
+จุดเชื่อมต่อ 
+231 ยี่ห้อ GOODWE รุ่น GM330 
+ยี่ห้อ GOODWE รุ่น GW6000-ES-C10 
+จุดเชื่อมต่อ 
+232 ยี่ห้อ GREE รุ่น GDCS1000-EM41 
+ยี่ห้อ GREE รุ่น GIE-ADC20KE 
+จุดเชื่อมต่อ 
+233 ยี่ห้อ Growatt 
+รุ่น Smart Energy Manager 
+ยี่ห้อ Growatt รุ่น Growatt 10000TL3-S 
+ 
+จุดเชื่อมต่อ 
+234 ยี่ห้อ Growatt รุ่น Anti Refux Box 
+ยี่ห้อ Growatt รุ่น Growatt 20000UE 
+จุดเชื่อมต่อ 
+235 ยี่ห้อ Growatt 
+รุ่น Smart Energy Manager 
+ยี่ห้อ Growatt รุ่น Growatt 40000TL3-NS 
+ 
+จุดเชื่อมต่อ 
+236 ยี่ห้อ Growatt รุ่น Growatt SPH6000 
+ยี่ห้อ Growatt รุ่น Growatt SPH6000 
+จุดเชื่อมต่อ 
+237 
+ 
+ 
+ยี่ห้อ Growatt 
+รุ่น Smart Energy Manager 
+ 
+ยี่ห้อ Growatt รุ่น MAX 125KTL3-X LV 
+ยี่ห้อ Growatt รุ่น MAX 60KTL3 LV 
+ยี่ห้อ Growatt รุ่น MAX 80KTL3 LV 
+ยี่ห้อ Growatt รุ่น MID 20KTL3-X 
+จุดเชื่อมต่อ 
+ 
+ 
+238 ยี่ห้อ EASTRON รุ่น SDM630MCT (TPM-CT-E) 
+ยี่ห้อ Growatt รุ่น MID 20KTL3-X 
+จุดเชื่อมต่อ 
+239 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ Growatt รุ่น MID 40KTL3-X 
+จุดเชื่อมต่อ 
+240 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ Growatt รุ่น MID 40KTL3-X 
+จุดเชื่อมต่อ 
+241 ยี่ห้อ EASTRON รุ่น SDM120CT 
+ยี่ห้อ Growatt รุ่น MIN 3000TL-X 
+ยี่ห้อ Growatt รุ่น MIN 5000TL-X 
+จุดเชื่อมต่อ 
+242 ยี่ห้อ EASTRON รุ่น SDM630-Modbus V2 
+ยี่ห้อ Growatt รุ่น MOD 10KTL3-X 
+จุดเชื่อมต่อ 
+243 ยี่ห้อ EASTRON รุ่น SDM630MCT (TPM-CT-E) 
+ยี่ห้อ Growatt รุ่น MOD 10KTL3-X 
+จุดเชื่อมต่อ 
+244 ยี่ห้อ Growatt 
+รุ่น Smart Energy Manager 
+ยี่ห้อ Growatt รุ่น MOD 10KTL3-X 
+ยี่ห้อ Growatt รุ่น SPH 10000TL3 BH-UP 
+จุดเชื่อมต่อ 
+245 ยี่ห้อ EASTRON รุ่น SDM630-Modbus V3 
+ยี่ห้อ Growatt รุ่น SPH 10000TL3 BH-UP 
+จุดเชื่อมต่อ 
+246 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ Growatt รุ่น SPH 5000TL3 BH-UP 
+จุดเชื่อมต่อ 
+247 ยี่ห้อ Growatt รุ่น SPM 6000TL-HU 
+ยี่ห้อ Growatt รุ่น SPM 6000TL-HU 
+จุดเชื่อมต่อ 
+248 ยี่ห้อ EASTRON รุ่น SDM630MCT (TPM-CT-E) 
+ยี่ห้อ Growatt รุ่น WIT 10K-HU 
+จุดเชื่อมต่อ 
+249 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-H10K-HT 
+ยี่ห้อ Chint รุ่น DTSU666-
+TP-100A 
+ยี่ห้อ HYXiPOWER รุ่น HYX-H10K-HT 
+ 
+จุดเชื่อมต่อ 
+250 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-H12K-HT 
+ยี่ห้อ Chint รุ่น DTSU666-
+TP-100A 
+ยี่ห้อ HYXiPOWER รุ่น HYX-H12K-HT 
+ 
+จุดเชื่อมต่อ 
+251 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-H25K-HT 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ HYXiPOWER รุ่น HYX-H25K-HT 
+ 
+จุดเชื่อมต่อ 
+252 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-H5K-HS 
+ยี่ห้อ Chint รุ่น DDSU666-
+TP-100A 
+ยี่ห้อ HYXiPOWER รุ่น HYX-H5K-HS 
+ 
+จุดเชื่อมต่อ 
+253 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-H6K-HT 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ HYXiPOWER รุ่น HYX-H6K-HT 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 11 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+11/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+254 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-H8K-HS 
+ยี่ห้อ Chint รุ่น DDSU666-
+TP-100A 
+ยี่ห้อ HYXiPOWER รุ่น HYX-H8K-HS 
+ 
+จุดเชื่อมต่อ 
+255 ยี่ห้อ HYXiPOWER 
+รุ่น HYX-M2000-S 
+ยี่ห้อ CHINT 
+รุ่น DDSU666 
+ยี่ห้อ HYXiPOWER รุ่น HYX-M2000-S 
+ 
+จุดเชื่อมต่อ 
+256 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-S10K-T 
+ยี่ห้อ Chint รุ่น DTSU666-
+TP-100A 
+ยี่ห้อ HYXiPOWER รุ่น HYX-S10K-T 
+ 
+จุดเชื่อมต่อ 
+257 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-S125K-T2 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ HYXiPOWER รุ่น HYX-S125K-T2 
+ 
+จุดเชื่อมต่อ 
+258 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-S30K-T 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ HYXiPOWER รุ่น HYX-S30K-T 
+ 
+จุดเชื่อมต่อ 
+259 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-S50K-T 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ HYXiPOWER รุ่น HYX-S50K-T 
+ 
+จุดเชื่อมต่อ 
+260 ยี่ห้อ HYXiPOWER รุ่น 
+HYX-S5K-S 
+ยี่ห้อ Chint รุ่น DDSU666-
+TP-100A 
+ยี่ห้อ HYXiPOWER รุ่น HYX-S5K-S 
+ 
+จุดเชื่อมต่อ 
+261 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ Haier Energy รุ่น HAH3P-6KB1/HU9 
+จุดเชื่อมต่อ 
+262 ยี่ห้อ Haier รุ่น HH1P-
+10KL-A 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ Haier รุ่น HH1P-10KL-A 
+ 
+จุดเชื่อมต่อ 
+263 ยี่ห้อ Haier รุ่น HH1P-5KL-
+A 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ Haier รุ่น HH1P-5KL-A 
+ 
+จุดเชื่อมต่อ 
+264 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ Haier รุ่น HS1P-10K-T(C01) 
+ยี่ห้อ Haier รุ่น HS1P-5K-T(C01) 
+จุดเชื่อมต่อ 
+265 ยี่ห้อ Haier รุ่น HS3P-
+125K-T 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Haier รุ่น HS3P-125K-T 
+ 
+จุดเชื่อมต่อ 
+266 ยี่ห้อ Hopewind รุ่น hopePowerBox-G03 
+ยี่ห้อ Hopewind รุ่น HSNV110K-G01 
+ยี่ห้อ Hopewind รุ่น HSNV60K-G01 
+จุดเชื่อมต่อ 
+267 ยี่ห้อ Huawei รุ่น 
+PCS2000-108K-MB1 
+ยี่ห้อ Huawei รุ่น 
+DTSU666-HW 
+ยี่ห้อ Huawei รุ่น PCS2000-108K-MB1 
+ 
+จุดเชื่อมต่อ 
+268 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-100KTL-M1 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+269 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN2000-100KTL-M2 
+ยี่ห้อ Huawei 
+รุ่น YDS60-80 
+ยี่ห้อ Huawei รุ่น SUN2000-100KTL-M2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+270 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-100KTL-M2 
+จุดเชื่อมต่อ 
+271 ยี่ห้อ Janitza รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-100KTL-M2 
+จุดเชื่อมต่อ 
+272 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-10K-LC0 
+จุดเชื่อมต่อ 
+273 ยี่ห้อ Huawei รุ่น DDSU666-H 
+ยี่ห้อ Huawei รุ่น SUN2000-10K-LC0 
+จุดเชื่อมต่อ 
+274 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-10K-MAP0 
+จุดเชื่อมต่อ 
+275 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-10K-MAP0 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 12 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+12/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+276 ยี่ห้อ Huawei รุ่น 
+SUN2000-10K-MAP0 
+ยี่ห้อ Huawei รุ่น 
+DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-10K-MAP0 
+ 
+จุดเชื่อมต่อ 
+277 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-10KTL-M1 
+จุดเชื่อมต่อ 
+278 
+ 
+ยี่ห้อ Huawei 
+รุ่น SDongleA-05 
+ยี่ห้อ Huawei 
+รุ่น DTSU666-H 
+250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-10KTL-M1 
+ 
+ยี่ห้อ Huawei รุ่น SUN2000-12KTL-M2 
+จุดเชื่อมต่อ 
+ 
+279 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-12KTL-M5 
+จุดเชื่อมต่อ 
+280 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-12KTL-M5 
+จุดเชื่อมต่อ 
+281 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN2000-150K-MG0 
+ยี่ห้อ Huawei 
+รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-150K-MG0 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+282 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN2000-150K-MG0 
+ยี่ห้อ Huawei 
+รุ่น YDS60-80 
+ยี่ห้อ Huawei รุ่น SUN2000-150K-MG0 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+283 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-15K-MB0 
+จุดเชื่อมต่อ 
+284 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-15K-MB0 
+จุดเชื่อมต่อ 
+285 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-15K-MB0 
+จุดเชื่อมต่อ 
+286 
+ 
+ยี่ห้อ Huawei 
+รุ่น SDongleA-05 
+ยี่ห้อ Huawei 
+รุ่น DTSU666-H 
+250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-15KTL-M2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+287 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-15KTL-M5 
+จุดเชื่อมต่อ 
+288 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-15KTL-M5 
+จุดเชื่อมต่อ 
+289 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-20K-MB0 
+จุดเชื่อมต่อ 
+290 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-20K-MB0 
+จุดเชื่อมต่อ 
+291 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-20K-MB0 
+จุดเชื่อมต่อ 
+292 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger1000 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-20KTL 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+293 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-20KTL-M2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+294 
+ 
+ยี่ห้อ Huawei 
+รุ่น SDongleA-05 
+ยี่ห้อ Huawei 
+รุ่น DTSU666-H 
+250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-20KTL-M2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+295 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-20KTL-M5 
+จุดเชื่อมต่อ 
+296 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-20KTL-M5 
+จุดเชื่อมต่อ 
+297 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-20KTL-M5 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+
+--- Page 13 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+13/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+298 ยี่ห้อ Huawei รุ่น 
+SUN2000-30K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DTSU71C 
+ยี่ห้อ Huawei รุ่น SUN2000-30K-MC0 
+ 
+จุดเชื่อมต่อ 
+299 ยี่ห้อ Huawei รุ่น 
+SUN2000-30K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DHSU1079-ZT 
+ยี่ห้อ Huawei รุ่น SUN2000-30K-MC0 
+ 
+จุดเชื่อมต่อ 
+300 ยี่ห้อ Huawei รุ่น 
+SUN2000-30K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-30K-MC0 
+ 
+จุดเชื่อมต่อ 
+301 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-30KTL-M3 
+จุดเชื่อมต่อ 
+302 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-30KTL-M3 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+303 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN2000-30KTL-M3 
+ยี่ห้อ Huawei 
+รุ่น YDS60-80 
+ยี่ห้อ Huawei รุ่น SUN2000-30KTL-M3 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+304 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger1000 
+ยี่ห้อ Janitza 
+รุ่น UMG511 
+ยี่ห้อ Huawei รุ่น SUN2000-36KTL 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+305 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-36KTL-M3 
+จุดเชื่อมต่อ 
+306 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-36KTL-M3 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+307 ยี่ห้อ Huawei รุ่น 
+SUN2000-3K-LB0 
+ยี่ห้อ Huawei รุ่น 
+DDSU666-H 
+ยี่ห้อ Huawei รุ่น SUN2000-3K-LB0  
+ 
+จุดเชื่อมต่อ 
+308 ยี่ห้อ Huawei รุ่น 
+SUN2000-3K-LB0 
+ยี่ห้อ Huawei รุ่น EMMA-
+A02 
+ยี่ห้อ Huawei รุ่น SUN2000-3K-LB0  
+ 
+จุดเชื่อมต่อ 
+309 ยี่ห้อ Huawei รุ่น DDSU666-H 
+ยี่ห้อ Huawei รุ่น SUN2000-3KTL-L1 
+จุดเชื่อมต่อ 
+310 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-3KTL-L1 
+จุดเชื่อมต่อ 
+311 ยี่ห้อ Huawei รุ่น 
+SUN2000-40K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-40K-MC0 
+ 
+จุดเชื่อมต่อ 
+312 ยี่ห้อ Huawei รุ่น 
+SUN2000-40K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DTSU71C 
+ยี่ห้อ Huawei รุ่น SUN2000-40K-MC0 
+ 
+จุดเชื่อมต่อ 
+313 ยี่ห้อ Huawei รุ่น 
+SUN2000-40K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DHSU1079-ZT 
+ยี่ห้อ Huawei รุ่น SUN2000-40K-MC0 
+ 
+จุดเชื่อมต่อ 
+314 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-40KTL-M3 
+จุดเชื่อมต่อ 
+315 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-40KTL-M3 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+316 ยี่ห้อ Huawei รุ่น 
+SUN2000-50K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DHSU1079-ZT 
+ยี่ห้อ Huawei รุ่น SUN2000-50K-MC0 
+ 
+จุดเชื่อมต่อ 
+317 ยี่ห้อ Huawei รุ่น 
+SUN2000-50K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DTSU71C 
+ยี่ห้อ Huawei รุ่น SUN2000-50K-MC0 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 14 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+14/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+318 ยี่ห้อ Huawei รุ่น 
+SUN2000-50K-MC0 
+ยี่ห้อ Huawei รุ่น 
+DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-50K-MC0 
+ 
+จุดเชื่อมต่อ 
+319 ยี่ห้อ Huawei รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN2000-50KTL-M3 
+จุดเชื่อมต่อ 
+320 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN2000-50KTL-M3 
+ยี่ห้อ Huawei 
+รุ่น YDS60-80 
+ยี่ห้อ Huawei รุ่น SUN2000-50KTL-M3 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+321 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-50KTL-M3 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+322 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-5K-LB0 
+จุดเชื่อมต่อ 
+323 ยี่ห้อ Huawei รุ่น DDSU666-H 
+ยี่ห้อ Huawei รุ่น SUN2000-5K-LB0 
+จุดเชื่อมต่อ 
+324 ยี่ห้อ Huawei รุ่น DTSU666-H 250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-5K-MAP0 
+จุดเชื่อมต่อ 
+325 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-5K-MAP0 
+ยี่ห้อ Huawei รุ่น SUN2000-5KTL-L1 
+จุดเชื่อมต่อ 
+326 ยี่ห้อ Huawei รุ่น DDSU666-H 
+ยี่ห้อ Huawei รุ่น SUN2000-5KTL-L1 
+จุดเชื่อมต่อ 
+327 ยี่ห้อ Huawei รุ่น EMMA-A02 
+ยี่ห้อ Huawei รุ่น SUN2000-5KTL-M1 
+จุดเชื่อมต่อ 
+328 
+ 
+ยี่ห้อ Huawei 
+รุ่น SDongleA-05 
+ยี่ห้อ Huawei 
+รุ่น DTSU666-H 
+250A/50mA 
+ยี่ห้อ Huawei รุ่น SUN2000-5KTL-M1 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+329 
+ 
+ยี่ห้อ Huawei 
+รุ่น Smartlogger3000A 
+ยี่ห้อ Janitza 
+รุ่น UMG 96RM 
+ยี่ห้อ Huawei รุ่น SUN2000-60KTL-M0 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+330 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN5000-150K-MG0 
+ยี่ห้อ Huawei 
+รุ่น YDS60-80 
+ยี่ห้อ Huawei รุ่น SUN5000-150K-MG0 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+331 
+ 
+ยี่ห้อ Huawei 
+รุ่น SUN5000-150K-MG0 
+ยี่ห้อ Huawei 
+รุ่น DTSU666-HW 
+ยี่ห้อ Huawei รุ่น SUN5000-150K-MG0 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+332 ยี่ห้อ Hypontech รุ่น HES-6000 
+ยี่ห้อ Hypontech รุ่น HES-6000 
+จุดเชื่อมต่อ 
+333 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ Hypontech รุ่น HPS-10000P 
+จุดเชื่อมต่อ 
+334 
+ 
+ยี่ห้อ IN-power รุ่น 
+INPPCS-125/0.4-W-14-
+A2-OS 
+ยี่ห้อ Acrel รุ่น ADL400 
+ 
+ยี่ห้อ IN-power รุ่น INPPCS-125/0.4-W-14-A2-OS 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+335 ยี่ห้อ Pilot รุ่น SPM93 
+ยี่ห้อ INVT รุ่น iMars BG10KTR 
+จุดเชื่อมต่อ 
+336 ยี่ห้อ Pilot รุ่น SPM91 
+ยี่ห้อ INVT รุ่น iMars MG6KTL-2M 
+จุดเชื่อมต่อ 
+337 ยี่ห้อ INVT รุ่น iMars XD10KTL 
+ยี่ห้อ INVT รุ่น iMars XD10KTL 
+จุดเชื่อมต่อ 
+338 ยี่ห้อ INVT รุ่น iMars 
+XD6KTL 
+ยี่ห้อ INVT รุ่น iMars 
+XD6KTL 
+ยี่ห้อ INVT รุ่น iMars XD6KTL 
+ 
+จุดเชื่อมต่อ 
+339 ยี่ห้อ CHINT รุ่น DTSU666 
+ยี่ห้อ INVT รุ่น iMars XG10KTR-S 
+จุดเชื่อมต่อ 
+340 ยี่ห้อ CHINT รุ่น DDSU666 
+ยี่ห้อ INVT รุ่น iMars XG3KTL-S 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 15 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+15/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+341 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ INVT รุ่น iMars XG5KTL 
+จุดเชื่อมต่อ 
+342 ยี่ห้อ CHINT รุ่น DTSU666 
+ยี่ห้อ INVT รุ่น iMars XG6KTR-S 
+จุดเชื่อมต่อ 
+343 ยี่ห้อ Acrel รุ่น ADL400N-CT 
+ยี่ห้อ ISUNA รุ่น ISUNA 20000T 
+จุดเชื่อมต่อ 
+344 ยี่ห้อ Acrel รุ่น ADL200N-CT 
+ยี่ห้อ ISUNA รุ่น ISUNA 6000S 
+จุดเชื่อมต่อ 
+345 ยี่ห้อ E-LINTER รุ่น E-
+manager Pro 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ KEHUA TECH รุ่น SPI125K-B 
+ 
+จุดเชื่อมต่อ 
+346 ยี่ห้อ Acrel รุ่น DDSD1352-CT 
+ยี่ห้อ KEHUA TECH รุ่น SPI5000-B2 
+จุดเชื่อมต่อ 
+347 ยี่ห้อ KSTAR 
+รุ่น BluE-10KT-M1 
+ยี่ห้อ EASTRON 
+รุ่น SDM630MCT 
+ยี่ห้อ KSTAR รุ่น BluE-10KT-M1 
+ 
+จุดเชื่อมต่อ 
+348 ยี่ห้อ KSTAR 
+รุ่น BluE-20KT-M1 
+ยี่ห้อ EASTRON 
+รุ่น SDM630MCT 
+ยี่ห้อ KSTAR รุ่น BluE-20KT-M1 
+ 
+จุดเชื่อมต่อ 
+349 ยี่ห้อ KSTAR รุ่น BluE-G 5000D-M1 
+ยี่ห้อ KSTAR รุ่น BluE-G 5000D-M1 
+จุดเชื่อมต่อ 
+350 ยี่ห้อ KSTAR รุ่น BluE-S 5000D 
+ยี่ห้อ KSTAR รุ่น BluE-S 5000D 
+จุดเชื่อมต่อ 
+351 ยี่ห้อ KSTAR รุ่น E10KT 
+ยี่ห้อ KSTAR รุ่น E10KT 
+จุดเชื่อมต่อ 
+352 ยี่ห้อ KSTAR รุ่น SPC01 
+ยี่ห้อ YADA รุ่น YDS60-80 ยี่ห้อ KSTAR รุ่น G125KT7 
+ 
+จุดเชื่อมต่อ 
+353 ยี่ห้อ KSTAR 
+รุ่น G60KT 
+ยี่ห้อ EASTRON 
+รุ่น SDM630MCT 
+ยี่ห้อ KSTAR รุ่น G60KT 
+ 
+จุดเชื่อมต่อ 
+354 ยี่ห้อ KSTAR รุ่น EMS-LCD ยี่ห้อ YADA รุ่น YDS60-80 ยี่ห้อ KSTAR รุ่น KAC50DP 
+ยี่ห้อ KSTAR รุ่น KAC50DP2 
+จุดเชื่อมต่อ 
+355 ยี่ห้อ KSTAR รุ่น KSG-5K-DM 
+ยี่ห้อ KSTAR รุ่น KSG-5K-DM 
+จุดเชื่อมต่อ 
+356 ยี่ห้อ LIVOLTEK รุ่น PCS-125KG1 
+ยี่ห้อ LIVOLTEK รุ่น PCS-125KG1 
+จุดเชื่อมต่อ 
+357 ยี่ห้อ LUX POWER รุ่น SNA6000 WPV 
+ยี่ห้อ LUX POWER รุ่น SNA6000 WPV 
+จุดเชื่อมต่อ 
+358 ยี่ห้อ Fineco รุ่น EM115-Mod-WL 
+ยี่ห้อ MARSROCK รุ่น 2000G7 
+จุดเชื่อมต่อ 
+359 ยี่ห้อ MARSTEK รุ่น MST-
+BIE5-2500 
+ยี่ห้อ MARSTEK รุ่น TPM-
+100CTW 
+ยี่ห้อ MARSTEK รุ่น MST-BIE5-2500 
+ 
+จุดเชื่อมต่อ 
+360 ยี่ห้อ MUST รุ่น PH11-
+10KL3-EU 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ MUST รุ่น PH11-10KL3-EU 
+ 
+จุดเชื่อมต่อ 
+361 ยี่ห้อ MUST รุ่น PH11-
+6048PRO 
+ยี่ห้อ Chint รุ่น DDSU666-
+Q 
+ยี่ห้อ MUST รุ่น PH11-6048PRO 
+ 
+จุดเชื่อมต่อ 
+362 ยี่ห้อ MaxSky Solar รุ่น SUNT-6.0kW-S 
+ยี่ห้อ MaxSky Solar รุ่น SUNT-6.0kW-S 
+จุดเชื่อมต่อ 
+363 ยี่ห้อ Midea รุ่น MEI2-HS5H-AIO 
+ยี่ห้อ Midea รุ่น MEI2-HS5H-AIO 
+จุดเชื่อมต่อ 
+364 ยี่ห้อ Midea รุ่น MEI2-
+HS5H-AIO 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ Midea รุ่น MEI2-HS5H-AIO 
+ 
+จุดเชื่อมต่อ 
+365 ยี่ห้อ Midea รุ่น MEI2-
+HS5L 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ Midea รุ่น MEI2-HS5L 
+ 
+จุดเชื่อมต่อ 
+366 ยี่ห้อ Midea รุ่น MEI2-HS5L 
+ยี่ห้อ Midea รุ่น MEI2-HS5L 
+จุดเชื่อมต่อ 
+367 ยี่ห้อ Midea รุ่น MEI2-
+HS6L 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ Midea รุ่น MEI2-HS6L 
+ 
+จุดเชื่อมต่อ 
+368 ยี่ห้อ Midea รุ่น MEI2-HS6L 
+ยี่ห้อ Midea รุ่น MEI2-HS6L 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 16 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+16/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+369 ยี่ห้อ Midea รุ่น MEI2-
+HS8H-AIO 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ Midea รุ่น MEI2-HS8H-AIO 
+ 
+จุดเชื่อมต่อ 
+370 ยี่ห้อ Midea รุ่น MEI2-HS8H-AIO 
+ยี่ห้อ Midea รุ่น MEI2-HS8H-AIO 
+จุดเชื่อมต่อ 
+371 ยี่ห้อ Midea รุ่น MEI2-HT10H-AIO 
+ยี่ห้อ Midea รุ่น MEI2-HT10H-AIO 
+จุดเชื่อมต่อ 
+372 ยี่ห้อ Midea รุ่น MEI2-
+HT10H-AIO 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Midea รุ่น MEI2-HT10H-AIO 
+ 
+จุดเชื่อมต่อ 
+373 ยี่ห้อ Midea รุ่น MEI2-HT15H 
+ยี่ห้อ Midea รุ่น MEI2-HT15H 
+จุดเชื่อมต่อ 
+374 ยี่ห้อ Midea รุ่น MEI2-
+HT15H 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Midea รุ่น MEI2-HT15H 
+ 
+จุดเชื่อมต่อ 
+375 ยี่ห้อ Midea รุ่น MEI2-
+HT15H 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT 
+ยี่ห้อ Midea รุ่น MEI2-HT15H 
+ 
+จุดเชื่อมต่อ 
+376 ยี่ห้อ Midea รุ่น MEI2-HT15H-AIO 
+ยี่ห้อ Midea รุ่น MEI2-HT15H-AIO 
+จุดเชื่อมต่อ 
+377 ยี่ห้อ Midea รุ่น MEI2-
+HT15H-AIO 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT 
+ยี่ห้อ Midea รุ่น MEI2-HT15H-AIO 
+ 
+จุดเชื่อมต่อ 
+378 ยี่ห้อ Midea รุ่น MEI2-
+HT15H-AIO 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Midea รุ่น MEI2-HT15H-AIO 
+ 
+จุดเชื่อมต่อ 
+379 ยี่ห้อ Midea รุ่น MEI2-
+HT20H 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Midea รุ่น MEI2-HT20H 
+ 
+จุดเชื่อมต่อ 
+380 ยี่ห้อ Midea รุ่น MEI2-HT20H 
+ยี่ห้อ Midea รุ่น MEI2-HT20H 
+จุดเชื่อมต่อ 
+381 ยี่ห้อ Midea รุ่น MEI2-
+HT20H 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT 
+ยี่ห้อ Midea รุ่น MEI2-HT20H 
+ 
+จุดเชื่อมต่อ 
+382 ยี่ห้อ Midea รุ่น MEI2-
+HT30H 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT 
+ยี่ห้อ Midea รุ่น MEI2-HT30H 
+ 
+จุดเชื่อมต่อ 
+383 ยี่ห้อ Midea รุ่น MEI2-HT30H 
+ยี่ห้อ Midea รุ่น MEI2-HT30H 
+จุดเชื่อมต่อ 
+384 ยี่ห้อ Midea รุ่น MEI2-
+HT30H 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Midea รุ่น MEI2-HT30H 
+ 
+จุดเชื่อมต่อ 
+385 ยี่ห้อ NEOVOLT รุ่น BW-INV-SPH3.6K 
+ยี่ห้อ NEOVOLT รุ่น BW-INV-SPH3.6K 
+จุดเชื่อมต่อ 
+386 ยี่ห้อ NEOVOLT รุ่น BW-INV-SPH5K 
+ยี่ห้อ NEOVOLT รุ่น BW-INV-SPH5K 
+จุดเชื่อมต่อ 
+387 ยี่ห้อ NEP รุ่น BDM-2000 ยี่ห้อ NEP รุ่น BDNZ-WiFi ยี่ห้อ NEP รุ่น BDM-2000 
+ 
+จุดเชื่อมต่อ 
+388 ยี่ห้อ PROJOY electric รุ่น PEEM-S100 
+ยี่ห้อ PROJOY electric รุ่น PSOL-MS3000H 
+จุดเชื่อมต่อ 
+389 ยี่ห้อ PSI รุ่น P100 
+ยี่ห้อ PSI รุ่น P100 
+จุดเชื่อมต่อ 
+390 ยี่ห้อ PSI รุ่น SMART METER 3P 
+ยี่ห้อ PSI รุ่น P100-3 
+ยี่ห้อ PSI รุ่น P100-3V1 
+จุดเชื่อมต่อ 
+391 ยี่ห้อ PSI รุ่น P16V1 
+ยี่ห้อ PSI รุ่น P16V1 
+จุดเชื่อมต่อ 
+392 ยี่ห้อ PSI รุ่น SMART METER 3P 
+ยี่ห้อ PSI รุ่น P250 
+จุดเชื่อมต่อ 
+393 ยี่ห้อ PSI รุ่น SM3P 
+ยี่ห้อ PSI รุ่น P300 
+จุดเชื่อมต่อ 
+394 ยี่ห้อ PSI รุ่น P33 
+ยี่ห้อ PSI รุ่น P33 
+จุดเชื่อมต่อ 
+395 ยี่ห้อ PSI รุ่น P33V1 
+ยี่ห้อ PSI รุ่น P33V1 
+จุดเชื่อมต่อ 
+396 ยี่ห้อ PSI รุ่น P50 
+ยี่ห้อ PSI รุ่น P50 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 17 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+17/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+397 ยี่ห้อ PSI รุ่น SMART METER 3P 
+ยี่ห้อ PSI รุ่น P50-3 
+ยี่ห้อ PSI รุ่น P500 
+จุดเชื่อมต่อ 
+398 ยี่ห้อ PSI รุ่น P50V1 
+ยี่ห้อ PSI รุ่น P50V1 
+จุดเชื่อมต่อ 
+399 ยี่ห้อ PSI รุ่น SM3P 
+ยี่ห้อ PSI รุ่น P600 
+จุดเชื่อมต่อ 
+400 ยี่ห้อ RAPD รุ่น RPD-S-HB6KLP1 
+ยี่ห้อ RAPD รุ่น RPD-S-HB6KLP1 
+จุดเชื่อมต่อ 
+401 ยี่ห้อ RENAC รุ่น N1-LV-5K 
+ยี่ห้อ RENAC รุ่น N1-LV-5K 
+จุดเชื่อมต่อ 
+402 ยี่ห้อ RENAC รุ่น N1-LV-8K 
+ยี่ห้อ RENAC รุ่น N1-LV-8K 
+จุดเชื่อมต่อ 
+403 ยี่ห้อ RENAC รุ่น R1-3K3-SS 
+ยี่ห้อ RENAC รุ่น R1-3K3-SS 
+จุดเชื่อมต่อ 
+404 ยี่ห้อ GOODWE รุ่น SEC3000C 
+ยี่ห้อ REPT BATTERO รุ่น L1000C-AC-125-261-G 
+จุดเชื่อมต่อ 
+405 ยี่ห้อ GOODWE รุ่น 
+SEC3000C 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-CT/C 
+ยี่ห้อ REPT BATTERO รุ่น L1000C-AC-125-261-G 
+ 
+จุดเชื่อมต่อ 
+406 
+ 
+ยี่ห้อ Rockcore 
+Electronics รุ่น MI2S-
+2500Q 
+ยี่ห้อ Fineco Electric รุ่น 
+EM115-Mod-WL 
+ยี่ห้อ Rockcore Electronics รุ่น MI2S-2500Q 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+407 
+ 
+ยี่ห้อ Rockcore 
+Electronics รุ่น MI2S-
+800D 
+ยี่ห้อ Fineco Electric รุ่น 
+EM115-Mod-WL 
+ยี่ห้อ Rockcore Electronics รุ่น MI2S-800D 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+408 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ SAJ รุ่น C6-100K-T9-40 
+จุดเชื่อมต่อ 
+409 ยี่ห้อ SAJ รุ่น CH2-50K-T6 
+ยี่ห้อ SAJ รุ่น CH2-50K-T6 
+จุดเชื่อมต่อ 
+410 ยี่ห้อ SAJ รุ่น CH2-50K-T6 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SAJ รุ่น CH2-50K-T6 
+ 
+จุดเชื่อมต่อ 
+411 ยี่ห้อ SAJ รุ่น H2-10K-LS2 
+ยี่ห้อ SAJ รุ่น H2-10K-LS2 
+จุดเชื่อมต่อ 
+412 ยี่ห้อ SAJ รุ่น H2-12K-LT2 
+ยี่ห้อ SAJ รุ่น H2-12K-LT2 
+จุดเชื่อมต่อ 
+413 ยี่ห้อ SAJ รุ่น H2-12K-LT2 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SAJ รุ่น H2-12K-LT2 
+ 
+จุดเชื่อมต่อ 
+414 ยี่ห้อ SAJ รุ่น H2-16K-LT2 
+ยี่ห้อ SAJ รุ่น H2-16K-LT2 
+จุดเชื่อมต่อ 
+415 ยี่ห้อ SAJ รุ่น H2-16K-LT2 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SAJ รุ่น H2-16K-LT2 
+ 
+จุดเชื่อมต่อ 
+416 ยี่ห้อ SAJ รุ่น H2-20K-LT2 
+ยี่ห้อ SAJ รุ่น H2-20K-LT2 
+จุดเชื่อมต่อ 
+417 ยี่ห้อ SAJ รุ่น H2-20K-LT2 ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SAJ รุ่น H2-20K-LT2 
+ 
+จุดเชื่อมต่อ 
+418 ยี่ห้อ SAJ รุ่น H2-6K-LS2 
+ยี่ห้อ SAJ รุ่น H2-6K-LS2 
+จุดเชื่อมต่อ 
+419 ยี่ห้อ SAJ รุ่น H2-6K-LS2-S 
+ยี่ห้อ SAJ รุ่น H2-6K-LS2-S 
+จุดเชื่อมต่อ 
+420 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ SAJ รุ่น H2-6K-LS2-S 
+จุดเชื่อมต่อ 
+421 ยี่ห้อ SAJ รุ่น HS3-12K-T2-
+W-P 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SAJ รุ่น HS3-12K-T2-W-P 
+ 
+จุดเชื่อมต่อ 
+422 
+ 
+ยี่ห้อ Chint รุ่น DDSU666 
+ 
+ยี่ห้อ SAJ รุ่น HS3-6K-S2-W-P 
+ยี่ห้อ SAJ รุ่น R5-3K-S2-15 
+ยี่ห้อ SAJ รุ่น R5-5K-S2-15 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+
+--- Page 18 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+18/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+423 
+ 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ยี่ห้อ SAJ รุ่น R6-10K-T2 
+ยี่ห้อ SAJ รุ่น R6-50K-T4-32 
+ยี่ห้อ SAJ รุ่น R6-5K-T2 
+จุดเชื่อมต่อ 
+ 
+424 ยี่ห้อ SINENG รุ่น SN10PT ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SINENG รุ่น SN10PT 
+ 
+จุดเชื่อมต่อ 
+425 ยี่ห้อ SINENG รุ่น 
+SN125PT 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SINENG รุ่น SN125PT 
+ 
+จุดเชื่อมต่อ 
+426 ยี่ห้อ SINENG รุ่น SN30PT ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SINENG รุ่น SN30PT 
+ 
+จุดเชื่อมต่อ 
+427 ยี่ห้อ SINENG รุ่น SN50PT ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SINENG รุ่น SN50PT 
+ 
+จุดเชื่อมต่อ 
+428 ยี่ห้อ SINOSOAR รุ่น SP125HCPS 
+ยี่ห้อ SINOSOAR รุ่น SP125HCPS 
+จุดเชื่อมต่อ 
+429 ยี่ห้อ SINOSOAR รุ่น SP60HCG2 
+ยี่ห้อ SINOSOAR รุ่น SP60HCG2 
+จุดเชื่อมต่อ 
+430 ยี่ห้อ SKYWORTH รุ่น SWH010KL-T1-G2 
+ยี่ห้อ SKYWORTH รุ่น SWH010KL-T1-G2 
+จุดเชื่อมต่อ 
+431 ยี่ห้อ SKYWORTH รุ่น SWH6000L-S1-G2 
+ยี่ห้อ SKYWORTH รุ่น SWH6000L-S1-G2 
+จุดเชื่อมต่อ 
+432 ยี่ห้อ SMA 
+รุ่น HM-BT-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-10 
+ยี่ห้อ SMA รุ่น SB 3600TL-21 
+ 
+จุดเชื่อมต่อ 
+433 
+ 
+ 
+ยี่ห้อ SMA รุ่น HM-20 
+ 
+ 
+ยี่ห้อ SMA รุ่น SB 5000TL-21 
+ยี่ห้อ SMA รุ่น SB3.0-1AV-40 
+ยี่ห้อ SMA รุ่น SB3.0-1AV-41 
+ยี่ห้อ SMA รุ่น SB5.0-1AV-40 
+ยี่ห้อ SMA รุ่น SB5.0-1AV-41 
+จุดเชื่อมต่อ 
+ 
+ 
+434 ยี่ห้อ SMA รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 12-50 
+จุดเชื่อมต่อ 
+435 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 12-50 
+ยี่ห้อ SMA รุ่น STP 15-50 
+จุดเชื่อมต่อ 
+436 ยี่ห้อ SMA รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 15-50 
+จุดเชื่อมต่อ 
+437 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 20-50 
+ 
+จุดเชื่อมต่อ 
+438 ยี่ห้อ SMA รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 20-50 
+จุดเชื่อมต่อ 
+439 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 20000TLEE-10 
+ 
+จุดเชื่อมต่อ 
+440 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น EDMM-10 
+และยี่ห้อ WAGO 
+รุ่น 750-862 
+ยี่ห้อ Iskra 
+รุ่น MC740 
+ 
+ยี่ห้อ SMA รุ่น STP 20000TLEE-10 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+441 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 25-50 
+ 
+จุดเชื่อมต่อ 
+442 ยี่ห้อ SMA รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 25-50 
+จุดเชื่อมต่อ 
+443 ยี่ห้อ Moxa 
+รุ่น IA240. 
+ยี่ห้อ Carlo Gavazzi 
+รุ่น EM24DIN 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 19 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+19/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+444 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น EDMM-10 
+และยี่ห้อ WAGO 
+รุ่น 750-862 
+ยี่ห้อ Iskra 
+รุ่น MC740 
+ 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+445 ยี่ห้อ SMA รุ่น HM-20 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+จุดเชื่อมต่อ 
+446 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น CLCON-10 
+และยี่ห้อ WAGO 
+รุ่น 750-852 
+ยี่ห้อ Iskra 
+รุ่น MC774 
+ 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+447 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น EDMM-10 
+และยี่ห้อ WAGO 
+รุ่น 750-862 
+ยี่ห้อ Iskra 
+รุ่น MC774 
+ 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+448 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+จุดเชื่อมต่อ 
+449 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น CLCON-10 
+และยี่ห้อ WAGO 
+รุ่น 750-852 
+ยี่ห้อ Iskra 
+รุ่น MC740 
+ 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+450 ยี่ห้อ Green Power 
+Monitor รุ่น BMD 
+ยี่ห้อ Carlo Gavazzi 
+รุ่น EM24DIN 
+ยี่ห้อ SMA รุ่น STP 25000TL-30 
+ 
+โหลด 
+451 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 50-40 
+ 
+จุดเชื่อมต่อ 
+452 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น EDMM-10 
+และยี่ห้อ WAGO 
+รุ่น 750-862 
+ยี่ห้อ Iskra 
+รุ่น MC774 
+ 
+ยี่ห้อ SMA รุ่น STP 50-41 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+453 ยี่ห้อ SMA 
+รุ่น EDMM-10 
+ยี่ห้อ SMA 
+รุ่น EMETER-20 
+ยี่ห้อ SMA รุ่น STP 50-41 
+ 
+จุดเชื่อมต่อ 
+454 
+ 
+ 
+ยี่ห้อ SMA 
+รุ่น EDMM-10 
+และยี่ห้อ WAGO 
+รุ่น 750-862 
+ยี่ห้อ Iskra 
+รุ่น MC750ATH 
+ 
+ยี่ห้อ SMA รุ่น STP 50-41 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+455 ยี่ห้อ Moxa 
+รุ่น IA240. 
+ยี่ห้อ Carlo Gavazzi 
+รุ่น EM24DIN 
+ยี่ห้อ SMA รุ่น STP 9000TL-20 
+ 
+โหลด 
+456 ยี่ห้อ SMA รุ่น HM-20 
+ยี่ห้อ SMA รุ่น STP 9000TL-20 
+จุดเชื่อมต่อ 
+457 ยี่ห้อ Green Power 
+Monitor รุ่น BMD 
+ยี่ห้อ Carlo Gavazzi 
+รุ่น EM24DIN 
+ยี่ห้อ SMA รุ่น STP 9000TL-20 
+ 
+โหลด 
+458 ยี่ห้อ SMA รุ่น HM-20 
+ยี่ห้อ SMA รุ่น STP10.0-3AV-40 
+ยี่ห้อ SMA รุ่น STP5.0-3AV-40 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 20 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+20/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+459 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ SOFAR รุ่น ESI 5K-S1 
+ยี่ห้อ SOFAR รุ่น HYD 6000-EP 
+จุดเชื่อมต่อ 
+460 ยี่ห้อ SOFAR รุ่น HYD-10K-
+LS1 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ SOFAR รุ่น HYD-10K-LS1 
+ 
+จุดเชื่อมต่อ 
+461 ยี่ห้อ SOFAR รุ่น HYD-10K-
+LT1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SOFAR รุ่น HYD-10K-LT1 
+ 
+จุดเชื่อมต่อ 
+462 ยี่ห้อ SOFAR รุ่น HYD-15K-
+LT1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SOFAR รุ่น HYD-15K-LT1 
+ 
+จุดเชื่อมต่อ 
+463 ยี่ห้อ SOFAR รุ่น HYD-5K-
+LS1-PRO 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ SOFAR รุ่น HYD-5K-LS1-PRO 
+ 
+จุดเชื่อมต่อ 
+464 ยี่ห้อ SOFAR รุ่น HYD-5K-
+LT1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SOFAR รุ่น HYD-5K-LT1 
+ 
+จุดเชื่อมต่อ 
+465 ยี่ห้อ SOFAR รุ่น HYD-8K-
+LS1-PRO 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ SOFAR รุ่น HYD-8K-LS1-PRO 
+ 
+จุดเชื่อมต่อ 
+466 ยี่ห้อ SOFAR รุ่น HYD-8K-
+LT1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ SOFAR รุ่น HYD-8K-LT1 
+ 
+จุดเชื่อมต่อ 
+467 ยี่ห้อ SOFAR รุ่น HYD-8K-LT1 
+ยี่ห้อ SOFAR รุ่น HYD-8K-LT1 
+จุดเชื่อมต่อ 
+468 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ SOFAR รุ่น SOFAR 1.6KTL2-G3 
+จุดเชื่อมต่อ 
+469 
+ 
+ 
+ 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ 
+ 
+ยี่ห้อ SOFAR รุ่น SOFAR 110KTLX-G4 
+ยี่ห้อ SOFAR รุ่น SOFAR 11KTLX-G3 
+ยี่ห้อ SOFAR รุ่น SOFAR 125KTLX-G4 
+ยี่ห้อ SOFAR รุ่น SOFAR 125KTLX-G4-ESS 
+ยี่ห้อ SOFAR รุ่น SOFAR 20KTLX-G3 
+ยี่ห้อ SOFAR รุ่น SOFAR 20KTLX2-G3P 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+470 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ SOFAR รุ่น SOFAR 3.3KTL2-G3 
+จุดเชื่อมต่อ 
+471 
+ 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ยี่ห้อ SOFAR รุ่น SOFAR 30KTLX-G3 
+ยี่ห้อ SOFAR รุ่น SOFAR 5.5KTLX-G3 
+ยี่ห้อ SOFAR รุ่น SOFAR 50KTLX-G3 
+จุดเชื่อมต่อ 
+ 
+472 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ SOFAR รุ่น SOFAR 5KTLM-G3 
+จุดเชื่อมต่อ 
+473 
+ 
+ยี่ห้อ SOLAR ENERGY รุ่น 
+Sunlight -12KTL 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT 
+ยี่ห้อ SOLAR ENERGY รุ่น Sunlight -12KTL 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+474 ยี่ห้อ SOLAR ENERGY รุ่น 
+Sunlight-20KTH 
+ยี่ห้อ Acrel รุ่น 
+ADL400N-CT 
+ยี่ห้อ SOLAR ENERGY รุ่น Sunlight-20KTH 
+ 
+จุดเชื่อมต่อ 
+475 ยี่ห้อ SOLAR ENERGY รุ่น 
+Sunlight-6000S 
+ยี่ห้อ Acrel รุ่น 
+ADL200N-CT 
+ยี่ห้อ SOLAR ENERGY รุ่น Sunlight-6000S 
+ 
+จุดเชื่อมต่อ 
+476 ยี่ห้อ Chint รุ่น DDSU666-CT 
+ยี่ห้อ SOLAX POWER รุ่น X1-BOOST-5K-G4 
+จุดเชื่อมต่อ 
+477 
+ 
+ยี่ห้อ SOLAX POWER รุ่น M1-40 
+ 
+ยี่ห้อ SOLAX POWER รุ่น X1-HYB-6.0-LV 
+ยี่ห้อ SOLAX POWER รุ่น X1-IES-8K 
+ยี่ห้อ SOLAX POWER รุ่น X1-Lite-12K-LV  
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+
+--- Page 21 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+21/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+478 
+ 
+ยี่ห้อ Chint รุ่น DDSU666-CT 
+ 
+ยี่ห้อ SOLAX POWER รุ่น X1-MINI-1.5K-G4 
+ยี่ห้อ SOLAX POWER รุ่น X1-MINI-3.0K-G4 
+ยี่ห้อ SOLAX POWER รุ่น X1-SMT-10K-G2 
+จุดเชื่อมต่อ 
+ 
+479 ยี่ห้อ SOLAX POWER รุ่น 
+X3-AELIO-60K 
+ยี่ห้อ SOLAX POWER รุ่น 
+M3-40 
+ยี่ห้อ SOLAX POWER รุ่น X3-AELIO-60K 
+ 
+จุดเชื่อมต่อ 
+480 ยี่ห้อ Chint รุ่น DTSU666-CT 
+ยี่ห้อ SOLAX POWER รุ่น X3-FTH-100K 
+ยี่ห้อ SOLAX POWER รุ่น X3-FTH-120K 
+จุดเชื่อมต่อ 
+481 ยี่ห้อ SOLAX POWER รุ่น M3-40 
+ยี่ห้อ SOLAX POWER รุ่น X3-IES-15K 
+จุดเชื่อมต่อ 
+482 
+ 
+ 
+ 
+ยี่ห้อ Chint รุ่น DTSU666-CT 
+ 
+ 
+ 
+ยี่ห้อ SOLAX POWER รุ่น X3-MGA-40K-G2 
+ยี่ห้อ SOLAX POWER รุ่น X3-MGA-50K-G2 
+ยี่ห้อ SOLAX POWER รุ่น X3-MGA-60K-G2 
+ยี่ห้อ SOLAX POWER รุ่น X3-MIC-10K-G2 
+ยี่ห้อ SOLAX POWER รุ่น X3-MIC-15K-G2 
+ยี่ห้อ SOLAX POWER รุ่น X3-MIC-5K-G2 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+483 ยี่ห้อ SOLAX POWER รุ่น M3-40 
+ยี่ห้อ SOLAX POWER รุ่น X3-NEO-10K-LV 
+ยี่ห้อ SOLAX POWER รุ่น X3-NEO-15K-LV 
+จุดเชื่อมต่อ 
+484 ยี่ห้อ Chint รุ่น DTSU666-CT 
+ยี่ห้อ SOLAX POWER รุ่น X3-PRO-20K-G2 
+ยี่ห้อ SOLAX POWER รุ่น X3-PRO-30K-G2 
+จุดเชื่อมต่อ 
+485 ยี่ห้อ SOLINTEG รุ่น 
+M2HT-50K-150 
+ยี่ห้อ SOLINTEG รุ่น RMM-
+MA 
+ยี่ห้อ SOLINTEG รุ่น M2HT-50K-150 
+ 
+จุดเชื่อมต่อ 
+486 ยี่ห้อ SRNE รุ่น HESP48120S200-H 
+ยี่ห้อ SRNE รุ่น HESP48120S200-H 
+จุดเชื่อมต่อ 
+487 ยี่ห้อ SRNE รุ่น HESP48120SH3 
+ยี่ห้อ SRNE รุ่น HESP48120SH3 
+จุดเชื่อมต่อ 
+488 ยี่ห้อ SRNE รุ่น HESP4860S100-H 
+ยี่ห้อ SRNE รุ่น HESP4860S100-H 
+จุดเชื่อมต่อ 
+489 ยี่ห้อ SUNGROW รุ่น 
+MG10RL 
+ยี่ห้อ SUNGROW รุ่น S100 ยี่ห้อ SUNGROW รุ่น MG10RL 
+ 
+จุดเชื่อมต่อ 
+490 ยี่ห้อ SUNGROW รุ่น 
+MG5RL 
+ยี่ห้อ SUNGROW รุ่น S100 ยี่ห้อ SUNGROW รุ่น MG5RL 
+ 
+จุดเชื่อมต่อ 
+491 ยี่ห้อ SUNGROW รุ่น iHomeManager 
+ยี่ห้อ SUNGROW รุ่น S1000S-L 
+ยี่ห้อ SUNGROW รุ่น S2000S-L 
+จุดเชื่อมต่อ 
+492 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG10RT 
+ยี่ห้อ SUNGROW รุ่น SG10RT-P2 
+จุดเชื่อมต่อ 
+493 
+ 
+ยี่ห้อ AIPM Plus 
+รุ่น AI-1000 
+ยี่ห้อ Schneider 
+รุ่น EasyLogic PM2200 
+ยี่ห้อ SUNGROW รุ่น SG10RT-P2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+494 
+ 
+ยี่ห้อ SUNGROW 
+รุ่น COM100E 
+ยี่ห้อ Weidmuller 
+รุ่น Energy Meter 
+610-230 
+ยี่ห้อ SUNGROW รุ่น SG110CX 
+ 
+ยี่ห้อ SUNGROW รุ่น SG125CX-P2 
+จุดเชื่อมต่อ 
+ 
+495 ยี่ห้อ SUNGROW รุ่น 
+Winet-S2 
+ยี่ห้อ SUNGROW รุ่น 
+DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG125CX-P2 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 22 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+22/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+496 ยี่ห้อ SUNGROW รุ่น 
+COM100E 
+ยี่ห้อ Janitza รุ่น 
+UMG96RM 
+ยี่ห้อ SUNGROW รุ่น SG125CX-P2 
+ 
+จุดเชื่อมต่อ 
+497 
+ 
+ 
+ยี่ห้อ AIPM Plus 
+รุ่น AI-1000 
+ 
+ยี่ห้อ Schneider Electric 
+รุ่น EasyLogic 
+PM2230 
+ 
+ยี่ห้อ SUNGROW รุ่น SG12KTL-M 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+498 
+ 
+ยี่ห้อ SUNGROW 
+รุ่น COM100E 
+ยี่ห้อ Weidmuller 
+รุ่น Energy Meter 
+610-230 
+ยี่ห้อ SUNGROW รุ่น SG150CX 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+499 ยี่ห้อ SUNGROW รุ่น 
+COM100E 
+ยี่ห้อ Janitza รุ่น 
+UMG96RM 
+ยี่ห้อ SUNGROW รุ่น SG150CX 
+ 
+จุดเชื่อมต่อ 
+500 ยี่ห้อ SUNGROW รุ่น 
+Winet-S2 
+ยี่ห้อ SUNGROW รุ่น 
+DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG150CX 
+ 
+จุดเชื่อมต่อ 
+501 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG15RT 
+จุดเชื่อมต่อ 
+502 
+ 
+ 
+ยี่ห้อ AIPM Plus 
+รุ่น AI-1000 
+ 
+ยี่ห้อ Schneider Electric 
+รุ่น EasyLogic 
+PM2230 
+ 
+ยี่ห้อ SUNGROW รุ่น SG15RT 
+ 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+503 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG15RT-P2 
+จุดเชื่อมต่อ 
+504 ยี่ห้อ AIPM Plus รุ่น AI-
+1000 
+ยี่ห้อ Schneider รุ่น 
+EasyLogic PM2200 
+ยี่ห้อ SUNGROW รุ่น SG15RT-P2 
+ 
+จุดเชื่อมต่อ 
+505 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG20RT 
+ยี่ห้อ SUNGROW รุ่น SG20RT-P2 
+จุดเชื่อมต่อ 
+506 ยี่ห้อ SUNGROW รุ่น 
+Winet-S 
+ยี่ห้อ SUNGROW รุ่น S100 ยี่ห้อ SUNGROW รุ่น SG3.0RS 
+ 
+จุดเชื่อมต่อ 
+507 ยี่ห้อ SUNGROW รุ่น 
+Winet-S2 
+ยี่ห้อ SUNGROW รุ่น 
+DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG36CX-P2 
+ 
+จุดเชื่อมต่อ 
+508 ยี่ห้อ SUNGROW รุ่น 
+COM100E 
+ยี่ห้อ Janitza รุ่น 
+UMG96RM 
+ยี่ห้อ SUNGROW รุ่น SG36CX-P2 
+ 
+จุดเชื่อมต่อ 
+509 ยี่ห้อ SUNGROW รุ่น S100 
+ยี่ห้อ SUNGROW รุ่น SG5.0RS 
+จุดเชื่อมต่อ 
+510 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG5.0RT-P2 
+จุดเชื่อมต่อ 
+511 ยี่ห้อ SUNGROW รุ่น 
+Winet-S2 
+ยี่ห้อ SUNGROW รุ่น 
+DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG50CX-P2 
+ 
+จุดเชื่อมต่อ 
+512 ยี่ห้อ SUNGROW รุ่น 
+COM100E 
+ยี่ห้อ Janitza รุ่น 
+UMG96RM 
+ยี่ห้อ SUNGROW รุ่น SG50CX-P2 
+ 
+จุดเชื่อมต่อ 
+513 
+ 
+ยี่ห้อ SUNGROW 
+รุ่น COM100E 
+ยี่ห้อ Weidmuller 
+รุ่น Energy Meter 
+610-230 
+ยี่ห้อ SUNGROW รุ่น SG50CX-P2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+514 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ SUNGROW รุ่น SG5RT 
+จุดเชื่อมต่อ 
+515 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ SUNGROW รุ่น SH10RT 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 23 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+23/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+516 ยี่ห้อ SUNGROW รุ่น 
+Winet-S 
+ยี่ห้อ Chint รุ่น DTSU666-
+20 
+ยี่ห้อ SUNGROW รุ่น SH10RT 
+ 
+จุดเชื่อมต่อ 
+517 ยี่ห้อ SUNGROW รุ่น 
+SH10T 
+ยี่ห้อ SUNGROW รุ่น 
+DTSU666-20 
+ยี่ห้อ SUNGROW รุ่น SH10T 
+ 
+จุดเชื่อมต่อ 
+518 ยี่ห้อ SUNGROW รุ่น 
+SH25T 
+ยี่ห้อ SUNGROW รุ่น 
+DTSU666-20 
+ยี่ห้อ SUNGROW รุ่น SH25T 
+ 
+จุดเชื่อมต่อ 
+519 ยี่ห้อ SUNGROW รุ่น 
+Winet-S 
+ยี่ห้อ SUNGROW รุ่น S100 ยี่ห้อ SUNGROW รุ่น SH5.0RS-20 
+ 
+จุดเชื่อมต่อ 
+520 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ SUNGROW รุ่น SH5.0RT 
+จุดเชื่อมต่อ 
+521 ยี่ห้อ SVOLT 
+รุ่น AE5K-L1-S 
+ยี่ห้อ Acrel 
+รุ่น ADL200 
+ยี่ห้อ SVOLT รุ่น AE5K-L1-S 
+ 
+จุดเชื่อมต่อ 
+522 
+ 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Hybrid 10.0 TP2 
+ยี่ห้อ Chint รุ่น DTSU666 
+ 
+ยี่ห้อ Sigenergy รุ่น Sigen Hybrid 10.0 TP2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+523 
+ 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Hybrid 10.0 TP2 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway C60-2 
+ยี่ห้อ Sigenergy รุ่น Sigen Hybrid 10.0 TP2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+524 
+ 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Hybrid 10.0 TP2 
+ยี่ห้อ EASTRON รุ่น SEM3-
+M-2 
+ยี่ห้อ Sigenergy รุ่น Sigen Hybrid 10.0 TP2  
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+525 
+ 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Hybrid 5.0 SP2 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway Homepro SP-F 
+ยี่ห้อ Sigenergy รุ่น Sigen Hybrid 5.0 SP2 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+526 ยี่ห้อ Sigenergy รุ่น Sigen 
+Hybrid 5.0 SP2 
+ยี่ห้อ EASTRON รุ่น SEM1-
+M-2 
+ยี่ห้อ Sigenergy รุ่น Sigen Hybrid 5.0 SP2  
+ 
+จุดเชื่อมต่อ 
+527 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 110M1 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT 40mA 
+ยี่ห้อ Sigenergy รุ่น Sigen PV 110M1 
+ 
+จุดเชื่อมต่อ 
+528 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 110M1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 110M1 
+ 
+จุดเชื่อมต่อ 
+529 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 110M1-HYA 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 110M1-HYA 
+ 
+จุดเชื่อมต่อ 
+530 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 110M1-HYB 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 110M1-HYB 
+ 
+จุดเชื่อมต่อ 
+531 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 125M1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 125M1 
+ 
+จุดเชื่อมต่อ 
+532 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 125M1-HYA 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 125M1-HYA 
+ 
+จุดเชื่อมต่อ 
+533 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 50M1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 50M1 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 24 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+24/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+534 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 50M1-HYA 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 50M1-HYA 
+ 
+จุดเชื่อมต่อ 
+535 ยี่ห้อ Sigenergy รุ่น Sigen 
+PV 50M1-HYB 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น Sigen PV 50M1-HYB 
+ 
+จุดเชื่อมต่อ 
+536 ยี่ห้อ Sigenergy รุ่น 
+SigenMicro 1000 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Sensor TP WI 
+ยี่ห้อ Sigenergy รุ่น SigenMicro 1000 
+ 
+จุดเชื่อมต่อ 
+537 
+ 
+ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 10.0 SP 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway Homepro SP-F 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 10.0 SP 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+538 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 10.0 SP 
+ยี่ห้อ EASTRON รุ่น SEM1-
+M-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 10.0 SP 
+ 
+จุดเชื่อมต่อ 
+539 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 10.0 TP 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น SigenStor EC 10.0 TP 
+ 
+จุดเชื่อมต่อ 
+540 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 10.0 TP 
+ยี่ห้อ EASTRON รุ่น SEM3-
+M-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 10.0 TP 
+ 
+จุดเชื่อมต่อ 
+541 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 10.0 TP 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway C60-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 10.0 TP 
+ 
+จุดเชื่อมต่อ 
+542 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 20.0 TP 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway C60-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 20.0 TP 
+ 
+จุดเชื่อมต่อ 
+543 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 20.0 TP 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น SigenStor EC 20.0 TP 
+ 
+จุดเชื่อมต่อ 
+544 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 25.0 TP 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ Sigenergy รุ่น SigenStor EC 25.0 TP 
+ 
+จุดเชื่อมต่อ 
+545 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 25.0 TP 
+ยี่ห้อ EASTRON รุ่น SEM3-
+M-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 25.0 TP 
+ 
+จุดเชื่อมต่อ 
+546 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 25.0 TP 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 25.0 TP 
+ 
+จุดเชื่อมต่อ 
+547 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 25.0 TP 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway C60-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 25.0 TP  
+ 
+จุดเชื่อมต่อ 
+548 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 5.0 SP 
+ยี่ห้อ EASTRON รุ่น SEM1-
+M-2 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 5.0 SP 
+ 
+จุดเชื่อมต่อ 
+549 ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 5.0 SP 
+ยี่ห้อ EASTRON รุ่น 
+SDM120CT 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 5.0 SP 
+ 
+จุดเชื่อมต่อ 
+550 
+ 
+ยี่ห้อ Sigenergy รุ่น 
+SigenStor EC 5.0 SP 
+ยี่ห้อ Sigenergy รุ่น Sigen 
+Gateway Homepro SP-F 
+ยี่ห้อ Sigenergy รุ่น SigenStor EC 5.0 SP 
+ 
+ 
+จุดเชื่อมต่อ 
+ 
+551 ยี่ห้อ Sinexcel รุ่น PWS1-
+135M-EX 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT/D36 
+ยี่ห้อ Sinexcel รุ่น PWS1-135M-EX 
+ 
+จุดเชื่อมต่อ 
+552 ยี่ห้อ SmartGreen 
+รุ่น ECB-PM-100-P00 
+ยี่ห้อ EASTRON 
+รุ่น SDM630MCT-V2 
+ยี่ห้อ SmartGreen รุ่น ECB-PM-100-P00 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 25 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+25/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+553 ยี่ห้อ SmartGreen 
+รุ่น EHP-000500-P00 
+ยี่ห้อ SmartGreen 
+รุ่น EHS-006300-P00 
+ยี่ห้อ SmartGreen รุ่น EHP-000500-P00 
+ 
+จุดเชื่อมต่อ 
+554 ยี่ห้อ SmartGreen 
+รุ่น EHP-00140T-P00 
+ยี่ห้อ SmartGreen 
+รุ่น EHS-00630T-P00 
+ยี่ห้อ SmartGreen รุ่น EHP-00140T-P00 
+ 
+จุดเชื่อมต่อ 
+555 ยี่ห้อ SmartGreen 
+รุ่น ESI-006000-P00 
+ยี่ห้อ EASTRON 
+รุ่น SDM630MCT-V2 
+ยี่ห้อ SmartGreen รุ่น ESI-006000-P00 
+ 
+จุดเชื่อมต่อ 
+556 ยี่ห้อ Solar Edge รุ่น CLC1 ยี่ห้อ Janitza รุ่น UMG 
+512-PRO 
+ยี่ห้อ Solar Edge รุ่น PCS050 
+ 
+จุดเชื่อมต่อ 
+557 ยี่ห้อ Solar Edge รุ่น CLC1 ยี่ห้อ Janitza รุ่น UMG104 ยี่ห้อ Solar Edge รุ่น PCS050 
+ 
+จุดเชื่อมต่อ 
+558 ยี่ห้อ Solar Edge รุ่น CLC1 ยี่ห้อ Solar Edge รุ่น SE-
+MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น PCS050 
+ 
+จุดเชื่อมต่อ 
+559 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE100K 
+จุดเชื่อมต่อ 
+560 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE100K 
+ยี่ห้อ Solar Edge รุ่น SE10K 
+จุดเชื่อมต่อ 
+561 ยี่ห้อ Solar Edge 
+รุ่น SE-WND-3Y400-MB-K1 
+ยี่ห้อ Solar Edge รุ่น SE10K 
+ 
+โหลด 
+562 ยี่ห้อ Solar Edge 
+รุ่น BI-EU3P 
+ยี่ห้อ Solar Edge รุ่น SE10K-RWB48 
+ 
+จุดเชื่อมต่อ 
+563 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE10K-RWB48 
+ 
+จุดเชื่อมต่อ 
+564 ยี่ห้อ Solar Edge 
+รุ่น SE-WND-3Y400-MB-K2 
+ยี่ห้อ Solar Edge รุ่น SE27.6K 
+ 
+จุดเชื่อมต่อ 
+565 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE27.6K 
+ 
+จุดเชื่อมต่อ 
+566 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE27.6K 
+จุดเชื่อมต่อ 
+567 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE3000H 
+ 
+จุดเชื่อมต่อ 
+568 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE30K 
+จุดเชื่อมต่อ 
+569 ยี่ห้อ Janitza รุ่น UMG511 
+ยี่ห้อ Solar Edge รุ่น SE30K 
+จุดเชื่อมต่อ 
+570 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE30K 
+ 
+จุดเชื่อมต่อ 
+571 ยี่ห้อ Janitza รุ่น UMG511 
+ยี่ห้อ Solar Edge รุ่น SE33.3K 
+จุดเชื่อมต่อ 
+572 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE33.3K 
+จุดเชื่อมต่อ 
+573 
+ 
+ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE33.3K 
+ยี่ห้อ Solar Edge รุ่น SE5000H 
+ยี่ห้อ Solar Edge รุ่น SE5K-RWB 
+จุดเชื่อมต่อ 
+ 
+574 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE66.6K 
+จุดเชื่อมต่อ 
+575 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE66.6K 
+ 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 26 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+26/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+576 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE82.8K 
+จุดเชื่อมต่อ 
+577 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE82.8K 
+ 
+จุดเชื่อมต่อ 
+578 ยี่ห้อ Janitza รุ่น UMG104 
+ยี่ห้อ Solar Edge รุ่น SE90K 
+จุดเชื่อมต่อ 
+579 ยี่ห้อ Schneider 
+รุ่น TM241CE24T 
+ยี่ห้อ Janitza 
+รุ่น UMG511 
+ยี่ห้อ Solar Edge รุ่น SE90K 
+ 
+จุดเชื่อมต่อ 
+580 ยี่ห้อ Solar Edge 
+รุ่น SE-MTR-3Y-400V-A 
+ยี่ห้อ Solar Edge รุ่น SE90K 
+ 
+จุดเชื่อมต่อ 
+581 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ Solplanet รุ่น ASW10K-LT-G2 Pro 
+จุดเชื่อมต่อ 
+582 ยี่ห้อ Solplanet รุ่น 
+ASW150K-LT 
+ยี่ห้อ Janitza รุ่น UMG 
+96RM 
+ยี่ห้อ Solplanet รุ่น ASW150K-LT 
+ 
+จุดเชื่อมต่อ 
+583 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ Solplanet รุ่น ASW3680-S-G2 
+จุดเชื่อมต่อ 
+584 ยี่ห้อ EASTRON รุ่น SDM230-Modbus 
+ยี่ห้อ Solplanet รุ่น ASW3680-S-G2 
+ยี่ห้อ Solplanet รุ่น ASW5000-S-G2 
+จุดเชื่อมต่อ 
+585 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ Solplanet รุ่น ASW5000-S-G2 
+จุดเชื่อมต่อ 
+586 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ Solplanet รุ่น ASW5K-LT-G2 Pro 
+จุดเชื่อมต่อ 
+587 ยี่ห้อ TBEA รุ่น TS100KTL-
+A10 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT 
+ยี่ห้อ TBEA รุ่น TS100KTL-A10 
+ 
+จุดเชื่อมต่อ 
+588 ยี่ห้อ TCL รุ่น BlueArk X1 6K-SP 
+ยี่ห้อ TCL รุ่น BlueArk X1 6K-SP 
+จุดเชื่อมต่อ 
+589 ยี่ห้อ TCL รุ่น BlueArk X1 8K-SP 
+ยี่ห้อ TCL รุ่น BlueArk X1 8K-SP 
+จุดเชื่อมต่อ 
+590 ยี่ห้อ TCL รุ่น BlueArk X5-
+50k-100 
+ยี่ห้อ Acrel รุ่น ADL400N-
+CT 
+ยี่ห้อ TCL รุ่น BlueArk X5-50k-100 
+ 
+จุดเชื่อมต่อ 
+591 ยี่ห้อ TCL รุ่น TCL-GS5K-
+G1 
+ยี่ห้อ EASTRON รุ่น 
+SDM230-Modbus 
+ยี่ห้อ TCL รุ่น TCL-GS5K-G1 
+ 
+จุดเชื่อมต่อ 
+592 ยี่ห้อ TCL รุ่น TCL-GS5K-
+G1 
+ยี่ห้อ EASTRON รุ่น 
+SDM120CT-M 
+ยี่ห้อ TCL รุ่น TCL-GS5K-G1 
+ 
+จุดเชื่อมต่อ 
+593 ยี่ห้อ TCL รุ่น TCL-GT12K-
+G1 
+ยี่ห้อ EASTRON รุ่น 
+SDM630-Modbus V2 
+ยี่ห้อ TCL รุ่น TCL-GT12K-G1 
+ 
+จุดเชื่อมต่อ 
+594 ยี่ห้อ TCL รุ่น TCL-GT12K-
+G1 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT 
+ยี่ห้อ TCL รุ่น TCL-GT12K-G1 
+ 
+จุดเชื่อมต่อ 
+595 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ TMDA รุ่น SUN-100K-G03 
+จุดเชื่อมต่อ 
+596 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ TMDA รุ่น SUN-100K-G03 
+จุดเชื่อมต่อ 
+597 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ TMDA รุ่น SUN-10K-G 
+จุดเชื่อมต่อ 
+598 
+ 
+ 
+ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ 
+ 
+ยี่ห้อ TMDA รุ่น SUN-10K-G03 
+ยี่ห้อ TMDA รุ่น SUN-15K-G03 
+ยี่ห้อ TMDA รุ่น SUN-20K-G03 
+ยี่ห้อ TMDA รุ่น SUN-30K-G03 
+จุดเชื่อมต่อ 
+ 
+ 
+599 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ TMDA รุ่น SUN-3K-G 
+จุดเชื่อมต่อ 
+600 ยี่ห้อ EASTRON รุ่น SDM230-Modbus 
+ยี่ห้อ TMDA รุ่น SUN-3K-G 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 27 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+27/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+601 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ TMDA รุ่น SUN-40K-G04 
+ยี่ห้อ TMDA รุ่น SUN-50K-G03 
+จุดเชื่อมต่อ 
+602 ยี่ห้อ EASTRON รุ่น SMART X96-5 
+ยี่ห้อ TMDA รุ่น SUN-50K-G03 
+จุดเชื่อมต่อ 
+603 ยี่ห้อ EASTRON รุ่น SDM230-Modbus 
+ยี่ห้อ TMDA รุ่น SUN-5K-G 
+จุดเชื่อมต่อ 
+604 ยี่ห้อ EASTRON รุ่น SDM120CT-M 
+ยี่ห้อ TMDA รุ่น SUN-5K-G  
+จุดเชื่อมต่อ 
+605 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ TMDA รุ่น SUN-6K-G03 
+จุดเชื่อมต่อ 
+606 ยี่ห้อ PROJOY electric รุ่น PEEM-S100 
+ยี่ห้อ TSUN รุ่น TSOL-MP3000 
+จุดเชื่อมต่อ 
+607 ยี่ห้อ PROJOY electric รุ่น PEEM-S01 
+ยี่ห้อ TSUN รุ่น TSOL-MX2250 
+จุดเชื่อมต่อ 
+608 ยี่ห้อ TSUN รุ่น TSOL-
+MG3-MP 
+ยี่ห้อ PROJOY electric รุ่น 
+PEEM-T01 
+ยี่ห้อ TSUN รุ่น TSOL-MX2250 
+ 
+จุดเชื่อมต่อ 
+609 ยี่ห้อ PROJOY electric รุ่น PEEM-S100 
+ยี่ห้อ TSUN รุ่น TSOL-MX2250 
+จุดเชื่อมต่อ 
+610 ยี่ห้อ PROJOY electric รุ่น PEEM-S01 
+ยี่ห้อ TSUN รุ่น TSOL-MX3300D 
+จุดเชื่อมต่อ 
+611 ยี่ห้อ TSUN รุ่น TSOL-
+MG3-MP 
+ยี่ห้อ PROJOY electric รุ่น 
+PEEM-T01 
+ยี่ห้อ TSUN รุ่น TSOL-MX3300D 
+ 
+จุดเชื่อมต่อ 
+612 ยี่ห้อ EASTRON รุ่น SDM230-Modbus 
+ยี่ห้อ V SOLAR รุ่น 3000-DS-S 
+ยี่ห้อ V SOLAR รุ่น ESC5000-DS 
+จุดเชื่อมต่อ 
+613 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ V SOLAR รุ่น R3-10K-DT 
+จุดเชื่อมต่อ 
+614 ยี่ห้อ EASTRON รุ่น SDM630 Modbus V2 
+ยี่ห้อ V SOLAR รุ่น R3-10K-DT 
+จุดเชื่อมต่อ 
+615 ยี่ห้อ VaySunic รุ่น VDG-EM-3 
+ยี่ห้อ VaySunic รุ่น VM2250W-P4 
+จุดเชื่อมต่อ 
+616 ยี่ห้อ YADA รุ่น YDS60-80 
+ยี่ห้อ WEIHENG รุ่น Energy storage converter: WH-BEC-100-A Power 
+module: WH-BEC-100AC 
+จุดเชื่อมต่อ 
+617 ยี่ห้อ Wattsonic 
+รุ่น 5.0K-30A-1P 
+ยี่ห้อ Acrel รุ่น ACR10R-
+D16TE4/C45 
+ยี่ห้อ Wattsonic รุ่น 5.0K-30A-1P 
+ 
+จุดเชื่อมต่อ 
+618 ยี่ห้อ YUNT รุ่น Mars-
+125KT 
+ยี่ห้อ Acrel รุ่น ADL400 
+ยี่ห้อ YUNT รุ่น Mars-125KT 
+ 
+จุดเชื่อมต่อ 
+619 ยี่ห้อ YUNT รุ่น Mars-
+125KT-F 
+ยี่ห้อ Acrel รุ่น 
+ADL400/FC 
+ยี่ห้อ YUNT รุ่น Mars-125KT-F 
+ 
+จุดเชื่อมต่อ 
+620 ยี่ห้อ ZEEDA ENERGY รุ่น 
+ZEEDA-5K-S 
+ยี่ห้อ Acrel รุ่น ADL200N-
+CT 
+ยี่ห้อ ZEEDA ENERGY รุ่น ZEEDA-5K-S 
+ 
+จุดเชื่อมต่อ 
+621 ยี่ห้อ YADA รุ่น YDS60-80 
+ยี่ห้อ ZONERGY รุ่น Apollo 10K-T1 
+ยี่ห้อ ZONERGY รุ่น Apollo 15K-T1 
+จุดเชื่อมต่อ 
+622 ยี่ห้อ YADA รุ่น YDS60-C24 
+ยี่ห้อ ZONERGY รุ่น Mars 50k 
+จุดเชื่อมต่อ 
+623 ยี่ห้อ YADA รุ่น YDM201D 
+ยี่ห้อ ZONERGY รุ่น Mercury 5000-S1 
+จุดเชื่อมต่อ 
+624 ยี่ห้อ YADA รุ่น YDS60-80 
+ยี่ห้อ ZONERGY รุ่น Venus 10K-T1 
+ยี่ห้อ ZONERGY รุ่น Venus 15K-T1 
+จุดเชื่อมต่อ 
+625 ยี่ห้อ YADA รุ่น YDM201D 
+ยี่ห้อ ZONERGY รุ่น Venus 5000-S1 
+จุดเชื่อมต่อ 
+626 ยี่ห้อ ZTE รุ่น ZXEPG 
+E260C8 
+ยี่ห้อ Acrel รุ่น ADL400 
+ยี่ห้อ ZTE รุ่น ZXEPG E260C8 
+ 
+จุดเชื่อมต่อ 
+627 ยี่ห้อ Acrel รุ่น ACR10R-D16TE 
+ยี่ห้อ eCACTUS รุ่น WH-SPHA6.0H-10.24kWh 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 28 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+28/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+628 ยี่ห้อ YADA รุ่น YDS60-80 
+ยี่ห้อ elecod รุ่น Energy storage converter: Monet-100 Power 
+module: Monet-100AC 
+จุดเชื่อมต่อ 
+629 ยี่ห้อ hoymiles รุ่น HAS-
+5.0LV-EUG1 
+ยี่ห้อ hoymiles รุ่น Meter-
+2S-G3 
+ยี่ห้อ hoymiles รุ่น HAS-5.0LV-EUG1 
+ 
+จุดเชื่อมต่อ 
+630 ยี่ห้อ hoymiles รุ่น HAS-
+5.0LV-EUG1 
+ยี่ห้อ Chint รุ่น DDSU666 ยี่ห้อ hoymiles รุ่น HAS-5.0LV-EUG1 
+ 
+จุดเชื่อมต่อ 
+631 ยี่ห้อ hoymiles รุ่น HAT-
+10.0HV-EUG1 
+ยี่ห้อ Chint รุ่น DTSU666 ยี่ห้อ hoymiles รุ่น HAT-10.0HV-EUG1 
+ 
+จุดเชื่อมต่อ 
+632 ยี่ห้อ hoymiles รุ่น HAT-
+10.0HV-EUG1 
+ยี่ห้อ hoymiles รุ่น Meter-
+2T-G3 
+ยี่ห้อ hoymiles รุ่น HAT-10.0HV-EUG1 
+ 
+จุดเชื่อมต่อ 
+633 ยี่ห้อ hoymiles รุ่น HIS-
+5L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1S-G3 
+ยี่ห้อ hoymiles รุ่น HIS-5L-G3 
+ 
+จุดเชื่อมต่อ 
+634 ยี่ห้อ hoymiles รุ่น HIS-
+5L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+2S-G3 
+ยี่ห้อ hoymiles รุ่น HIS-5L-G3 
+ 
+จุดเชื่อมต่อ 
+635 ยี่ห้อ hoymiles รุ่น HIS-
+6L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1S-G3 
+ยี่ห้อ hoymiles รุ่น HIS-6L-G3 
+ 
+จุดเชื่อมต่อ 
+636 ยี่ห้อ hoymiles รุ่น HIS-
+6L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+2S-G3 
+ยี่ห้อ hoymiles รุ่น HIS-6L-G3 
+ 
+จุดเชื่อมต่อ 
+637 ยี่ห้อ hoymiles รุ่น HIT-
+10L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-10L-G3 
+ 
+จุดเชื่อมต่อ 
+638 ยี่ห้อ hoymiles รุ่น HIT-
+10L-G3S 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-10L-G3S 
+ 
+จุดเชื่อมต่อ 
+639 ยี่ห้อ hoymiles รุ่น HIT-
+15L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-15L-G3 
+ 
+จุดเชื่อมต่อ 
+640 ยี่ห้อ hoymiles รุ่น HIT-
+15L-G3S 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-15L-G3S 
+ 
+จุดเชื่อมต่อ 
+641 ยี่ห้อ hoymiles รุ่น HIT-
+20L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-20L-G3 
+ 
+จุดเชื่อมต่อ 
+642 ยี่ห้อ hoymiles รุ่น HIT-
+20L-G3S 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-20L-G3S 
+ 
+จุดเชื่อมต่อ 
+643 ยี่ห้อ hoymiles รุ่น HIT-
+6L-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HIT-6L-G3 
+ 
+จุดเชื่อมต่อ 
+644 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro 
+ยี่ห้อ Chint 
+รุ่น DTSU666 
+ยี่ห้อ hoymiles รุ่น HM-1500 
+ 
+จุดเชื่อมต่อ 
+645 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro 
+ยี่ห้อ Chint 
+รุ่น DDSU666 
+ยี่ห้อ hoymiles รุ่น HM-1500 
+ 
+จุดเชื่อมต่อ 
+646 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro-S 
+ยี่ห้อ Chint 
+รุ่น DTSU666 
+ยี่ห้อ hoymiles รุ่น HMS-2000-4T 
+ 
+จุดเชื่อมต่อ 
+647 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro-S 
+ยี่ห้อ Chint 
+รุ่น DDSU666 
+ยี่ห้อ hoymiles รุ่น HMS-2000-4T 
+ยี่ห้อ hoymiles รุ่น HMS-2000D-4T 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 29 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+29/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+648 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro-S 
+ยี่ห้อ Chint 
+รุ่น DTSU666 
+ยี่ห้อ hoymiles รุ่น HMS-2000D-4T 
+ยี่ห้อ hoymiles รุ่น HMT-2000-4T 
+จุดเชื่อมต่อ 
+649 ยี่ห้อ hoymiles รุ่น 
+HPCS125 
+ยี่ห้อ Acrel รุ่น DTSD1352 ยี่ห้อ hoymiles รุ่น HPCS125 
+ 
+จุดเชื่อมต่อ 
+650 ยี่ห้อ hoymiles รุ่น HYS-
+10.0LV-EUG2 
+ยี่ห้อ hoymiles รุ่น Meter-
+1S-G3 
+ยี่ห้อ hoymiles รุ่น HYS-10.0LV-EUG2 
+ 
+จุดเชื่อมต่อ 
+651 ยี่ห้อ Chint รุ่น DDSU666 
+ยี่ห้อ hoymiles รุ่น HYS-6.0LV-EUG1 
+จุดเชื่อมต่อ 
+652 ยี่ห้อ hoymiles รุ่น HYS-
+6.0LV-EUG1 
+ยี่ห้อ hoymiles รุ่น Meter-
+1S-G3 
+ยี่ห้อ hoymiles รุ่น HYS-6.0LV-EUG1 
+ 
+จุดเชื่อมต่อ 
+653 ยี่ห้อ hoymiles รุ่น HYT-
+12.0HV-EUG1 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HYT-12.0HV-EUG1 
+ 
+จุดเชื่อมต่อ 
+654 ยี่ห้อ Chint รุ่น DTSU666 
+ยี่ห้อ hoymiles รุ่น HYT-12.0HV-EUG1 
+จุดเชื่อมต่อ 
+655 ยี่ห้อ hoymiles รุ่น 
+HiOne-10S-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1S-G3 
+ยี่ห้อ hoymiles รุ่น HiOne-10S-G3 
+ 
+จุดเชื่อมต่อ 
+656 ยี่ห้อ hoymiles รุ่น 
+HiOne-12T-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HiOne-12T-G3 
+ 
+จุดเชื่อมต่อ 
+657 ยี่ห้อ hoymiles รุ่น 
+HiOne-20T-G3 
+ยี่ห้อ hoymiles รุ่น Meter-
+1T-G3 
+ยี่ห้อ hoymiles รุ่น HiOne-20T-G3 
+ 
+จุดเชื่อมต่อ 
+658 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro 
+ยี่ห้อ Chint 
+รุ่น DDSU666 
+ยี่ห้อ hoymiles รุ่น MI-1200 
+ 
+จุดเชื่อมต่อ 
+659 ยี่ห้อ hoymiles 
+รุ่น DTU-Pro-S 
+ยี่ห้อ Chint 
+รุ่น DTSU666 
+ยี่ห้อ hoymiles รุ่น MIT-5000-8T 
+ 
+จุดเชื่อมต่อ 
+660 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ solis รุ่น S5-GC110K 
+จุดเชื่อมต่อ 
+661 ยี่ห้อ Acrel รุ่น ADL3000-E-B/KC 
+ยี่ห้อ solis รุ่น S5-GC110K 
+จุดเชื่อมต่อ 
+662 ยี่ห้อ Janitza รุ่น UMG 512-PRO 
+ยี่ห้อ solis รุ่น S5-GC110K 
+จุดเชื่อมต่อ 
+663 ยี่ห้อ solis รุ่น Solis-EPM3-5G-PLUS 
+ยี่ห้อ solis รุ่น S5-GC110K 
+จุดเชื่อมต่อ 
+664 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ solis รุ่น S5-GC40K 
+จุดเชื่อมต่อ 
+665 ยี่ห้อ Janitza รุ่น UMG 512-PRO 
+ยี่ห้อ solis รุ่น S5-GC40K 
+จุดเชื่อมต่อ 
+666 ยี่ห้อ Acrel รุ่น ADL3000-E-B/KC 
+ยี่ห้อ solis รุ่น S5-GC40K 
+จุดเชื่อมต่อ 
+667 ยี่ห้อ solis รุ่น Solis-EPM3-5G 
+ยี่ห้อ solis รุ่น S5-GC40K 
+จุดเชื่อมต่อ 
+668 ยี่ห้อ Acrel รุ่น ADL3000-E-B/KC 
+ยี่ห้อ solis รุ่น S5-GC60K 
+จุดเชื่อมต่อ 
+669 ยี่ห้อ Janitza รุ่น UMG 512-PRO 
+ยี่ห้อ solis รุ่น S5-GC60K 
+จุดเชื่อมต่อ 
+670 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ solis รุ่น S5-GC60K 
+จุดเชื่อมต่อ 
+671 ยี่ห้อ solis รุ่น Solis-EPM3-5G-PLUS 
+ยี่ห้อ solis รุ่น S5-GC60K 
+จุดเชื่อมต่อ 
+672 ยี่ห้อ Acrel รุ่น ACR10R-D16TE 
+ยี่ห้อ solis รุ่น S5-GR1P10K 
+จุดเชื่อมต่อ 
+673 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ solis รุ่น S5-GR3P10K 
+ยี่ห้อ solis รุ่น S5-GR3P20K 
+จุดเชื่อมต่อ 
+674 ยี่ห้อ solis รุ่น S5-
+GR3P20K(21A) 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-C 
+ยี่ห้อ solis รุ่น S5-GR3P20K(21A) 
+ 
+จุดเชื่อมต่อ 
+675 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ solis รุ่น S5-GR3P5K 
+จุดเชื่อมต่อ 
+ 
+ 
+
+--- Page 30 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+30/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+676 ยี่ห้อ solis รุ่น S6-EH1P10K-L-PLUS(21A) 
+ยี่ห้อ solis รุ่น S6-EH1P10K-L-PLUS(21A) 
+จุดเชื่อมต่อ 
+677 ยี่ห้อ EASTRON รุ่น SDM120CTM 
+ยี่ห้อ solis รุ่น S6-EH1P6K-L-EU 
+จุดเชื่อมต่อ 
+678 ยี่ห้อ solis รุ่น S6-EH1P6K-L-PLUS 
+ยี่ห้อ solis รุ่น S6-EH1P6K-L-PLUS 
+จุดเชื่อมต่อ 
+679 ยี่ห้อ solis รุ่น S6-EH1P6K-L-PLUS(21A) 
+ยี่ห้อ solis รุ่น S6-EH1P6K-L-PLUS(21A) 
+จุดเชื่อมต่อ 
+680 ยี่ห้อ solis รุ่น S6-EH1P8K-L-PLUS 
+ยี่ห้อ solis รุ่น S6-EH1P8K-L-PLUS 
+จุดเชื่อมต่อ 
+681 ยี่ห้อ solis รุ่น S6-EH1P8K-L-PLUS(21A) 
+ยี่ห้อ solis รุ่น S6-EH1P8K-L-PLUS(21A) 
+จุดเชื่อมต่อ 
+682 ยี่ห้อ solis รุ่น S6-EH3P10K02-NV-YD-L 
+ยี่ห้อ solis รุ่น S6-EH3P10K02-NV-YD-L 
+จุดเชื่อมต่อ 
+683 ยี่ห้อ EASTRON รุ่น SDM630MCT 
+ยี่ห้อ solis รุ่น S6-EH3P10K2-H 
+จุดเชื่อมต่อ 
+684 ยี่ห้อ solis รุ่น S6-
+EH3P125K10-NV-YD-H 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ solis รุ่น S6-EH3P125K10-NV-YD-H 
+ 
+จุดเชื่อมต่อ 
+685 ยี่ห้อ solis รุ่น S6-EH3P15K02-NV-YD-L 
+ยี่ห้อ solis รุ่น S6-EH3P15K02-NV-YD-L 
+จุดเชื่อมต่อ 
+686 ยี่ห้อ solis รุ่น S6-EH3P18K02-NV-YD-L 
+ยี่ห้อ solis รุ่น S6-EH3P18K02-NV-YD-L 
+จุดเชื่อมต่อ 
+687 ยี่ห้อ solis รุ่น S6-
+EH3P50K-H 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ solis รุ่น S6-EH3P50K-H 
+ 
+จุดเชื่อมต่อ 
+688 ยี่ห้อ solis รุ่น S6-EH3P50K-H 
+ยี่ห้อ solis รุ่น S6-EH3P50K-H 
+จุดเชื่อมต่อ 
+689 ยี่ห้อ solis รุ่น S6-
+EH3P50K-H(21A) 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ solis รุ่น S6-EH3P50K-H(21A) 
+ 
+จุดเชื่อมต่อ 
+690 ยี่ห้อ solis รุ่น S6-
+EH3P60K-H(21A) 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ solis รุ่น S6-EH3P60K-H(21A) 
+ 
+จุดเชื่อมต่อ 
+691 ยี่ห้อ solis รุ่น S6-
+EH3P80K10-NV-YD-H 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ solis รุ่น S6-EH3P80K10-NV-YD-H 
+ 
+จุดเชื่อมต่อ 
+692 ยี่ห้อ solis รุ่น S6-
+EH3P99.9K10-NV-YD-H 
+ยี่ห้อ EASTRON รุ่น 
+SDM630MCT V2 
+ยี่ห้อ solis รุ่น S6-EH3P99.9K10-NV-YD-H 
+ 
+จุดเชื่อมต่อ 
+693 ยี่ห้อ solis รุ่น S6-GC110K ยี่ห้อ Acrel รุ่น ADL400 
+ยี่ห้อ solis รุ่น S6-GC110K 
+ 
+จุดเชื่อมต่อ 
+694 ยี่ห้อ solis รุ่น MB-S4-W4 ยี่ห้อ Acrel รุ่น ADL3000-
+E-B/KC 
+ยี่ห้อ solis รุ่น S6-GC110K 
+ 
+จุดเชื่อมต่อ 
+695 ยี่ห้อ solis รุ่น S6-
+GC3P150K07-NV-ND 
+ยี่ห้อ Acrel รุ่น ADL3000-
+E-B/KC 
+ยี่ห้อ solis รุ่น S6-GC3P150K07-NV-ND 
+ 
+จุดเชื่อมต่อ 
+696 ยี่ห้อ Acrel รุ่น DTSD1352-C 
+ยี่ห้อ solis รุ่น S6-GC3P30K03-NV-ND 
+ยี่ห้อ solis รุ่น S6-GC3P36K03-NV-ND 
+จุดเชื่อมต่อ 
+697 ยี่ห้อ solis รุ่น S6-
+GC3P40K04-NV-ND 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-C 
+ยี่ห้อ solis รุ่น S6-GC3P40K04-NV-ND 
+ 
+จุดเชื่อมต่อ 
+698 ยี่ห้อ solis รุ่น S6-
+GC3P60K05-NV-ND 
+ยี่ห้อ Janitza รุ่น UMG 
+512-PRO 
+ยี่ห้อ solis รุ่น S6-GC3P60K05-NV-ND 
+ 
+จุดเชื่อมต่อ 
+699 ยี่ห้อ solis รุ่น S6-
+GC3P60K05-NV-ND 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-C 
+ยี่ห้อ solis รุ่น S6-GC3P60K05-NV-ND 
+ 
+จุดเชื่อมต่อ 
+700 
+ 
+ยี่ห้อ Acrel รุ่น ACR10R-D16TE 
+ 
+ยี่ห้อ solis รุ่น S6-GR1P3K-M 
+ยี่ห้อ solis รุ่น S6-GR1P5K 
+ยี่ห้อ solis รุ่น S6-GR1P5K-S 
+จุดเชื่อมต่อ 
+ 
+ 
+ 
+
+--- Page 31 ---
+ 
+รายชื่อผลิตภัณฑ์อุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้า (Zero Export Controller)  
+ที่ผ่านการตรวจสอบจากการไฟฟ้านครหลวง 
+ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า/กองทดสอบอุปกรณ์ไฟฟ้า 
+31/31 
+ 
+ 
+    ปรับปรุงเมื่อ: 20 กรกฎาคม 2569 
+ลำดับ 
+Zero Export Controller 
+อินเวอร์เตอร์ที่สามารถใช้งานร่วมกับ 
+Zero Export Controller  
+ตำแหน่งตรวจวัด 
+สัญญาณสำหรับ 
+ควบคุมไฟไหลย้อน  
+Control Unit 
+Power Monitoring Unit 
+701 ยี่ห้อ solis รุ่น S6-
+GR3P10K02-NV-ND 
+ยี่ห้อ Acrel รุ่น 
+DTSD1352-C 
+ยี่ห้อ solis รุ่น S6-GR3P10K02-NV-ND 
+ 
+จุดเชื่อมต่อ 
+702 ยี่ห้อ solis รุ่น S7-EH1P6K02-NV-YD-L 
+ยี่ห้อ solis รุ่น S7-EH1P6K02-NV-YD-L 
+จุดเชื่อมต่อ 
+703 ยี่ห้อ solis รุ่น S7-
+EH1P6K02-NV-YD-L 
+ยี่ห้อ EASTRON รุ่น 
+SDM120CTM 
+ยี่ห้อ solis รุ่น S7-EH1P6K02-NV-YD-L 
+ 
+จุดเชื่อมต่อ 
+704 ยี่ห้อ Acrel รุ่น ACR10R-D16TE 
+ยี่ห้อ solis รุ่น Solis-1P5K-4G 
+ยี่ห้อ solis รุ่น Solis-mini-3000-4G 
+จุดเชื่อมต่อ 
+705 ยี่ห้อ sunways รุ่น STH-5KTL-LS 
+ยี่ห้อ sunways รุ่น STH-5KTL-LS 
+จุดเชื่อมต่อ 
+706 ยี่ห้อ sunways รุ่น STH-8KTL-LS 
+ยี่ห้อ sunways รุ่น STH-8KTL-LS 
+จุดเชื่อมต่อ 
+707 ยี่ห้อ sunways รุ่น STS-5KTL-P 
+ยี่ห้อ sunways รุ่น STS-5KTL-P 
+จุดเชื่อมต่อ 
+708 ยี่ห้อ sunways รุ่น STS-5KTL-SE-S 
+ยี่ห้อ sunways รุ่น STS-5KTL-SE-S 
+จุดเชื่อมต่อ 
+709 ยี่ห้อ sunways รุ่น STM 
+ยี่ห้อ sunways รุ่น STT-10KTL-P 
+จุดเชื่อมต่อ 
+710 ยี่ห้อ Acrel รุ่น DTSD1352 
+ยี่ห้อ sunways รุ่น STT-110KTL 
+จุดเชื่อมต่อ 
+ 
+หมายเหตุ:  สำหรับอุปกรณ์ควบคุมการจ่ายไฟไหลย้อนเข้าสู่ระบบโครงข่ายไฟฟ้าที่ใช้ Current Transformer (CT) และ Voltage Transformer (VT) 
+แบบติดตั้งแยกภายนอกในการวัดสัญญาณกระแสและแรงดัน ต้องมีคุณสมบัติดังนี้ 
+                -  CT ที่ใช้ต้องมีความผิดพลาดในการวัดไม่เกินร้อยละบวกลบหนึ่ง (±1.0%) ตามมาตรฐาน IEC61869-2 หรือเทียบเท่า 
+                -  VT ที่ใช้ต้องมีความผิดพลาดในการวัดไม่เกินร้อยละบวกลบหนึ่ง (±1.0%) ตามมาตรฐาน IEC61869-2 หรือเทียบเท่า 
+สอบถามข้อมูลเพิ่มเติมโปรดติดต่อ: 
+กองทดสอบอุปกรณ์ไฟฟ้า ฝ่ายวิจัยและนวัตกรรมระบบไฟฟ้า การไฟฟ้านครหลวง หมายเลขโทรศัพท์ 02-242-5173 
+ 

@@ -1,0 +1,15 @@
+{
+  "project_id": "c21c9baf",
+  "topic": "test crossfade",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "ทดสอบ crossfade ระหว่างรูปและคลิป ควรเปลี่ยนแบบนุ่มนวล ไม่ตัดทันที",
+  "audio_path": "projects\\c21c9baf\\audio\\narration.mp3",
+  "video_path": "projects\\c21c9baf\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\c21c9baf\\output\\final_9x16.mp4"
+  },
+  "created_at": 1790072472.2341316,
+  "updated_at": 1790072480.1518304
+}

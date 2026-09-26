@@ -1,0 +1,3305 @@
+﻿<title>Yeekee สัญญาณรอบซื้อ</title>
+<style>
+
+* { box-sizing: border-box; }
+body { font-family: Tahoma, 'Leelawadee UI', sans-serif; margin: 0; padding: 15px; background: #0f172a; color: #e2e8f0; }
+h1 { text-align: center; color: #60a5fa; margin: 5px 0; font-size: 22px; }
+.sub { text-align: center; color: #94a3b8; margin-bottom: 15px; font-size: 13px; }
+.card { background: #1e293b; padding: 16px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+h2 { margin: 0 0 12px; color: #60a5fa; border-bottom: 1px solid #334155; padding-bottom: 8px; font-size: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
+input[type="number"], input[type="text"], input[type="file"] { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; font-family: inherit; font-size: 13px; }
+button { background: #3b82f6; color: white; border: none; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; transition: 0.15s; }
+button:hover { background: #2563eb; }
+button.secondary { background: #64748b; } button.secondary:hover { background: #475569; }
+button.danger { background: #dc2626; } button.danger:hover { background: #b91c1c; }
+button.upload-btn { background: #7c3aed; } button.upload-btn:hover { background: #6d28d9; }
+button.info-btn { background: #0891b2; } button.info-btn:hover { background: #0e7490; }
+button.learn-btn { background: #ea580c; } button.learn-btn:hover { background: #c2410c; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.stat { padding: 10px; background: #0f172a; border-radius: 8px; border-left: 4px solid #3b82f6; }
+.stat .lbl { font-size: 11px; color: #94a3b8; }
+.stat .val { font-size: 18px; font-weight: bold; color: #f1f5f9; }
+.stat .pct { font-size: 11px; color: #22c55e; }
+.stat.red { border-left-color: #dc2626; } .stat.red .val { color: #f87171; }
+.stat.green { border-left-color: #22c55e; } .stat.green .val { color: #4ade80; }
+.stat.orange { border-left-color: #f97316; } .stat.orange .val { color: #fb923c; }
+.stat.cyan { border-left-color: #06b6d4; } .stat.cyan .val { color: #22d3ee; }
+.stat.yellow { border-left-color: #eab308; } .stat.yellow .val { color: #facc15; }
+.stat.purple { border-left-color: #a855f7; } .stat.purple .val { color: #c084fc; }
+.table-wrap { max-height: 520px; overflow: auto; border-radius: 8px; border: 1px solid #334155; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { border-bottom: 1px solid #1e293b; padding: 6px 8px; text-align: center; }
+th { background: #1e40af; color: #dbeafe; position: sticky; top: 0; z-index: 2; font-size: 12px; font-weight: 500; }
+tbody tr:hover { background: #334155; }
+tr.buy-perfect { background: #14532d33; } tr.buy-perfect:hover { background: #14532d55; }
+tr.buy-good { background: #16653422; } tr.buy-good:hover { background: #16653444; }
+tr.buy-zero { background: #450a0a22; } tr.buy-zero:hover { background: #450a0a44; }
+.empty-msg { text-align: center; padding: 40px; color: #64748b; font-style: italic; }
+.red { color: #f87171; font-weight: bold; }
+.blue { color: #60a5fa; font-weight: bold; }
+.green { color: #4ade80; font-weight: bold; }
+.yellow { color: #facc15; font-weight: bold; }
+.gray { color: #64748b; }
+.gold { color: #fbbf24; font-weight: bold; }
+.ok-badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; background: #166534; color: #86efac; letter-spacing: 1px; }
+.ok-badge.yl { background: #78500a; color: #fde68a; }
+.dash-badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; background: #334155; color: #94a3b8; }
+.actual-input { width: 80px; text-align: center; font-weight: bold; font-size: 14px; letter-spacing: 2px; }
+.actual-input.filled { border-color: #3b82f6; background: #1e3a8a33; }
+.actual-input.from-file { border-color: #a855f7; background: #7c3aed22; }
+.console { background: #000; border: 1px solid #334155; border-radius: 8px; height: 240px; overflow-y: auto; padding: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.6; }
+.console .line { display: flex; gap: 8px; }
+.console .ts { color: #64748b; flex-shrink: 0; }
+.console .lvl { flex-shrink: 0; font-weight: bold; }
+.console .lvl.INFO { color: #60a5fa; }
+.console .lvl.OK { color: #22c55e; }
+.console .lvl.WARN { color: #facc15; }
+.console .lvl.ERR { color: #f87171; }
+.console .lvl.LEARN { color: #fb923c; }
+.console .msg { color: #cbd5e1; word-break: break-word; }
+.console-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+/* Console Dock ลอยติดขอบล่าง */
+#consoleDock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 999; background: #0b1222f5; border-top: 2px solid #334155; box-shadow: 0 -4px 16px rgba(0,0,0,0.5); }
+#consoleDock .dock-bar { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; font-size: 13px; color: #e2e8f0; user-select: none; }
+#consoleDock .dock-bar:hover { background: #14203a; }
+#consoleDock .dock-body { display: none; padding: 0 16px 12px; max-height: 55vh; overflow-y: auto; }
+#consoleDock.open .dock-body { display: block; }
+#consoleDock.open #dockArrow { transform: rotate(180deg); display: inline-block; }
+.cmd-row { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+.cmd-row .cmd-lbl { flex-shrink: 0; width: 120px; font-size: 11px; color: #94a3b8; }
+.cmd-row code { flex: 1; background: #0f172a; border: 1px solid #334155; padding: 6px 10px; border-radius: 6px; font-size: 11px; overflow-x: auto; white-space: nowrap; color: #86efac; font-family: Consolas, monospace; }
+.cmd-row button { padding: 5px 10px; font-size: 12px; background: #334155; flex-shrink: 0; }
+.cmd-row button:hover { background: #475569; }
+.note { font-size: 12px; color: #fbbf24; padding: 8px 12px; background: #422006; border-radius: 6px; margin-top: 8px; line-height: 1.7; }
+.note code { background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #86efac; font-family: 'Consolas', monospace; }
+.result-file-tag { display: inline-block; background: #4c1d95; color: #ddd6fe; padding: 5px 12px; border-radius: 6px; margin: 3px; font-size: 12px; }
+.result-file-tag .rm { color: #fca5a5; cursor: pointer; margin-left: 6px; font-weight: bold; }
+.rank-list { display: flex; flex-direction: column; gap: 8px; }
+.rank-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #0f172a; border-radius: 8px; border-left: 4px solid #fbbf24; }
+.rank-item.rank-1 { border-left-color: #fbbf24; background: #422006; }
+.rank-item.rank-2 { border-left-color: #94a3b8; }
+.rank-item.rank-3 { border-left-color: #b45309; }
+.rank-num { font-size: 22px; font-weight: bold; color: #fbbf24; min-width: 34px; text-align: center; }
+.rank-info { flex: 1; }
+.rank-title { font-weight: bold; color: #f1f5f9; }
+.rank-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.rank-stats { text-align: right; }
+.rank-hits { font-size: 20px; font-weight: bold; color: #4ade80; }
+.rank-label { font-size: 11px; color: #94a3b8; }
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid #334155; }
+.tab { padding: 8px 16px; background: #0f172a; color: #94a3b8; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-family: inherit; font-size: 13px; }
+.tab.active { background: #1e40af; color: white; }
+.tab:hover:not(.active) { background: #1e293b; }
+
+/* ═══ แถบสีเขียว: รอบที่จะซื้อ ═══ */
+/* แถวแนะนำซื้อ (คะแนน ≥ เกณฑ์) — พื้นเขียวเข้มขึ้นตามคะแนนเหนือเกณฑ์ */
+tr.rec.rec-1 { background: #16a34a1f; }
+tr.rec.rec-2 { background: #16a34a45; }
+tr.rec.rec-3 { background: #16a34a6e; }
+tr.rec td:first-child { border-left: 6px solid #4ade80; }
+tr.rec td:last-child  { border-right: 3px solid #4ade80; }
+tr.rec.grp-start td { border-top: 2px solid #4ade80; }
+tr.rec.grp-end td   { border-bottom: 2px solid #4ade80; }
+tr.rec:hover { background: #16a34a85; }
+/* อยู่ในหน้าต่างซื้อแต่คะแนนต่ำกว่าเกณฑ์ — แถบซ้ายบางเงียบๆ ไม่มีพื้น */
+tr.buywin td:first-child { border-left: 3px solid #14532d; }
+tr.buywin:hover { background: #05301a44; }
+/* แถว Trigger ต้นทาง — แถบส้มซ้าย ไม่มีพื้น */
+tr.trigrow td:first-child { border-left: 5px solid #f59e0b; }
+tr.trigrow:hover { background: #451a0344; }
+/* กรอบเหลือง: 3 แถวถัดไปที่ก่อนหน้ามี OK — แยกตามประเภท (เส้นเหลืองฝั่งขวา ไม่ชนพื้นเขียว/ส้มฝั่งซ้าย) */
+tr.pk-hot  td:last-child { box-shadow: inset -6px 0 0 #eab308; }   /* หลังเลขเรียง (71.8%) */
+tr.pk-warm td:last-child { box-shadow: inset -4px 0 0 #a16207; }   /* หลัง OK ประเภทอื่น */
+tr.pk-hot:not(.rec):not(.trigrow)  { background: #3b2f0b55; }
+tr.pk-warm:not(.rec):not(.trigrow) { background: #2a230d33; }
+tr.pk-hot.pk-start td { border-top: 2px dashed #eab308; }
+tr.pk-hot.pk-end td   { border-bottom: 2px dashed #eab308; }
+/* ตัวเลข actual เรียงขึ้น/ลง = สีแดง */
+.actual-input.seq-val { color: #f87171 !important; }
+
+.buy-badge { display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:bold; background:#166534; color:#86efac; white-space:nowrap; }
+.buy-badge.yl { background:#78500a; color:#fde68a; }
+.buy-badge.strong { background:#15803d; color:#dcfce7; box-shadow:0 0 0 1px #4ade80; }
+.buy-badge.low { background:#1e293b; color:#94a3b8; }
+.trig-badge { display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:bold; background:#78350f; color:#fcd34d; white-space:nowrap; }
+.trig-badge.user { background:#7c2d12; color:#fdba74; box-shadow:0 0 0 1px #f59e0b; }
+.stop-badge { display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:bold; background:#450a0a; color:#fca5a5; border:1px solid #dc2626; white-space:nowrap; }
+tr.tong-cool { background:#2d0a0a22; } tr.tong-cool:hover { background:#2d0a0a44; }
+/* ─── Collapsible sections ─── */
+.coll-h2 { cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center; }
+.coll-h2:hover { opacity:0.85; }
+.coll-arrow { font-size:12px; color:#94a3b8; transition:transform 0.2s; display:inline-block; flex-shrink:0; margin-left:8px; }
+.coll-arrow.open { transform:rotate(90deg); }
+
+.sig-score { display:inline-block; min-width:28px; padding:3px 7px; border-radius:5px; font-family:'Consolas',monospace; font-weight:bold; font-size:13px; text-align:center; }
+.sig-0 { background:#1e293b; color:#64748b; }
+.sig-1 { background:#164e63; color:#67e8f9; }
+.sig-2 { background:#1e3a8a; color:#93c5fd; }
+.sig-3 { background:#713f12; color:#fde047; }
+.sig-4 { background:#854d0e; color:#fef08a; }
+.sig-5 { background:#166534; color:#86efac; }
+.sig-avoid { background:#7f1d1d; color:#fca5a5; }
+.sig-chips { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; margin-top:4px; max-width:210px; }
+.chip { font-size:9px; padding:1px 5px; border-radius:4px; background:#334155; color:#cbd5e1; white-space:nowrap; }
+.chip.c1 { background:#166534; color:#bbf7d0; }
+.chip.c2 { background:#1e40af; color:#bfdbfe; }
+.chip.c3 { background:#5b21b6; color:#ddd6fe; }
+.chip.c4 { background:#0e7490; color:#a5f3fc; }
+.chip.c5 { background:#9a3412; color:#fed7aa; }
+.chip.c6 { background:#4d7c0f; color:#d9f99d; }
+.chip.c7 { background:#7f1d1d; color:#fecaca; }
+
+/* ═══ การ์ด "รอบที่จะซื้อถัดไป" ═══ */
+.nextbuy-main { background:linear-gradient(135deg,#14532d,#166534); border:2px solid #22c55e; border-radius:12px; padding:18px 20px; }
+.nextbuy-main.idle { background:#1e293b; border-color:#334155; }
+.nextbuy-lbl { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#86efac; font-weight:600; }
+.nextbuy-rounds { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.nb-round { background:#052e16; border:1px solid #22c55e; border-radius:8px; padding:10px 14px; min-width:108px; }
+.nb-round .r { font-family:'Consolas',monospace; font-size:21px; font-weight:bold; color:#4ade80; }
+.nb-round .t { font-size:11px; color:#a7f3d0; margin-top:3px; }
+.nb-round .s { font-size:10px; color:#86efac; margin-top:4px; }
+.nextbuy-why { font-size:12px; color:#bbf7d0; margin-top:14px; line-height:1.8; border-top:1px solid #22c55e55; padding-top:10px; }
+
+/* ═══ Popup แจ้งเตือนรอบซื้อ ═══ */
+#buyPopup { display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-16px);
+  z-index:9999; background:linear-gradient(135deg,#166534,#15803d); color:#fff;
+  border:2px solid #4ade80; border-radius:14px; padding:16px 22px; cursor:pointer;
+  box-shadow:0 12px 40px rgba(0,0,0,.55), 0 0 0 4px #22c55e33;
+  max-width:92vw; opacity:0; transition:opacity .25s, transform .25s; }
+#buyPopup.show { display:block; opacity:1; transform:translateX(-50%) translateY(0); animation:buyPulse 1.1s ease-in-out infinite; }
+@keyframes buyPulse { 0%,100%{ box-shadow:0 12px 40px rgba(0,0,0,.55), 0 0 0 4px #22c55e33; } 50%{ box-shadow:0 12px 44px rgba(0,0,0,.6), 0 0 0 9px #22c55e22; } }
+#buyPopup .bp-top { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#bbf7d0; font-weight:700; display:flex; justify-content:space-between; align-items:center; gap:14px; }
+#buyPopup .bp-x { background:#052e16; border:1px solid #4ade80; color:#bbf7d0; border-radius:6px; padding:1px 8px; font-size:14px; line-height:1.4; }
+#buyPopup .bp-round { font-family:'Consolas',monospace; font-size:26px; font-weight:bold; margin-top:6px; }
+#buyPopup .bp-sub { font-size:13px; color:#dcfce7; margin-top:2px; }
+#buyPopup .bp-hint { font-size:11px; color:#86efac; margin-top:8px; }
+@media (prefers-reduced-motion: reduce){ #buyPopup.show{ animation:none; } }
+
+.trig-tbl td, .trig-tbl th { font-size:12px; padding:5px 8px; }
+.win-ok { color:#4ade80; font-weight:bold; }
+.win-no { color:#64748b; }
+.filter-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:12px; font-size:13px; }
+.filter-row label { color:#94a3b8; display:flex; align-items:center; gap:6px; }
+.legend-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; font-size:11px; }
+.lg { padding:3px 10px; border-radius:5px; border-left:4px solid; }
+.lg.g { background:#05301a44; border-color:#22c55e; color:#86efac; }
+.lg.gs { background:#14532d77; border-color:#4ade80; color:#dcfce7; }
+.lg.o { background:#451a0344; border-color:#f59e0b; color:#fcd34d; }
+.lg.r1 { background:#16a34a1f; border-color:#4ade80; color:#bbf7d0; }
+.lg.r2 { background:#16a34a45; border-color:#4ade80; color:#dcfce7; }
+.lg.r3 { background:#16a34a6e; border-color:#4ade80; color:#f0fdf4; font-weight:bold; }
+.lg.frame { background:transparent; border:2px solid #4ade80; border-radius:6px; color:#86efac; }
+.lg.gq { background:transparent; border-left:3px solid #14532d; color:#94a3b8; }
+.lg.pkh { background:#3b2f0b55; border-color:#eab308; color:#fde68a; }
+.lg.pkw { background:#2a230d33; border-color:#a16207; color:#d6c78a; }
+
+/* ═══ เลข 2 ตัว ═══ */
+.two-head { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:16px 18px; background:#0f172a; border:1px solid #334155; border-radius:10px; }
+.two-src, .two-out { min-width:128px; }
+.two-lbl { font-size:11px; color:#94a3b8; letter-spacing:.4px; }
+.two-num { font-family:'Consolas',monospace; font-size:34px; font-weight:bold; color:#60a5fa; line-height:1.1; letter-spacing:3px; }
+.two-t { font-size:11px; color:#64748b; margin-top:3px; }
+.two-plus, .two-arrow { font-size:22px; color:#475569; font-weight:bold; }
+.two-out { flex:1; min-width:180px; }
+.two-digits { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+.dchip { font-family:'Consolas',monospace; font-size:19px; font-weight:bold; color:#facc15; background:#422006; border:1px solid #a16207; border-radius:6px; padding:2px 11px; }
+
+.g-grid { display:grid; grid-template-columns:repeat(10, 1fr); gap:3px; max-width:520px; }
+.g-cell { font-family:'Consolas',monospace; font-size:12px; text-align:center; padding:6px 0; border-radius:4px; border:1px solid transparent; }
+.g-off    { background:#0f172a; color:#334155; }
+.g-cand   { background:#05301a88; color:#86efac; }
+.g-strict { background:#15803d; color:#f0fdf4; font-weight:bold; }
+.g-ok     { border-color:#f59e0b; }
+@media (max-width:560px){ .g-cell{ font-size:10px; padding:4px 0; } .two-num{ font-size:27px; } }
+
+</style>
+<h1>🎯 ทำนาย 3up OK + รอบซื้อ + Feedback Learning</h1>
+<div class="sub">รอบซื้อ = 3 แถว · Trigger Scan · แถบเขียวบอกรอบที่จะซื้อ · วิเคราะห์ 1–6 จากสถิติ 8,788 รอบ</div>
+
+<!-- ===================== 1. นำเข้าไฟล์ฝึก ===================== -->
+<div class="card">
+  <h2>📁 1. นำเข้าไฟล์ข้อมูลเพื่อเรียนรู้ (Training)</h2>
+  <div class="row">
+    <input type="file" id="fileInput" accept=".csv,.txt" multiple>
+    <button onclick="clearFiles()" class="danger">🗑️ ล้างไฟล์ทั้งหมด</button>
+    <button onclick="generatePredictions()">🎯 สร้างการทำนาย</button>
+    <button class="secondary" onclick="exportCSV()">⬇️ ดาวน์โหลด CSV</button>
+  </div>
+  <div id="fileList"><span class="gray" style="font-size:12px;">ยังไม่มีไฟล์ที่นำเข้า</span></div>
+</div>
+
+<!-- ===================== 2. อัปโหลดผลจริง ===================== -->
+<div class="card">
+  <h2>📤 2. อัปโหลดไฟล์ผลจริง (Actual Results)</h2>
+  <div class="row">
+    <button class="upload-btn" onclick="document.getElementById('actualFileInput').click()">📤 เลือกไฟล์ผลจริง</button>
+    <input type="file" id="actualFileInput" accept=".csv,.txt" style="display:none;">
+    <button class="info-btn" onclick="showParserDebug()">🔍 ดูข้อมูลที่อ่านได้</button>
+    <button class="secondary" onclick="clearActualInputs()">🧹 ล้างผลจริงทั้งหมด</button>
+  </div>
+  <div class="note">
+    📌 รองรับทุกรูปแบบ: <code>รอบ,เวลา,3up,2down</code> · <code>รอบ,3up</code> · มี/ไม่มีหัวตาราง · จับคู่ตาม "รอบ"
+  </div>
+  <div id="actualFileList" style="margin-top:8px;"></div>
+</div>
+
+<!-- ===================== 2b. LIVE จาก cat888.co ===================== -->
+<div class="card" id="liveCard">
+  <h2>🔴 2b. รับผลจริง LIVE — cat888.co / วางข้อมูล JSON</h2>
+  <div class="row" style="gap:8px;flex-wrap:wrap">
+    <button id="liveBtn" onclick="toggleLive()" style="background:#dc2626;min-width:140px">🔴 เริ่ม LIVE (localhost)</button>
+    <span id="liveStatus" style="font-size:12px;color:#94a3b8;align-self:center">⚫ ปิด — ต้องรัน yk_live_server.py ก่อน</span>
+  </div>
+  <div class="note" style="margin-top:10px">
+    🖥 <b>วิธีใช้ LIVE:</b>
+    <ol style="margin:6px 0 0 18px;line-height:1.9;font-size:12px">
+      <li>รัน <code>python yk_live_server.py</code> ใน Terminal (ดึงจาก cat888.co ทุก 60 วิ ผ่าน Brave profile ที่ login อยู่แล้ว)</li>
+      <li>กด <b>เริ่ม LIVE</b> → โปรแกรมดึงผลจาก <code>localhost:5001/live.json</code> ทุก 30 วิ</li>
+      <li>ผลจะ auto-fill ช่อง "ผลจริง" ตาม "รอบ" อัตโนมัติ</li>
+    </ol>
+  </div>
+  <div style="margin-top:12px;border-top:1px solid #334155;padding-top:12px">
+    <div style="font-size:12px;color:#94a3b8;margin-bottom:6px">หรือ <b>วางข้อมูล JSON ด้วยมือ</b> (จาก bookmarklet / copy จากเว็บ):</div>
+    <div class="row" style="gap:8px;align-items:flex-start">
+      <textarea id="liveJsonPaste" rows="3" style="flex:1;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:8px;font-family:Consolas,monospace;font-size:11px;resize:vertical" placeholder='[{"round":1,"top3":"052","bot2":"29"},{"round":2,"top3":"865","bot2":"98"},...]'></textarea>
+      <button onclick="importLiveJson()" style="background:#0891b2;align-self:flex-start">📥 นำเข้า JSON</button>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:#64748b">
+      Bookmarklet: <code style="background:#1e293b;padding:2px 8px;border-radius:4px;font-size:10px;color:#86efac">javascript:(function(){var r=[];document.querySelectorAll('table tbody tr').forEach(function(tr){var c=tr.querySelectorAll('td');if(c.length>=4){r.push({round:+c[0].innerText.trim()||0,time:c[1]?.innerText.trim()||'',top3:(c[2]?.innerText.trim()||'').replace(/\D/g,'').padStart(3,'0'),bot2:(c[3]?.innerText.trim()||'').replace(/\D/g,'').padStart(2,'0')})}});prompt('Copy JSON:',JSON.stringify(r))})();</code>
+      <br>วางใน Brave address bar หรือบันทึกเป็น Bookmark → คลิกขณะอยู่หน้า cat888.co/history
+    </div>
+  </div>
+  <div id="liveFeed" style="margin-top:10px;display:none">
+    <div style="font-size:12px;color:#4ade80;margin-bottom:6px" id="liveFeedStatus"></div>
+    <div id="liveFeedPreview" style="font-size:11px;font-family:Consolas,monospace;color:#94a3b8;max-height:80px;overflow-y:auto;background:#0f172a;border-radius:6px;padding:6px"></div>
+  </div>
+</div>
+
+<!-- ===================== 3. Feedback Learning ===================== -->
+<div class="card">
+  <h2>🧠 3. Feedback Learning — เรียนรู้จาก "พลาด OK"</h2>
+  <div class="row">
+    <button class="learn-btn" onclick="feedbackLearn()">🔁 เรียนรู้ใหม่จากผลจริง (รวม "พลาด OK")</button>
+    <span id="learnStatus" class="gray" style="font-size:13px;">— ยังไม่ได้เรียนรู้ —</span>
+  </div>
+  <div class="note">
+    🔬 หลักการ: เมื่อทำนาย "—" แต่ผลจริงเป็น OK (พลาด OK) ระบบจะนำผลจริงนั้น <b>กลับเข้าสู่ชุดเรียนรู้</b> แล้วคำนวณ
+    <b>P(OK|OK)</b> และ <b>P(OK|notOK)</b> ใหม่ตามทฤษฎี Bayes + Markov เพื่อเพิ่มความแม่นยำรอบถัดไป
+  </div>
+</div>
+
+<!-- ===================== 4. รอบที่จะซื้อถัดไป ===================== -->
+<div class="card">
+  <h2 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <span>🟢 4. รอบที่จะซื้อถัดไป (แนะนำจาก Trigger + วิเคราะห์ 1–6 + หลัง OK + เลขเรียงขึ้น/เรียงลง)</span>
+    <label style="font-size:13px;font-weight:normal;color:#cbd5e1;display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+      <input type="checkbox" id="soundToggle" checked onchange="toggleBuySound(this.checked)" style="cursor:pointer">
+      🔔 เสียง/แจ้งเตือน
+      <button onclick="testBuyAlert()" title="ทดสอบเสียง+popup" style="background:#334155;color:#e2e8f0;border:0;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer">▶ ทดสอบ</button>
+    </label>
+  </h2>
+  <div id="nextBuyBox"></div>
+</div>
+<!-- Popup แจ้งเตือนรอบซื้อ -->
+<div id="buyPopup" onclick="dismissBuyPopup(true)"></div>
+
+<!-- ===================== 4b. แนะนำซื้อเลข 2 ตัว ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec4b')">🎯 4b. แนะนำซื้อเลข 2 ตัว — รอบไหน + เวลา + เลขอะไร + แคชเท่าไหร่<span class="coll-arrow" id="arrow-sec4b">▶</span></h2>
+  <div id="sec4b" style="display:none">
+    <div class="note" style="margin-bottom:12px">
+      📖 <b>แนวทางโกอัง:</b> ล็อก 2 ตัว (ตรงจากรอบก่อน) + จีบ 2 ตัวล่าง (0↔2,1↔7,3↔8,4↔5,6↔9) + เลขเรียงถอดล็อก (024,135,246…)
+      <b>ผสม</b> กฎ 4 เลขโดด (แถว A+B ทำนายแถว C) + Signal Score ≥ <span id="minBuyScoreLabel">4</span> จาก 11 สัญญาณ (⑨จีบท้าย ⑩เรียงลง ⑪ล่างเด่น/เย็น จากวิเคราะห์ 31 วัน)
+      <br>📐 <b>สมการ:</b> ชุดซื้อ = (จีบ 2 ตัว ∪ เลขเรียง ∪ ผู้สมัคร 4 โดด) กรอง strict → ต้นทุน = จำนวนตัว × 1฿ · ถูกจ่าย 95 · ROI = 95/ต้นทุน − 1
+    </div>
+    <div id="buyAdviceBox"><div class="empty-msg">— กรอกผลจริงในตารางเพื่อให้ระบบแนะนำเลข —</div></div>
+  </div>
+</div>
+
+<!-- ===================== 4c. AI วิเคราะห์ ===================== -->
+<div class="card">
+  <h2>🤖 4c. AI วิเคราะห์แนวโน้ม (Ollama — ฟรี ไม่ต้อง API key)</h2>
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px">
+    <span id="ollamaStatus" style="font-size:12px; color:#94a3b8">● ตรวจสอบ Ollama...</span>
+    <select id="ollamaModel" style="padding:5px 10px; border-radius:6px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; font-family:inherit; font-size:12px">
+      <option value="llama3.2">llama3.2</option>
+      <option value="qwen2.5">qwen2.5</option>
+      <option value="gemma3">gemma3</option>
+    </select>
+    <button id="btnAI" onclick="runAIAnalysis()" style="background:#7c3aed; padding:7px 16px; font-size:13px">🔍 วิเคราะห์ด้วย AI</button>
+  </div>
+  <div id="aiResult" style="white-space:pre-wrap; font-size:13px; line-height:1.8; padding:12px; border-radius:8px; background:#0f172a; min-height:40px; color:#e2e8f0; border:1px solid #334155"></div>
+  <div id="aiInstall" style="display:none; font-size:12px; color:#94a3b8; margin-top:8px; padding:10px; background:#1e293b; border-radius:6px">
+    ⚠️ ไม่พบ Ollama — ติดตั้งฟรีได้ที่ <a href="https://ollama.com" target="_blank" style="color:#60a5fa">ollama.com</a>
+    แล้วรัน: <code style="background:#0f172a;padding:2px 6px;border-radius:4px;color:#86efac">ollama pull llama3.2</code>
+    (รัน local บนเครื่องตัวเอง ไม่ต้อง API key)
+  </div>
+</div>
+
+<!-- ===================== 5. ตรวจสอบ Trigger ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec5')">🔍 5. ตรวจสอบ Trigger — เลขซ้ำ + 105/842/904/947/579<span class="coll-arrow" id="arrow-sec5">▶</span></h2>
+  <div id="sec5" style="display:none">
+    <div class="note">
+      🎯 <b>Trigger</b> = แถวที่ออก <b>เลขซ้ำ</b> (ตอง · คู่หน้า · คู่หลัง · หาม · เลขเรียง · เลขเรียงแบบวนรอบ)
+      <b>หรือ</b> เลข <code>105, 842, 904, 947, 579</code> — เมื่อพบแล้วจะ <b>นับไปอีก 3 แถว</b> ว่ามี Trigger ออกซ้ำอีกหรือไม่
+    </div>
+    <div id="triggerStats" class="stats-grid" style="margin-top:12px;"></div>
+    <div id="triggerDetail" style="margin-top:14px;"></div>
+  </div>
+</div>
+
+<!-- ===================== 6. เลข 2 ตัว ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec6')">🔢 6. เลข 2 ตัว — กฎ 4 เลขโดด (แถว 1+2 → แถว 3)<span class="coll-arrow" id="arrow-sec6">▶</span></h2>
+  <div id="sec6" style="display:none">
+    <div class="note">
+      📐 <b>กฎข้อ 1:</b> เลข 4 ตัวจาก 2 แถวล่าสุด จะมีอย่างน้อย 1 ตัวโผล่ในแถวถัดไป ·
+      <b>ข้อ 2:</b> ถ้าแถวถัดไปเป็น<b>เลขเบิ้ล</b> กฎจะพลาด (อัตราถูกตกจาก 58% เหลือ 34%) ·
+      <b>ข้อ 3:</b> 2 ตัวท้ายของเลข 3 ตัวบน ใช้กฎเดียวกัน
+    </div>
+    <div class="tabs" style="margin-top:12px">
+      <button class="tab active" onclick="switchTwo('low')">🔻 2 ตัวล่าง</button>
+      <button class="tab" onclick="switchTwo('top')">🔺 2 ตัวบน (ท้ายของ 3 ตัว)</button>
+    </div>
+    <div id="twoBox"></div>
+  </div>
+</div>
+
+<!-- ===================== 6b. YK ระบบถอดล็อก ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec6b')">🔑 6b. ระบบถอดล็อก YK — เลขจีบ · ล็อก · เลขเรียง · มาติงเกล<span class="coll-arrow" id="arrow-sec6b">▶</span></h2>
+  <div id="sec6b" style="display:none">
+    <div class="note" style="margin-bottom:14px">
+      📖 ผนวกจากหนังสือ "ตีแตกจับยี่กี" โกอัง 11 เล่ม ·
+      <b>เลขจีบ:</b> 0↔2 · 1↔7 · 3↔8 · 4↔5 · 6↔9 ·
+      <b>ล็อก:</b> เลขวนซ้ำในระยะ 2/4/6 รอบ ·
+      <b>เลขเรียงถอดล็อก:</b> 024, 135, 246…
+    </div>
+    <div id="ykBox"><div class="empty-msg">— กรอกผลจริงในตารางเพื่อให้ระบบ YK วิเคราะห์ —</div></div>
+  </div>
+</div>
+
+<!-- ===================== 7. เงินลงทุน ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec7')">💰 7. เงินลงทุนและการคำนวณกำไร<span class="coll-arrow" id="arrow-sec7">▶</span></h2>
+  <div id="sec7" style="display:none">
+    <div id="investInfo"></div>
+  </div>
+</div>
+
+<!-- ===================== 8. สถิติ ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec8')">📊 8. สถิติที่เรียนรู้<span class="coll-arrow" id="arrow-sec8">▶</span></h2>
+  <div id="sec8" style="display:none">
+    <div id="statsOutput" class="stats-grid"></div>
+  </div>
+</div>
+
+<!-- ===================== 9. Top 5 ===================== -->
+<div class="card">
+  <h2 class="coll-h2" onclick="toggleSection('sec9')">🏆 9. Top 5 — รอบ+เวลา ที่ถูก OK→OK มากที่สุด (ในรอบซื้อ)<span class="coll-arrow" id="arrow-sec9">▶</span></h2>
+  <div id="sec9" style="display:none">
+    <div id="top5Box"><span class="gray">— ยังไม่มีข้อมูล —</span></div>
+  </div>
+</div>
+
+<!-- ===================== 9. สรุปตามรอบซื้อ ===================== -->
+<div class="card">
+  <h2>🎯 10. สรุปตาม "รอบซื้อ" (รอบซื้อละ 3 แถว)</h2>
+  <div id="buyRoundsSummary"></div>
+</div>
+
+<!-- ===================== 10. ตาราง ===================== -->
+<div class="card">
+  <h2>📋 11. ตารางทำนาย / ผลจริง</h2>
+  <div class="filter-row" style="margin-bottom:10px;align-items:center;gap:6px">
+    <span style="color:#cbd5e1;font-size:13px">ประมวลผลย่อยช่วง: รอบที่</span>
+    <input type="number" id="accFrom" min="1" max="288" placeholder="1" style="width:70px" onchange="renderTableAccuracy()">
+    <span style="color:#cbd5e1;font-size:13px">ถึง รอบที่</span>
+    <input type="number" id="accTo" min="1" max="288" placeholder="288" style="width:70px" onchange="renderTableAccuracy()">
+    <button onclick="clearAccRange()" style="background:#334155;color:#e2e8f0;border:0;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer">↺ ทั้งหมด</button>
+    <span id="accRangeInfo" style="color:#94a3b8;font-size:12px"></span>
+  </div>
+  <div id="tableAccuracy" class="stats-grid" style="margin-bottom:12px"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('detail')">📋 รายละเอียด (288 แถว)</button>
+    <button class="tab" onclick="switchTab('buy')">🎯 ตามรอบซื้อ (96 รอบ)</button>
+  </div>
+  <div id="tab-detail">
+    <div class="filter-row">
+      <label>เกณฑ์คะแนนขั้นต่ำที่แนะนำ "ซื้อ":
+        <input type="number" id="minScoreInput" value="4" min="0" max="10" style="width:64px" onchange="onMinScoreChange(this.value)">
+      </label>
+      <label><input type="checkbox" id="onlyBuyChk" onchange="renderTable()"> แสดงเฉพาะแถวที่แนะนำซื้อ</label>
+    </div>
+    <div class="legend-row" id="tblLegend">
+      <span class="lg gs">▌แนะนำซื้อ (คะแนน ≥ เกณฑ์)</span>
+    </div>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>รอบ</th><th>เวลา</th><th>ทำนาย<br><span style="font-size:9px;font-weight:normal"><span style="color:#86efac">เขียว=Markov</span> · <span style="color:#fde68a">เหลือง=หลัง OK</span></span></th><th>ผลจริง (แก้ไขได้)</th><th>ผลจริง OK?</th><th>สถานะ</th><th>กำไร/ขาดทุน</th><th>🎯 สัญญาณ 1–6</th><th>🟢 รอบที่จะซื้อ</th></tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="9" class="empty-msg">— กรุณานำเข้าไฟล์ CSV แล้วกด "สร้างการทำนาย" —</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div id="tab-buy" class="table-wrap" style="display:none;">
+    <table>
+      <thead>
+        <tr><th>รอบซื้อ</th><th>รอบ</th><th>เวลา</th><th>ทำนาย (3 แถว)</th><th>ผลจริง (3 แถว)</th><th>✅ ถูก</th><th>❌ ผิด</th><th>✗ พลาด</th><th>✓ ผ่าน</th><th>กำไร/ขาดทุน</th></tr>
+      </thead>
+      <tbody id="buyTableBody">
+        <tr><td colspan="10" class="empty-msg">— ยังไม่มีข้อมูล —</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== 11. ฐานความรู้ ===================== -->
+<div class="card">
+  <h2>📚 12. ฐานความรู้ที่ใช้ตัดสินใจ — การวิเคราะห์ที่ 1–6</h2>
+  <div class="note" style="margin-bottom:12px">
+    📖 ผนวกจาก <code>yeekee_analysis_report.html</code> — วิเคราะห์เชิงสถิติ <b>8,788 รอบ / 30 วัน</b> ·
+    Baseline P(OK) ต่อรอบ = <b>30.2%</b> · P(OK อย่างน้อย 1 ใน 3 รอบ) = <b>66.0%</b>
+  </div>
+  <div id="kbBox"></div>
+  <div class="note" style="margin-top:12px;background:#450a0a;color:#fca5a5">
+    ⚠️ <b>คำเตือนจาก Backtest จริง (out-of-sample 11 วัน):</b> Signal ≥6 ให้ Win Rate เพียง <b>56.8%</b>
+    (ไม่ใช่ 80.8% ที่เห็นในข้อมูลฝึก) · ROI ทุกกลยุทธ์ <b>ติดลบ −34% ถึง −63%</b>
+    เพราะอัตราจ่าย 950 ต่ำกว่าจุดคุ้มทุน — ใช้เป็น <b>แนวทางประกอบการตัดสินใจ</b> เท่านั้น ไม่ใช่การรับประกันผล
+  </div>
+</div>
+
+<!-- ===================== Console Dock (ลอยติดขอบล่าง ย่อ/ขยายได้) ===================== -->
+<div style="height:46px"></div><!-- กันเนื้อหาโดนแถบ dock บัง -->
+<div id="consoleDock">
+  <div class="dock-bar" onclick="toggleDock()">
+    <span id="dockLiveDot">⚫</span>
+    <b>🖥️ Console / Terminal</b>
+    <span id="dockMsg" style="color:#94a3b8;font-weight:normal;font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span id="dockArrow">▲</span>
+  </div>
+  <div class="dock-body">
+    <div style="font-size:12px;color:#fcd34d;margin:8px 0 4px">⚡ คำสั่ง Terminal — กด 📋 คัดลอก แล้ววางใน PowerShell (หน้าเว็บรันคำสั่งเองไม่ได้)</div>
+    <div class="cmd-row"><span class="cmd-lbl">เริ่มทุกอย่าง</span><code>"F:\Data\data\data\data\data\data\00-อ.พี\NEW Project\01-ProInventive\00-Pro-Pi\Ai\14-Pi\Trading\Trading\data\YK\start_yk.bat"</code><button onclick="copyCmd(this)">📋</button></div>
+    <div class="cmd-row"><span class="cmd-lbl">เฉพาะ LIVE server</span><code>python "F:\Data\data\data\data\data\data\00-อ.พี\NEW Project\01-ProInventive\00-Pro-Pi\Ai\14-Pi\Trading\Trading\data\YK\yk_live_server.py"</code><button onclick="copyCmd(this)">📋</button></div>
+    <div class="cmd-row"><span class="cmd-lbl">เช็ค LIVE server</span><code>netstat -ano | findstr ":5001"</code><button onclick="copyCmd(this)">📋</button></div>
+    <div class="cmd-row"><span class="cmd-lbl">เช็ค web server</span><code>netstat -ano | findstr ":8765"</code><button onclick="copyCmd(this)">📋</button></div>
+    <div class="console-header" style="margin-top:10px">
+      <b style="font-size:12px;color:#60a5fa">📜 Log</b>
+      <button class="secondary" onclick="clearConsole()" style="padding:4px 10px; font-size:11px;">🧹 ล้าง</button>
+    </div>
+    <div class="console" id="console" style="height:180px"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Console
+   ============================================================ */
+function log(level, msg) {
+  const box = document.getElementById('console');
+  if (!box) return;
+  const t = new Date();
+  const ts = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}`;
+  const line = document.createElement('div');
+  line.className = 'line';
+  line.innerHTML = `<span class="ts">[${ts}]</span><span class="lvl ${level}">${level}</span><span class="msg">${msg}</span>`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+function clearConsole() { document.getElementById('console').innerHTML = ''; log('INFO', 'ล้าง Console แล้ว'); }
+
+/* ============================================================
+   Constants
+   ============================================================ */
+// OK Set = 10 ตอง + 90 คู่หน้า + 90 คู่หลัง + 90 หาม + 10 เรียงขึ้น + 10 เรียงลง (วนรอบ) = 300
+const SPECIAL_COUNT = 300;
+const TOTAL_BET = SPECIAL_COUNT;
+const PAYOUT = 950;
+const NET_WIN = PAYOUT - (SPECIAL_COUNT - 1);
+const BUY_SIZE = 3;
+const AFTER_OK_WINDOW = 3;   // หน้าต่างหลัง OK set (real-time) — 3 แถวถัดไป
+const AFTER_OK_TARGET = 3;   // ดันความถี่ทำนาย OK ในหน้าต่างให้ครบ 3/3
+
+/* ============================================================
+   📚 Knowledge Base — จาก yeekee_analysis_report.html
+   (วิเคราะห์เชิงสถิติ 8,788 รอบ / 30 วัน · Baseline P(OK)=30.2%)
+   ============================================================ */
+const BASELINE_P = 0.302;
+
+// [วิเคราะห์ 1] Trigger Numbers (Lag-1) → P(OK ใน 3 รอบถัดไป)
+const TRIGGER_LAG1 = {
+  '105':0.933,'664':0.923,'231':0.917,'002':0.917,'842':0.917,'545':0.917,
+  '838':0.857,'277':0.857,'904':0.857,'114':0.812,'947':0.786,'579':0.786
+};
+
+// [วิเคราะห์ 2] Lead Indicators (รวม Lag 1–5, n≥30)
+const LEAD_INDICATORS = {
+  '108':1.000,'417':0.971,'595':0.950,'439':0.943,'526':0.914,'054':0.900,
+  '144':0.900,'332':0.900,'827':0.891,'321':0.886,'994':0.860,'947':0.857
+};
+
+// [วิเคราะห์ 3] ลำดับประเภท Lag-2 → Lag-1 → P(OK รอบถัดไป)
+const TYPE_SEQ = {
+  'front>back':0.391,'seqdown>none':0.373,'none>seqdown':0.373,'back>back':0.360,
+  'ham>back':0.347,'back>front':0.338,'front>ham':0.338,'none>triple':0.339
+};
+
+// [วิเคราะห์ 4] ช่วงเวลา — ลบออก (pattern เวลาสอบตก split-half 203 วัน = noise, v21)
+
+// [วิเคราะห์ 7] AVOID — Lag-1 ที่ทำให้ P ตกต่ำกว่า baseline
+const AVOID_LAG1 = { '100':0.400,'685':0.412,'701':0.471,'214':0.471,'452':0.533,'571':0.550 };
+
+// เลข Trigger ที่ผู้ใช้กำหนดให้เฝ้าดูเป็นพิเศษ
+const USER_TRIGGERS = ['105','842','904','947','579'];
+
+const THAI_TYPE = { triple:'ตอง', front:'คู่หน้า', back:'คู่หลัง', ham:'หาม', seq:'เรียง', seqdown:'เรียงลง', none:'ทั่วไป' };
+
+// ══════════════════════════════════════════════════════════
+//  YK ระบบถอดล็อก (โกอัง) — เลขจีบ · ล็อก · เลขเรียง
+// ══════════════════════════════════════════════════════════
+const JIAB_MAP  = {0:2,2:0,1:7,7:1,3:8,8:3,4:5,5:4,6:9,9:6};
+// สัญญาณ ⑪ (วิเคราะห์ 31 วัน ผ่าน split-half): 2ตัวล่างเด่น/เย็น มีผลต่อ 3 รอบถัดไป
+const HOT_LOW2  = ['97','78','69'];   // 3 รอบถัดไปมี OK 75.8% (baseline 65.9%)
+const COLD_LOW2 = ['95'];             // 3 รอบถัดไปมี OK 54.7% → เลี่ยง
+const SEQ_LOCK  = ['024','135','246','357','468','579','680','791','802','913'];
+const SEQ_OLD   = ['012','123','234','345','456','567','678','789','890','901'];
+const ALL_SEQ   = [...SEQ_LOCK,...SEQ_OLD];
+
+function jiabNum(n) {
+  const s = String(n);
+  const d = s.split('').map(Number);
+  const vs = new Set([s]);
+  if (d.length === 2) {
+    const [a,b] = d;
+    for (const A of [a,JIAB_MAP[a]])
+      for (const B of [b,JIAB_MAP[b]]) { vs.add(`${A}${B}`); vs.add(`${B}${A}`); }
+  } else if (d.length === 3) {
+    const [a,b,c] = d;
+    for (const A of [a,JIAB_MAP[a]])
+      for (const B of [b,JIAB_MAP[b]])
+        for (const C of [c,JIAB_MAP[c]]) vs.add(`${A}${B}${C}`);
+  }
+  return [...vs].sort();
+}
+
+// จีบเต็มคู่: b = จีบทั้งสองหลักของ a (ตรงหรือสลับหลัก) เช่น a=27 → จีบ=01/10
+function isJiabFullPair(a, b) {
+  if (!a || !b || a.length !== 2 || b.length !== 2) return false;
+  const j0 = String(JIAB_MAP[+a[0]]), j1 = String(JIAB_MAP[+a[1]]);
+  return b === j0 + j1 || b === j1 + j0;
+}
+
+function findSeqFromDigits(dStr) {
+  const digits = [...new Set(dStr.replace(/\D/g,'').split(''))];
+  const lock = SEQ_LOCK.filter(s => s.split('').every(c => digits.includes(c)));
+  const old  = SEQ_OLD.filter(s => s.split('').every(c => digits.includes(c)));
+  return { lock, old, digits };
+}
+
+// ตรวจล็อก 2 ตัว: รอบ 5+ ดูว่า 2ตัวล่างตรงกับรอบ 1-4 (รวมจีบ+สลับ)
+function detectLock2d(data) {
+  const hits = [];
+  for (let i = 4; i < data.length; i++) {
+    const cur = data[i]; if (!cur.bot || cur.bot.length !== 2) continue;
+    const curJ = jiabNum(cur.bot);
+    const curR = cur.bot[1]+cur.bot[0];
+    for (let j = 0; j < i; j++) {
+      const p = data[j]; if (!p.top || !p.bot) continue;
+      const checks = [p.bot, p.bot[1]+p.bot[0],
+                      p.top.slice(0,2), p.top.slice(1,3), p.top[0]+p.top[2]];
+      for (const cv of checks) {
+        if (cv.length === 2 && (cv===cur.bot||cv===curR||curJ.includes(cv))) {
+          hits.push({checkRound:i+1,fromRound:j+1,fromVal:cv,curVal:cur.bot,
+                     matchType: cv===cur.bot?'ตรง':curJ.includes(cv)?'จีบ':'สลับ'});
+          break;
+        }
+      }
+    }
+  }
+  return hits;
+}
+
+// ตรวจล็อก 3 ตัว: รอบ 5+ ดูว่า 3ตัวบนตรงกับรอบ 1-4 (รวมจีบ)
+function detectLock3d(data) {
+  const hits = [];
+  for (let i = 4; i < data.length; i++) {
+    const cur = data[i]; if (!cur.top || cur.top.length !== 3) continue;
+    const curJ = jiabNum(cur.top);
+    for (let j = 0; j < i; j++) {
+      const p = data[j]; if (!p.top || p.top.length !== 3) continue;
+      if (p.top===cur.top || curJ.includes(p.top)) {
+        hits.push({checkRound:i+1,fromRound:j+1,fromVal:p.top,curVal:cur.top,
+                   matchType: p.top===cur.top?'ตรง':'จีบ'});
+      }
+    }
+  }
+  return hits;
+}
+
+// สร้าง data object สำหรับ lock functions จาก state.predictions
+function buildLockData(n) {
+  const arr = [];
+  for (let i = 0; i < state.predictions.length; i++) {
+    const v3 = actualAt(i);
+    const v2 = state.predictions[i]?.actualLow2 || null;
+    if (v3 && v3.length === 3) arr.push({ top: pad(parseInt(v3),3), bot: v2||'', round: state.predictions[i].round });
+    if (arr.length >= (n||8)) break;
+  }
+  return arr;
+}
+
+let MIN_BUY_SCORE = 4;
+
+/* ============================================================
+   🔢 เลข 2 ตัว — ค่าคงที่และกฎจากประสบการณ์
+   วัดจากข้อมูลจริง 8,788 รอบ
+   ============================================================ */
+const PAY2 = 95;                 // อัตราจ่ายเลข 2 ตัว
+const OK2_SIZE = 30;             // เบิ้ล 10 + เรียงขึ้น 10 + เรียงลง 10
+
+// ค่าที่วัดได้จริงจากข้อมูล 31 วัน
+const TWO_STATS = {
+  p_ok: 0.2955,                  // P(OK Set 30) ต่อรอบ
+  rule1: 0.5570,                 // กฎข้อ 1 อัตราถูกจริง
+  rule1_exp: 0.5656,             // ค่าคาดหวังถ้าสุ่ม
+  rule1_top2: 0.5615,            // กฎข้อ 3 (2 ตัวบน)
+  rule1_top2_exp: 0.5677,
+  hit_nondouble: 0.5822,         // แถว 3 ไม่ใช่เบิ้ล
+  hit_double: 0.3417,            // แถว 3 เป็นเบิ้ล  ← ข้อ 2
+  byK: { 2:{obs:0.3612,exp:0.36}, 3:{obs:0.4952,exp:0.51}, 4:{obs:0.6356,exp:0.64} },
+  byK_nd: { 2:{obs:0.3848,exp:0.3778}, 3:{obs:0.5190,exp:0.5333}, 4:{obs:0.6626,exp:0.6667} },
+  byK_d:  { 2:{obs:0.102,exp:0.20}, 3:{obs:0.300,exp:0.30}, 4:{obs:0.404,exp:0.40} }
+};
+
+function isDbl2(s)    { return s[0] === s[1]; }
+function isSeqUp2(s)  { return ((+s[1]) - (+s[0]) + 10) % 10 === 1; }
+function isSeqDown2(s){ return ((+s[0]) - (+s[1]) + 10) % 10 === 1; }
+function isOK2(s)     { return isDbl2(s) || isSeqUp2(s) || isSeqDown2(s); }
+function type2(s) {
+  if (isDbl2(s))     return 'เบิ้ล';
+  if (isSeqUp2(s))   return 'เรียงขึ้น';
+  if (isSeqDown2(s)) return 'เรียงลง';
+  return 'ทั่วไป';
+}
+const ALL2 = Array.from({length:100}, (_, i) => pad(i, 2));
+
+/**
+ * กฎข้อ 1 — เลข 4 ตัวจากแถว A และ B ทำนายแถวถัดไป
+ * คืนชุดเลขโดด ผู้สมัคร และความน่าจะเป็นตามจริง
+ */
+function digitRule(A, B) {
+  if (!A || !B || A.length !== 2 || B.length !== 2) return null;
+  const S = [...new Set((A + B).split(''))].sort();
+  const k = S.length;
+  const cand   = ALL2.filter(x => S.includes(x[0]) || S.includes(x[1]));
+  const strict = ALL2.filter(x => S.includes(x[0]) && S.includes(x[1]));
+  const st = TWO_STATS.byK[k] || { obs: null, exp: cand.length/100 };
+  return {
+    A, B, S, k,
+    cand, strict,
+    nCand: cand.length, nStrict: strict.length,
+    pExp:  cand.length / 100,                      // ความน่าจะเป็นตามทฤษฎี = จำนวนเลข ÷ 100
+    pObs:  st.obs,                                 // อัตราถูกจริงที่วัดได้
+    pNonDbl: (TWO_STATS.byK_nd[k] || {}).obs,      // ถ้าแถวถัดไปไม่ใช่เบิ้ล
+    pDbl:    (TWO_STATS.byK_d[k]  || {}).obs,      // ถ้าแถวถัดไปเป็นเบิ้ล  ← ข้อ 2
+    cost: cand.length,
+    ev:   (st.obs !== null ? st.obs : cand.length/100) * PAY2 - cand.length,
+    okInCand: cand.filter(isOK2)                   // เลขที่อยู่ทั้งใน OK Set และชุดผู้สมัคร
+  };
+}
+
+/* ============================================================
+   State
+   ============================================================ */
+const state = {
+  importedFiles: [],
+  trainingRows: [],
+  targetRows: [],
+  predictions: [],
+  stats: null,
+  actualFiles: [],
+  lastParsedActual: null,
+  learnCount: 0,
+  currentTab: 'detail',
+  triggers: [],
+  buyMap: {},
+  sigMap: {},
+  alertBuyRound: null,   // รอบต้นทางที่แจ้งเตือนล่าสุด (กันเตือนซ้ำ)
+  soundOn: true,         // เปิด/ปิด เสียง+popup แจ้งเตือนรอบซื้อ
+  buyRoundLimit: null    // จำกัดจำนวนรอบซื้อที่สรุปใน section 10 (null = ทั้งหมด)
+};
+
+function onBuyRoundLimitChange(v) {
+  state.buyRoundLimit = v;
+  renderBuyRoundsSummary();
+}
+
+/* ============================================================
+   Pattern detection
+   ============================================================ */
+function pad(n, len) { return String(n).padStart(len, '0'); }
+function isTriple(s)    { return s[0]===s[1] && s[1]===s[2]; }
+function isFrontPair(s) { return s[0]===s[1] && s[1]!==s[2]; }
+function isBackPair(s)  { return s[1]===s[2] && s[0]!==s[1]; }
+function isHam(s)       { return s[0]===s[2] && s[0]!==s[1]; }
+// เรียงแบบวนรอบ: 890, 901, 012 ... และ 210, 109, 098
+function isSeqUp(s){
+  const a=+s[0],b=+s[1],c=+s[2];
+  return (b-a+10)%10===1 && (c-b+10)%10===1;
+}
+function isSeqDown(s){
+  const a=+s[0],b=+s[1],c=+s[2];
+  return (a-b+10)%10===1 && (b-c+10)%10===1;
+}
+function isSequential(s){ return isSeqUp(s) || isSeqDown(s); }
+function isSpecial3up(s){ return isTriple(s)||isFrontPair(s)||isBackPair(s)||isHam(s)||isSequential(s); }
+function classify3up(s){
+  if (isTriple(s))    return 'triple';
+  if (isSeqUp(s))     return 'seq';
+  if (isSeqDown(s))   return 'seqdown';
+  if (isFrontPair(s)) return 'front';
+  if (isBackPair(s))  return 'back';
+  if (isHam(s))       return 'ham';
+  return 'none';
+}
+function typeTH(s){ return THAI_TYPE[classify3up(s)] || 'ทั่วไป'; }
+
+/* ============================================================
+   CSV Parser
+   ============================================================ */
+function parseCSVRobust(text) {
+  const lines = text.replace(/\r/g,'').replace(/^\uFEFF/,'').trim().split('\n');
+  const rows = [];
+  const debug = { total: 0, valid: 0, skipped: 0, sample: [] };
+
+  // ตรวจหา column mapping จาก header row (รองรับ: วันที่,รอบ,เวลา,3 ตัวบน,2 ตัวล่าง,สถานะ)
+  let colRound=-1, colTime=-1, colUp3=-1, colLow2=-1;
+  let startLi = 0;
+  const firstLine = lines[0] ? lines[0].replace(/\r/g,'').trim() : '';
+  if (firstLine.includes('3 ตัวบน') || firstLine.includes('วันที่')) {
+    const hparts = firstLine.split(/[,\t;]/).map(x => x.trim().replace(/^"|"$/g,''));
+    hparts.forEach((h, i) => {
+      if (h === 'รอบ') colRound = i;
+      else if (h === 'เวลา') colTime = i;
+      else if (h === '3 ตัวบน') colUp3 = i;
+      else if (h === '2 ตัวล่าง') colLow2 = i;
+    });
+    if (colUp3 >= 0) startLi = 1;
+  }
+
+  for (let li = startLi; li < lines.length; li++) {
+    let line = lines[li].trim();
+    if (!line) continue;
+    debug.total++;
+    let parts;
+    if (line.includes(',')) parts = line.split(',');
+    else if (line.includes('\t')) parts = line.split('\t');
+    else if (line.includes(';')) parts = line.split(';');
+    else parts = [line];
+    parts = parts.map(x => x.trim().replace(/^"|"$/g, ''));
+    if (parts.length < 2) { debug.skipped++; continue; }
+
+    let round, timeStr, up3Raw, low2Raw, up3Idx = -1;
+
+    if (colUp3 >= 0) {
+      // header-guided: อ่านตาม column index จาก header
+      const rStr = colRound >= 0 ? parts[colRound] : parts[0];
+      round = parseInt(rStr.replace(/[^\d]/g,''), 10);
+      if (isNaN(round)) { debug.skipped++; continue; }
+      timeStr = colTime >= 0 ? (parts[colTime] || '') : '';
+      up3Raw = colUp3 < parts.length ? parts[colUp3] : null;
+      if (!up3Raw || !/^\d{1,3}$/.test(up3Raw)) { debug.skipped++; continue; }
+      low2Raw = colLow2 >= 0 && colLow2 < parts.length ? parts[colLow2] : null;
+      if (low2Raw && !/^\d{1,2}$/.test(low2Raw)) low2Raw = null;
+    } else {
+      // heuristic fallback
+      const roundStr = parts[0].replace(/[^\d]/g, '');
+      if (!roundStr) { debug.skipped++; continue; }
+      round = parseInt(roundStr, 10);
+      if (isNaN(round)) { debug.skipped++; continue; }
+      timeStr = parts[1] || '';
+
+      for (let i = 1; i < parts.length; i++) {
+        const cell = parts[i];
+        if (cell === '' || cell === 'รอผล' || cell === '-') continue;
+        if (cell.includes(':')) continue;
+        if (/^\d{1,3}$/.test(cell)) { up3Raw = cell; up3Idx = i; break; }
+      }
+      if (!up3Raw) { debug.skipped++; continue; }
+
+      low2Raw = null;
+      for (let i = up3Idx + 1; i < parts.length; i++) {
+        const cell = parts[i];
+        if (cell === '' || cell === 'รอผล' || cell === '-') continue;
+        if (cell.includes(':')) continue;
+        if (/^\d{1,2}$/.test(cell)) { low2Raw = cell; break; }
+      }
+    }
+
+    if (!up3Raw || isNaN(parseInt(up3Raw, 10))) { debug.skipped++; continue; }
+    rows.push({
+      round, time: timeStr, up3: parseInt(up3Raw, 10),
+      low2: low2Raw === null ? null : pad(low2Raw, 2), pending: false
+    });
+    debug.valid++;
+    if (debug.sample.length < 5) {
+      debug.sample.push({ line: li + 1, raw: line, parsed: { round, up3: parseInt(up3Raw,10) } });
+    }
+  }
+  return { rows, debug };
+}
+
+/* ============================================================
+   Analyze — ปรับใหม่ให้เรียนรู้จากผลจริงได้ด้วย
+   ============================================================ */
+function analyze(rows) {
+  const valid = rows.filter(r => r.up3 !== null);
+  const n = valid.length;
+  const freqPos = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]];
+  let cTriple=0, cFront=0, cBack=0, cHam=0, cSeq=0, cSpecial=0;
+  let OO=0, ON=0, NO=0, NN=0;
+  let prevSpecial = null;
+
+  for (const r of valid) {
+    const s = pad(r.up3, 3);
+    for (let i=0;i<3;i++) freqPos[i][+s[i]]++;
+    if (isTriple(s))          cTriple++;
+    else if (isSequential(s)) cSeq++;
+    else if (isFrontPair(s))  cFront++;
+    else if (isBackPair(s))   cBack++;
+    else if (isHam(s))        cHam++;
+    const isSpec = isSpecial3up(s);
+    if (isSpec) cSpecial++;
+
+    if (prevSpecial !== null) {
+      if (prevSpecial && isSpec)      OO++;
+      else if (prevSpecial && !isSpec) ON++;
+      else if (!prevSpecial && isSpec) NO++;
+      else                             NN++;
+    }
+    prevSpecial = isSpec;
+  }
+
+  const pSpecial = n > 0 ? cSpecial/n : 0.26;
+  // Laplace smoothing
+  const pOK_givenOK = (OO + 1) / (OO + ON + 2);
+  const pOK_givenNotOK = (NO + 1) / (NO + NN + 2);
+
+  return {
+    n, freqPos,
+    count: { triple:cTriple, front:cFront, back:cBack, ham:cHam, seq:cSeq, special:cSpecial },
+    prob: {
+      triple: n>0?cTriple/n:0, front: n>0?cFront/n:0, back: n>0?cBack/n:0,
+      ham: n>0?cHam/n:0, seq: n>0?cSeq/n:0, special: pSpecial
+    },
+    transition: {
+      OK_to_OK: pOK_givenOK,
+      NOTOK_to_OK: pOK_givenNotOK,
+      OO, ON, NO, NN
+    },
+    valid
+  };
+}
+
+/* ============================================================
+   Target rows + Predictions
+   ============================================================ */
+function buildTargetRows() {
+  const rows = [];
+  let h = 6, m = 0;
+  for (let i = 1; i <= 288; i++) {
+    const t1 = `${pad(h,2)}:${pad(m,2)}`;
+    m += 5;
+    if (m >= 60) { m -= 60; h++; if (h >= 24) h -= 24; }
+    const t2 = `${pad(h,2)}:${pad(m,2)}`;
+    rows.push({ round: i, time: `${t1} - ${t2}`, up3: null, pending: true });
+  }
+  return rows;
+}
+
+function generatePredictions() {
+  if (state.targetRows.length === 0) {
+    alert('กรุณานำเข้าไฟล์ CSV ก่อน');
+    return;
+  }
+  if (!state.stats) buildStats();
+  if (!state.stats) { alert('ไม่สามารถเรียนรู้จากข้อมูลได้'); return; }
+
+  // เก็บค่าผลจริงเดิม
+  const existing = {};
+  state.predictions.forEach(p => {
+    if (p.actualInput || p.actualLow2) existing[p.round] = {
+      input: p.actualInput, isOK: p.actualIsOK, cls: p.actualClass,
+      fromFile: p.fromFile, low2: p.actualLow2
+    };
+  });
+
+  const stats = state.stats;
+  let cumP = 0;
+  let prevState = null;
+  let okCount = 0;
+
+  state.predictions = state.targetRows.map((row, i) => {
+    let p = (prevState === null) ? stats.prob.special
+          : (prevState ? stats.transition.OK_to_OK : stats.transition.NOTOK_to_OK);
+
+    // Boost ช่องทำนาย: ถ้า 3 แถวก่อนหน้ามีผลจริงเป็น "เลขเรียง" → เพิ่มโอกาส ×1.10
+    // (วิเคราะห์ 31 วัน: 3 รอบหลังเลขเรียง OK 71.8% สูงกว่า baseline 65.9%)
+    let seqBoost = false;
+    for (let k = 1; k <= 3; k++) {
+      const pv = existing[row.round - k];
+      if (pv && pv.input && pv.input.length === 3 && isSequential(pv.input)) { seqBoost = true; break; }
+    }
+    if (seqBoost) p = Math.min(0.95, p * 1.10);
+
+    const prevFloor = Math.floor(cumP);
+    cumP += p;
+    const currFloor = Math.floor(cumP);
+    const predictedOK = currFloor > prevFloor;
+    if (predictedOK) okCount++;
+    prevState = predictedOK;
+
+    const prev = existing[row.round] || {};
+    return {
+      round: row.round, time: row.time, predictedOK, seqBoost,
+      pMarkov: p, predMarkov: predictedOK, afterOKPred: false, tongCooldown: false,
+      actualInput: prev.input || '',
+      actualIsOK: prev.isOK ?? null,
+      actualClass: prev.cls ?? null,
+      actualLow2: prev.low2 ?? null,
+      fromFile: prev.fromFile || false
+    };
+  });
+
+  log('OK', `สร้างการทำนาย ${state.predictions.length} รอบ · OK ${okCount} (${(okCount/state.predictions.length*100).toFixed(1)}%)`);
+  log('INFO', `P(OK|OK)=${(stats.transition.OK_to_OK*100).toFixed(2)}% · P(OK|notOK)=${(stats.transition.NOTOK_to_OK*100).toFixed(2)}%`);
+  render();
+}
+
+function buildStats() {
+  let training = [];
+  for (const f of state.importedFiles) {
+    training.push(...f.rows.filter(r => r.up3 !== null));
+  }
+  if (training.length === 0) { state.stats = null; return; }
+  if (training.length > 10000) training = training.slice(-10000);
+  state.trainingRows = training;
+  state.stats = analyze(training);
+  log('OK', `เรียนรู้จาก ${training.length} แถว`);
+}
+
+/* ============================================================
+   ⭐ Feedback Learning — ใช้ "พลาด OK" กลับมาฝึก
+   ============================================================ */
+function feedbackLearn() {
+  if (state.predictions.length === 0) {
+    alert('กรุณาสร้างการทำนายก่อน');
+    return;
+  }
+  // ดึงผลจริงที่กรอกแล้ว
+  const actualRows = state.predictions
+    .filter(p => p.actualInput && p.actualInput.length === 3)
+    .map(p => ({ up3: parseInt(p.actualInput, 10), pending: false }));
+
+  if (actualRows.length < 2) {
+    alert('ต้องกรอกผลจริงอย่างน้อย 2 แถวเพื่อเรียนรู้');
+    log('WARN', `ผลจริงที่กรอกได้: ${actualRows.length} แถว (ต้อง ≥ 2)`);
+    return;
+  }
+
+  // นับ "พลาด OK" (ทำนาย — แต่ผลจริง OK)
+  const missedOK = state.predictions.filter(p =>
+    p.actualInput && p.actualInput.length === 3 && !p.predictedOK && p.actualIsOK
+  ).length;
+  const hits = state.predictions.filter(p =>
+    p.actualInput && p.actualInput.length === 3 && p.predictedOK && p.actualIsOK
+  ).length;
+
+  // รวมกับ training เดิม
+  const combined = [...state.trainingRows, ...actualRows];
+  state.stats = analyze(combined);
+  state.learnCount++;
+
+  log('LEARN', `🧠 Feedback Learning ครั้งที่ ${state.learnCount}`);
+  log('LEARN', `  • ผลจริงที่ป้อน: ${actualRows.length} แถว (จากทั้งหมด 288)`);
+  log('LEARN', `  • พลาด OK: ${missedOK} แถว · ถูก OK→OK: ${hits} แถว`);
+  log('LEARN', `  • ชุดเรียนรู้ใหม่: ${combined.length} แถว`);
+  log('LEARN', `  • P(OK|OK) ใหม่ = ${(state.stats.transition.OK_to_OK*100).toFixed(2)}% (OO=${state.stats.transition.OO}, ON=${state.stats.transition.ON})`);
+  log('LEARN', `  • P(OK|notOK) ใหม่ = ${(state.stats.transition.NOTOK_to_OK*100).toFixed(2)}% (NO=${state.stats.transition.NO}, NN=${state.stats.transition.NN})`);
+  log('OK', '🎯 กำลังสร้างการทำนายใหม่ด้วยสถิติที่อัปเดต...');
+
+  // ทำนายใหม่
+  generatePredictions();
+
+  const statusEl = document.getElementById('learnStatus');
+  statusEl.innerHTML = `<span class="green">✅ เรียนรู้แล้ว ${state.learnCount} ครั้ง · ป้อน ${actualRows.length} แถว · พลาด OK ${missedOK} · ถูก ${hits}</span>`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   🎯 ANALYSIS ENGINE — วิเคราะห์ 1–6 + Trigger Scan + Buy Window
+   ════════════════════════════════════════════════════════════ */
+
+function actualAt(i) {
+  const p = state.predictions[i];
+  return (p && p.actualInput && p.actualInput.length === 3) ? p.actualInput : null;
+}
+
+/* ── ให้คะแนนสัญญาณตาม "การวิเคราะห์ที่ 1–6" ─────────────── */
+function scoreRow(idx) {
+  const lag1 = actualAt(idx-1), lag2 = actualAt(idx-2), lag3 = actualAt(idx-3);
+  if (!lag1) return null;                 // ยังไม่มีผลจริงรอบก่อนหน้า → ประเมินไม่ได้
+
+  let score = 0;
+  const chips = [];
+
+  // [1] Lag-1 อยู่ใน Trigger List → +3 (สัญญาณแข็งแกร่งที่สุด)
+  if (TRIGGER_LAG1[lag1] !== undefined) {
+    score += 3;
+    chips.push({ c:1, t:`①Lag1 ${lag1} ${(TRIGGER_LAG1[lag1]*100).toFixed(0)}%`, p:3 });
+  } else if (LEAD_INDICATORS[lag1] !== undefined) {
+    score += 3;
+    chips.push({ c:2, t:`②Lag1 ${lag1} ${(LEAD_INDICATORS[lag1]*100).toFixed(0)}%`, p:3 });
+  }
+
+  // [2] Lag-2 → +2 · Lag-3 → +1
+  if (lag2 && (TRIGGER_LAG1[lag2] !== undefined || LEAD_INDICATORS[lag2] !== undefined)) {
+    score += 2; chips.push({ c:2, t:`②Lag2 ${lag2}`, p:2 });
+  }
+  if (lag3 && (TRIGGER_LAG1[lag3] !== undefined || LEAD_INDICATORS[lag3] !== undefined)) {
+    score += 1; chips.push({ c:2, t:`②Lag3 ${lag3}`, p:1 });
+  }
+
+  // [3] ลำดับประเภท Lag-2 → Lag-1
+  if (lag2) {
+    const key = classify3up(lag2) + '>' + classify3up(lag1);
+    if (TYPE_SEQ[key] !== undefined) {
+      score += 1;
+      chips.push({ c:3, t:`③${typeTH(lag2)}→${typeTH(lag1)} ${(TYPE_SEQ[key]*100).toFixed(1)}%`, p:1 });
+    }
+  }
+
+  // [4] ช่วงเวลา — ลบออก (pattern เวลาสอบตก split-half = noise, v21)
+
+  // [5] Streak — นับ non-OK ติดกันย้อนหลัง
+  let streak = 0;
+  for (let j = idx-1; j >= 0; j--) {
+    const v = actualAt(j);
+    if (!v || isSpecial3up(v)) break;
+    streak++;
+  }
+  if (streak >= 4 && streak <= 8)  { score += 2; chips.push({ c:5, t:`⑤Streak ${streak} → 67-70%`, p:2 }); }
+  else if (streak >= 9)            { score += 1; chips.push({ c:5, t:`⑤Streak ${streak} → P+1=40%`, p:1 }); }
+
+  // [6] ใน 3 รอบล่าสุดมี OK ≥ 2
+  let recentOK = 0;
+  for (let j = idx-1; j >= Math.max(0, idx-3); j--) {
+    const v = actualAt(j);
+    if (v && isSpecial3up(v)) recentOK++;
+  }
+  if (recentOK >= 2) { score += 1; chips.push({ c:6, t:`⑥3 รอบล่าสุด OK ${recentOK}×`, p:1 }); }
+
+  // [AVOID] Lag-1 อยู่ในรายการต้องเลี่ยง
+  let avoid = false;
+  if (AVOID_LAG1[lag1] !== undefined) {
+    score -= 2; avoid = true;
+    chips.push({ c:7, t:`⚠AVOID ${lag1} ${(AVOID_LAG1[lag1]*100).toFixed(0)}%`, p:-2 });
+  }
+
+  // [7] YK Lock Signal — ตรวจล็อก 2ตัวล่าง y้อนหลัง 4 รอบ
+  const lag1Low2 = state.predictions[idx-1]?.actualLow2 || null;
+  if (lag1Low2 && lag1Low2.length === 2) {
+    const win4 = [];
+    for (let j = idx-5; j < idx-1; j++) {
+      if (j < 0) continue;
+      const v3 = actualAt(j);
+      const v2 = state.predictions[j]?.actualLow2 || null;
+      if (v3) win4.push({ top: pad(parseInt(v3),3), bot: v2||'' });
+    }
+    if (win4.length > 0) {
+      const curJ2 = jiabNum(lag1Low2);
+      const curR2 = lag1Low2[1]+lag1Low2[0];
+      let lockHit = false;
+      for (const p of win4) {
+        const checks = [p.bot, p.bot.length===2?p.bot[1]+p.bot[0]:'',
+                        p.top.slice(0,2), p.top.slice(1,3), p.top[0]+p.top[2]];
+        if (checks.some(cv => cv.length===2 && cv===lag1Low2)) {
+          lockHit = true; break;
+        }
+      }
+      if (lockHit) {
+        score += 2;
+        chips.push({ c:5, t:`⑦Lock2d ${lag1Low2} ตรง`, p:2 });
+      }
+    }
+  }
+
+  // [8] YK Seq Signal — ตรวจเลขเรียงถอดล็อกจาก 2 รอบล่าสุด
+  if (lag1 && lag2) {
+    const dStr = lag1 + (state.predictions[idx-1]?.actualLow2||'') +
+                 lag2 + (state.predictions[idx-2]?.actualLow2||'');
+    const sr = findSeqFromDigits(dStr);
+    if (sr.lock.length >= 2) {
+      score += 1;
+      chips.push({ c:6, t:`⑧Seq ${sr.lock.slice(0,3).join('/')}`, p:1 });
+    }
+  }
+
+  // [9] จีบท้าย (วิเคราะห์ 31 วัน) — 2ตัวล่างคู่ติดกันเป็นจีบเต็มคู่
+  //     คู่จีบเกิดเมื่อ 3-4 รอบก่อน → รอบนี้คือ "แถวที่ 3" หลังสัญญาณ = 36.7% → +2
+  //     คู่จีบเกิดเมื่อ 2-3 รอบก่อน → "แถวที่ 2" = 34.3% → +1
+  const lowAt = (j) => state.predictions[idx-j]?.actualLow2 || null;
+  if (isJiabFullPair(lowAt(4), lowAt(3))) {
+    score += 2;
+    chips.push({ c:5, t:`⑨จีบท้าย ${lowAt(4)}→${lowAt(3)} +3แถว 36.7%`, p:2 });
+  } else if (isJiabFullPair(lowAt(3), lowAt(2))) {
+    score += 1;
+    chips.push({ c:5, t:`⑨จีบท้าย ${lowAt(3)}→${lowAt(2)} +2แถว 34.3%`, p:1 });
+  }
+
+  // [10] เลขเรียง ขึ้น+ลง (วิเคราะห์ 31 วัน ผ่าน split-half) — OK ล่าสุดใน 9 รอบเป็นเลขเรียง → 3 รอบถัดไป 71.8%
+  for (let j = idx-1; j >= Math.max(0, idx-9); j--) {
+    const v = actualAt(j);
+    if (v && isSpecial3up(v)) {
+      if (isSequential(v)) {
+        score += 1;
+        const dir = isSeqDown(v) ? 'เรียงลง' : 'เรียงขึ้น';
+        chips.push({ c:3, t:`⑩${dir} ${v} → 3รอบ 71.8%`, p:1 });
+      }
+      break;
+    }
+  }
+
+  // [11] 2ตัวล่างเด่น/เย็น (วิเคราะห์ 31 วัน ผ่าน split-half) — ดู 3 รอบก่อนหน้า
+  for (let j = idx-1; j >= Math.max(0, idx-3); j--) {
+    const lw = state.predictions[j]?.actualLow2 || null;
+    if (!lw) continue;
+    if (HOT_LOW2.includes(lw)) {
+      score += 1;
+      chips.push({ c:6, t:`⑪ล่างเด่น ${lw} → 3รอบ 75.8%`, p:1 });
+      break;
+    }
+    if (COLD_LOW2.includes(lw)) {
+      score -= 1;
+      chips.push({ c:7, t:`⑪ล่างเย็น ${lw} → 3รอบ 54.7%`, p:-1 });
+      break;
+    }
+  }
+
+  return { score: Math.max(0, score), raw: score, chips, avoid, lag1, lag2, lag3, streak };
+}
+
+/* ── สแกนหา Trigger + นับไปอีก 3 แถว ────────────────────── */
+function scanTriggers() {
+  const ev = [];
+  const preds = state.predictions;
+  for (let i = 0; i < preds.length; i++) {
+    const v = actualAt(i);
+    if (!v) continue;
+    const ok   = isSpecial3up(v);
+    const user = USER_TRIGGERS.includes(v);
+    if (!ok && !user) continue;
+
+    const win = [];
+    for (let j = 1; j <= BUY_SIZE; j++) {
+      const p = preds[i+j];
+      if (!p) break;
+      const w = actualAt(i+j);
+      win.push({
+        round: p.round,
+        val:   w,
+        ok:    w ? isSpecial3up(w) : null,
+        user:  w ? USER_TRIGGERS.includes(w) : null,
+        type:  w && isSpecial3up(w) ? typeTH(w) : ''
+      });
+    }
+    const filled = win.filter(w => w.val !== null).length;
+    const hits   = win.filter(w => w.ok === true).length;
+
+    ev.push({
+      idx: i, round: preds[i].round, time: preds[i].time, val: v,
+      kind: user ? (ok ? 'both' : 'user') : 'ok',
+      type: ok ? typeTH(v) : '—',
+      win, filled, hits,
+      resolved: filled > 0,
+      hit: hits > 0
+    });
+  }
+  return ev;
+}
+
+/* ── สร้างหน้าต่างซื้อ 3 แถวล่วงหน้าหลัง Trigger ─────────── */
+function buildBuyWindows(events) {
+  const map = {};
+  events.forEach((e, n) => {
+    for (let j = 1; j <= BUY_SIZE; j++) {
+      const t = e.idx + j;
+      if (t >= state.predictions.length) break;
+      // แถวเดียวอาจอยู่ในหลายหน้าต่าง — เก็บอันที่ใกล้ Trigger ที่สุด
+      if (!map[t] || j < map[t].offset) {
+        map[t] = { buyNo: n+1, offset: j, srcRound: e.round, srcVal: e.val, srcKind: e.kind, srcType: e.type };
+      }
+    }
+  });
+  return map;
+}
+
+/* ── ตอง Cooldown: หลังตอง 3 แถวถัดไปสัญญาณหยุดซื้อ (61.2% < baseline 65.9%) ── */
+function computeTongCooldown() {
+  const preds = state.predictions;
+  preds.forEach(p => { p.tongCooldown = false; p.tongSrc = null; });
+  for (let j = 0; j < preds.length; j++) {
+    const v = actualAt(j);
+    if (!v || !isTriple(v)) continue;          // เฉพาะแถวที่ผลจริงเป็น ตอง
+    const srcRound = preds[j].round;
+    for (let k = 1; k <= 3 && j + k < preds.length; k++) {
+      preds[j + k].tongCooldown = true;
+      preds[j + k].tongSrc = srcRound;          // เก็บรอบต้นทางเพื่อแสดง tooltip
+    }
+  }
+}
+
+/* ── คำนวณทั้งหมด + เก็บลง state ─────────────────────────── */
+function computeAnalysis() {
+  computeAfterOK();
+  computeTongCooldown();
+  state.triggers = scanTriggers();
+  state.buyMap   = buildBuyWindows(state.triggers);
+  state.sigMap   = {};
+  for (let i = 0; i < state.predictions.length; i++) {
+    const s = scoreRow(i);
+    if (s) state.sigMap[i] = s;
+  }
+}
+
+/* ── ผสมหลักคิด "หลัง OK → 3 แถวถัดไป" แบบ real-time ───────────
+   ดันความถี่ทำนาย OK ในหน้าต่างหลัง OK จาก Markov เป็น 3/3
+   แถวที่เพิ่มขึ้น (afterOKPred) แสดงสีเหลือง · Markov เดิม (predMarkov) สีเขียว */
+function computeAfterOK() {
+  const preds = state.predictions;
+  if (!preds.length || preds[0].predMarkov === undefined) return;
+  // รีเซ็ต → เริ่มจาก Markov ล้วน
+  preds.forEach(p => { p.afterOKPred = false; p.predictedOK = p.predMarkov; });
+
+  for (let j = 0; j < preds.length; j++) {
+    const v = actualAt(j);
+    if (!v || !isSpecial3up(v)) continue;         // เฉพาะแถวที่ผลจริงเป็น OK set
+    // หน้าต่าง j+1..j+W ที่มีอยู่จริง
+    const win = [];
+    for (let k = 1; k <= AFTER_OK_WINDOW && j + k < preds.length; k++) win.push(j + k);
+    const markovOK = win.filter(i => preds[i].predMarkov);
+    let need = AFTER_OK_TARGET - markovOK.length;
+    if (need <= 0) continue;
+    // เลือกแถวที่ Markov ไม่ทำนาย OK ที่ pMarkov สูงสุด มาเติมให้ครบ 3
+    win.filter(i => !preds[i].predMarkov && !preds[i].afterOKPred)
+       .sort((a, b) => (preds[b].pMarkov || 0) - (preds[a].pMarkov || 0))
+       .slice(0, need)
+       .forEach(i => { preds[i].afterOKPred = true; preds[i].predictedOK = true; });
+  }
+}
+
+function buyLevel(score) {
+  if (score === null || score === undefined) return 'low';
+  if (score >= MIN_BUY_SCORE + 2) return 'strong';
+  if (score >= MIN_BUY_SCORE)     return 'mid';
+  return 'low';
+}
+
+function onMinScoreChange(v) {
+  MIN_BUY_SCORE = Math.max(0, parseInt(v, 10) || 0);
+  log('INFO', `ตั้งเกณฑ์คะแนนแนะนำซื้อ = ${MIN_BUY_SCORE}`);
+  const lbl = document.getElementById('minBuyScoreLabel');
+  if (lbl) lbl.textContent = MIN_BUY_SCORE;
+  renderTable();
+  renderNextBuy();
+}
+
+/* ── เสียง + Popup แจ้งเตือนรอบซื้อ ──────────────────────── */
+function toggleBuySound(on) { state.soundOn = !!on; }
+
+function playBuyAlert() {
+  if (!state.soundOn) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    // เสียง 3 beep สั้น ๆ (โน้ตขึ้น) — ไม่ต้องมีไฟล์เสียง
+    const notes = [660, 880, 1046];
+    notes.forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      const t0 = ctx.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0 + 0.17);
+    });
+    setTimeout(() => { try { ctx.close(); } catch(e){} }, 900);
+  } catch (e) {}
+}
+
+function showBuyPopup(srcRound, srcVal, firstRound, firstTime, scoreTxt) {
+  const el = document.getElementById('buyPopup');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="bp-top"><span>🟢 พบ Trigger — เตรียมซื้อรอบถัดไป</span><span class="bp-x">✕</span></div>
+    <div class="bp-round">รอบ ${firstRound} <span style="font-size:15px;color:#dcfce7">(${firstTime})</span></div>
+    <div class="bp-sub">ต้นทาง รอบ ${srcRound} ออก <b style="color:#fde68a">${srcVal}</b> · ${scoreTxt}</div>
+    <div class="bp-hint">👆 คลิกที่นี่เพื่อไปดูรายละเอียด ${BUY_SIZE} รอบที่จะซื้อ</div>`;
+  el.classList.add('show');
+  playBuyAlert();
+  // auto-hide 15 วิ (แต่ยังคลิกได้)
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => dismissBuyPopup(false), 15000);
+}
+
+function dismissBuyPopup(scrollToSection) {
+  const el = document.getElementById('buyPopup');
+  if (el) { el.classList.remove('show'); clearTimeout(el._hideTimer); }
+  if (scrollToSection) {
+    const box = document.getElementById('nextBuyBox');
+    if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+function testBuyAlert() {
+  const p = state.predictions || [];
+  let ex = p.find(x => x) || { round: '—', time: '—:—' };
+  showBuyPopup(ex.round || '—', '112', ex.round || '—', ex.time || '—:—', 'ทดสอบเสียง+popup');
+}
+
+/* ── การ์ด "รอบที่จะซื้อถัดไป" ────────────────────────────── */
+function renderNextBuy() {
+  const box = document.getElementById('nextBuyBox');
+  if (!box) return;
+  if (state.predictions.length === 0) {
+    box.innerHTML = '<div class="nextbuy-main idle"><div class="nextbuy-lbl" style="color:#94a3b8">— ยังไม่มีข้อมูล —</div><div style="color:#64748b;font-size:13px;margin-top:6px">นำเข้าไฟล์และกรอกผลจริงเพื่อให้ระบบหา Trigger</div></div>';
+    return;
+  }
+
+  // แถวสุดท้ายที่มีผลจริง
+  let last = -1;
+  for (let i = 0; i < state.predictions.length; i++) if (actualAt(i) !== null) last = i;
+
+  if (last < 0) {
+    box.innerHTML = '<div class="nextbuy-main idle"><div class="nextbuy-lbl" style="color:#94a3b8">รอผลจริง</div><div style="color:#94a3b8;font-size:13px;margin-top:6px">ยังไม่มีผลจริง — อัปโหลดไฟล์ผลจริงหรือกรอกในตาราง ระบบจะคำนวณรอบที่ควรซื้อให้ทันที</div></div>';
+    return;
+  }
+
+  const lastVal = actualAt(last);
+  const isOK   = isSpecial3up(lastVal);
+  const isUser = USER_TRIGGERS.includes(lastVal);
+
+  if (!isOK && !isUser) {
+    box.innerHTML = `<div class="nextbuy-main idle">
+      <div class="nextbuy-lbl" style="color:#94a3b8">⏸ ยังไม่พบ Trigger</div>
+      <div style="color:#cbd5e1;font-size:14px;margin-top:8px">
+        ผลล่าสุด รอบ <b>${state.predictions[last].round}</b> = <b style="font-family:Consolas,monospace;font-size:18px">${lastVal}</b>
+        (${typeTH(lastVal)}) — ไม่ใช่เลขซ้ำ และไม่ใช่ ${USER_TRIGGERS.join('/')}
+      </div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:8px">💡 รอจนกว่าจะออกเลขซ้ำหรือเลข Trigger แล้วระบบจะแนะนำ 3 รอบถัดไปให้</div>
+    </div>`;
+    return;
+  }
+
+  // สร้าง 3 รอบถัดไป
+  let cards = '';
+  let anyStrong = false;
+  let nCards = 0;
+  for (let j = 1; j <= BUY_SIZE; j++) {
+    const p = state.predictions[last + j];
+    if (!p) break;
+    nCards++;
+    const sig = scoreRow(last + j);
+    const sc  = sig ? sig.score : null;
+    const lv  = buyLevel(sc);
+    if (lv === 'strong') anyStrong = true;
+    const scTxt = sc === null ? '—' : `คะแนน ${sc}`;
+    const lvTxt = lv === 'strong' ? '★ แนะนำ' : (lv === 'mid' ? 'พิจารณา' : 'เฝ้าดู');
+    cards += `<div class="nb-round">
+      <div class="r">รอบ ${p.round}</div>
+      <div class="t">${p.time}</div>
+      <div class="s">${scTxt} · ${lvTxt}</div>
+    </div>`;
+  }
+
+  // ผลจริงล่าสุดอยู่รอบสุดท้ายของวัน → ไม่มีรอบถัดไปให้ซื้อ
+  if (nCards === 0) {
+    box.innerHTML = `<div class="nextbuy-main idle">
+      <div class="nextbuy-lbl" style="color:#fbbf24">🏁 จบวันแล้ว — ไม่มีรอบถัดไป</div>
+      <div style="color:#cbd5e1;font-size:14px;margin-top:8px">
+        พบ Trigger ที่รอบสุดท้าย (รอบ <b>${state.predictions[last].round}</b> = <b style="font-family:Consolas,monospace;font-size:18px;color:#fbbf24">${lastVal}</b>)
+        แต่เป็นรอบท้ายสุดของข้อมูล จึงยังไม่มีรอบให้ซื้อต่อ
+      </div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:8px">💡 เมื่อมีข้อมูลวันถัดไป ระบบจะคำนวณรอบที่ควรซื้อให้ทันที</div>
+    </div>`;
+    return;
+  }
+
+  // แจ้งเตือน (เสียง+popup) เมื่อพบ Trigger ใหม่ที่มีรอบให้ซื้อ — เตือนครั้งเดียวต่อ 1 Trigger
+  const srcRound = state.predictions[last].round;
+  if (state.alertBuyRound !== srcRound) {
+    state.alertBuyRound = srcRound;
+    const firstP = state.predictions[last + 1];
+    if (firstP) {
+      const fsig = scoreRow(last + 1);
+      const fsc  = fsig ? `คะแนน ${fsig.score}` : 'เฝ้าดู';
+      showBuyPopup(srcRound, lastVal, firstP.round, firstP.time, fsc);
+    }
+  }
+
+  const kindTxt = isOK && isUser ? `เลขซ้ำ (${typeTH(lastVal)}) + เลข Trigger`
+                : isOK ? `เลขซ้ำ — ${typeTH(lastVal)}`
+                : 'เลข Trigger พิเศษ';
+  const pRef = TRIGGER_LAG1[lastVal] !== undefined
+    ? `<br>📊 สถิติ 30 วัน: เลข <b>${lastVal}</b> เป็น Trigger ที่ให้ P(OK ใน 3 รอบ) = <b>${(TRIGGER_LAG1[lastVal]*100).toFixed(1)}%</b>`
+    : '';
+
+  box.innerHTML = `<div class="nextbuy-main">
+    <div class="nextbuy-lbl">🟢 พบ Trigger — รอบที่จะซื้อ ${BUY_SIZE} รอบล่วงหน้า</div>
+    <div style="color:#dcfce7;font-size:14px;margin-top:6px">
+      ต้นทาง: รอบ <b>${state.predictions[last].round}</b> ออก
+      <b style="font-family:Consolas,monospace;font-size:19px;color:#4ade80">${lastVal}</b> — ${kindTxt}
+    </div>
+    <div class="nextbuy-rounds">${cards}</div>
+    <div class="nextbuy-why">
+      ⚖️ <b>การตัดสินใจเป็นของคุณ</b> — ตัวเลขนี้เป็นเพียงแนวทางจากการวิเคราะห์ที่ 1–6${pRef}
+      <br>${anyStrong ? '★ มีอย่างน้อย 1 รอบที่สัญญาณแข็งแกร่ง' : 'ยังไม่มีรอบที่สัญญาณแข็งแกร่ง — พิจารณาให้รอบคอบ'}
+      <br><span style="color:#fca5a5">⚠ Backtest out-of-sample: ทุกกลยุทธ์ ROI ติดลบ (−34% ถึง −63% ที่ payout 900 · ปัจจุบัน 950 ดีขึ้นเล็กน้อยแต่ยังต่ำกว่าจุดคุ้มทุน)</span>
+    </div>
+  </div>`;
+}
+
+/* ── ส่วนตรวจสอบ Trigger ─────────────────────────────────── */
+function renderTriggerSection() {
+  const statBox = document.getElementById('triggerStats');
+  const detBox  = document.getElementById('triggerDetail');
+  if (!statBox || !detBox) return;
+
+  const ev = state.triggers || [];
+  const filledRows = state.predictions.filter((_, i) => actualAt(i) !== null).length;
+
+  if (filledRows === 0) {
+    statBox.innerHTML = '<div class="stat"><div class="lbl">สถานะ</div><div class="val gray" style="font-size:14px">ยังไม่มีผลจริง</div></div>';
+    detBox.innerHTML  = '<span class="gray" style="font-size:12px">— อัปโหลดไฟล์ผลจริงเพื่อเริ่มตรวจสอบ —</span>';
+    return;
+  }
+
+  const okRows   = state.predictions.filter((_, i) => { const v = actualAt(i); return v && isSpecial3up(v); }).length;
+  const userRows = state.predictions.filter((_, i) => { const v = actualAt(i); return v && USER_TRIGGERS.includes(v); }).length;
+  const resolved = ev.filter(e => e.resolved);
+  const hits     = resolved.filter(e => e.hit).length;
+  const ratio    = resolved.length ? hits / resolved.length : 0;
+
+  // นับแยกตามประเภท
+  const byType = {};
+  state.predictions.forEach((_, i) => {
+    const v = actualAt(i);
+    if (v && isSpecial3up(v)) { const t = typeTH(v); byType[t] = (byType[t] || 0) + 1; }
+  });
+
+  // นับเฉพาะ user triggers
+  const userEv  = resolved.filter(e => e.kind === 'user' || e.kind === 'both');
+  const userHit = userEv.filter(e => e.hit).length;
+
+  statBox.innerHTML = `
+    <div class="stat cyan"><div class="lbl">แถวที่มีผลจริง</div><div class="val">${filledRows}</div></div>
+    <div class="stat green"><div class="lbl">เลขซ้ำ (OK)</div><div class="val">${okRows}</div><div class="pct">${(okRows/filledRows*100).toFixed(1)}%</div></div>
+    <div class="stat orange"><div class="lbl">เลข 105/842/904/947/579</div><div class="val">${userRows}</div></div>
+    <div class="stat yellow"><div class="lbl">Trigger ทั้งหมด</div><div class="val">${ev.length}</div><div class="pct">ตรวจครบแล้ว ${resolved.length}</div></div>
+    <div class="stat ${ratio >= 0.5 ? 'green' : 'red'}"><div class="lbl">ออก Trigger ซ้ำใน 3 แถว</div><div class="val">${hits}/${resolved.length}</div><div class="pct">= ${(ratio*100).toFixed(1)}%</div></div>
+    <div class="stat purple"><div class="lbl">เฉพาะเลข Trigger พิเศษ</div><div class="val">${userHit}/${userEv.length}</div><div class="pct">${userEv.length ? (userHit/userEv.length*100).toFixed(0)+'%' : '—'}</div></div>
+  `;
+
+  // แยกประเภทเลขซ้ำ
+  const typeChips = Object.entries(byType).sort((a,b) => b[1]-a[1])
+    .map(([t,c]) => `<span class="chip c1" style="font-size:11px;padding:3px 9px">${t} · ${c}</span>`).join(' ');
+
+  // ตารางเฉพาะ user triggers (ที่ผู้ใช้ขอ)
+  let userTbl = '';
+  if (userEv.length > 0) {
+    const rows = userEv.map(e => {
+      const cells = [0,1,2].map(j => {
+        const w = e.win[j];
+        if (!w || w.val === null) return '<td class="gray">—</td>';
+        return w.ok
+          ? `<td class="win-ok">${w.val} ✓${w.type}</td>`
+          : `<td class="win-no">${w.val} ✗</td>`;
+      }).join('');
+      return `<tr><td>${e.round}</td><td class="gold" style="font-family:Consolas,monospace;font-size:14px">${e.val}</td>${cells}<td>${e.hit ? '<span class="green">OK ✓</span>' : '<span class="red">ไม่มี ✗</span>'}</td></tr>`;
+    }).join('');
+    userTbl = `
+      <h3 style="font-size:14px;color:#fbbf24;margin:16px 0 8px">🔶 เลข Trigger พิเศษที่พบ (105 / 842 / 904 / 947 / 579)</h3>
+      <div class="table-wrap" style="max-height:260px">
+        <table class="trig-tbl">
+          <thead><tr><th>รอบ</th><th>Trigger</th><th>+1</th><th>+2</th><th>+3</th><th>ผล</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } else {
+    userTbl = '<div class="note" style="margin-top:14px">ℹ️ ไม่พบเลข 105/842/904/947/579 ในผลจริงชุดนี้</div>';
+  }
+
+  detBox.innerHTML = `
+    <div style="margin-bottom:6px;font-size:12px;color:#94a3b8">การกระจายประเภทเลขซ้ำ:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px">${typeChips || '<span class="gray">—</span>'}</div>
+    ${userTbl}
+    <div class="note" style="margin-top:14px">
+      📐 <b>อัตราส่วนรวม:</b> พบ Trigger ${resolved.length} ครั้ง → มี Trigger ออกซ้ำใน 3 แถวถัดไป
+      <b class="${ratio >= 0.5 ? 'green' : 'red'}">${hits} ครั้ง = ${(ratio*100).toFixed(1)}%</b>
+      · เทียบ baseline P(OK ใน 3 รอบ) = <b>66.0%</b> จากสถิติ 30 วัน
+    </div>`;
+}
+
+/* ============================================================
+   ⭐ Group into Buy Rounds (3 แถว/รอบซื้อ)
+   ============================================================ */
+function groupIntoBuyRounds() {
+  const groups = [];
+  for (let i = 0; i < state.predictions.length; i += BUY_SIZE) {
+    const chunk = state.predictions.slice(i, i + BUY_SIZE);
+    if (chunk.length === 0) break;
+    const buyRoundNumber = Math.floor(i / BUY_SIZE) + 1;
+    const startRound = chunk[0].round;
+    const endRound = chunk[chunk.length - 1].round;
+    const startTime = chunk[0].time.split(' - ')[0];
+    const endTime = chunk[chunk.length - 1].time.split(' - ')[1];
+    const time = `${startTime} - ${endTime}`;
+
+    let hits = 0, misses = 0, missedOK = 0, passed = 0, filled = 0;
+    for (const p of chunk) {
+      if (p.actualInput.length === 3) {
+        filled++;
+        if (p.predictedOK && p.actualIsOK) hits++;
+        else if (p.predictedOK && !p.actualIsOK) misses++;
+        else if (!p.predictedOK && p.actualIsOK) missedOK++;
+        else passed++;
+      }
+    }
+    const totalBet = (hits + misses) * TOTAL_BET;
+    const totalWin = hits * PAYOUT;
+    const netProfit = hits * NET_WIN - misses * TOTAL_BET;
+
+    groups.push({
+      buyRoundNumber, startRound, endRound, time,
+      rows: chunk, hits, misses, missedOK, passed, filled,
+      totalBet, totalWin, netProfit
+    });
+  }
+  return groups;
+}
+
+/* ============================================================
+   ⭐ Top 5 รอบซื้อที่ถูก OK→OK มากสุด
+   ============================================================ */
+function getTop5BuyRounds(groups) {
+  return groups
+    .filter(g => g.hits > 0)
+    .sort((a, b) => {
+      if (b.hits !== a.hits) return b.hits - a.hits;
+      return a.buyRoundNumber - b.buyRoundNumber; // tie-break: เลขรอบซื้อน้อยก่อน
+    })
+    .slice(0, 5);
+}
+
+/* ============================================================
+   Render Top 5
+   ============================================================ */
+function renderTop5() {
+  const box = document.getElementById('top5Box');
+  if (state.predictions.length === 0) {
+    box.innerHTML = '<span class="gray">— ยังไม่มีข้อมูล —</span>';
+    return;
+  }
+  const groups = groupIntoBuyRounds();
+  const top5 = getTop5BuyRounds(groups);
+
+  if (top5.length === 0) {
+    box.innerHTML = '<span class="gray">— ยังไม่มีรอบซื้อที่ถูก OK→OK (กรุณากรอกผลจริง) —</span>';
+    return;
+  }
+
+  let html = '<div class="rank-list">';
+  top5.forEach((g, i) => {
+    const cls = i === 0 ? 'rank-1' : (i === 1 ? 'rank-2' : (i === 2 ? 'rank-3' : ''));
+    const medal = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '🏅'));
+    html += `<div class="rank-item ${cls}">
+      <div class="rank-num">${medal}<br><span style="font-size:14px;">#${i+1}</span></div>
+      <div class="rank-info">
+        <div class="rank-title">รอบซื้อที่ ${g.buyRoundNumber} — รอบ ${g.startRound}-${g.endRound}</div>
+        <div class="rank-sub">⏰ ${g.time} · OK ทั้งหมด ${g.rows.filter(r=>r.predictedOK).length} แถว</div>
+      </div>
+      <div class="rank-stats">
+        <div class="rank-hits">${g.hits} / ${BUY_SIZE}</div>
+        <div class="rank-label">ถูก OK→OK</div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+/* ============================================================
+   Render Buy Rounds Summary
+   ============================================================ */
+function renderBuyRoundsSummary() {
+  const box = document.getElementById('buyRoundsSummary');
+  if (state.predictions.length === 0) {
+    box.innerHTML = '<span class="gray">— ยังไม่มีข้อมูล —</span>';
+    return;
+  }
+  const allGroups = groupIntoBuyRounds();
+  const maxBuyRounds = allGroups.length;
+  // จำกัดจำนวนรอบซื้อที่สรุป (แก้ไขได้) — ค่าว่าง/เกิน = ทั้งหมด
+  let limit = parseInt(state.buyRoundLimit, 10);
+  if (isNaN(limit) || limit < 1 || limit > maxBuyRounds) limit = maxBuyRounds;
+  const groups = allGroups.slice(0, limit);
+  const totalBuyRounds = groups.length;
+  const completedBuyRounds = groups.filter(g => g.filled === BUY_SIZE).length;
+  const perfect = groups.filter(g => g.filled === BUY_SIZE && g.hits === BUY_SIZE).length;
+  const zeroHit = groups.filter(g => g.filled === BUY_SIZE && g.hits === 0).length;
+  const totalHits = groups.reduce((s, g) => s + g.hits, 0);
+  const totalMisses = groups.reduce((s, g) => s + g.misses, 0);
+  const totalMissedOK = groups.reduce((s, g) => s + g.missedOK, 0);
+  const totalNet = groups.reduce((s, g) => s + g.netProfit, 0);
+
+  box.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat cyan"><div class="lbl">รอบซื้อทั้งหมด (แก้ไขได้)</div><div class="val"><input type="number" id="buyRoundLimitInput" value="${totalBuyRounds}" min="1" max="${maxBuyRounds}" onchange="onBuyRoundLimitChange(this.value)" style="width:70px;background:#0f172a;color:#22d3ee;border:1px solid #334155;border-radius:6px;text-align:center;font-size:20px;font-weight:bold"></div><div class="pct">จาก ${maxBuyRounds} · 3 แถว/รอบ</div></div>
+      <div class="stat"><div class="lbl">รอบซื้อที่กรอกครบ</div><div class="val">${completedBuyRounds}</div></div>
+      <div class="stat yellow"><div class="lbl">🏆 รอบซื้อสมบูรณ์แบบ</div><div class="val">${perfect}</div><div class="pct">ถูก 3/3</div></div>
+      <div class="stat red"><div class="lbl">รอบซื้อที่ไม่ถูกเลย</div><div class="val">${zeroHit}</div><div class="pct">0/3</div></div>
+      <div class="stat green"><div class="lbl">รวมถูก OK→OK</div><div class="val">${totalHits}</div></div>
+      <div class="stat red"><div class="lbl">รวมผิด</div><div class="val">${totalMisses}</div></div>
+      <div class="stat orange"><div class="lbl">รวมพลาด OK</div><div class="val">${totalMissedOK}</div><div class="pct">→ ป้อนเข้า Feedback</div></div>
+      <div class="stat ${totalNet >= 0 ? 'green' : 'red'}"><div class="lbl">กำไร/ขาดทุนสุทธิ</div><div class="val">${totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString()}</div><div class="pct">บาท</div></div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   Render Buy Rounds Table
+   ============================================================ */
+function renderBuyTable() {
+  const tbody = document.getElementById('buyTableBody');
+  if (state.predictions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">— ยังไม่มีข้อมูล —</td></tr>';
+    return;
+  }
+  const groups = groupIntoBuyRounds();
+  let html = '';
+  for (const g of groups) {
+    const okCount = g.rows.filter(r => r.predictedOK).length;
+    const preds = g.rows.map(r => r.predictedOK ? `<span class="ok-badge ${r.afterOKPred ? 'yl' : ''}" style="padding:1px 6px; font-size:10px;">OK</span>` : '<span class="dash-badge" style="padding:1px 6px; font-size:10px;">—</span>').join(' ');
+    const actuals = g.rows.map(r => r.actualInput || '<span class="gray">-</span>').join(' ');
+    let rowClass = '';
+    if (g.filled === BUY_SIZE) {
+      if (g.hits === BUY_SIZE) rowClass = 'buy-perfect';
+      else if (g.hits > 0) rowClass = 'buy-good';
+      else rowClass = 'buy-zero';
+    }
+    const profitColor = g.netProfit > 0 ? 'green' : (g.netProfit < 0 ? 'red' : 'gray');
+    html += `<tr class="${rowClass}">
+      <td><b>#${g.buyRoundNumber}</b></td>
+      <td>${g.startRound}-${g.endRound}</td>
+      <td style="font-size:11px">${g.time}</td>
+      <td>${preds}</td>
+      <td>${actuals}</td>
+      <td class="green">${g.hits}</td>
+      <td class="red">${g.misses}</td>
+      <td class="yellow">${g.missedOK}</td>
+      <td class="green">${g.passed}</td>
+      <td class="${profitColor}">${g.netProfit > 0 ? '+' : ''}${g.netProfit.toLocaleString()}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+/* ============================================================
+   Investment
+   ============================================================ */
+function renderInvestment() {
+  document.getElementById('investInfo').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat yellow"><div class="lbl">จำนวนตัวเลขที่แทง</div><div class="val">${SPECIAL_COUNT}</div><div class="pct">ตัว</div></div>
+      <div class="stat red"><div class="lbl">เงินลงทุนต่อรอบ</div><div class="val">${TOTAL_BET.toLocaleString()}</div><div class="pct">บาท/แถว</div></div>
+      <div class="stat cyan"><div class="lbl">เงินลงทุนต่อรอบซื้อ</div><div class="val">${(TOTAL_BET*BUY_SIZE).toLocaleString()}</div><div class="pct">บาท (3 แถว)</div></div>
+      <div class="stat green"><div class="lbl">กำไรสุทธิ/ครั้งที่ถูก</div><div class="val">${NET_WIN.toLocaleString()}</div><div class="pct">= ${PAYOUT} - ${SPECIAL_COUNT-1}</div></div>
+      <div class="stat"><div class="lbl">อัตราจ่าย</div><div class="val">1 : ${PAYOUT}</div></div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   Stats
+   ============================================================ */
+function renderStats() {
+  const s = state.stats;
+  const box = document.getElementById('statsOutput');
+  if (!s) {
+    box.innerHTML = '<div class="stat"><div class="lbl">สถานะ</div><div class="val gray" style="font-size:14px">ยังไม่มีข้อมูล</div></div>';
+    return;
+  }
+  const pct = x => (x*100).toFixed(2)+'%';
+  box.innerHTML = `
+    <div class="stat"><div class="lbl">รอบเรียนรู้</div><div class="val">${s.n.toLocaleString()}</div></div>
+    <div class="stat red"><div class="lbl">ตอง</div><div class="val">${s.count.triple}</div><div class="pct">${pct(s.prob.triple)}</div></div>
+    <div class="stat orange"><div class="lbl">คู่หน้า</div><div class="val">${s.count.front}</div><div class="pct">${pct(s.prob.front)}</div></div>
+    <div class="stat orange"><div class="lbl">คู่หลัง</div><div class="val">${s.count.back}</div><div class="pct">${pct(s.prob.back)}</div></div>
+    <div class="stat cyan"><div class="lbl">หาม</div><div class="val">${s.count.ham}</div><div class="pct">${pct(s.prob.ham)}</div></div>
+    <div class="stat purple"><div class="lbl">เรียง</div><div class="val">${s.count.seq}</div><div class="pct">${pct(s.prob.seq)}</div></div>
+    <div class="stat green"><div class="lbl">OK รวม</div><div class="val">${s.count.special}</div><div class="pct">${pct(s.prob.special)}</div></div>
+    <div class="stat yellow"><div class="lbl">P(OK|OK)</div><div class="val">${pct(s.transition.OK_to_OK)}</div><div class="pct">OO=${s.transition.OO} ON=${s.transition.ON}</div></div>
+    <div class="stat yellow"><div class="lbl">P(OK|notOK)</div><div class="val">${pct(s.transition.NOTOK_to_OK)}</div><div class="pct">NO=${s.transition.NO} NN=${s.transition.NN}</div></div>
+  `;
+}
+
+/* ============================================================
+   Summary
+   ============================================================ */
+function renderSummary() {
+  const box = document.getElementById('summaryBox');
+  if (!box) return;
+  if (state.predictions.length === 0) { box.innerHTML = ''; return; }
+  const groups = groupIntoBuyRounds();
+  const filled = state.predictions.filter(p => p.actualInput && p.actualInput.length === 3);
+  const hits = filled.filter(p => p.predictedOK && p.actualIsOK).length;
+  const misses = filled.filter(p => p.predictedOK && !p.actualIsOK).length;
+  const missedOK = filled.filter(p => !p.predictedOK && p.actualIsOK).length;
+  const passed = filled.filter(p => !p.predictedOK && !p.actualIsOK).length;
+  const globalNet = hits * NET_WIN - misses * TOTAL_BET;
+  const accuracy = filled.length > 0 ? (hits + passed) / filled.length * 100 : 0;
+  box.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat"><div class="lbl">รอบทั้งหมด</div><div class="val">288</div></div>
+      <div class="stat cyan"><div class="lbl">รอบซื้อทั้งหมด</div><div class="val">${groups.length}</div></div>
+      <div class="stat green"><div class="lbl">✅ ถูก</div><div class="val">${hits}</div></div>
+      <div class="stat red"><div class="lbl">❌ ผิด</div><div class="val">${misses}</div></div>
+      <div class="stat yellow"><div class="lbl">✗ พลาด OK</div><div class="val">${missedOK}</div></div>
+      <div class="stat green"><div class="lbl">✓ ผ่าน</div><div class="val">${passed}</div></div>
+      <div class="stat"><div class="lbl">ความแม่นยำ</div><div class="val">${accuracy.toFixed(1)}%</div></div>
+      <div class="stat ${globalNet >= 0 ? 'green' : 'red'}"><div class="lbl">กำไร/ขาดทุนสุทธิ</div><div class="val">${globalNet >= 0 ? '+' : ''}${globalNet.toLocaleString()}</div></div>
+    </div>
+  `;
+}
+
+/* ── กรอบเหลือง: 3 แถวหลัง OK แยกตามประเภท (lift any-3 จากวิเคราะห์ 31 วัน) ── */
+const OKTYPE_INFO = {
+  seqdown: { th: 'เรียงลง',  pct: 73.1, hot: true },
+  seq:     { th: 'เรียงขึ้น', pct: 69.6, hot: true },
+  ham:     { th: 'หาม',      pct: 67.6, hot: false },
+  back:    { th: 'คู่หลัง',   pct: 64.7, hot: false },
+  front:   { th: 'คู่หน้า',   pct: 64.3, hot: false },
+  triple:  { th: 'ตอง',      pct: 61.2, hot: false },
+};
+function afterOkInfo(idx) {
+  for (let k = 1; k <= 3; k++) {
+    const p = state.predictions[idx - k];
+    if (p && p.actualInput && p.actualInput.length === 3 && p.actualIsOK) {
+      const cl = classify3up(p.actualInput);
+      const info = OKTYPE_INFO[cl] || { th: 'OK', pct: 65.9, hot: false };
+      return { dist: k, src: p.actualInput, cls: cl, ...info };
+    }
+  }
+  return null;
+}
+
+/* ============================================================
+   Detail table
+   ============================================================ */
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  if (state.predictions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">— กรุณานำเข้าไฟล์ CSV —</td></tr>';
+    return;
+  }
+  const onlyBuy = document.getElementById('onlyBuyChk')?.checked;
+  const trigIdx = new Set((state.triggers || []).map(e => e.idx));
+
+  // legend แบบ dynamic ตามเกณฑ์คะแนน
+  const lg = document.getElementById('tblLegend');
+  if (lg) lg.innerHTML =
+    `<span class="lg r1">คะแนน ${MIN_BUY_SCORE} (อ่อน)</span>` +
+    `<span class="lg r2">คะแนน ${MIN_BUY_SCORE+1} (กลาง)</span>` +
+    `<span class="lg r3">คะแนน ≥ ${MIN_BUY_SCORE+2} (เข้ม)</span>` +
+    `<span class="lg frame">กรอบเขียว = กลุ่มแนะนำซื้อติดกัน</span>` +
+    `<span class="lg gq">▌หน้าต่างซื้อ (คะแนนไม่ถึงเกณฑ์)</span>` +
+    `<span class="lg o">▌แถว Trigger (ต้นทาง)</span>` +
+    `<span class="lg pkh">▐ 3 แถวหลังเลขเรียง (71.8%)</span>` +
+    `<span class="lg pkw">▐ 3 แถวหลัง OK อื่น</span>` +
+    `<span class="lg" style="background:#450a0a44;border:1px solid #dc2626;color:#fca5a5">⛔ 3 แถวหลังตอง (61.2%)</span>`;
+
+  const isRec = (j) => {
+    const s = state.sigMap[j];
+    return !!state.buyMap[j] && !!s && s.score >= MIN_BUY_SCORE;
+  };
+
+  let html = '';
+  let shown = 0;
+  state.predictions.forEach((p, idx) => {
+    const buy = state.buyMap[idx];
+    const sig = state.sigMap[idx];
+    const sc  = sig ? sig.score : null;
+    const lv  = buy ? buyLevel(sc) : null;
+    const isRecommended = isRec(idx);
+
+    if (onlyBuy && !isRecommended) return;
+    shown++;
+
+    // คลาสของแถว: เขียวเข้ม-อ่อนตามคะแนน + กรอบล้อมกลุ่มแถวติดกัน · ส้ม = Trigger
+    let trClass = '';
+    if (isRecommended) {
+      trClass = 'rec rec-' + Math.min(3, sc - MIN_BUY_SCORE + 1);
+      if (!isRec(idx-1)) trClass += ' grp-start';
+      if (!isRec(idx+1)) trClass += ' grp-end';
+    }
+    else if (buy) trClass = 'buywin';
+    else if (trigIdx.has(idx)) trClass = 'trigrow';
+
+    // กรอบเหลือง: 3 แถวหลัง OK แยกตามประเภท
+    const ak = afterOkInfo(idx);
+    let rowTitle = '';
+    if (ak) {
+      trClass += ak.hot ? ' pk-hot' : ' pk-warm';
+      if (ak.hot) {
+        const pk = afterOkInfo(idx-1);
+        if (!pk || !pk.hot) trClass += ' pk-start';
+        const nk = afterOkInfo(idx+1);
+        if (!nk || !nk.hot) trClass += ' pk-end';
+      }
+      rowTitle = `3 แถวหลัง ${ak.th} (${ak.src}) · แถวที่ ${ak.dist} · 3รอบมี OK ${ak.pct}%`;
+    }
+    // cooldown หลังตอง
+    if (p.tongCooldown) { trClass += ' tong-cool'; rowTitle = `⛔ หยุดซื้อ — 3 รอบหลังตอง (รอบ ${p.tongSrc}) | OK เพียง 61.2% < baseline 65.9%`; }
+
+    // คอลัมน์สัญญาณ 1–6
+    let sigCell;
+    if (!sig) {
+      sigCell = '<span class="gray" style="font-size:11px">—</span>';
+    } else {
+      const cls = sig.avoid ? 'sig-avoid' : `sig-${Math.min(5, sig.score)}`;
+      const chips = sig.chips.map(c => `<span class="chip c${c.c}">${c.t}</span>`).join('');
+      sigCell = `<span class="sig-score ${cls}">${sig.score}</span><div class="sig-chips">${chips}</div>`;
+    }
+
+    // คอลัมน์รอบที่จะซื้อ
+    let buyCell;
+    if (p.tongCooldown) {
+      // ตอง cooldown — override ทุกอย่าง, หยุดซื้อ
+      const buyTimeStr = p.time ? p.time.split(' - ')[0] : '';
+      buyCell = `<span class="stop-badge">⛔ หยุดซื้อ (หลังตอง)</span>
+                 <div style="font-size:10px;color:#fca5a5;margin-top:3px">รอบต้นทาง ${p.tongSrc}</div>`;
+    } else if (buy) {
+      const cls = lv === 'strong' ? 'strong' : (lv === 'low' ? 'low' : '');
+      const tag = lv === 'strong' ? '🛒★ ซื้อ' : (lv === 'mid' ? '🛒 ซื้อ' : '👁 เฝ้าดู');
+      const buyTimeStr = p.time ? p.time.split(' - ')[0] : '';
+      buyCell = `<span class="buy-badge ${cls}">${tag} #${buy.buyNo}</span>
+                 ${buyTimeStr ? `<div style="font-size:12px;color:#4ade80;font-family:Consolas,monospace;font-weight:bold;margin-top:4px;letter-spacing:1px">🕐 ${buyTimeStr}</div>` : ''}
+                 <div style="font-size:10px;color:#86efac;margin-top:1px">จากรอบ ${buy.srcRound} · ${buy.srcVal}</div>`;
+    } else if (trigIdx.has(idx)) {
+      const e = state.triggers.find(x => x.idx === idx);
+      const uc = (e.kind === 'user' || e.kind === 'both') ? 'user' : '';
+      buyCell = `<span class="trig-badge ${uc}">TRIGGER</span>
+                 <div style="font-size:10px;color:#fcd34d;margin-top:3px">${e.type}</div>`;
+    } else if (p.afterOKPred) {
+      const buyTimeStr = p.time ? p.time.split(' - ')[0] : '';
+      buyCell = `<span class="buy-badge yl">🟡 ซื้อ (หลัง OK)</span>
+                 ${buyTimeStr ? `<div style="font-size:12px;color:#fde68a;font-family:Consolas,monospace;font-weight:bold;margin-top:4px;letter-spacing:1px">🕐 ${buyTimeStr}</div>` : ''}`;
+    } else {
+      buyCell = '<span class="gray">—</span>';
+    }
+
+    const boostMark = p.seqBoost ? '<span title="โอกาสเพิ่มจากเลขเรียง 3 แถวก่อน (×1.10)" style="color:#eab308;font-size:11px"> ⑩▲</span>' : '';
+    const okBadge = (p.predictedOK
+        ? (p.afterOKPred
+            ? '<span class="ok-badge yl" title="เพิ่มจากหลักคิดหลัง OK (3 แถว → 3/3)">OK</span>'
+            : '<span class="ok-badge">OK</span>')
+        : '<span class="dash-badge">—</span>') + boostMark;
+    const inputValue = p.actualInput || '';
+    let inputClass = 'actual-input';
+    if (inputValue.length === 3) {
+      inputClass += p.fromFile ? ' from-file' : ' filled';
+      if (isSequential(inputValue)) inputClass += ' seq-val';
+    }
+    let actualOKDisplay = '<span class="gray">—</span>';
+    if (p.actualIsOK === true) actualOKDisplay = '<span class="green">OK</span>';
+    else if (p.actualIsOK === false) actualOKDisplay = '<span class="gray">ไม่ OK</span>';
+    let statusDisplay = '<span class="gray">—</span>';
+    let profitDisplay = '<span class="gray">—</span>';
+    if (inputValue.length === 3) {
+      if (p.predictedOK && p.actualIsOK) {
+        statusDisplay = '<span class="green">✅ ถูก</span>';
+        profitDisplay = `<span class="green">+${NET_WIN.toLocaleString()}</span>`;
+      } else if (p.predictedOK && !p.actualIsOK) {
+        statusDisplay = '<span class="red">❌ ผิด</span>';
+        profitDisplay = `<span class="red">-${TOTAL_BET.toLocaleString()}</span>`;
+      } else if (!p.predictedOK && p.actualIsOK) {
+        statusDisplay = '<span class="yellow">✗ พลาด OK</span>';
+        profitDisplay = '<span class="gray">0</span>';
+      } else {
+        statusDisplay = '<span class="green">✓ ผ่าน</span>';
+        profitDisplay = '<span class="gray">0</span>';
+      }
+    }
+    html += `<tr class="${trClass}"${rowTitle ? ` title="${rowTitle}"` : ''}>
+      <td>${p.round}</td><td>${p.time}</td><td>${okBadge}</td>
+      <td><input type="text" class="${inputClass}" data-idx="${idx}" maxlength="3" value="${inputValue}" placeholder="000" oninput="onActualInput(${idx}, this.value)"></td>
+      <td>${actualOKDisplay}</td><td>${statusDisplay}</td><td>${profitDisplay}</td>
+      <td>${sigCell}</td><td>${buyCell}</td>
+    </tr>`;
+  });
+  if (shown === 0) html = '<tr><td colspan="9" class="empty-msg">— ไม่มีแถวที่ผ่านเกณฑ์แนะนำซื้อ (ลองลดเกณฑ์คะแนน) —</td></tr>';
+  tbody.innerHTML = html;
+}
+
+function onActualInput(idx, value) {
+  const p = state.predictions[idx];
+  if (!p) return;
+  const cleaned = value.replace(/[^0-9]/g, '').slice(0, 3);
+  p.actualInput = cleaned;
+  const input = document.querySelector(`input[data-idx="${idx}"]`);
+  if (input && input.value !== cleaned) input.value = cleaned;
+  if (input) {
+    input.classList.remove('from-file');
+    input.classList.toggle('filled', cleaned.length === 3);
+    input.classList.toggle('seq-val', cleaned.length === 3 && isSequential(cleaned));
+  }
+  if (p.fromFile) p.fromFile = false;
+  if (cleaned.length === 3) {
+    p.actualIsOK = isSpecial3up(cleaned);
+    p.actualClass = classify3up(cleaned);
+  } else {
+    p.actualIsOK = null;
+    p.actualClass = null;
+  }
+  updateRowDisplay(idx);
+  renderAllSummaries();
+  refreshRowDecorations();
+}
+
+function updateRowDisplay(idx) {
+  const p = state.predictions[idx];
+  const input = document.querySelector(`input[data-idx="${idx}"]`);
+  const tr = input?.closest('tr');
+  if (!tr || !p) return;
+  let actualOKDisplay = '<span class="gray">—</span>';
+  if (p.actualIsOK === true) actualOKDisplay = '<span class="green">OK</span>';
+  else if (p.actualIsOK === false) actualOKDisplay = '<span class="gray">ไม่ OK</span>';
+  tr.children[4].innerHTML = actualOKDisplay;
+  let statusDisplay = '<span class="gray">—</span>';
+  let profitDisplay = '<span class="gray">—</span>';
+  if (p.actualInput.length === 3) {
+    if (p.predictedOK && p.actualIsOK) {
+      statusDisplay = '<span class="green">✅ ถูก</span>';
+      profitDisplay = `<span class="green">+${NET_WIN.toLocaleString()}</span>`;
+    } else if (p.predictedOK && !p.actualIsOK) {
+      statusDisplay = '<span class="red">❌ ผิด</span>';
+      profitDisplay = `<span class="red">-${TOTAL_BET.toLocaleString()}</span>`;
+    } else if (!p.predictedOK && p.actualIsOK) {
+      statusDisplay = '<span class="yellow">✗ พลาด OK</span>';
+      profitDisplay = '<span class="gray">0</span>';
+    } else {
+      statusDisplay = '<span class="green">✓ ผ่าน</span>';
+      profitDisplay = '<span class="gray">0</span>';
+    }
+  }
+  tr.children[5].innerHTML = statusDisplay;
+  tr.children[6].innerHTML = profitDisplay;
+}
+
+/* ============================================================
+   Render orchestration
+   ============================================================ */
+/* ════════════════════════════════════════════════════════════
+   🔢 เลข 2 ตัว — ตัวทำนายตามกฎ 4 เลขโดด
+   ════════════════════════════════════════════════════════════ */
+let TWO_MODE = 'low';   // 'low' = 2 ตัวล่าง · 'top' = 2 ตัวท้ายของ 3 ตัวบน
+
+function switchTwo(m) {
+  TWO_MODE = m;
+  event.target.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTwo();
+}
+
+/* ดึงค่าเลข 2 ตัวของแถว idx ตามโหมดที่เลือก */
+function two(idx) {
+  const p = state.predictions[idx];
+  if (!p) return null;
+  if (TWO_MODE === 'top') {
+    return (p.actualInput && p.actualInput.length === 3) ? p.actualInput.slice(-2) : null;
+  }
+  return p.actualLow2 || null;
+}
+
+/* วัดผลกฎข้อ 1 กับข้อมูลที่โหลดอยู่จริง */
+function measureRule() {
+  const n = state.predictions.length;
+  let hit = 0, tot = 0, expSum = 0, dblHit = 0, dblTot = 0, ndHit = 0, ndTot = 0;
+  for (let i = 0; i + 2 < n; i++) {
+    const A = two(i), B = two(i+1), C = two(i+2);
+    if (!A || !B || !C) continue;
+    const S = new Set((A + B).split(''));
+    const ok = S.has(C[0]) || S.has(C[1]);
+    const k = S.size;
+    tot++; expSum += (100 - (10-k)*(10-k)) / 100;
+    if (ok) hit++;
+    if (isDbl2(C)) { dblTot++; if (ok) dblHit++; }
+    else           { ndTot++;  if (ok) ndHit++; }
+  }
+  return { tot, hit, exp: tot ? expSum/tot : 0, rate: tot ? hit/tot : 0,
+           dblTot, dblHit, ndTot, ndHit };
+}
+
+function renderTwo() {
+  const box = document.getElementById('twoBox');
+  if (!box) return;
+  if (state.predictions.length === 0) {
+    box.innerHTML = '<div class="empty-msg">— นำเข้าไฟล์และกรอกผลจริงก่อน —</div>';
+    return;
+  }
+
+  // หาสองแถวล่าสุดที่มีค่า
+  let i2 = -1;
+  for (let i = 0; i < state.predictions.length; i++) if (two(i) !== null) i2 = i;
+  const A = i2 - 1 >= 0 ? two(i2-1) : null;
+  const B = i2 >= 0 ? two(i2) : null;
+
+  const lbl = TWO_MODE === 'top' ? '2 ตัวบน (ท้ายของ 3 ตัว)' : '2 ตัวล่าง';
+  if (!A || !B) {
+    box.innerHTML = `<div class="empty-msg">— ต้องมีผลจริงของ ${lbl} อย่างน้อย 2 แถวติดกัน —</div>`;
+    return;
+  }
+
+  const r = digitRule(A, B);
+  const nextP = state.predictions[i2+1];
+  const rounds = [];
+  for (let j = 1; j <= 3; j++) if (state.predictions[i2+j]) rounds.push(state.predictions[i2+j].round);
+
+  // ตารางเลขผู้สมัคร 10×10
+  let gridHTML = '';
+  for (let d1 = 0; d1 < 10; d1++) {
+    for (let d2 = 0; d2 < 10; d2++) {
+      const nStr = `${d1}${d2}`;
+      const inCand   = r.cand.includes(nStr);
+      const inStrict = r.strict.includes(nStr);
+      const ok2      = isOK2(nStr);
+      let cls = 'g-off';
+      if (inStrict) cls = 'g-strict';
+      else if (inCand) cls = 'g-cand';
+      if (ok2) cls += ' g-ok';
+      gridHTML += `<div class="g-cell ${cls}" title="${nStr}${ok2 ? ' · ' + type2(nStr) : ''}">${nStr}</div>`;
+    }
+  }
+
+  const m = measureRule();
+  const evCand   = (r.pObs !== null ? r.pObs : r.pExp) * PAY2 - r.nCand;
+  const roiCand  = evCand / r.nCand * 100;
+  const okCand   = r.okInCand.length;
+  const evOk     = TWO_STATS.p_ok * PAY2 - OK2_SIZE;
+
+  box.innerHTML = `
+  <div class="two-head">
+    <div class="two-src">
+      <div class="two-lbl">แถวที่ 1 (รอบ ${state.predictions[i2-1].round})</div>
+      <div class="two-num">${A}</div>
+      <div class="two-t">${type2(A)}</div>
+    </div>
+    <div class="two-plus">+</div>
+    <div class="two-src">
+      <div class="two-lbl">แถวที่ 2 (รอบ ${state.predictions[i2].round})</div>
+      <div class="two-num">${B}</div>
+      <div class="two-t">${type2(B)}</div>
+    </div>
+    <div class="two-arrow">→</div>
+    <div class="two-out">
+      <div class="two-lbl">ทำนายแถวที่ 3${rounds.length ? ' (รอบ ' + rounds[0] + ')' : ''}</div>
+      <div class="two-digits">${r.S.map(d => `<span class="dchip">${d}</span>`).join('')}</div>
+      <div class="two-t">เลขโดด ${r.k} ตัว → ผู้สมัคร ${r.nCand} เลข</div>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="margin-top:14px">
+    <div class="stat cyan"><div class="lbl">ชุดผู้สมัคร (มี ≥1 หลักตรง)</div><div class="val">${r.nCand}</div><div class="pct">ต้นทุน ${r.nCand}฿/รอบ</div></div>
+    <div class="stat yellow"><div class="lbl">P ถูก (วัดจริง)</div><div class="val">${r.pObs !== null ? (r.pObs*100).toFixed(1)+'%' : '—'}</div><div class="pct">ทฤษฎี ${(r.pExp*100).toFixed(0)}%</div></div>
+    <div class="stat ${evCand >= 0 ? 'green' : 'red'}"><div class="lbl">EV ต่อรอบ</div><div class="val">${evCand >= 0 ? '+' : ''}${evCand.toFixed(2)}฿</div><div class="pct">ROI ${roiCand >= 0 ? '+' : ''}${roiCand.toFixed(2)}%</div></div>
+    <div class="stat purple"><div class="lbl">ทั้ง 2 หลักตรง (เข้มขึ้น)</div><div class="val">${r.nStrict}</div><div class="pct">P ≈ ${(r.nStrict)}%</div></div>
+    <div class="stat green"><div class="lbl">ผู้สมัคร ∩ OK Set 30</div><div class="val">${okCand}</div><div class="pct">เบิ้ล/เรียง ที่เข้าเงื่อนไข</div></div>
+    <div class="stat orange"><div class="lbl">ถ้าแถว 3 เป็นเบิ้ล</div><div class="val">${r.pDbl !== undefined ? (r.pDbl*100).toFixed(0)+'%' : '—'}</div><div class="pct">⚠ กฎข้อ 2 — กฎพลาด</div></div>
+  </div>
+
+  <div class="note" style="margin-top:12px;background:#450a0a;color:#fca5a5">
+    ⚠️ <b>ความจริงที่ต้องรู้:</b> ซื้อ ${r.nCand} เลข ได้ P = ${r.nCand}/100 = ${(r.pExp*100).toFixed(0)}% พอดี →
+    ROI = 95/100 − 1 = <b>−5.00%</b> เสมอ ไม่ว่าจะเลือกเลขแบบไหน
+    กฎ 4 เลขโดด<b>ช่วยจำกัดขอบเขต</b>ให้ซื้อน้อยลงได้ แต่<b>ไม่ได้เพิ่มความได้เปรียบ</b>
+  </div>
+
+  <h3 style="font-size:14px;color:#60a5fa;margin:18px 0 8px">🎯 ตารางเลข 2 ตัว — ชุดที่เข้าเงื่อนไข</h3>
+  <div class="legend-row">
+    <span class="lg gs">▌ทั้ง 2 หลักตรง (${r.nStrict} เลข)</span>
+    <span class="lg g">▌มี 1 หลักตรง (${r.nCand - r.nStrict} เลข)</span>
+    <span class="lg o">▌อยู่ใน OK Set 30 (ขอบทอง)</span>
+  </div>
+  <div class="g-grid">${gridHTML}</div>
+
+  <h3 style="font-size:14px;color:#60a5fa;margin:20px 0 8px">📊 กฎนี้แม่นแค่ไหนกับข้อมูลที่โหลดอยู่</h3>
+  ${m.tot === 0 ? '<div class="note">ยังไม่มีข้อมูลพอจะวัด</div>' : `
+  <div class="stats-grid">
+    <div class="stat"><div class="lbl">ชุดที่ตรวจได้</div><div class="val">${m.tot.toLocaleString()}</div></div>
+    <div class="stat ${m.rate >= m.exp ? 'green' : 'red'}"><div class="lbl">อัตราถูกจริง</div><div class="val">${(m.rate*100).toFixed(1)}%</div><div class="pct">คาดหวัง ${(m.exp*100).toFixed(1)}%</div></div>
+    <div class="stat ${m.rate - m.exp >= 0 ? 'green' : 'red'}"><div class="lbl">ส่วนต่างจากสุ่ม</div><div class="val">${(m.rate-m.exp)*100 >= 0 ? '+' : ''}${((m.rate-m.exp)*100).toFixed(2)}</div><div class="pct">จุดเปอร์เซ็นต์</div></div>
+    <div class="stat green"><div class="lbl">แถว 3 ไม่ใช่เบิ้ล</div><div class="val">${m.ndTot ? (m.ndHit/m.ndTot*100).toFixed(1)+'%' : '—'}</div><div class="pct">n = ${m.ndTot.toLocaleString()}</div></div>
+    <div class="stat red"><div class="lbl">แถว 3 เป็นเบิ้ล</div><div class="val">${m.dblTot ? (m.dblHit/m.dblTot*100).toFixed(1)+'%' : '—'}</div><div class="pct">n = ${m.dblTot.toLocaleString()} ← ข้อ 2</div></div>
+  </div>
+  <div class="note" style="margin-top:10px">
+    📌 อ้างอิงจากข้อมูลเต็ม 8,788 รอบ: กฎข้อ 1 ถูก <b>55.70%</b> เทียบค่าคาดหวัง <b>56.56%</b>
+    (ต่ำกว่า 0.86 จุด · p = 0.10 · permutation p = 0.14) →
+    <b>ข้อสังเกต "ส่วนใหญ่" ถูกต้อง แต่มาจากอัตราพื้นฐาน ไม่ใช่รูปแบบพิเศษ</b><br>
+    ส่วน<b>ข้อ 2 ถูกต้องตามกลไก</b>: แถว 3 ไม่ใช่เบิ้ล ถูก <b>58.22%</b> · เป็นเบิ้ล ถูกแค่ <b>34.17%</b>
+    (ต่างกัน 24 จุด) เพราะเลขเบิ้ลมีเลขโดดแค่ตัวเดียว
+  </div>`}
+
+  <h3 style="font-size:14px;color:#60a5fa;margin:20px 0 8px">🟢 OK Set เลข 2 ตัว (30 เลข)</h3>
+  <div class="stats-grid">
+    <div class="stat green"><div class="lbl">P(OK) ต่อรอบ</div><div class="val">29.55%</div><div class="pct">ทฤษฎี 30%</div></div>
+    <div class="stat red"><div class="lbl">EV ต่อรอบ</div><div class="val">${evOk.toFixed(2)}฿</div><div class="pct">ROI ${(evOk/OK2_SIZE*100).toFixed(2)}%</div></div>
+    <div class="stat yellow"><div class="lbl">จุดคุ้มทุนต้องได้</div><div class="val">31.58%</div><div class="pct">ขาด 2.03 จุด</div></div>
+    <div class="stat cyan"><div class="lbl">อัตราจ่ายที่ควรเป็น</div><div class="val">1:101.5</div><div class="pct">ได้จริง 1:95</div></div>
+  </div>`;
+}
+
+/* ── ฐานความรู้ วิเคราะห์ 1–6 ─────────────────────────────── */
+function renderKB() {
+  const box = document.getElementById('kbBox');
+  if (!box) return;
+  const numChips = (obj, cls) => Object.entries(obj)
+    .sort((a,b) => b[1]-a[1])
+    .map(([n,p]) => `<span class="chip ${cls}" style="font-size:12px;padding:4px 9px;font-family:Consolas,monospace">${n} · ${(p*100).toFixed(0)}%</span>`)
+    .join(' ');
+
+  const seqRows = Object.entries(TYPE_SEQ).sort((a,b) => b[1]-a[1]).map(([k,p]) => {
+    const [a,b] = k.split('>');
+    return `<tr><td>${THAI_TYPE[a]} → ${THAI_TYPE[b]}</td><td class="${p >= 0.36 ? 'gold' : 'blue'}" style="font-family:Consolas,monospace">${(p*100).toFixed(1)}%</td><td class="gray">${(p > BASELINE_P ? '+' : '') + ((p-BASELINE_P)*100).toFixed(1)}pp</td></tr>`;
+  }).join('');
+
+  box.innerHTML = `
+  <div style="display:grid;gap:14px">
+
+    <div class="stat" style="border-left-color:#22c55e;padding:14px 16px">
+      <div style="font-weight:bold;color:#4ade80;margin-bottom:8px">① Trigger Numbers (Lag-1) → P(OK ใน 3 รอบ)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${numChips(TRIGGER_LAG1, 'c1')}</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:8px">ถ้ารอบก่อนหน้าออกเลขเหล่านี้ → <b>+3 คะแนน</b> (สัญญาณแข็งแกร่งที่สุด)</div>
+    </div>
+
+    <div class="stat" style="border-left-color:#3b82f6;padding:14px 16px">
+      <div style="font-weight:bold;color:#93c5fd;margin-bottom:8px">② Lead Indicators (รวม Lag 1–5, n≥30)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${numChips(LEAD_INDICATORS, 'c2')}</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:8px">Lag-1 → <b>+3</b> · Lag-2 → <b>+2</b> · Lag-3 → <b>+1</b> คะแนน</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat" style="border-left-color:#a855f7;padding:14px 16px;min-width:270px">
+        <div style="font-weight:bold;color:#c084fc;margin-bottom:8px">③ ลำดับประเภท Lag-2 → Lag-1</div>
+        <table style="font-size:12px"><tbody>${seqRows}</tbody></table>
+        <div style="font-size:11px;color:#94a3b8;margin-top:8px">ตรงรูปแบบ → <b>+1 คะแนน</b> (baseline 30.2%)</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat" style="border-left-color:#f97316;padding:14px 16px;min-width:270px">
+        <div style="font-weight:bold;color:#fb923c;margin-bottom:8px">⑤ Streak Pressure (non-OK ติดกัน)</div>
+        <table style="font-size:12px"><tbody>
+          <tr><td>Streak 1–3</td><td class="gray">P(+3) ≈ 65–66%</td><td class="gray">0</td></tr>
+          <tr><td>Streak 4–8</td><td class="gold">P(+3) = 67–70%</td><td class="gold">+2</td></tr>
+          <tr><td>Streak ≥ 9</td><td class="green">P(+1) = 40.4%</td><td class="green">+1</td></tr>
+        </tbody></table>
+        <div style="font-size:11px;color:#94a3b8;margin-top:8px">การออกค่อนข้าง Independent — ไม่มี pressure สะสมชัดเจน</div>
+      </div>
+      <div class="stat" style="border-left-color:#84cc16;padding:14px 16px;min-width:270px">
+        <div style="font-weight:bold;color:#d9f99d;margin-bottom:8px">⑥ Multi-Signal Scoring</div>
+        <table style="font-size:12px"><tbody>
+          <tr><td>Lag-1 ∈ Trigger/Lead</td><td class="gold">+3</td></tr>
+          <tr><td>Lag-2 ∈ Indicator</td><td class="gold">+2</td></tr>
+          <tr><td>Streak 4–8 รอบ</td><td class="gold">+2</td></tr>
+          <tr><td>⑦ YK Lock 2ตัวล่าง</td><td class="gold">+2</td></tr>
+          <tr><td>⑨ จีบท้ายล่าง (แถว+3 = 36.7%)</td><td class="gold">+2 / +1</td></tr>
+          <tr><td>Lag-3 ∈ Indicator</td><td class="blue">+1</td></tr>
+          <tr><td>3 รอบล่าสุดมี OK ≥ 2</td><td class="blue">+1</td></tr>
+          <tr><td>ลำดับประเภทตรงรูปแบบ</td><td class="blue">+1</td></tr>
+          <tr><td>⑧ YK เลขเรียงถอดล็อก</td><td class="blue">+1</td></tr>
+          <tr><td>⑩ OK ล่าสุดเป็นเลขเรียง ขึ้น/ลง (3รอบ = 71.8%)</td><td class="blue">+1</td></tr>
+          <tr><td>⑪ ล่างเด่น 97/78/69 ใน 3 รอบก่อน (75.8%)</td><td class="blue">+1</td></tr>
+          <tr><td>⑪ ล่างเย็น 95 ใน 3 รอบก่อน (54.7%)</td><td class="red">−1</td></tr>
+          <tr><td>Lag-1 ∈ AVOID</td><td class="red">−2</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div class="stat red" style="padding:14px 16px">
+      <div style="font-weight:bold;color:#f87171;margin-bottom:8px">⚠ AVOID List — Lag-1 ที่ควรหลีกเลี่ยง</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${numChips(AVOID_LAG1, 'c7')}</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:8px">P(OK) ตกเหลือ 40–55% ต่ำกว่า baseline 10–20pp → <b>−2 คะแนน</b></div>
+    </div>
+
+    <div class="stat purple" style="padding:14px 16px">
+      <div style="font-weight:bold;color:#c084fc;margin-bottom:8px">🎯 OK Set = 300 เลข (รวมเลขเรียงแบบวนรอบ)</div>
+      <div style="font-size:12px;color:#cbd5e1;line-height:1.9">
+        ตอง <b>10</b> · คู่หน้า <b>90</b> · คู่หลัง <b>90</b> · หาม <b>90</b> ·
+        เรียงขึ้น <b>10</b> (รวม 890, 901) · เรียงลง <b>10</b> (รวม 109, 098)
+      </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:8px">เลข Trigger ที่เฝ้าดูพิเศษ: <b style="color:#fbbf24;font-family:Consolas,monospace">${USER_TRIGGERS.join(' · ')}</b></div>
+    </div>
+
+  </div>`;
+}
+
+/* อัปเดตเฉพาะแถบสี + คอลัมน์สัญญาณ/ซื้อ โดยไม่แตะช่อง input (กันโฟกัสหลุด) */
+function refreshRowDecorations() {
+  const trigIdx = new Set((state.triggers || []).map(e => e.idx));
+  const isRec = (j) => {
+    const s = state.sigMap[j];
+    return !!state.buyMap[j] && !!s && s.score >= MIN_BUY_SCORE;
+  };
+  document.querySelectorAll('#tableBody input[data-idx]').forEach(inp => {
+    const idx = parseInt(inp.dataset.idx, 10);
+    const tr  = inp.closest('tr');
+    if (!tr) return;
+    const buy = state.buyMap[idx];
+    const sig = state.sigMap[idx];
+    const sc  = sig ? sig.score : null;
+    const lv  = buy ? buyLevel(sc) : null;
+
+    let cls = '';
+    if (isRec(idx)) {
+      cls = 'rec rec-' + Math.min(3, sc - MIN_BUY_SCORE + 1);
+      if (!isRec(idx-1)) cls += ' grp-start';
+      if (!isRec(idx+1)) cls += ' grp-end';
+    }
+    else if (buy) cls = 'buywin';
+    else if (trigIdx.has(idx)) cls = 'trigrow';
+
+    const ak = afterOkInfo(idx);
+    if (ak) {
+      cls += ak.hot ? ' pk-hot' : ' pk-warm';
+      if (ak.hot) {
+        const pk = afterOkInfo(idx-1); if (!pk || !pk.hot) cls += ' pk-start';
+        const nk = afterOkInfo(idx+1); if (!nk || !nk.hot) cls += ' pk-end';
+      }
+      tr.title = `3 แถวหลัง ${ak.th} (${ak.src}) · แถวที่ ${ak.dist} · 3รอบมี OK ${ak.pct}%`;
+    } else {
+      tr.removeAttribute('title');
+    }
+    const p = state.predictions[idx];
+    if (p && p.tongCooldown) { cls += ' tong-cool'; tr.title = `⛔ หยุดซื้อ — 3 รอบหลังตอง (รอบ ${p.tongSrc})`; }
+    tr.className = cls;
+
+    // ช่องทำนาย (real-time หลัง OK): เขียว=Markov · เหลือง=afterOK
+    if (tr.children[2] && p) {
+      const boostMark = p.seqBoost ? '<span title="โอกาสเพิ่มจากเลขเรียง 3 แถวก่อน (×1.10)" style="color:#eab308;font-size:11px"> ⑩▲</span>' : '';
+      tr.children[2].innerHTML = (p.predictedOK
+          ? (p.afterOKPred ? '<span class="ok-badge yl" title="เพิ่มจากหลักคิดหลัง OK (3 แถว → 3/3)">OK</span>' : '<span class="ok-badge">OK</span>')
+          : '<span class="dash-badge">—</span>') + boostMark;
+    }
+    // seq-val: input สีแดงเมื่อพิมพ์เลขเรียง
+    if (inp && p && p.actualInput.length === 3) {
+      inp.classList.toggle('seq-val', isSequential(p.actualInput));
+    }
+    if (tr.children[7]) {
+      tr.children[7].innerHTML = sig
+        ? `<span class="sig-score ${sig.avoid ? 'sig-avoid' : 'sig-' + Math.min(5, sig.score)}">${sig.score}</span>
+           <div class="sig-chips">${sig.chips.map(c => `<span class="chip c${c.c}">${c.t}</span>`).join('')}</div>`
+        : '<span class="gray" style="font-size:11px">—</span>';
+    }
+    if (tr.children[8]) {
+      if (p && p.tongCooldown) {
+        tr.children[8].innerHTML = `<span class="stop-badge">⛔ หยุดซื้อ (หลังตอง)</span>
+          <div style="font-size:10px;color:#fca5a5;margin-top:3px">รอบต้นทาง ${p.tongSrc}</div>`;
+      } else if (buy) {
+        const cls = lv === 'strong' ? 'strong' : (lv === 'low' ? 'low' : '');
+        const tag = lv === 'strong' ? '★ ซื้อ' : (lv === 'mid' ? 'ซื้อ' : 'เฝ้าดู');
+        tr.children[8].innerHTML = `<span class="buy-badge ${cls}">${tag} #${buy.buyNo} · +${buy.offset}</span>
+          <div style="font-size:10px;color:#86efac;margin-top:3px">จากรอบ ${buy.srcRound} (${buy.srcVal})</div>`;
+      } else if (trigIdx.has(idx)) {
+        const e = state.triggers.find(x => x.idx === idx);
+        const uc = (e.kind === 'user' || e.kind === 'both') ? 'user' : '';
+        tr.children[8].innerHTML = `<span class="trig-badge ${uc}">TRIGGER</span>
+          <div style="font-size:10px;color:#fcd34d;margin-top:3px">${e.type}</div>`;
+      } else if (p && p.afterOKPred) {
+        tr.children[8].innerHTML = '<span class="buy-badge yl">🟡 ซื้อ (หลัง OK)</span>';
+      } else {
+        tr.children[8].innerHTML = '<span class="gray">—</span>';
+      }
+    }
+  });
+}
+
+/* ============================================================
+   🔑 renderYK — ระบบถอดล็อก YK
+   ============================================================ */
+function renderYK() {
+  const box = document.getElementById('ykBox');
+  if (!box) return;
+
+  // รวบรวมผลจริงล่าสุดสูงสุด 8 รอบ (มี top + bot ครบ)
+  const recentData = [];
+  for (let i = 0; i < state.predictions.length && recentData.length < 8; i++) {
+    const v3 = actualAt(i);
+    const v2 = state.predictions[i]?.actualLow2 || null;
+    if (v3 && v3.length === 3 && v2 && v2.length === 2) {
+      recentData.push({ round: state.predictions[i].round, top: pad(parseInt(v3),3), bot: v2 });
+    }
+  }
+
+  if (recentData.length < 2) {
+    box.innerHTML = '<div class="empty-msg">— ต้องมีผลจริงที่มีทั้ง 3ตัวบน + 2ตัวล่าง อย่างน้อย 2 รอบ —</div>';
+    return;
+  }
+
+  const last = recentData[recentData.length - 1];
+
+  // ── ล็อก ──
+  const lock2 = detectLock2d(recentData);
+  const lock3 = detectLock3d(recentData);
+
+  // ── เลขจีบ ──
+  const j2 = jiabNum(last.bot);
+  const j3 = jiabNum(last.top);
+
+  // ── เลขเรียง ──
+  const lockRoundData = recentData.length >= 5 ? recentData[4] : last;
+  const dStr = lockRoundData.top + lockRoundData.bot;
+  const seqRes = findSeqFromDigits(dStr);
+
+  // ── Martingale ──
+  // ใช้เลขเรียงถอดล็อกที่พบ (หรือ 2 ตัวจีบ ถ้าไม่มี)
+  const seqCount = seqRes.lock.length > 0
+    ? seqRes.lock.reduce((s,x) => s + jiabNum(x).length, 0)
+    : j2.length;
+  const mart3Rate = 950, mart2Rate = 95;
+  const mart3Free = Math.floor(mart3Rate / Math.max(seqCount,1));
+  const mart2Free = Math.floor(mart2Rate / Math.max(j2.length,1));
+
+  // ── Lock pattern visual ──
+  const lockRounds = recentData.map((d,i) => {
+    const isLockRound = lock2.some(h => h.checkRound === i+1);
+    const isSrcRound  = lock2.some(h => h.fromRound === i+1);
+    const cls = isLockRound ? 'background:#16a34a;color:#fff'
+              : isSrcRound  ? 'background:#b45309;color:#fff'
+              : i < 4 ? 'background:#1e293b;color:#64748b'
+              : 'background:#1e3a8a;color:#93c5fd';
+    return `<div style="text-align:center;padding:6px 4px;border-radius:6px;border:1px solid #334155;min-width:52px;${cls}">
+      <div style="font-family:Consolas,monospace;font-size:12px;font-weight:bold">${d.top}</div>
+      <div style="font-family:Consolas,monospace;font-size:11px">${d.bot}</div>
+      <div style="font-size:10px;opacity:.7">R${d.round}</div>
+    </div>`;
+  }).join('');
+
+  // ── Lock alerts ──
+  let lockHTML = '';
+  if (lock2.length > 0) {
+    lock2.slice(-3).forEach(h => {
+      lockHTML += `<div style="background:#052e16;border:1px solid #22c55e;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:13px">
+        🔒 รอบ ${h.checkRound}: <b style="color:#4ade80;font-family:Consolas">${h.curVal}</b>
+        ← รอบ ${h.fromRound} (<span style="color:#86efac;font-family:Consolas">${h.fromVal}</span>) [${h.matchType}]
+      </div>`;
+    });
+  } else {
+    lockHTML = '<div style="color:#64748b;font-size:13px">ยังไม่พบล็อก 2 ตัวใน 8 รอบนี้ (รอรอบ 5+)</div>';
+  }
+  if (lock3.length > 0) {
+    lock3.slice(-2).forEach(h => {
+      lockHTML += `<div style="background:#1e1a05;border:1px solid #ca8a04;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:13px">
+        🔒 3ตัว รอบ ${h.checkRound}: <b style="color:#fbbf24;font-family:Consolas">${h.curVal}</b>
+        ← รอบ ${h.fromRound} (<span style="color:#fcd34d;font-family:Consolas">${h.fromVal}</span>) [${h.matchType}]
+      </div>`;
+    });
+  }
+
+  // ── Seq result ──
+  const seqHtml = seqRes.lock.length > 0
+    ? seqRes.lock.map(s => {
+        const jj = jiabNum(s);
+        return `<span style="background:#3b0764;color:#d8b4fe;padding:2px 10px;border-radius:5px;font-family:Consolas;font-size:14px;font-weight:bold;margin-right:4px">${s}</span>` +
+               jj.slice(1).map(x=>`<span style="background:#1e293b;color:#a5b4fc;padding:2px 7px;border-radius:4px;font-family:Consolas;font-size:12px;margin-right:3px">${x}</span>`).join('');
+      }).join('<br>')
+    : '<span style="color:#64748b">ไม่พบเลขเรียงถอดล็อกจากรอบ 5</span>';
+
+  box.innerHTML = `
+  <div style="display:grid;gap:14px">
+
+    <!-- รอบที่ใช้วิเคราะห์ -->
+    <div>
+      <div style="font-size:12px;font-weight:bold;color:#94a3b8;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">
+        8 รอบล่าสุดที่มีผลจริงครบ (จีบ = เขียว · ต้นทาง = ส้ม)
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${lockRounds}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:6px">
+        🟦 รอบ 1-4 = ช่วงสะสมข้อมูล · 🔵 รอบ 5+ = ตรวจล็อก · 🟠 ต้นทาง · 🟢 พบล็อก
+      </div>
+    </div>
+
+    <!-- ล็อกที่พบ -->
+    <div>
+      <div style="font-size:13px;font-weight:bold;color:#22c55e;margin-bottom:8px">🔒 ล็อก 2 ตัวล่าง (${lock2.length} จุด) + ล็อก 3 ตัวบน (${lock3.length} จุด)</div>
+      ${lockHTML}
+    </div>
+
+    <!-- เลขจีบ -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px">
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">🔑 จีบ 2ตัวล่าง รอบล่าสุด = <b style="color:#60a5fa;font-family:Consolas">${last.bot}</b> (${j2.length} ตัว)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${j2.map((x,i)=>`<span style="font-family:Consolas;font-size:14px;font-weight:bold;padding:3px 10px;border-radius:5px;background:${i===0?'#1e3a8a':'#1e293b'};color:${i===0?'#93c5fd':'#94a3b8'}">${x}</span>`).join('')}
+        </div>
+      </div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px">
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">🔑 จีบ 3ตัวบน รอบล่าสุด = <b style="color:#fbbf24;font-family:Consolas">${last.top}</b> (${j3.length} ตัว)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${j3.slice(0,12).map((x,i)=>`<span style="font-family:Consolas;font-size:13px;font-weight:bold;padding:3px 9px;border-radius:5px;background:${i===0?'#422006':'#1e293b'};color:${i===0?'#fbbf24':'#94a3b8'}">${x}</span>`).join('')}
+          ${j3.length>12?`<span style="color:#64748b;font-size:12px">+${j3.length-12}</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    <!-- เลขเรียง -->
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">
+        📐 เลขเรียงถอดล็อก จากรอบ ${lockRoundData.round} (${lockRoundData.top}/${lockRoundData.bot}) — ตัวเลข: ${seqRes.digits.join(',')}
+      </div>
+      <div>${seqHtml}</div>
+      ${seqRes.old.length>0?`<div style="margin-top:8px;font-size:12px;color:#64748b">เรียงโบราณ: ${seqRes.old.map(s=>`<span style="font-family:Consolas;color:#475569">${s}</span>`).join(' ')}</div>`:''}
+    </div>
+
+    <!-- มาติงเกล YK -->
+    <div>
+      <div style="font-size:13px;font-weight:bold;color:#fbbf24;margin-bottom:8px">💰 มาติงเกลระบบ YK — อัตราจ่าย ÷ จำนวนตัว = รอบซื้อเท่าเดิมได้</div>
+      <div class="stats-grid">
+        <div class="stat yellow"><div class="lbl">3ตัว (${seqCount} ตัว) × 950</div><div class="val">${mart3Free}</div><div class="pct">รอบซื้อเท่าเดิมได้</div></div>
+        <div class="stat cyan"><div class="lbl">2ตัว (${j2.length} ตัว) × 95</div><div class="val">${mart2Free}</div><div class="pct">รอบซื้อเท่าเดิมได้</div></div>
+        <div class="stat green"><div class="lbl">ระยะล็อก YK</div><div class="val">4-6-8</div><div class="pct">รอบต่อ 1 ล็อก</div></div>
+        <div class="stat ${lock2.length>0||lock3.length>0?'green':'red'}">
+          <div class="lbl">สถานะล็อก</div>
+          <div class="val">${lock2.length>0||lock3.length>0?'พบล็อก':'ยังไม่พบ'}</div>
+          <div class="pct">${lock2.length} จุด (2ตัว) + ${lock3.length} จุด (3ตัว)</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:10px">
+        📌 <b>กฎมาติงเกลโกอัง:</b> ซื้อในระยะล็อก 4-6-8 รอบ · ถูกแล้วหยุดทันที · ไม่ทบไม่อัด
+        · ยิ่งซื้อน้อยตัวยิ่งยืนระยะได้นาน · Signal ⑦ Lock + ⑧ Seq + ⑨ จีบท้าย + ⑩ เรียงลง + ⑪ ล่างเด่น เพิ่มคะแนนในตาราง (สูงสุด +7)
+      </div>
+    </div>
+
+  </div>`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   🎯 4b. แนะนำซื้อเลข 2 ตัว — รวม GoAng + Signal + digitRule
+   ════════════════════════════════════════════════════════════ */
+function generateBuyNumbers(idx) {
+  const p = state.predictions[idx];
+  if (!p) return null;
+
+  const sets = { jiab: [], lock: [], seq: [], digit: [], strict: [] };
+  const labels = [];
+
+  // ── 1. จีบ 2 ตัวล่าง จากรอบก่อน ──
+  const prevBot = state.predictions[idx-1]?.actualLow2 || null;
+  if (prevBot && prevBot.length === 2) {
+    sets.jiab = jiabNum(prevBot);
+    labels.push(`จีบ ${prevBot} → ${sets.jiab.length} ตัว`);
+  }
+
+  // ── 2. ล็อก 2 ตัว ตรง (ย้อน 4 รอบ) ──
+  if (prevBot && prevBot.length === 2) {
+    for (let j = idx-5; j < idx-1; j++) {
+      if (j < 0) continue;
+      const v3 = actualAt(j);
+      const v2 = state.predictions[j]?.actualLow2 || null;
+      if (!v3) continue;
+      const checks = [v2, v3.slice(0,2), v3.slice(1,3), v3[0]+v3[2]];
+      if (v2 && v2.length===2) checks.push(v2[1]+v2[0]);
+      if (checks.some(cv => cv && cv.length===2 && cv===prevBot)) {
+        if (!sets.lock.includes(prevBot)) sets.lock.push(prevBot);
+      }
+    }
+    if (sets.lock.length > 0) labels.push(`ล็อก ${sets.lock.join(',')}`);
+  }
+
+  // ── 3. เลขเรียงถอดล็อก (จาก 2 รอบก่อน) ──
+  const lag1 = actualAt(idx-1), lag2 = actualAt(idx-2);
+  if (lag1 && lag2) {
+    const bot1 = state.predictions[idx-1]?.actualLow2 || '';
+    const bot2 = state.predictions[idx-2]?.actualLow2 || '';
+    const dStr = lag1 + bot1 + lag2 + bot2;
+    const sr = findSeqFromDigits(dStr);
+    if (sr.lock.length >= 2) {
+      sr.lock.forEach(s => {
+        const jj = jiabNum(s);
+        sets.seq.push(...jj);
+      });
+      sets.seq = [...new Set(sets.seq)];
+      labels.push(`เลขเรียง ${sr.lock.slice(0,3).join('/')} → ${sets.seq.length} ตัว`);
+    }
+  }
+
+  // ── 4. กฎ 4 เลขโดด (A+B → C) ──
+  const A = two(idx-2), B = two(idx-1);
+  if (A && B) {
+    const r = digitRule(A, B);
+    if (r) {
+      sets.digit = r.cand;
+      sets.strict = r.strict;
+      labels.push(`4โดด ${r.S.join('')} → strict ${r.nStrict} ตัว`);
+    }
+  }
+
+  // ── รวมชุด: priority = lock > jiab > seq > strict(digit) ──
+  const merged = new Set();
+  sets.lock.forEach(x => merged.add(x));
+  sets.jiab.forEach(x => merged.add(x));
+  sets.seq.forEach(x => merged.add(x));
+  // เพิ่ม strict ที่ overlap กับ jiab/seq (เข้มขึ้น)
+  const overlap = sets.strict.filter(x => merged.has(x));
+  // ถ้าไม่ overlap เลย → ใส่ strict ตรง
+  if (overlap.length === 0 && sets.strict.length > 0) {
+    sets.strict.forEach(x => merged.add(x));
+  }
+
+  const buyNums = [...merged].sort();
+  const cost = buyNums.length;
+  const ev = cost > 0 ? (1/cost) * PAY2 - cost : 0;
+  const roi = cost > 0 ? (PAY2/cost - 1) * 100 : 0;
+  const martRounds = cost > 0 ? Math.floor(PAY2 / cost) : 0;
+
+  return { buyNums, cost, ev, roi, martRounds, labels, sets, prevBot };
+}
+
+function renderBuyAdvice() {
+  const box = document.getElementById('buyAdviceBox');
+  if (!box) return;
+  if (state.predictions.length === 0) {
+    box.innerHTML = '<div class="empty-msg">— กรอกผลจริงในตารางเพื่อให้ระบบแนะนำเลข —</div>';
+    return;
+  }
+
+  // หารอบที่แนะนำซื้อ (score >= MIN_BUY_SCORE + อยู่ใน buyMap)
+  const rounds = [];
+  for (let i = 0; i < state.predictions.length; i++) {
+    const buy = state.buyMap[i];
+    const sig = state.sigMap[i];
+    if (!buy || !sig || sig.score < MIN_BUY_SCORE) continue;
+    // ต้องมีผลจริงรอบก่อนจึงจะคำนวณเลขได้
+    if (actualAt(i-1) === null) continue;
+    rounds.push(i);
+  }
+
+  if (rounds.length === 0) {
+    box.innerHTML = '<div class="empty-msg">— ยังไม่มีรอบที่ผ่านเกณฑ์ score ≥ ' + MIN_BUY_SCORE + ' —</div>';
+    return;
+  }
+
+  // แสดงเฉพาะรอบที่ยังไม่มีผลจริง (อนาคต) หรือ 10 รอบล่าสุดที่มีผลแล้ว
+  const futureRounds = rounds.filter(i => actualAt(i) === null);
+  const pastRounds = rounds.filter(i => actualAt(i) !== null).slice(-8);
+  const showRounds = [...pastRounds, ...futureRounds];
+
+  if (showRounds.length === 0) {
+    box.innerHTML = '<div class="empty-msg">— ไม่มีรอบที่แสดง —</div>';
+    return;
+  }
+
+  // สรุปอัตราถูก
+  let totalBuyAdv = 0, hitBuyAdv = 0;
+  pastRounds.forEach(i => {
+    const bn = generateBuyNumbers(i);
+    if (!bn || bn.buyNums.length === 0) return;
+    totalBuyAdv++;
+    const actBot = state.predictions[i]?.actualLow2;
+    if (actBot && bn.buyNums.includes(actBot)) hitBuyAdv++;
+  });
+
+  let summaryHTML = '';
+  if (totalBuyAdv > 0) {
+    const hitRate = (hitBuyAdv/totalBuyAdv*100).toFixed(1);
+    summaryHTML = `<div class="stats-grid" style="margin-bottom:14px">
+      <div class="stat cyan"><div class="lbl">รอบที่แนะนำซื้อ</div><div class="val">${showRounds.length}</div><div class="pct">score ≥ ${MIN_BUY_SCORE}</div></div>
+      <div class="stat ${hitBuyAdv > 0 ? 'green' : 'red'}"><div class="lbl">ถูก 2 ตัวล่าง (past)</div><div class="val">${hitBuyAdv}/${totalBuyAdv}</div><div class="pct">${hitRate}%</div></div>
+      <div class="stat yellow"><div class="lbl">อนาคต (ยังไม่ออก)</div><div class="val">${futureRounds.length}</div><div class="pct">รอผลจริง</div></div>
+    </div>`;
+  }
+
+  let cardsHTML = '';
+  showRounds.forEach(i => {
+    const p = state.predictions[i];
+    const sig = state.sigMap[i];
+    const buy = state.buyMap[i];
+    const bn = generateBuyNumbers(i);
+    if (!bn) return;
+
+    const timeStr = p.time ? p.time.split(' - ')[0] : '';
+    const lv = buyLevel(sig.score);
+    const lvTag = lv === 'strong' ? '🛒★' : '🛒';
+    const isFuture = actualAt(i) === null;
+
+    // ตรวจผลจริง 2 ตัวล่าง
+    const actBot = p.actualLow2 || null;
+    let resultHTML = '';
+    if (!isFuture && actBot) {
+      const hit = bn.buyNums.includes(actBot);
+      resultHTML = `<div style="margin-top:8px;padding:6px 10px;border-radius:6px;background:${hit?'#052e16':'#450a0a'};border:1px solid ${hit?'#22c55e':'#dc2626'}">
+        <span style="font-size:13px;color:${hit?'#4ade80':'#f87171'}">${hit?'✅ ถูก!':'❌ ไม่ถูก'}</span>
+        <span style="font-family:Consolas;font-size:15px;font-weight:bold;color:${hit?'#4ade80':'#f87171'};margin-left:8px">${actBot}</span>
+        ${hit?`<span style="color:#86efac;font-size:12px;margin-left:6px">กำไร +${(PAY2 - bn.cost).toLocaleString()}฿</span>`
+             :`<span style="color:#fca5a5;font-size:12px;margin-left:6px">ขาดทุน -${bn.cost}฿</span>`}
+      </div>`;
+    } else if (isFuture) {
+      resultHTML = '<div style="margin-top:8px;font-size:12px;color:#fbbf24">⏳ รอผลจริง...</div>';
+    }
+
+    // ชุดเลขที่จะซื้อ
+    const numsHTML = bn.buyNums.map(n => {
+      const isLock = bn.sets.lock.includes(n);
+      const isJiab = bn.sets.jiab.includes(n);
+      const isSeq = bn.sets.seq.includes(n);
+      const bg = isLock ? '#15803d' : isSeq ? '#3b0764' : isJiab ? '#1e3a8a' : '#422006';
+      const cl = isLock ? '#dcfce7' : isSeq ? '#d8b4fe' : isJiab ? '#93c5fd' : '#fcd34d';
+      const tip = isLock ? 'ล็อก' : isSeq ? 'เรียง' : isJiab ? 'จีบ' : '4โดด';
+      return `<span title="${tip}" style="font-family:Consolas;font-size:15px;font-weight:bold;color:${cl};background:${bg};padding:3px 9px;border-radius:5px;display:inline-block;margin:2px">${n}</span>`;
+    }).join('');
+
+    cardsHTML += `<div style="background:#0f172a;border:1px solid ${isFuture?'#22c55e':'#334155'};border-radius:10px;padding:14px;margin-bottom:10px;${isFuture?'box-shadow:0 0 8px #22c55e33':''}">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-family:Consolas;font-size:20px;font-weight:bold;color:${isFuture?'#4ade80':'#60a5fa'}">รอบ ${p.round}</div>
+        <div style="font-size:14px;font-family:Consolas;color:#4ade80;font-weight:bold;letter-spacing:1px">🕐 ${timeStr}</div>
+        <span class="sig-score sig-${Math.min(5,sig.score)}">${sig.score}</span>
+        <span style="font-size:12px;color:#86efac">${lvTag} จากรอบ ${buy.srcRound} (${buy.srcVal})</span>
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:5px">ชุดซื้อ 2 ตัวล่าง (${bn.buyNums.length} ตัว) · ต้นทุน ${bn.cost}฿/รอบ · ถูก→ กำไร ${PAY2-bn.cost}฿ · Mart ได้ ${bn.martRounds} รอบ</div>
+        <div style="display:flex;flex-wrap:wrap;gap:1px">${numsHTML}</div>
+      </div>
+      <div style="font-size:11px;color:#64748b">${bn.labels.join(' · ')}</div>
+      ${resultHTML}
+    </div>`;
+  });
+
+  // legend
+  const legend = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-size:11px">
+    <span style="background:#15803d;color:#dcfce7;padding:2px 8px;border-radius:4px">🔒 ล็อก</span>
+    <span style="background:#1e3a8a;color:#93c5fd;padding:2px 8px;border-radius:4px">🔑 จีบ</span>
+    <span style="background:#3b0764;color:#d8b4fe;padding:2px 8px;border-radius:4px">📐 เรียง</span>
+    <span style="background:#422006;color:#fcd34d;padding:2px 8px;border-radius:4px">🔢 4โดด strict</span>
+  </div>`;
+
+  box.innerHTML = summaryHTML + legend + cardsHTML;
+}
+
+/* ════════════════════════════════════════════════════════════
+   📊 อัตราทำนาย vs ผลจริง (แสดงบนหัวตาราง 11)
+   ════════════════════════════════════════════════════════════ */
+function clearAccRange() {
+  const a = document.getElementById('accFrom'), b = document.getElementById('accTo');
+  if (a) a.value = ''; if (b) b.value = '';
+  renderTableAccuracy();
+}
+
+function renderTableAccuracy() {
+  const box = document.getElementById('tableAccuracy');
+  if (!box) return;
+  if (state.predictions.length === 0) { box.innerHTML = ''; return; }
+
+  // ช่วงรอบที่เลือก (ถ้าไม่ใส่ = ทั้งหมด)
+  const fromV = parseInt(document.getElementById('accFrom')?.value, 10);
+  const toV   = parseInt(document.getElementById('accTo')?.value, 10);
+  const rFrom = isNaN(fromV) ? -Infinity : fromV;
+  const rTo   = isNaN(toV) ? Infinity : toV;
+  const inRange = (p) => p.round >= rFrom && p.round <= rTo;
+  const preds = state.predictions.filter(inRange);
+  const infoEl = document.getElementById('accRangeInfo');
+  if (infoEl) {
+    infoEl.textContent = (isNaN(fromV) && isNaN(toV))
+      ? `(ทั้งหมด ${state.predictions.length} รอบ)`
+      : `(รอบ ${isNaN(fromV)?1:fromV}–${isNaN(toV)?288:toV} · ${preds.length} รอบ)`;
+  }
+
+  const filled = preds.filter(p => p.actualInput && p.actualInput.length === 3);
+  if (filled.length === 0) { box.innerHTML = '<div class="stat"><div class="lbl">ช่วงนี้</div><div class="val gray" style="font-size:14px">ยังไม่มีผลจริง</div></div>'; return; }
+
+  // แยกวัด Markov ล้วน (predMarkov) vs ผสม+หลัง OK (predictedOK)
+  const metric = (field) => {
+    let pok = 0, hit = 0, cor = 0;
+    filled.forEach(p => {
+      const pr = (p[field] !== undefined) ? p[field] : p.predictedOK;
+      if (pr) pok++;
+      if (pr && p.actualIsOK) hit++;
+      if (pr === p.actualIsOK) cor++;
+    });
+    return {
+      acc: (cor / filled.length * 100).toFixed(1),
+      prec: pok > 0 ? (hit / pok * 100).toFixed(1) : '—',
+      rate: (pok / filled.length * 100).toFixed(1),
+      pok
+    };
+  };
+  const mk = metric('predMarkov');   // Markov ล้วน
+  const mix = metric('predictedOK'); // ผสม + หลัง OK
+
+  const actualOKCount = filled.filter(p => p.actualIsOK).length;
+  const actualRate = (actualOKCount / filled.length * 100).toFixed(1);
+  const predOKCount = mix.pok;
+
+  // Signal accuracy (score >= threshold)
+  let sigBuy = 0, sigBuyOK = 0;
+  filled.forEach((p, _) => {
+    const idx = state.predictions.indexOf(p);
+    const sig = state.sigMap[idx];
+    const buy = state.buyMap[idx];
+    if (buy && sig && sig.score >= MIN_BUY_SCORE) {
+      sigBuy++;
+      if (p.actualIsOK) sigBuyOK++;
+    }
+  });
+  const sigRate = sigBuy > 0 ? (sigBuyOK / sigBuy * 100).toFixed(1) : '—';
+  const liftPct = sigBuy > 0 && actualOKCount > 0
+    ? (((sigBuyOK/sigBuy) / (actualOKCount/filled.length) - 1) * 100).toFixed(1) : '—';
+
+  // ออก OK set แล้ว → 3 แถวถัดไป ออก OK set อีกอย่างน้อย 1 แถว (any-3 หลัง OK)
+  let okAfterN = 0, okAfterHit = 0;
+  for (let i = 0; i < state.predictions.length; i++) {
+    const p = state.predictions[i];
+    if (!inRange(p)) continue;
+    if (!(p.actualInput && p.actualInput.length === 3 && p.actualIsOK)) continue;
+    const nx = [1, 2, 3].map(k => state.predictions[i + k])
+                        .filter(q => q && q.actualInput && q.actualInput.length === 3);
+    if (nx.length < 3) continue;               // ต้องมีผลจริงครบ 3 แถวถัดไป
+    okAfterN++;
+    if (nx.some(q => q.actualIsOK)) okAfterHit++;
+  }
+  const okAfterRate = okAfterN > 0 ? (okAfterHit / okAfterN * 100).toFixed(1) : '—';
+
+  box.innerHTML = `
+    <div class="stat cyan"><div class="lbl">รอบที่มีผลจริง</div><div class="val">${filled.length}</div></div>
+    <div class="stat green"><div class="lbl">🟢 Markov ล้วน</div><div class="val">แม่น ${mk.prec}%</div><div class="pct">Acc ${mk.acc}% · ทำนาย OK ${mk.rate}%</div></div>
+    <div class="stat yellow"><div class="lbl">🟡 ผสม + หลัง OK</div><div class="val">แม่น ${mix.prec}%</div><div class="pct">Acc ${mix.acc}% · ทำนาย OK ${mix.rate}%</div></div>
+    <div class="stat green"><div class="lbl">ผลจริง OK</div><div class="val">${actualRate}%</div><div class="pct">${actualOKCount} รอบ</div></div>
+    <div class="stat ${sigBuyOK > 0 ? 'yellow' : 'red'}"><div class="lbl">Signal ≥${MIN_BUY_SCORE} ถูก</div><div class="val">${sigRate}%</div><div class="pct">${sigBuyOK}/${sigBuy} · Lift ${liftPct}%</div></div>
+    <div class="stat orange"><div class="lbl">OK แล้ว → 3 แถวถัดไป OK อีก</div><div class="val">${okAfterRate}%</div><div class="pct">${okAfterHit}/${okAfterN} ครั้ง · อย่างน้อย 1 แถว</div></div>
+  `;
+}
+
+function renderAllSummaries() {
+  computeAnalysis();
+  renderNextBuy();
+  renderBuyAdvice();
+  renderTriggerSection();
+  renderTwo();
+  renderYK();
+  renderSummary();
+  renderBuyRoundsSummary();
+  renderTop5();
+  renderBuyTable();
+  renderTableAccuracy();
+}
+function render() {
+  renderStats();
+  renderInvestment();
+  renderAllSummaries();
+  renderTable();
+}
+
+/* ============================================================
+   🔴 LIVE — ดึงผลจริงจาก localhost:5001 (yk_live_server.py)
+   ============================================================ */
+let liveTimer = null;
+let liveActive = false;
+const LIVE_URL = 'http://localhost:5001/live.json';
+const LIVE_INTERVAL_MS = 30000;
+
+function toggleLive() {
+  if (liveActive) {
+    stopLive();
+  } else {
+    startLive();
+  }
+}
+
+function startLive() {
+  liveActive = true;
+  const btn = document.getElementById('liveBtn');
+  const status = document.getElementById('liveStatus');
+  if (btn) { btn.textContent = '⏹ หยุด LIVE'; btn.style.background = '#64748b'; }
+  if (status) status.innerHTML = '<span style="color:#4ade80">🟢 กำลังรับข้อมูล LIVE...</span>';
+  setDock('🟢', 'LIVE ทำงาน — เชื่อมต่อ localhost:5001');
+  fetchLive();
+  liveTimer = setInterval(fetchLive, LIVE_INTERVAL_MS);
+  log('INFO', '🔴 เริ่ม LIVE polling จาก ' + LIVE_URL + ' ทุก ' + (LIVE_INTERVAL_MS/1000) + ' วิ');
+}
+
+function stopLive() {
+  liveActive = false;
+  if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+  const btn = document.getElementById('liveBtn');
+  const status = document.getElementById('liveStatus');
+  if (btn) { btn.textContent = '🔴 เริ่ม LIVE (localhost)'; btn.style.background = '#dc2626'; }
+  if (status) status.innerHTML = '<span style="color:#94a3b8">⚫ หยุดแล้ว</span>';
+  setDock('⚫', 'LIVE หยุดแล้ว');
+  log('INFO', '⏹ หยุด LIVE polling');
+}
+
+async function fetchLive() {
+  const status = document.getElementById('liveStatus');
+  const feed = document.getElementById('liveFeed');
+  const feedStatus = document.getElementById('liveFeedStatus');
+  const feedPreview = document.getElementById('liveFeedPreview');
+  try {
+    const resp = await fetch(LIVE_URL, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const realData = data.filter(r => r.top3 && r.top3 !== '000');
+    applyLiveData(realData);
+    const ts = new Date().toLocaleTimeString('th-TH');
+    const lastR = realData.length > 0 ? realData[realData.length - 1] : null;
+    const lastInfo = lastR ? ` · ล่าสุดรอบ ${lastR.round} (${lastR.time})` : '';
+    if (status) status.innerHTML = `<span style="color:#4ade80">🟢 LIVE · อัปเดต ${ts} · ${realData.length} รอบ${lastInfo}</span>`;
+    if (feed) feed.style.display = 'block';
+    if (feedStatus) feedStatus.textContent = `รับข้อมูลจริง ${realData.length} รอบ (${ts})`;
+    if (feedPreview) {
+      const preview = realData.slice(-5).map(r => `รอบ ${r.round || '?'} (${r.time || ''}) | ${r.top3 || '—'} | ${r.bot2 || '—'}`).join('\n');
+      feedPreview.textContent = '...5 รอบล่าสุด:\n' + preview;
+    }
+    setDock('🟢', `LIVE ${realData.length} รอบ · อัปเดต ${ts}`);
+    log('OK', `🔴 LIVE: รับ ${realData.length} รอบจริง (จาก ${data.length} ทั้งหมด) · อัปเดต ${ts}`);
+  } catch(err) {
+    if (status) status.innerHTML = `<span style="color:#f87171">⚠ เชื่อมต่อไม่ได้ — เปิดแถบ Console ล่างจอ คัดลอกคำสั่งเริ่ม server (ระบบลองใหม่ทุก 30 วิ)</span>`;
+    setDock('🔴', 'เชื่อมต่อ server ไม่ได้ — เปิดแถบนี้เพื่อดูคำสั่ง (ลองใหม่อัตโนมัติทุก 30 วิ)');
+    log('WARN', '🔴 LIVE error: ' + err.message);
+  }
+}
+
+function applyLiveData(results) {
+  if (!Array.isArray(results) || results.length === 0) return;
+  if (state.predictions.length === 0) return;
+  let filled = 0;
+  const roundMap = {};
+  results.forEach(r => { if (r.round) roundMap[parseInt(r.round)] = r; });
+  state.predictions.forEach((p, idx) => {
+    const r = roundMap[p.round];
+    if (!r) return;
+    const top3 = String(r.top3 || '').replace(/\D/g,'').padStart(3,'0');
+    const bot2 = String(r.bot2 || r.bot || '').replace(/\D/g,'').padStart(2,'0');
+    if (top3.length === 3 && top3 !== '000') {
+      if (p.actualInput !== top3) {
+        p.actualInput = top3;
+        p.actualIsOK = isSpecial3up(top3);
+        p.actualClass = classify3up(top3);
+        p.fromFile = true;
+        filled++;
+      }
+      if (bot2.length === 2 && p.actualLow2 !== bot2) p.actualLow2 = bot2;
+    }
+  });
+  if (filled > 0) {
+    renderTable();
+    renderAllSummaries();
+    log('OK', `🔴 LIVE: auto-fill ${filled} ช่องผลจริง`);
+  }
+}
+
+function importLiveJson() {
+  const raw = (document.getElementById('liveJsonPaste')?.value || '').trim();
+  if (!raw) { alert('ไม่มีข้อมูล JSON'); return; }
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data)) throw new Error('ต้องเป็น JSON Array');
+    applyLiveData(data);
+    log('OK', `📥 นำเข้า JSON สำเร็จ: ${data.length} รอบ`);
+    document.getElementById('liveJsonPaste').value = '';
+  } catch(e) {
+    alert('JSON ไม่ถูกต้อง: ' + e.message);
+    log('ERR', 'importLiveJson error: ' + e.message);
+  }
+}
+
+function switchTab(tab) {
+  state.currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-detail').style.display = tab === 'detail' ? 'block' : 'none';
+  document.getElementById('tab-buy').style.display = tab === 'buy' ? 'block' : 'none';
+}
+
+/* ============================================================
+   File handling
+   ============================================================ */
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  for (const file of files) {
+    const text = await file.text();
+    const { rows, debug } = parseCSVRobust(text);
+    state.importedFiles.push({ name: file.name, rows });
+    log('INFO', `นำเข้า: ${file.name} — ${rows.length} แถว`);
+  }
+  state.targetRows = buildTargetRows();
+  renderFileList();
+  buildStats();
+  renderStats();
+  generatePredictions();
+  e.target.value = '';
+});
+
+function clearFiles() {
+  state.importedFiles = [];
+  state.trainingRows = [];
+  state.targetRows = [];
+  state.predictions = [];
+  state.stats = null;
+  state.actualFiles = [];
+  state.lastParsedActual = null;
+  state.learnCount = 0;
+  renderFileList();
+  renderActualFileList();
+  renderStats();
+  renderAllSummaries();
+  renderTable();
+  document.getElementById('learnStatus').innerHTML = '— ยังไม่ได้เรียนรู้ —';
+  log('INFO', 'ล้างข้อมูลทั้งหมด');
+}
+
+function removeFile(idx) {
+  state.importedFiles.splice(idx, 1);
+  if (state.importedFiles.length === 0) { clearFiles(); return; }
+  renderFileList();
+  buildStats();
+  renderStats();
+  generatePredictions();
+}
+
+function renderFileList() {
+  const box = document.getElementById('fileList');
+  if (state.importedFiles.length === 0) {
+    box.innerHTML = '<span class="gray" style="font-size:12px;">ยังไม่มีไฟล์</span>';
+    return;
+  }
+  box.innerHTML = state.importedFiles.map((f, i) =>
+    `<span style="display:inline-block; background:#334155; color:#cbd5e1; padding:4px 10px; border-radius:6px; margin:3px; font-size:12px;">📄 ${f.name} <span style="color:#94a3b8">(${f.rows.length})</span> <span style="color:#f87171; cursor:pointer; margin-left:6px; font-weight:bold;" onclick="removeFile(${i})">✕</span></span>`
+  ).join('');
+}
+
+/* ============================================================
+   Actual files
+   ============================================================ */
+document.getElementById('actualFileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  log('INFO', `อ่านไฟล์ผลจริง: ${file.name}`);
+  const text = await file.text();
+  const { rows, debug } = parseCSVRobust(text);
+  state.lastParsedActual = { name: file.name, rows, debug };
+  log('INFO', `แยกได้: ${debug.valid} แถว (จาก ${debug.total} บรรทัด)`);
+  debug.sample.forEach(s => log('INFO', `  "${s.raw}" → round=${s.parsed.round}, up3=${s.parsed.up3}`));
+
+  if (state.predictions.length === 0) {
+    alert('กรุณากด "สร้างการทำนาย" ก่อน');
+    e.target.value = '';
+    return;
+  }
+  const byRound = {};
+  for (const r of rows) byRound[r.round] = { up3: pad(r.up3, 3), low2: r.low2 };
+  let filled = 0, missed = 0, low2n = 0;
+  state.predictions.forEach(p => {
+    const rec = byRound[p.round];
+    if (rec !== undefined) {
+      p.actualInput = rec.up3;
+      p.actualIsOK = isSpecial3up(rec.up3);
+      p.actualClass = classify3up(rec.up3);
+      p.actualLow2 = rec.low2 || null;
+      if (rec.low2) low2n++;
+      p.fromFile = true;
+      filled++;
+    } else missed++;
+  });
+  if (low2n) log('OK', `อ่านเลข 2 ตัวล่างได้ ${low2n} แถว`);
+  log('OK', `✅ เติมผลจริง ${filled} แถว (ไม่เจอ ${missed})`);
+  state.actualFiles.push({ name: file.name, count: filled });
+  renderActualFileList();
+  renderAllSummaries();
+  renderTable();
+  const tCount = (state.triggers || []).length;
+  const tHit = (state.triggers || []).filter(x => x.resolved && x.hit).length;
+  const tRes = (state.triggers || []).filter(x => x.resolved).length;
+  log('OK', `🔍 พบ Trigger ${tCount} แถว · ออกซ้ำใน 3 แถวถัดไป ${tHit}/${tRes} (${tRes ? (tHit/tRes*100).toFixed(1) : 0}%)`);
+  e.target.value = '';
+});
+
+function clearActualInputs() {
+  if (!confirm('ล้างผลจริงทั้งหมด?')) return;
+  state.predictions.forEach(p => {
+    p.actualInput = ''; p.actualIsOK = null; p.actualClass = null; p.fromFile = false;
+  });
+  state.actualFiles = [];
+  renderActualFileList();
+  renderAllSummaries();
+  renderTable();
+  log('INFO', 'ล้างผลจริงทั้งหมด');
+}
+
+function renderActualFileList() {
+  const box = document.getElementById('actualFileList');
+  if (state.actualFiles.length === 0) {
+    box.innerHTML = '<span class="gray" style="font-size:12px;">ยังไม่มีไฟล์ผลจริง</span>';
+    return;
+  }
+  box.innerHTML = state.actualFiles.map((f, i) =>
+    `<span class="result-file-tag">📥 ${f.name} (${f.count}) <span class="rm" onclick="removeActualFile(${i})">✕</span></span>`
+  ).join('');
+}
+function removeActualFile(idx) {
+  state.predictions.forEach(p => {
+    if (p.fromFile) { p.actualInput=''; p.actualIsOK=null; p.actualClass=null; p.fromFile=false; }
+  });
+  state.actualFiles.splice(idx, 1);
+  renderActualFileList();
+  renderAllSummaries();
+  renderTable();
+}
+function showParserDebug() {
+  if (!state.lastParsedActual) { alert('ยังไม่ได้อัปโหลดไฟล์ผลจริง'); return; }
+  const { name, debug } = state.lastParsedActual;
+  log('INFO', `=== DEBUG: ${name} ===`);
+  log('INFO', `ทั้งหมด ${debug.total} · ใช้ได้ ${debug.valid} · ข้าม ${debug.skipped}`);
+  debug.sample.forEach(s => log('INFO', `  "${s.raw}" → ${s.parsed.round}/${s.parsed.up3}`));
+}
+
+/* ============================================================
+   Export
+   ============================================================ */
+async function exportCSV() {
+  if (state.predictions.length === 0) { alert('ไม่มีข้อมูล'); return; }
+  computeAnalysis();
+  let csv = 'รอบ,เวลา,ทำนาย,ผลจริง,ประเภท,ผลจริงเป็น OK,สถานะ,กำไร/ขาดทุน,คะแนนสัญญาณ,แนะนำซื้อ,หยุดซื้อ(ตอง),หน้าต่างซื้อ,Trigger ต้นทาง,เหตุผล\n';
+  state.predictions.forEach((p, idx) => {
+    const pred = p.predictedOK ? (p.afterOKPred ? 'OK(หลัง)' : 'OK') : '—';
+    const actualOK = p.actualIsOK === null ? '' : (p.actualIsOK ? 'OK' : 'ไม่ OK');
+    const typ = (p.actualInput && p.actualInput.length === 3) ? typeTH(p.actualInput) : '';
+    let status = '', profit = '';
+    if (p.actualInput.length === 3) {
+      if (p.predictedOK && p.actualIsOK) { status='ถูก'; profit=NET_WIN; }
+      else if (p.predictedOK && !p.actualIsOK) { status='ผิด'; profit=-TOTAL_BET; }
+      else if (!p.predictedOK && p.actualIsOK) { status='พลาด OK'; profit=0; }
+      else { status='ผ่าน'; profit=0; }
+    }
+    const sig = state.sigMap[idx];
+    const buy = state.buyMap[idx];
+    const sc  = sig ? sig.score : '';
+    const rec = p.tongCooldown ? '' : (buy ? (sig && sig.score >= MIN_BUY_SCORE ? 'ซื้อ' : 'เฝ้าดู') : '');
+    const stopTong = p.tongCooldown ? `หยุด(${p.tongSrc})` : '';
+    const win = buy ? `+${buy.offset}` : '';
+    const src = buy ? `${buy.srcRound}:${buy.srcVal}` : '';
+    const why = sig ? sig.chips.map(c => c.t).join(' | ') : '';
+    csv += `${p.round},${p.time},${pred},${p.actualInput},${typ},${actualOK},${status},${profit},${sc},${rec},${stopTong},${win},${src},"${why}"\n`;
+  });
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const fname = 'prediction_ok.csv';
+
+  // เปิดผ่าน Artifact viewer → ต้องบันทึกผ่าน downloads capability
+  let dl = null;
+  try { dl = await window.claude?.use?.('downloads'); } catch (_) {}
+  if (dl) {
+    try {
+      await dl.save({ filename: fname, data: blob });
+      log('OK', 'บันทึก CSV สำเร็จ');
+    } catch (err) {
+      if (err && err.code === 'declined') log('WARN', 'ยกเลิกการบันทึก CSV');
+      else log('ERR', 'บันทึก CSV ไม่สำเร็จ: ' + ((err && err.code) || err));
+    }
+    return;
+  }
+
+  // เปิดไฟล์ในเครื่อง → ใช้ลิงก์ดาวน์โหลดปกติ
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+  log('OK', 'ส่งออก CSV สำเร็จ');
+}
+
+/* ============================================================
+   Init
+   ============================================================ */
+(function init(){
+  log('INFO', 'เริ่มต้นระบบ — นำเข้าไฟล์ CSV เพื่อเริ่ม');
+  log('INFO', `OK Set = ${SPECIAL_COUNT} เลข (รวมเลขเรียงแบบวนรอบ) · Trigger พิเศษ: ${USER_TRIGGERS.join(', ')}`);
+  renderFileList();
+  renderActualFileList();
+  renderStats();
+  renderInvestment();
+  renderKB();
+  renderAllSummaries();
+  renderTable();
+  autoProbeAndStartLive();
+  probeOllama();
+})();
+
+function autoProbeAndStartLive(silent) {
+  const status = document.getElementById('liveStatus');
+  if (status && !silent) status.innerHTML = '<span style="color:#eab308">🔍 กำลังตรวจหา server...</span>';
+  fetch('http://localhost:5001/status', { cache: 'no-store', signal: AbortSignal.timeout(3000) })
+    .then(r => r.json())
+    .then(info => {
+      log('OK', `🟢 พบ LIVE server — ${info.count} รอบ · login: ${info.logged_in} · อัปเดต: ${info.last_updated || '-'}`);
+      startLive();
+    })
+    .catch(() => {
+      if (status) status.innerHTML = '<span style="color:#94a3b8">⚫ ไม่พบ server — ดูคำสั่งเริ่มที่แถบ Console ล่างจอ (ตรวจใหม่ทุก 45 วิ)</span>';
+      setDock('🔴', 'ไม่พบ yk_live_server.py — เปิดแถบนี้เพื่อคัดลอกคำสั่งเริ่ม server');
+      if (!silent) log('WARN', 'Auto-probe: ไม่พบ server ที่ localhost:5001 — จะตรวจใหม่ทุก 45 วิ จนกว่าจะพบ');
+      setTimeout(() => { if (!liveActive) autoProbeAndStartLive(true); }, 45000);
+    });
+}
+
+/* ── Console Dock ─────────────────────────────────────────── */
+function toggleDock() {
+  document.getElementById('consoleDock').classList.toggle('open');
+}
+function setDock(dot, msg) {
+  const d = document.getElementById('dockLiveDot');
+  const m = document.getElementById('dockMsg');
+  if (d) d.textContent = dot;
+  if (m) m.textContent = msg;
+}
+function copyCmd(btn) {
+  const txt = btn.parentElement.querySelector('code').textContent;
+  const done = () => { btn.textContent = '✅'; setTimeout(() => { btn.textContent = '📋'; }, 1500); };
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch(_) {}
+    ta.remove();
+  };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(done).catch(fallback);
+  else fallback();
+}
+
+/* ── Collapsible sections ─────────────────────────────────── */
+function toggleSection(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById('arrow-' + id);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (arrow) arrow.classList.toggle('open', !open);
+}
+
+/* ── AI Analysis (Ollama) ─────────────────────────────────── */
+function buildAIPrompt() {
+  const preds = state.predictions;
+  const filled = preds.filter(p => p.actualInput);
+  const okCount = filled.filter(p => p.actualIsOK).length;
+  const totalFilled = filled.length;
+  if (!totalFilled) return null;
+  const okRate = (okCount / totalFilled * 100).toFixed(1);
+
+  // 20 รอบล่าสุดที่มีผลจริง
+  const recent = filled.slice(-20).map(p => {
+    const idx = preds.indexOf(p);
+    const score = (state.sigMap && state.sigMap[idx]) ? state.sigMap[idx].score : 0;
+    const okLabel = p.actualIsOK ? `OK[${p.actualClass||'?'}]` : 'ไม่OK';
+    return `R${p.round}(${p.time}): ${p.actualInput} ${okLabel} score=${score}`;
+  }).join('\n');
+
+  // signal accuracy
+  const sigEntries = Object.entries(state.sigMap || {});
+  const sigHit = sigEntries.filter(([,s]) => s && s.score >= MIN_BUY_SCORE);
+  const sigOK  = sigHit.filter(([i]) => preds[+i] && preds[+i].actualIsOK).length;
+  const sigPct = sigHit.length ? (sigOK / sigHit.length * 100).toFixed(1) : 0;
+
+  // ประเภท OK วันนี้
+  const okTypes = {};
+  filled.filter(p => p.actualIsOK && p.actualClass).forEach(p => {
+    okTypes[p.actualClass] = (okTypes[p.actualClass] || 0) + 1;
+  });
+  const typeStr = Object.entries(okTypes).sort((a,b) => b[1]-a[1]).map(([t,n]) => `${t}:${n}`).join(', ') || '-';
+
+  return `คุณเป็นผู้ช่วยวิเคราะห์ข้อมูลสถิติยี่กี cat888
+ข้อมูลวันนี้ (${new Date().toLocaleDateString('th-TH')}):
+- รอบที่มีผลจริง: ${totalFilled} รอบ | OK rate: ${okRate}%
+- Signal score≥${MIN_BUY_SCORE} แม่น: ${sigOK}/${sigHit.length} (${sigPct}%)
+- ประเภท OK ที่ออก: ${typeStr}
+- afterOK window=3: หลัง OK → 3 รอบถัดไปทำนาย OK
+- ตอง cooldown: 3 รอบหลังตอง = หยุดซื้อ
+
+20 รอบล่าสุด:
+${recent}
+
+โปรดวิเคราะห์ (ตอบภาษาไทย กระชับ ไม่เกิน 250 คำ):
+1. มีรูปแบบ pattern อะไรน่าสังเกตในรอบล่าสุด?
+2. OK set ประเภทไหนออกบ่อย / ประเภทไหนน้อยกว่าปกติ?
+3. ช่วงรอบหรือเวลาไหนน่าสนใจ?
+4. คำแนะนำเพิ่มเติมเพื่อเพิ่มความแม่นยำการเลือกซื้อ`;
+}
+
+async function runAIAnalysis() {
+  const btn = document.getElementById('btnAI');
+  const resultEl = document.getElementById('aiResult');
+  const installEl = document.getElementById('aiInstall');
+  const model = document.getElementById('ollamaModel').value;
+
+  if (!state.predictions.length) {
+    resultEl.textContent = '⚠️ โหลดข้อมูล Training ก่อน แล้วกดสร้างการทำนาย';
+    return;
+  }
+  const prompt = buildAIPrompt();
+  if (!prompt) {
+    resultEl.textContent = '⚠️ ยังไม่มีผลจริงในตาราง — กรอกผลจริงก่อนวิเคราะห์';
+    return;
+  }
+
+  btn.disabled = true;
+  resultEl.textContent = '⏳ กำลังส่งข้อมูลให้ AI วิเคราะห์...';
+  installEl.style.display = 'none';
+
+  try {
+    const resp = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, stream: false }),
+      signal: AbortSignal.timeout(60000)
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    resultEl.textContent = data.response || '(ไม่มีคำตอบจาก AI)';
+    installEl.style.display = 'none';
+  } catch(e) {
+    resultEl.textContent = '';
+    installEl.style.display = 'block';
+    log('WARN', `AI Analysis: ${e.message || e}`);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function probeOllama() {
+  const statusEl = document.getElementById('ollamaStatus');
+  const installEl = document.getElementById('aiInstall');
+  const sel = document.getElementById('ollamaModel');
+  try {
+    const r = await fetch('http://localhost:11434/api/tags', { signal: AbortSignal.timeout(3000) });
+    const data = await r.json();
+    const models = (data.models || []).map(m => m.name);
+    if (models.length) {
+      sel.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join('');
+    }
+    if (statusEl) statusEl.innerHTML = `<span style="color:#4ade80">● Ollama พร้อม (${models.length} model${models.length !== 1 ? 's' : ''})</span>`;
+    if (installEl) installEl.style.display = 'none';
+  } catch {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#f87171">● Ollama ไม่พบ — กด "วิเคราะห์" เพื่อดูวิธีติดตั้ง</span>`;
+  }
+}
+</script>

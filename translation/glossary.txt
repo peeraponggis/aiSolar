@@ -1,0 +1,113 @@
+# glossary.txt - พจนานุกรมศัพท์บังคับสำหรับโปรแกรมแปล (แก้ไขได้ บันทึกเป็น UTF-8)
+# รูปแบบ:   คำไทย => คำอังกฤษ
+# ใช้ได้ทั้งสองทิศทาง: ไทย→อังกฤษ จะจับคำซ้าย, อังกฤษ→ไทย จะจับคำขวา
+# ระบบส่งให้โมเดลเฉพาะคำที่ปรากฏในข้อความ จึงใส่ได้มากไม่กระทบความเร็ว
+# บรรทัด [ชื่อระดับ] จำกัดคำถัดไปให้ใช้เฉพาะระดับนั้น: [general] [email] [engineering] [medical] [science] [legal]
+# บรรทัด [all] กลับมาใช้กับทุกระดับ
+
+[all]
+การไฟฟ้าส่วนภูมิภาค => Provincial Electricity Authority (PEA)
+การไฟฟ้านครหลวง => Metropolitan Electricity Authority (MEA)
+วิศวกรรมสถานแห่งประเทศไทย => Engineering Institute of Thailand (EIT)
+มอก. => TIS
+ใบเสนอราคา => quotation
+ใบแจ้งหนี้ => invoice
+บัญชีปริมาณงาน => bill of quantities (BOQ)
+
+[email]
+บาท => THB
+
+[engineering]
+บาท => THB
+การติดตามจุดกำลังสูงสุด (MPPT) => MPPT
+แผงโซลาร์เซลล์ => PV module
+แผงเซลล์แสงอาทิตย์ => PV module
+อินเวอร์เตอร์ => inverter
+กิโลวัตต์พีค => kWp
+สตริง => string
+ตู้ MDB => main distribution board (MDB)
+ตู้รวมสาย => combiner box
+เบรกเกอร์ => circuit breaker
+เซอร์กิตเบรกเกอร์ => circuit breaker
+อุปกรณ์ป้องกันไฟกระโชก => surge protective device (SPD)
+สายดิน => grounding conductor
+ระบบกราวด์ => grounding system
+แท่งกราวด์ => ground rod
+บ่อกราวด์ => ground pit
+รางเดินสาย => cable tray
+รางแลดเดอร์ => cable ladder
+ท่อร้อยสาย => conduit
+ท่ออ่อน => flexible conduit
+โครงสร้างยึดแผง => mounting structure
+แคลมป์ => clamp
+มิเตอร์ => meter
+หม้อแปลง => transformer
+ไฟฟ้าแรงสูง => high voltage
+ไฟฟ้าแรงต่ำ => low voltage
+กระแสลัดวงจร => short-circuit current
+แรงดันวงจรเปิด => open-circuit voltage
+ค่า Ft => Ft charge
+อัตราค่าไฟฟ้าตามช่วงเวลา => time-of-use (TOU) tariff
+งานโยธา => civil works
+ค่าแรง => labour cost
+ค่าวัสดุ => material cost
+ขออนุญาต => permit application
+ทดสอบและส่งมอบ => testing and commissioning
+แบบก่อสร้างจริง => as-built drawing
+
+[medical]
+ความดันโลหิต => blood pressure
+น้ำตาลในเลือด => blood glucose
+ผลตรวจเลือด => blood test results
+ประวัติการแพ้ยา => drug allergy history
+ใบรับรองแพทย์ => medical certificate
+ผู้ป่วยนอก => outpatient (OPD)
+ผู้ป่วยใน => inpatient (IPD)
+
+[legal]
+บาท => THB
+คู่สัญญา => the Parties
+ผู้ซื้อ => the Buyer
+ผู้ขาย => the Seller
+ผู้ว่าจ้าง => the Employer
+ผู้รับจ้าง => the Contractor
+ผู้รับจ้างช่วง => the Subcontractor
+สัญญาจ้างเหมา => turnkey contract
+ขอบเขตงาน => scope of work
+งวดงาน => milestone
+งวดชำระเงิน => payment instalment
+เงินประกันผลงาน => retention money
+หลักประกันสัญญา => performance bond
+ค่าปรับ => liquidated damages
+การรับประกันผลงาน => defects liability
+ระยะเวลารับประกัน => warranty period
+เหตุสุดวิสัย => force majeure
+การบอกเลิกสัญญา => termination
+การผิดสัญญา => breach of contract
+ข้อพิพาท => dispute
+อนุญาโตตุลาการ => arbitration
+การรักษาความลับ => confidentiality
+สัญญารักษาความลับ => non-disclosure agreement (NDA)
+ทรัพย์สินทางปัญญา => intellectual property
+ภาคผนวก => annex
+เอกสารแนบท้ายสัญญา => schedule to the contract
+ให้ถือว่า => shall be deemed
+เว้นแต่ => unless
+ภายใต้บังคับ => subject to
+มีผลบังคับใช้ => come into effect
+ประมวลกฎหมายแพ่งและพาณิชย์ => Civil and Commercial Code
+พระราชบัญญัติ => Act
+กฎกระทรวง => Ministerial Regulation
+หนังสือมอบอำนาจ => power of attorney
+ใบสั่งซื้อ => purchase order (PO)
+
+[science]
+รูปที่ => Fig.
+ตารางที่ => Table
+สมการที่ => Eq.
+การติดตามจุดกำลังสูงสุด (MPPT) => MPPT
+บทคัดย่อ => abstract
+วิธีดำเนินการวิจัย => methodology
+ผลการทดลอง => experimental results
+ค่าเบี่ยงเบนมาตรฐาน => standard deviation
+นัยสำคัญทางสถิติ => statistical significance

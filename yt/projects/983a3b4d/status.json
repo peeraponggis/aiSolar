@@ -1,0 +1,15 @@
+{
+  "project_id": "983a3b4d",
+  "topic": "test encoding fix",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "รู้หรือไม่ว่า Ollama ให้คุณรัน AI ฟรีบนเครื่องตัวเอง ไม่ต้องจ่ายค่า API แม้แต่บาทเดียว ลองดูเลย",
+  "audio_path": "projects\\983a3b4d\\audio\\narration.mp3",
+  "video_path": "projects\\983a3b4d\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\983a3b4d\\output\\final_9x16.mp4"
+  },
+  "created_at": 1790076584.8167634,
+  "updated_at": 1790076606.6235583
+}

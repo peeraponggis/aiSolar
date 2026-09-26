@@ -1,0 +1,15 @@
+{
+  "project_id": "51d4e579",
+  "topic": "test sound cloning",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "ค่าบริการหรือค่าใช้จ่ายในการขอใบอนุญาต",
+  "audio_path": "projects\\51d4e579\\audio\\narration.wav",
+  "video_path": "projects\\51d4e579\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\51d4e579\\output\\final_9x16.mp4"
+  },
+  "created_at": 1790066475.984695,
+  "updated_at": 1790066501.5981872
+}

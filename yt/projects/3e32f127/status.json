@@ -1,0 +1,15 @@
+{
+  "project_id": "3e32f127",
+  "topic": "test mixed media",
+  "phase": "done",
+  "progress": 100,
+  "error": null,
+  "script": "ทดสอบรวมรูปและวิดีโอเข้าด้วยกัน ระบบต้องแสดงทั้งรูปและคลิปวิดีโอในผลลัพธ์สุดท้าย",
+  "audio_path": "projects\\3e32f127\\audio\\narration.mp3",
+  "video_path": "projects\\3e32f127\\output\\final_9x16.mp4",
+  "video_paths": {
+    "9:16": "projects\\3e32f127\\output\\final_9x16.mp4"
+  },
+  "created_at": 1790069833.102765,
+  "updated_at": 1790069845.4623747
+}

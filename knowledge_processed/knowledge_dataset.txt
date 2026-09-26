@@ -1,0 +1,182 @@
+# -*- coding: utf-8 -*-
+"""
+Knowledge Base Dataset for AI Model Training
+File: knowledge_dataset.txt
+Generated: 2026-09-19
+Source: D:\LocalAI\knowledge\
+"""
+
+========================================
+SECTION 1: PEA - การไฟฟ้าส่วนภูมิภาค
+========================================
+
+[DOCS: PEA_Electricity_Tariff]
+Type: PDF | Pages: 11 | Text: 30651 chars
+Topic: อัตราค่าไฟฟ้าสำหรับบ้านเรือน ที่อยู่อาศัย วัด สำนักสงฆ์ สถานประกอบศาสนกิจ
+Key Data:
+- อัตราไม่เกิน 150 หน่วย/เดือน: 8.19 บาท/หน่วย (15 หน่วยแรก: 2.3488, 16-25: 2.9882, 26-35: 3.2405, 36-100: 3.6237)
+- ค่าบริการต่อเดือน: ตามปริมาณการใช้
+- ใช้เครื่องวัดไฟฟ้าเครื่องเดียว
+
+[DOCS: PEA_Ft_surcharge_SEP_DEC_2026]
+Type: PDF | Pages: 2 | Text: 2105 chars
+Topic: ค่า Ft ส่วนต่าง September-December 2569
+Key Data:
+- Ft ที่เรียกเก็บ: 16.23 สตางค์/หน่วย (0.1623 บาท)
+- Ft ที่คำนวณ: 94.82 สตางค์/หน่วย
+- FAC: 46.27 สท. (อัตราแลกเปลี่ยนอ่อนค่า ราคาพลังงานโลกสูง)
+- AF: 48.55 สท.
+- Ft ขายปลีก: 41.27 สท.
+- กฟผ. รับภาระ: 16,127.17 ล้านบาท (25.04 สท.)
+
+[DOCS: PEA_FiTv_2569]
+Type: PDF | Pages: 4 | Text: 64 chars (สแกน)
+Topic: FiT/ViT 2569
+Note: PDF ภาพสแกน ต้องใช้ OCR
+
+[DOCS: PEA_Solar_announcement_2569]
+Type: PDF | Pages: 5 | Text: 342 chars (สแกน)
+Topic: ประกาศ กฟภ. ข้อกำหนด Solar ภาคประชาชน 2569
+Note: PDF ภาพสแกน ต้องใช้ OCR
+
+[DOCS: PEA_TOU_announcement]
+Type: PDF | Pages: 1 | Text: 16 chars (สแกน)
+Topic: ประกาศค่าบริการเลือกใช้อัตรา TOU
+Note: PDF ภาพสแกน ต้องใช้ OCR
+
+[DOCS: PEA_unit_list_2569]
+Type: PDF | Pages: 4 | Text: 6229 chars
+Topic: รายชื่อหน่วยทดสอบ 15 สิงหาคม 2569
+
+[DOCS: PEA_Electricity_Tariff_MAY_2023]
+Type: PDF | Pages: 11 | Text: 30651 chars
+Topic: อัตราค่าไฟฟ้า PEA MAY 2023
+
+[DOCS: PEA_Modifications_Guidelines]
+Type: PDF | Pages: 11 | Text: 11280 chars
+Topic: Requesting Modifications Guidelines PEA Power Grid System User
+
+[DOCS: PEA_Connection_Code]
+Type: PDF | Pages: 98 | Text: 50000+ chars
+Topic: Connection Code 2016-2017
+
+[DOCS: PEA_Operation_Code]
+Type: PDF | Pages: 35 | Text: 50000+ chars
+Topic: Operation Code 2016
+
+[DOCS: PEA_Service_Code]
+Type: PDF | Pages: 34 | Text: 50000+ chars
+Topic: Service Code 2016
+
+[DOCS: PEA_inverter_registry]
+Type: CSV | Rows: 887 | Columns: 11
+Columns: brand, model, rated_power_kw, phases, ac_rated_voltage_v, system_size_limit, certified_date_th, expiry_date_th, detail_cert_no, detail_firmware, notes
+Key Data:
+- ทุกยี่ห้อ: certified_date_th = 24-ต.ค.-66, expiry_date_th = 24-ต.ค.-69
+- ยี่ห้อหลัก: SINENG (2000G7, 50kW), SMA (3300TL-G3, 12kW), solis (AE5K-L1-S, 6kW, AF10K-MTH, 10kW, AF50K-TH, 255kW)
+- detail_cert_no: "ดู" (ต้องดูเพิ่มเติม)
+- detail_firmware, notes: NaN (ไม่มีข้อมูล)
+
+========================================
+SECTION 2: MEA - การไฟฟ้านครหลวง
+========================================
+
+[DOCS: MEA_file_1wjwzeeh]
+Type: PDF | Pages: 32 | Text: 50000 chars (เต็ม)
+
+[DOCS: MEA_file_2rq7s58d]
+Type: PDF | Pages: 1 | Text: 3293 chars
+
+[DOCS: MEA_file_37ionog8]
+Type: PDF | Pages: 1 | Text: 2462 chars
+
+[DOCS: MEA_file_8cherq6o]
+Type: PDF | Pages: 3 | Text: 48 chars (อาจเป็นภาพ)
+
+[DOCS: MEA_file_8ystbb33] (ไฟล์ซ้ำ: file_8ystbb33 (1).pdf)
+Type: PDF | Pages: 47 | Text: 50000 chars (เต็ม)
+
+[DOCS: MEA_file_exflsryo]
+Type: PDF | Pages: 62 | Text: 50000 chars (เต็ม)
+เล่มใหญ่ที่สุดใน MEA
+
+[DOCS: MEA_file_fgek7sf5]
+Type: PDF | Pages: 2 | Text: 32 chars (อาจเป็นภาพ)
+
+[DOCS: MEA_file_lc8wk3rg]
+Type: PDF | Pages: 31 | Text: 50000 chars (เต็ม)
+
+[DOCS: MEA_file_njjat1pe]
+Type: PDF | Pages: 13 | Text: 212 chars
+
+[DOCS: MEA_file_p2ifbwzc]
+Type: PDF | Pages: 2 | Text: 32 chars (อาจเป็นภาพ)
+
+[DOCS: MEA_file_pd0xyh9j]
+Type: PDF | Pages: 12 | Text: 20882 chars
+รายละเอียดมาก
+
+[DOCS: MEA_file_sv0ak2q2]
+Type: PDF | Pages: 2 | Text: 32 chars (อาจเป็นภาพ)
+
+[DOCS: MEA_PEA_Inverter_list_5_2565]
+Type: PDF | Pages: 12 | Text: 195 chars
+Topic: รายชื่ออินเวอร์เตอร์ MEA/PEA ครั้งที่ 5 ปี 2565
+Note: มีเนื้อหาน้อย อาจเป็นรายการ/ตาราง
+
+========================================
+SECTION 3: EIT - เอกสาร EIT
+========================================
+
+[DOCS: eit2564_eit2564]
+Type: PDF | Pages: 378 | Text: 50000 chars (จำกัด)
+Topic: เอกสาร EIT ปี 2564
+
+[IMAGES: eit/ - 148 หน้า]
+Type: JPG | 148 images | Size: 198KB - 698KB ต่อหน้า
+Structure:
+- หน้า 001: ปก (Cover)
+- หน้า 002-003: รายชื่อคณะกรรมการ
+- หน้า 004-007: สารบัญ 4 เล่ม (ด, ถ, ท, ธ)
+- หน้า 007-1 ถึง 010: บทที่ 1 (4 หน้า)
+- หน้า 011-018: บทที่ 2 (8 หน้า)
+- หน้า 019-030: บทที่ 3 (12 หน้า)
+- หน้า 031-056: บทที่ 4 (26 หน้า - เลยเป็นบทที่ใหญ่ที่สุด)
+- หน้า 057-082: บทที่ 5 (26 หน้า)
+- หน้า 083-104: ภาคผนวก ก (22 หน้า)
+- หน้า 105-120: ภาคผนวก ข (16 หน้า)
+- หน้า 121-140: ภาคผนวก ค (20 หน้า)
+- หน้า 141-146: ภาคผนวก จ
+- หน้า 147: ข้อเสนอแนะเพิ่มเติม
+Note: ทุกไฟล์เป็นภาพสแกน ต้องใช้ OCR
+
+[EXAMPLE: ตัวอย่าง.txt]
+Content: ตัวอย่างความรู้: สูตรพื้นที่วงกลม = π × r²
+
+========================================
+SECTION 4: Cross-Category Knowledge
+========================================
+
+Topics covered across all sources:
+1. Electricity tariffs (อัตราค่าไฟฟ้า) - Normal, TOU, peak/off-peak rates
+2. Fuel cost adjustment (Ft surcharge) - Formula and calculation method
+3. Renewable energy FiT/ViT rates
+4. Solar installation regulations for public
+5. PEA Power Grid codes (Connection, Operation, Service)
+6. Inverter certification registry (887 models)
+7. EIT annual report/documentation (2564)
+8. MEA operational documents
+9. Unit testing/certification lists
+
+Data Types:
+- Structured: CSV (inverter registry, 887 rows)
+- Unstructured text: PDF documents (~970 pages)
+- Image/scanned: JPG (148 pages), scanned PDFs
+- Example/knowledge: TXT (formula example)
+
+AI Model Training Recommendations:
+1. Thai language OCR capability (many scanned documents)
+2. Electricity/energy domain knowledge (tariffs, codes, regulations)
+3. Table extraction (inverter registry, FiT/ViT rates)
+4. Thai text understanding (legal/administrative documents)
+5. Multi-document summarization (5 chapters + appendices in EIT document)
