@@ -28,5 +28,35 @@
   "level": "general",
   "src": "bde\nEnroll Now",
   "dst": "สมัครสมาชิกเลย  \nลงทะเบียนตอนนี้"
+ },
+ {
+  "ts": "2026-09-26 07:40",
+  "level": "general",
+  "src": "Upstream idle timeout exceeded",
+  "dst": "เวลาเฉื่อยข้างต้นเกินกำหนด"
+ },
+ {
+  "ts": "2026-09-26 08:02",
+  "level": "general",
+  "src": "Upstream idle timeout exceeded",
+  "dst": "เวลาเฉื่อยของขั้วเข็มขัดเกินกำหนด"
+ },
+ {
+  "ts": "2026-09-26 08:03",
+  "level": "general",
+  "src": "The user is getting \"Upstream idle timeout exceeded\" error. This is likely related to the Ollama server or the proxy connections timing out. Let me create the gateway.py file that merges tts-server.py and rag_server.py, and also adds proxy to Ollama with proper timeout handling.\n\nLet me write the gateway.py file now.",
+  "dst": "ผู้ใช้ได้รับข้อผิดพลาดว่า \"Upstream idle timeout exceeded\" ซึ่งน่าจะเกี่ยวข้องกับการตั้งค่าเซิร์ฟเวอร์ Ollama หรือการเชื่อมต่อผ่านโปรกส์หมดเวลาแล้ว ฉันจะสร้างไฟล์ gateway.py เพื่อรวม tts-server.py และ rag_server.py โดยเพิ่มการตั้งค่า proxy กับ Oll-ama เรียบร้อยพร้อมการจัดการ timeout อย่างเหมาะสม\n\nตอนนี้ฉันจะเขียนไฟล์ gateway.py ไปเลย"
+ },
+ {
+  "ts": "2026-09-26 08:14",
+  "level": "general",
+  "src": "The user wants me to continue working on creating the gateway.py file. They mentioned \"Upstream idle timeout exceeded\" which seems to be a timeout issue with the model/API. Let me continue creating the unified gateway.py that merges tts-server.py and rag_server.py functionality.",
+  "dst": "ผู้ใช้ต้องการให้ผมดำเนินการต่อในการสร้างไฟล์ gateway.py โดยกล่าวถึงข้อผิดพลาด \"Upstream idle timeout exceeded\" ซึ่งดูเหมือนจะเกี่ยวข้องกับปัญหาเวลาหมดสิ้นสุดของโมเดลหรือ API เรียบร้อยแล้ว ผมจะดำเนินการต่อในการสร้างไฟล์ gateway.py ที่รวมฟังก์ชันจาก tts-server.py และ rag_server.py มาไว้ด้วยกัน"
+ },
+ {
+  "ts": "2026-09-26 11:03",
+  "level": "general",
+  "src": "ารปล่อยอนุภาคหรือไอออนออกมา และความขาดแค",
+  "dst": "Emits particles or ions out, and lacks balance."
  }
 ]

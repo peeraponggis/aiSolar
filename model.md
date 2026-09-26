@@ -3,14 +3,14 @@
 > ⚠️ ไฟล์นี้เก็บ API keys เป็น plaintext — อย่าอัปโหลด/แชร์
 > อัปเดตอัตโนมัติทุกครั้งที่แก้ Settings ใน chat.html
 
-อัปเดต: 2026-09-25 17:39:01
+อัปเดต: 2026-09-26 08:54:11
 
 ## Providers (5 ราย)
 
 ### 1. OpenRouter
 - **Base URL:** https://openrouter.ai/api/v1
 - **API Key:** `sk-or-v1…1029` (full ในบล็อก JSON ด้านล่าง)
-- **Models (24):** cohere/north-mini-code:free, dots-studio/dots-3-note-preview:free, google/gemma-4-26b-a4b-it:free, google/gemma-4-31b-it:free, google/lyria-3-clip-preview, google/lyria-3-pro-preview, inclusionai/ling-3.0-flash-fin:free, inclusionai/ling-3.0-flash-sante:free, liquid/lfm-2.5-2.6b:free, nex-agi/nex-n2.5-mini:free, nex-agi/nex-n2.5-pro:free, nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, nvidia/nemotron-3-ultra-550b-a55b:free, nvidia/nemotron-3.5-content-safety:free, nvidia/nemotron-3.5-lightning:free, openrouter/free, poolside/laguna-s-2.1:free, poolside/laguna-xs-2.1:free, qwen/qwen3.8-27b:free …
+- **Models (21):** cohere/north-mini-code:free, dots-studio/dots-3-note-preview:free, google/gemma-4-26b-a4b-it:free, google/gemma-4-31b-it:free, google/lyria-3-clip-preview, google/lyria-3-pro-preview, inclusionai/ling-3.0-flash-fin:free, inclusionai/ling-3.0-flash-sante:free, liquid/lfm-2.5-2.6b:free, nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, nvidia/nemotron-3-ultra-550b-a55b:free, nvidia/nemotron-3.5-content-safety:free, nvidia/nemotron-3.5-lightning:free, openrouter/free, poolside/laguna-s-2.1:free, poolside/laguna-xs-2.1:free, qwen/qwen3.8-27b:free, stealth/space-bunny-alpha, thinkingmachines/inkling-small:free …
 
 ### 2. Google Gemini
 - **Base URL:** https://generativelanguage.googleapis.com/v1beta/openai
@@ -81,8 +81,6 @@
         "inclusionai/ling-3.0-flash-fin:free",
         "inclusionai/ling-3.0-flash-sante:free",
         "liquid/lfm-2.5-2.6b:free",
-        "nex-agi/nex-n2.5-mini:free",
-        "nex-agi/nex-n2.5-pro:free",
         "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
         "nvidia/nemotron-3-super-120b-a12b:free",
         "nvidia/nemotron-3-ultra-550b-a55b:free",
@@ -94,8 +92,7 @@
         "qwen/qwen3.8-27b:free",
         "stealth/space-bunny-alpha",
         "thinkingmachines/inkling-small:free",
-        "thinkingmachines/inkling:free",
-        "z-ai/glm-5.2:free"
+        "thinkingmachines/inkling:free"
       ]
     },
     {
@@ -294,7 +291,7 @@
       ]
     }
   ],
-  "sel": "local::maternion/spark-x2.5:4b-q4_K_M",
+  "sel": "local::scb10x/typhoon2.5-qwen3-4b:latest",
   "voice": "",
   "voiceRate": 1,
   "ttsEngine": "neural",

@@ -21,9 +21,9 @@
  "api": {
   "mode": "auto",
   "preset": "OpenTyphoon (SCB10X, ปรับจูนภาษาไทย - แนะนำ)",
-  "base": "",
+  "base": "https://api.opentyphoon.ai/v1",
   "key": "",
-  "model": ""
+  "model": "typhoon-v2.5-30b-a3b-instruct"
  },
  "optsOpen": true
 }
