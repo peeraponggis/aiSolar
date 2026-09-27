@@ -35,6 +35,13 @@ knowledge/.rag_cache.json
 *.wav
 *.mp3
 *.ogg
+*.exe
+*.dll
+
+# Local tools (keep on disk, not in git)
+ollama/lib/
+tools/msty/
+tools/ffmpeg/
 
 # Temp
 tmp/
