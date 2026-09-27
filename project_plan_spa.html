@@ -672,7 +672,8 @@ function thaiDateLong(iso){
   return d.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
 }
 function toISO(d){ return d.toISOString().slice(0,10); }
-function todayISO(){ return toISO(new Date()); }
+function localISO(d){ const dd=d||new Date(); return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`; }
+function todayISO(){ return localISO(); }
 
 /* Calendar days (inclusive) */
 function calDays(s,e){
@@ -814,11 +815,6 @@ function renderMenu1Fields(){
 }
 function handleLogo(inp){
   const f=inp.files[0]; if(!f) return;
-  new FileReader().onload=e=>{
-    appData.user.logo=e.target.result;
-    document.getElementById('logo-preview').innerHTML=`<img src="${e.target.result}" alt="logo"/>`;
-  }, new FileReader().readAsDataURL(f);
-  // Fix: use proper FileReader
   const r=new FileReader();
   r.onload=e=>{ appData.user.logo=e.target.result; document.getElementById('logo-preview').innerHTML=`<img src="${e.target.result}" alt="logo"/>`; };
   r.readAsDataURL(f);
@@ -1325,8 +1321,8 @@ function renderTaskTable(){
       <td><input class="task-input" value="${esc(m.description)}" placeholder="คำอธิบายหัวข้อ"
           onblur="updateField('main','${m.id}',null,'description',this.value)"/></td>
       <td><select class="task-input" onchange="updateField('main','${m.id}',null,'lead',this.value)">
-            <option value="">— เลือก —</option>${leadOpts}
-            <option value="${esc(m.lead)}" ${m.lead&&!leads.includes(m.lead)?'selected':''}>${m.lead&&!leads.includes(m.lead)?esc(m.lead):''}</option>
+            <option value="">— เลือก —</option>
+            ${m.lead&&!leads.includes(m.lead)?`<option value="${esc(m.lead)}" selected>${esc(m.lead)}</option>`:''}
             ${leads.map(l=>`<option value="${esc(l)}" ${m.lead===l?'selected':''}>${esc(l)}</option>`).join('')}
           </select></td>
       <td class="date-cell" data-type="main" data-main-id="${m.id}" data-field="startDate" data-val="${m.startDate||''}">
@@ -2149,8 +2145,8 @@ function recalcItemPercent(){
   p.weeklyReports.forEach(w=>{
     w.dailyReports.forEach(d=>{
       d.activities.forEach(a=>{
-        if(a.taskRef&&a.actualPct>0){
-          if(latestAct[a.taskRef]===undefined||a.actualPct>latestAct[a.taskRef])
+        if(a.taskRef&&a.actualPct>=0){
+          if(latestAct[a.taskRef]===undefined||a.actualPct>=latestAct[a.taskRef])
             latestAct[a.taskRef]=a.actualPct;
         }
       });
@@ -2214,6 +2210,7 @@ function renderKickOffPlan(){
   const months=buildMonths(pStart,pEnd);
   const COL_W=85, totalMs=pEnd-pStart;
   const today=new Date();
+  const todayLocal=localISO(today);
 
   let html=`<div style="display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;font-size:12px">`;
   html+=`<div style="flex-shrink:0;border-right:2px solid var(--primary)"><table style="border-collapse:collapse">
@@ -2227,7 +2224,7 @@ function renderKickOffPlan(){
     const o=r.obj, isMain=r.type==='main';
     const bg=isMain?'background:var(--surface2);font-weight:600':'background:var(--surface)';
     const pl=isMain?'':'padding-left:14px';
-    const plannedPct=calcPlannedPct(o,toISO(today));
+    const plannedPct=calcPlannedPct(o,todayLocal);
     html+=`<tr style="${bg}">
       <td style="padding:5px 6px;border:1px solid var(--border);color:var(--primary);font-weight:700">${o.itemNo||''}</td>
       <td style="padding:5px 6px;border:1px solid var(--border);${pl}">${esc(o.description)}</td>
@@ -2319,6 +2316,7 @@ async function exportKickOffPDF(){
   let totalPages=1, rowCount=0;
   groups.forEach(g=>{ if(rowCount>0&&rowCount+g.length>maxRowsPP){totalPages++;rowCount=0;} rowCount+=g.length; });
   const today=new Date();
+  const todayLocalPDF=localISO(today);
   function drawKOHeader(pg){
     doc.setFillColor(46,125,50); doc.rect(margin,margin,usableW,10,'F');
     doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
@@ -2345,7 +2343,7 @@ async function exportKickOffPDF(){
     doc.setDrawColor(180,215,180); doc.line(margin,y+rowH,margin+usableW,y+rowH);
     doc.setTextColor(isMain?46:70,isMain?125:90,isMain?50:70);
     doc.setFontSize(7.5); doc.setFont('helvetica',isMain?'bold':'normal');
-    const pPct=calcPlannedPct(o,toISO(today));
+    const pPct=calcPlannedPct(o,todayLocalPDF);
     let x=margin; const pl=isMain?0:3;
     doc.text(o.itemNo||'',x+1,y+5,{maxWidth:cols.item-1}); x+=cols.item;
     doc.text((o.description||'').slice(0,38),x+1+pl,y+5,{maxWidth:cols.desc-2}); x+=cols.desc;
@@ -2534,13 +2532,6 @@ if(window.matchMedia('(prefers-color-scheme: dark)').matches){
   document.documentElement.setAttribute('data-theme','dark');
   document.getElementById('dark-chk').checked=true;
 }
-// Fix double FileReader bug in handleLogo
-window.handleLogo=function(inp){
-  const f=inp.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=e=>{ appData.user.logo=e.target.result; document.getElementById('logo-preview').innerHTML=`<img src="${e.target.result}" alt="logo"/>`; };
-  r.readAsDataURL(f);
-};
 </script>
 </body>
 </html>
