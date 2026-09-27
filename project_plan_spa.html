@@ -8,7 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root{
   --bg:#f1f8e9;--surface:#fff;--surface2:#e8f5e9;
@@ -29,9 +28,8 @@
 body{font-family:'Sarabun','Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;transition:background .25s,color .25s}
 input,select,textarea,button{font-family:inherit;font-size:14px}
 button{cursor:pointer}
-a{color:var(--primary)}
 
-/* ── LOGIN ── */
+/* LOGIN */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
 .login-card{background:var(--surface);border-radius:16px;padding:40px;box-shadow:0 8px 32px var(--shadow);width:360px}
 .login-logo{text-align:center;margin-bottom:24px}
@@ -45,14 +43,13 @@ a{color:var(--primary)}
 .btn-primary:hover{background:var(--primary-l)}
 .login-err{color:var(--danger);font-size:12px;margin-top:8px;text-align:center;display:none}
 
-/* ── MAIN LAYOUT ── */
+/* MAIN LAYOUT */
 #main-app{display:none;flex-direction:row;min-height:100vh}
 #content-area{flex:1;overflow-y:auto;padding:24px;min-width:0}
-.menu-content{display:none}
-.menu-content.active{display:block}
+.menu-content{display:none}.menu-content.active{display:block}
 
-/* ── SIDEBAR ── */
-#sidebar{width:var(--sbw);background:var(--sb-bg);color:var(--sb-txt);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh}
+/* SIDEBAR */
+#sidebar{width:var(--sbw);background:var(--sb-bg);color:var(--sb-txt);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
 .sb-header{padding:20px 16px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sb-logo{font-size:16px;font-weight:700;color:#fff}
 .sb-logo span{color:var(--accent);font-size:11px;display:block;font-weight:400}
@@ -64,23 +61,24 @@ a{color:var(--primary)}
 .sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1)}
 .dark-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sb-txt);cursor:pointer;user-select:none}
 
-/* ── SECTION HEADER ── */
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
 .section-title{font-size:20px;font-weight:700;color:var(--primary)}
 .btn-group{display:flex;gap:8px;flex-wrap:wrap}
-.btn{padding:8px 16px;border-radius:8px;border:none;font-weight:600;transition:all .15s;font-size:13px}
+.btn{padding:8px 16px;border-radius:8px;border:none;font-weight:600;transition:all .15s;font-size:13px;cursor:pointer}
 .btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-xs{padding:3px 8px;font-size:11px;border-radius:5px}
 .btn-success{background:var(--primary);color:#fff}.btn-success:hover{background:var(--primary-l)}
 .btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}.btn-outline:hover{background:var(--surface2)}
 .btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{opacity:.85}
-.btn-warn{background:var(--warn);color:#fff}.btn-warn:hover{opacity:.85}
 .btn-secondary{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}.btn-secondary:hover{border-color:var(--primary)}
+.btn-info{background:#0288d1;color:#fff}.btn-info:hover{opacity:.85}
 
-/* ── CARD ── */
+/* CARD */
 .card{background:var(--surface);border-radius:12px;padding:20px;box-shadow:0 2px 8px var(--shadow);margin-bottom:16px;border:1px solid var(--border)}
-.card-title{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:16px;border-bottom:1.5px solid var(--border);padding-bottom:8px}
+.card-title{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px;border-bottom:1.5px solid var(--border);padding-bottom:8px;display:flex;align-items:center;justify-content:space-between}
 
-/* ── FORM ── */
+/* FORM */
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .form-group{display:flex;flex-direction:column;gap:5px}
 .form-group label{font-size:12px;font-weight:600;color:var(--text-m)}
@@ -89,93 +87,97 @@ a{color:var(--primary)}
 .form-group textarea{resize:vertical;min-height:80px}
 .readonly-val{padding:8px 12px;background:var(--surface2);border-radius:8px;border:1.5px solid var(--border);color:var(--text);font-weight:600}
 
-/* ── LOGO UPLOAD ── */
+/* LOGO */
 .logo-upload{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .logo-preview{width:80px;height:80px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface2)}
 .logo-preview img{width:100%;height:100%;object-fit:contain}
 .logo-placeholder{font-size:28px;color:var(--text-m)}
 
-/* ── TASK EDITOR TABLE ── */
-.task-table-wrap{overflow-x:auto}
-.task-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
-.task-table th{background:var(--primary);color:#fff;padding:8px 10px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2}
-.task-table th:first-child{border-radius:8px 0 0 0}
-.task-table th:last-child{border-radius:0 8px 0 0}
-.task-table td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
-.main-row>td{background:var(--surface2);font-weight:600}
-.sub-row>td{background:var(--surface);padding-left:8px}
-.main-row:hover>td,.sub-row:hover>td{background:var(--accent2);cursor:grab}
-.drag-handle{cursor:grab;color:var(--text-m);user-select:none;font-size:16px;padding:0 4px}
-.item-no{font-weight:700;color:var(--primary);white-space:nowrap;width:50px}
-.task-input{border:1px solid transparent;background:transparent;color:var(--text);padding:4px 6px;border-radius:4px;width:100%;transition:border-color .15s}
-.task-input:hover,.task-input:focus{border-color:var(--border);background:var(--surface);outline:none}
-.task-input.date-input{width:130px}
-.task-input.num-input{width:60px;text-align:right}
-.percent-bar{height:14px;border-radius:4px;background:var(--accent2);position:relative;overflow:hidden;min-width:50px}
-.percent-fill{height:100%;background:var(--primary-l);border-radius:4px;transition:width .3s}
-.add-sub-btn{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--primary);cursor:pointer}
-.add-sub-btn:hover{background:var(--surface2)}
+/* LEADS TAGS */
+.leads-wrap{display:flex;flex-wrap:wrap;gap:6px;min-height:36px;padding:6px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);margin-bottom:6px}
+.lead-tag{display:inline-flex;align-items:center;gap:4px;background:var(--accent2);color:var(--primary);border-radius:16px;padding:3px 10px;font-size:12px;font-weight:600}
+.lead-tag button{background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;line-height:1;padding:0 0 0 2px}
+.lead-add-row{display:flex;gap:6px;align-items:center}
+.lead-add-row input{flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);outline:none}
+.lead-add-row input:focus{border-color:var(--primary)}
 
-/* ── GANTT ── */
-.gantt-wrap{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
-.gantt-left{flex-shrink:0;overflow:hidden}
-.gantt-left table{border-collapse:collapse;font-size:12px}
-.gantt-left th,.gantt-left td{border:1px solid var(--border);padding:5px 8px;white-space:nowrap}
-.gantt-left th{background:var(--primary);color:#fff}
-.gantt-right{flex:1;overflow-x:auto;position:relative}
-.gantt-months-hdr{display:flex;border-bottom:2px solid var(--border);background:var(--surface2)}
-.gantt-month-col{text-align:center;font-size:11px;font-weight:700;color:var(--primary);border-right:1px solid var(--border);padding:4px 2px;flex-shrink:0}
-.gantt-row-right{display:flex;align-items:center;height:32px;border-bottom:1px solid var(--border);position:relative}
-.gantt-row-right.main-r{background:var(--surface2)}
-.gantt-row-right.sub-r{background:var(--surface)}
-.gantt-bar-bg{position:absolute;top:6px;height:18px;border-radius:3px;background:var(--accent2)}
-.gantt-bar-prog{position:absolute;top:6px;height:18px;border-radius:3px;background:var(--primary-l);opacity:.8}
-.gantt-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--danger);z-index:5;opacity:.7}
-.gantt-month-grid{position:absolute;top:0;bottom:0;width:1px;background:var(--border);opacity:.5}
-
-/* ── S-CURVE ── */
-.scurve-container{background:var(--surface);border-radius:12px;padding:20px;border:1.5px solid var(--border)}
-.scurve-canvas-wrap{position:relative;height:420px}
-
-/* ── TABS ── */
+/* TABS */
 .tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:2px solid var(--border)}
 .tab-btn{padding:8px 20px;border:none;background:transparent;color:var(--text-m);font-weight:600;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
 .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
 .tab-btn:hover{color:var(--primary)}
 .tab-panel{display:none}.tab-panel.active{display:block}
 
-/* ── UTILS ── */
-.mt16{margin-top:16px}.mt8{margin-top:8px}.mb8{margin-bottom:8px}
+/* SPLIT PANEL (Sample + Task) */
+.split-panel{display:flex;gap:12px;align-items:flex-start}
+.sample-panel{width:270px;flex-shrink:0;position:sticky;top:0}
+.task-panel{flex:1;min-width:0}
+
+/* SAMPLE LIST */
+.sample-list{max-height:520px;overflow-y:auto;padding:4px 0}
+.sample-main-item{border-radius:8px;margin-bottom:4px;border:1.5px solid var(--border);overflow:hidden}
+.sample-main-hdr{display:flex;align-items:center;gap:6px;padding:7px 8px;background:var(--surface2);cursor:grab;user-select:none;font-weight:700;font-size:12px}
+.sample-main-hdr:active{cursor:grabbing}
+.sample-main-hdr .drag-handle{color:var(--text-m);font-size:14px}
+.sample-main-hdr .desc-text{flex:1;color:var(--primary)}
+.sample-main-hdr .add-btn{background:var(--primary);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;flex-shrink:0}
+.sample-main-hdr .add-btn:hover{opacity:.85}
+.sample-main-hdr .toggle-btn{background:none;border:none;color:var(--text-m);cursor:pointer;font-size:12px;padding:0;flex-shrink:0}
+.sample-subs{border-top:1px solid var(--border);background:var(--surface)}
+.sample-sub-item{display:flex;align-items:center;gap:6px;padding:5px 8px 5px 20px;cursor:grab;font-size:12px;border-bottom:1px solid var(--border);user-select:none}
+.sample-sub-item:last-child{border-bottom:none}
+.sample-sub-item:active{cursor:grabbing}
+.sample-sub-item .drag-handle{color:var(--text-m);font-size:12px}
+.sample-sub-item .desc-text{flex:1;color:var(--text)}
+.sample-sub-item .add-btn{background:var(--accent);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;flex-shrink:0}
+.sample-sub-item .add-btn:hover{opacity:.85}
+.sample-drop-hint{border:2px dashed var(--border);border-radius:6px;padding:10px;text-align:center;color:var(--text-m);font-size:11px;margin-top:8px}
+.sample-drop-hint.over{border-color:var(--primary);background:var(--surface2)}
+
+/* TASK TABLE */
+.task-table-wrap{overflow-x:auto}
+.task-table{width:100%;border-collapse:collapse;font-size:12px}
+.task-table th{background:var(--primary);color:#fff;padding:7px 6px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;border-right:1px solid rgba(255,255,255,.15)}
+.task-table td{padding:4px 5px;border-bottom:1px solid var(--border);vertical-align:middle}
+.main-row>td{background:var(--surface2)}
+.sub-row>td{background:var(--surface)}
+.main-row:hover>td{background:#d0ecd2}
+.sub-row:hover>td{background:#eef7ee}
+.drag-handle{cursor:grab;color:var(--text-m);user-select:none;font-size:14px;padding:0 2px}
+.item-no{font-weight:700;color:var(--primary);white-space:nowrap;font-size:12px}
+.task-input{border:1px solid transparent;background:transparent;color:var(--text);padding:3px 5px;border-radius:4px;width:100%;transition:border-color .15s;font-size:12px}
+.task-input:hover,.task-input:focus{border-color:var(--border);background:var(--surface);outline:none}
+.task-input.num-input{width:55px;text-align:right}
+
+/* DATE CELL */
+.date-cell{min-width:95px;position:relative}
+.date-disp{display:block;cursor:pointer;padding:3px 5px;border-radius:4px;font-size:11px;white-space:nowrap;border:1px solid transparent;color:var(--text)}
+.date-disp:hover{border-color:var(--border);background:var(--surface)}
+.date-edit{display:none;position:absolute;left:0;top:0;z-index:10;border:1.5px solid var(--primary);border-radius:6px;padding:3px 6px;background:var(--surface);color:var(--text);width:140px;font-size:12px}
+.days-readonly{padding:3px 5px;font-size:11px;color:var(--text-m);text-align:right}
+.percent-bar{height:12px;border-radius:3px;background:var(--accent2);overflow:hidden;min-width:40px;margin-bottom:2px}
+.percent-fill{height:100%;background:var(--primary-l);border-radius:3px;transition:width .3s}
+
+/* TASK ROW DRAG TARGET */
+.main-row.drag-over>td{background:#c8e6c9 !important}
+.sub-wrap.drag-over-sub{border-left:3px solid var(--primary)}
+
+/* GANTT */
+.gantt-info-bar{font-size:13px;display:flex;gap:16px;flex-wrap:wrap}
+.gantt-info-bar b{color:var(--primary)}
+
+/* UTILS */
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mb8{margin-bottom:8px}.mb4{margin-bottom:4px}
 .text-muted{color:var(--text-m);font-size:12px}
-.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.badge-green{background:#c8e6c9;color:#1b5e20}
-.divider{border:none;border-top:1.5px solid var(--border);margin:16px 0}
 .note-label{font-size:12px;font-weight:700;color:var(--text-m);margin-bottom:6px}
 
-/* ── TOAST ── */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:9999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center}
-.modal-box{background:var(--surface);border-radius:12px;padding:24px;max-width:400px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.3)}
-.modal-title{font-weight:700;font-size:16px;margin-bottom:12px}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-
-/* PRINT / PDF HIDDEN RENDER AREA */
-#print-render{position:fixed;left:-9999px;top:0;width:1120px;z-index:-1;background:#fff;font-size:12px;font-family:'Sarabun','Prompt',sans-serif}
-#print-render .p-header{padding:12px 20px 8px;border-bottom:2px solid #2e7d32;margin-bottom:8px}
-#print-render .p-title{font-size:16px;font-weight:700;color:#2e7d32}
-#print-render .p-meta{font-size:11px;color:#555;margin-top:2px}
-#print-render .p-table{width:100%;border-collapse:collapse;font-size:11px}
-#print-render .p-table th{background:#2e7d32;color:#fff;padding:5px 6px;text-align:left}
-#print-render .p-table td{padding:4px 6px;border-bottom:1px solid #c8e6c9;vertical-align:middle}
-#print-render .p-table tr.main-r td{background:#e8f5e9;font-weight:600}
-#print-render .p-table tr.sub-r td{background:#fff}
-#print-render .p-foot{font-size:10px;color:#555;padding:6px 20px;border-top:1px solid #ccc;display:flex;align-items:center;gap:12px;margin-top:8px}
-#print-render .p-foot img{height:20px;width:auto}
-#print-render .p-gantt-bar-bg{display:inline-block;background:#a5d6a7;border-radius:2px;vertical-align:middle}
-#print-render .p-gantt-bar-fg{display:inline-block;background:#4caf50;border-radius:2px;vertical-align:middle;height:100%}
+/* S-CURVE */
+.scurve-container{background:var(--surface);border-radius:12px;padding:20px;border:1.5px solid var(--border)}
+.scurve-canvas-wrap{position:relative;height:420px}
 .scurve-legend{display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px}
 .legend-dot{width:24px;height:3px;border-radius:2px}
@@ -187,17 +189,17 @@ a{color:var(--primary)}
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <div style="font-size:36px">📋</div>
+      <div style="font-size:40px">📋</div>
       <h1>Project Plan Manager</h1>
       <p>โปรแกรมบริหารแผนงานโครงการ</p>
     </div>
     <div class="field">
       <label>ชื่อผู้ใช้ (Username)</label>
-      <input id="inp-user" type="text" value="admin" placeholder="username" autocomplete="username"/>
+      <input id="inp-user" type="text" value="admin" autocomplete="username"/>
     </div>
     <div class="field">
       <label>รหัสผ่าน (Password)</label>
-      <input id="inp-pass" type="password" value="1234" placeholder="password" autocomplete="current-password"
+      <input id="inp-pass" type="password" value="1234" autocomplete="current-password"
              onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <button class="btn-primary btn" onclick="doLogin()">เข้าสู่ระบบ</button>
@@ -207,11 +209,9 @@ a{color:var(--primary)}
 
 <!-- ═══ MAIN APP ═══ -->
 <div id="main-app" style="display:none;flex-direction:row;min-height:100vh">
-
-  <!-- Content -->
   <div id="content-area">
 
-    <!-- Menu 1 -->
+    <!-- ── Menu 1: User Settings ── -->
     <div id="m1" class="menu-content">
       <div class="section-header">
         <span class="section-title">⚙️ ตั้งค่าผู้ใช้งาน</span>
@@ -222,55 +222,48 @@ a{color:var(--primary)}
         <div class="form-grid">
           <div class="form-group">
             <label>ชื่อ-นามสกุล</label>
-            <input id="u-name" type="text" placeholder="ชื่อ-นามสกุล"/>
+            <input id="u-name" type="text"/>
           </div>
           <div class="form-group">
             <label>ชื่อผู้ใช้ (Username)</label>
-            <input id="u-username" type="text" placeholder="username"/>
+            <input id="u-username" type="text"/>
           </div>
           <div class="form-group">
-            <label>รหัสผ่านใหม่ (ปล่อยว่างถ้าไม่เปลี่ยน)</label>
-            <input id="u-pass" type="password" placeholder="รหัสผ่านใหม่"/>
+            <label>รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)</label>
+            <input id="u-pass" type="password"/>
           </div>
           <div class="form-group">
             <label>ยืนยันรหัสผ่าน</label>
-            <input id="u-pass2" type="password" placeholder="ยืนยันรหัสผ่าน"/>
+            <input id="u-pass2" type="password"/>
           </div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">ข้อมูลบริษัท</div>
-        <div class="mb8">
-          <div class="logo-upload">
-            <div class="logo-preview" id="logo-preview">
-              <span class="logo-placeholder">🏢</span>
-            </div>
-            <div>
-              <div class="text-muted mb8">โลโก้บริษัท (PNG/JPG)</div>
-              <input type="file" id="logo-file" accept="image/*" onchange="handleLogo(this)" style="display:none"/>
-              <button class="btn btn-secondary btn-sm" onclick="document.getElementById('logo-file').click()">📁 เลือกรูปโลโก้</button>
-              <button class="btn btn-secondary btn-sm mt8" onclick="clearLogo()">✖ ลบโลโก้</button>
-            </div>
+        <div class="logo-upload mb8">
+          <div class="logo-preview" id="logo-preview"><span class="logo-placeholder">🏢</span></div>
+          <div>
+            <div class="text-muted mb8">โลโก้บริษัท (PNG/JPG)</div>
+            <input type="file" id="logo-file" accept="image/*" onchange="handleLogo(this)" style="display:none"/>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('logo-file').click()">📁 เลือกรูปโลโก้</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearLogo()" style="margin-top:6px">✖ ลบโลโก้</button>
           </div>
         </div>
-        <div class="form-grid mt16">
+        <div class="form-grid">
           <div class="form-group">
-            <label>ชื่อบริษัท</label>
-            <input id="u-company" type="text" placeholder="ชื่อบริษัท"/>
+            <label>ชื่อบริษัท</label><input id="u-company" type="text"/>
           </div>
           <div class="form-group">
-            <label>ที่อยู่</label>
-            <input id="u-addr" type="text" placeholder="ที่อยู่บริษัท"/>
+            <label>ที่อยู่</label><input id="u-addr" type="text"/>
           </div>
           <div class="form-group">
-            <label>เบอร์โทรศัพท์</label>
-            <input id="u-phone" type="text" placeholder="เบอร์โทร"/>
+            <label>เบอร์โทรศัพท์</label><input id="u-phone" type="text"/>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Menu 2 -->
+    <!-- ── Menu 2: Project ── -->
     <div id="m2" class="menu-content">
       <div class="section-header">
         <span class="section-title">📁 ตั้งค่าโครงการ</span>
@@ -281,11 +274,10 @@ a{color:var(--primary)}
           <input type="file" id="load-json-inp" accept=".json" onchange="loadProjectJSON(this)" style="display:none"/>
         </div>
       </div>
-      <!-- Tabs -->
       <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('tab-info',this)">ข้อมูลโครงการ</button>
-        <button class="tab-btn" onclick="showTab('tab-tasks',this)">รายการงาน</button>
-        <button class="tab-btn" onclick="showTab('tab-notes',this)">บันทึกเพิ่มเติม</button>
+        <button class="tab-btn active" onclick="showTab('tab-info',this)">📋 ข้อมูลโครงการ</button>
+        <button class="tab-btn" onclick="showTab('tab-tasks',this)">📝 รายการงาน</button>
+        <button class="tab-btn" onclick="showTab('tab-notes',this)">📌 บันทึกเพิ่มเติม</button>
       </div>
 
       <!-- Tab: Info -->
@@ -298,24 +290,26 @@ a{color:var(--primary)}
               <input id="p-name" type="text" placeholder="ชื่อโครงการ"/>
             </div>
             <div class="form-group" style="grid-column:1/-1">
-              <label>ที่อยู่โครงการ (Project Address)</label>
+              <label>ที่อยู่โครงการ</label>
               <input id="p-addr" type="text" placeholder="ที่อยู่โครงการ"/>
             </div>
             <div class="form-group">
               <label>ผู้ติดต่อ (Contact)</label>
-              <input id="p-contact" type="text" placeholder="ชื่อผู้ติดต่อ"/>
+              <input id="p-contact" type="text"/>
             </div>
             <div class="form-group">
               <label>ผู้จัดการโครงการ (Project Manager)</label>
-              <input id="p-pm" type="text" placeholder="ชื่อผู้จัดการโครงการ"/>
+              <input id="p-pm" type="text"/>
             </div>
             <div class="form-group">
-              <label>วันเริ่มต้นโครงการ (Start Date)</label>
-              <input id="p-start" type="date" onchange="recalcWorkDays()"/>
+              <label>วันเริ่มต้นโครงการ</label>
+              <input id="p-start" type="date" onchange="onProjectDateChange()"/>
+              <span id="p-start-th" class="text-muted"></span>
             </div>
             <div class="form-group">
-              <label>วันสิ้นสุดโครงการ (End Date)</label>
-              <input id="p-end" type="date" onchange="recalcWorkDays()"/>
+              <label>วันสิ้นสุดโครงการ</label>
+              <input id="p-end" type="date" onchange="onProjectDateChange()"/>
+              <span id="p-end-th" class="text-muted"></span>
             </div>
             <div class="form-group">
               <label>จำนวนวันทำงาน (WorkDays)</label>
@@ -323,33 +317,69 @@ a{color:var(--primary)}
             </div>
           </div>
         </div>
+        <div class="card">
+          <div class="card-title">ทีมงานโครงการ (Project Team)</div>
+          <div class="leads-wrap" id="leads-tags"></div>
+          <div class="lead-add-row">
+            <input id="new-lead" placeholder="ชื่อผู้รับผิดชอบ" onkeydown="if(event.key==='Enter')addLead()"/>
+            <button class="btn btn-outline btn-sm" onclick="addLead()">+ เพิ่ม</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Tab: Tasks -->
+      <!-- Tab: Tasks (split panel) -->
       <div id="tab-tasks" class="tab-panel">
-        <div class="card" style="padding:12px">
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            <button class="btn btn-success btn-sm" onclick="addMainItem()">➕ เพิ่มหัวข้อหลัก</button>
-            <span class="text-muted" style="align-self:center">ลากแถวเพื่อเรียงลำดับ (ภายในกลุ่มเดียวกันเท่านั้น)</span>
+        <div class="split-panel">
+          <!-- LEFT: Sample List Panel -->
+          <div class="sample-panel">
+            <div class="card" style="padding:12px">
+              <div class="card-title" style="font-size:13px">
+                📋 รายการตัวอย่าง
+                <div class="btn-group">
+                  <button class="btn btn-secondary btn-xs" onclick="document.getElementById('sample-import').click()" title="นำเข้า JSON">📂</button>
+                  <button class="btn btn-outline btn-xs" onclick="exportSampleJSON()" title="ส่งออก JSON">💾</button>
+                  <input type="file" id="sample-import" accept=".json" onchange="importSampleJSON(this)" style="display:none"/>
+                </div>
+              </div>
+              <div class="text-muted mb8" style="font-size:10px">ลากไปยัง "รายการงาน" หรือคลิก ➕ เพื่อเพิ่ม</div>
+              <div id="sample-list" class="sample-list"></div>
+              <!-- Drop zone: receive from task table -->
+              <div id="sample-drop-zone" class="sample-drop-hint"
+                ondragover="onSampleDropOver(event)" ondragleave="onSampleDropLeave(event)" ondrop="onDropToSample(event)">
+                ⬇ ลากงานจากตารางมาที่นี่เพื่อบันทึก
+              </div>
+            </div>
           </div>
-          <div class="task-table-wrap">
-            <table class="task-table" id="task-table">
-              <thead>
-                <tr>
-                  <th style="width:30px"></th>
-                  <th style="width:55px">Item</th>
-                  <th style="min-width:200px">คำอธิบาย (Description)</th>
-                  <th style="min-width:130px">ผู้รับผิดชอบ (Lead)</th>
-                  <th style="width:130px">วันเริ่ม</th>
-                  <th style="width:130px">วันสิ้นสุด</th>
-                  <th style="width:65px">วัน</th>
-                  <th style="width:65px">วันทำงาน</th>
-                  <th style="width:80px">% งาน</th>
-                  <th style="width:110px">จัดการ</th>
-                </tr>
-              </thead>
-              <tbody id="task-tbody"></tbody>
-            </table>
+
+          <!-- RIGHT: Task Table -->
+          <div class="task-panel">
+            <div class="card" style="padding:12px">
+              <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+                <button class="btn btn-success btn-sm" onclick="addMainItem()">➕ เพิ่มหัวข้อหลัก</button>
+                <span class="text-muted" style="font-size:11px">ลาก ⠿ เพื่อจัดเรียง (ภายในกลุ่มเดียวกัน) | ลากงานจากซ้ายมาวางที่นี่</span>
+              </div>
+              <div class="task-table-wrap"
+                id="task-drop-area"
+                ondragover="onTaskDropOver(event)" ondragleave="onTaskDropLeave(event)" ondrop="onDropToTask(event)">
+                <table class="task-table" id="task-table">
+                  <thead>
+                    <tr>
+                      <th style="width:28px"></th>
+                      <th style="width:48px">Item</th>
+                      <th style="min-width:160px">คำอธิบาย</th>
+                      <th style="min-width:110px">ผู้รับผิดชอบ</th>
+                      <th style="width:100px">วันเริ่ม</th>
+                      <th style="width:100px">วันสิ้นสุด</th>
+                      <th style="width:60px">วันทำงาน</th>
+                      <th style="width:50px">วัน</th>
+                      <th style="width:75px">% งาน</th>
+                      <th style="width:85px">จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="task-tbody"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -358,38 +388,35 @@ a{color:var(--primary)}
       <div id="tab-notes" class="tab-panel">
         <div class="card">
           <div class="note-label">บันทึกเพิ่มเติม / หมายเหตุ</div>
-          <textarea id="p-notes" rows="8" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px;background:var(--bg);color:var(--text);resize:vertical" placeholder="บันทึกเพิ่มเติมเกี่ยวกับโครงการ..."></textarea>
+          <textarea id="p-notes" rows="8" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px;background:var(--bg);color:var(--text);resize:vertical;font-size:13px" placeholder="บันทึกเพิ่มเติม..."></textarea>
         </div>
       </div>
     </div>
 
-    <!-- Menu 3 -->
+    <!-- ── Menu 3: Gantt View ── -->
     <div id="m3" class="menu-content">
       <div class="section-header">
         <span class="section-title">📊 แผนงานโครงการ (Gantt Chart)</span>
         <div class="btn-group">
           <button class="btn btn-success" onclick="exportGanttPDF()">📄 บันทึก PDF</button>
           <button class="btn btn-outline" onclick="exportJSON()">💾 บันทึก JSON</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ พิมพ์</button>
         </div>
       </div>
       <div id="gantt-project-info" class="card" style="padding:12px;margin-bottom:12px"></div>
       <div id="gantt-container"></div>
     </div>
 
-    <!-- Menu 4 -->
+    <!-- ── Menu 4: S-Curve ── -->
     <div id="m4" class="menu-content">
       <div class="section-header">
         <span class="section-title">📈 S-Curve ความคืบหน้าโครงการ</span>
-        <div class="btn-group">
-          <button class="btn btn-success" onclick="exportSCurvePDF()">📄 บันทึก PDF</button>
-        </div>
+        <button class="btn btn-success" onclick="exportSCurvePDF()">📄 บันทึก PDF</button>
       </div>
       <div id="sc-project-info" class="card" style="padding:12px;margin-bottom:12px"></div>
       <div class="scurve-container card">
         <div class="scurve-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#2e7d32"></div><span>แผนงาน (Planned)</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e65100;border-top:2px dashed #e65100"></div><span>ผลงาน (Actual)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#2e7d32"></div>แผนงาน (Planned)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e65100"></div>ผลงาน (Actual)</div>
         </div>
         <div class="scurve-canvas-wrap"><canvas id="scurve-canvas"></canvas></div>
       </div>
@@ -407,7 +434,7 @@ a{color:var(--primary)}
       <button class="sb-btn" data-menu="2" onclick="showMenu(2)"><span class="icon">📁</span>ตั้งค่าโครงการ</button>
       <button class="sb-btn" data-menu="3" onclick="showMenu(3)"><span class="icon">📊</span>แสดงโครงการ</button>
       <button class="sb-btn" data-menu="4" onclick="showMenu(4)"><span class="icon">📈</span>S-Curve</button>
-      <button class="sb-btn" data-menu="5" onclick="doLogout()"><span class="icon">🚪</span>ออกจากระบบ</button>
+      <button class="sb-btn" onclick="doLogout()"><span class="icon">🚪</span>ออกจากระบบ</button>
     </div>
     <div class="sb-footer">
       <label class="dark-toggle">
@@ -417,101 +444,184 @@ a{color:var(--primary)}
       <div class="text-muted mt8" id="sb-username" style="font-size:11px"></div>
     </div>
   </nav>
-
 </div><!-- /main-app -->
 
-<!-- Toast -->
 <div id="toast"></div>
-
-<!-- Hidden PDF render area -->
-<div id="print-render"></div>
 
 <script>
 /* ═══════════════════════════════════════════
-   DATA MODEL & STORAGE
+   CONSTANTS — SAMPLE DATA (from project_plan.xlsx)
 ═══════════════════════════════════════════ */
-const STORE_KEY = 'pp_app_v2';
+const DEFAULT_SAMPLE = [
+  {id:'ds1',type:'main',description:'เริ่มต้นโครงการ',subItems:[
+    {id:'ds1_1',type:'sub',description:'เซ็นสัญญาจ้างงาน'},
+    {id:'ds1_2',type:'sub',description:'อนุมัติเอกสารในโครงการ'}
+  ]},
+  {id:'ds2',type:'main',description:'ตรวจสอบพื้นที่และเตรียมความพร้อม',subItems:[
+    {id:'ds2_1',type:'sub',description:'Survey พื้นที่'},
+    {id:'ds2_2',type:'sub',description:'Safety Induction'},
+    {id:'ds2_3',type:'sub',description:'Site Mobilization'}
+  ]},
+  {id:'ds3',type:'main',description:'งานติดตั้งแผงโซล่าร์เซลล์',subItems:[
+    {id:'ds3_1',type:'sub',description:'งาน Scaffolding'},
+    {id:'ds3_2',type:'sub',description:'งาน Inverter Room'},
+    {id:'ds3_3',type:'sub',description:'โครงสร้างยึดแผง (Mounting Structure)'},
+    {id:'ds3_4',type:'sub',description:'ติดตั้ง PV Module บน Mounting'},
+    {id:'ds3_5',type:'sub',description:'งาน DC Wiring'},
+    {id:'ds3_6',type:'sub',description:'งาน AC Wiring'},
+    {id:'ds3_7',type:'sub',description:'ติดตั้งระบบสายดิน (Earthing)'}
+  ]},
+  {id:'ds4',type:'main',description:'ติดตั้งแผงโซล่าเซลล์และอินเวอร์เตอร์',subItems:[
+    {id:'ds4_1',type:'sub',description:'รับ PV Module'},
+    {id:'ds4_2',type:'sub',description:'ติดตั้ง PV Module'},
+    {id:'ds4_3',type:'sub',description:'งาน DC Wiring'},
+    {id:'ds4_4',type:'sub',description:'งาน AC Wiring'},
+    {id:'ds4_5',type:'sub',description:'ติดตั้งอินเวอร์เตอร์'},
+    {id:'ds4_6',type:'sub',description:'ติดตั้งตู้ควบคุม (Control Cabinet)'},
+    {id:'ds4_7',type:'sub',description:'ระบบสื่อสาร (Communication)'},
+    {id:'ds4_8',type:'sub',description:'หม้อแปลง (Transformer)'},
+    {id:'ds4_9',type:'sub',description:'ระบบน้ำหล่อเย็น (Cooling System)'},
+    {id:'ds4_10',type:'sub',description:'งาน Earthing & Bonding'},
+    {id:'ds4_11',type:'sub',description:'Lightning Protection System'}
+  ]},
+  {id:'ds5',type:'main',description:'ทดสอบและตรวจสอบระบบโซล่าเซลล์',subItems:[
+    {id:'ds5_1',type:'sub',description:'DC/AC Continuity Test'},
+    {id:'ds5_2',type:'sub',description:'IV-Curve Test'},
+    {id:'ds5_3',type:'sub',description:'Ground Resistance Test'},
+    {id:'ds5_4',type:'sub',description:'Inverter Function Test'},
+    {id:'ds5_5',type:'sub',description:'Safety Inspection'},
+    {id:'ds5_6',type:'sub',description:'Warning Signs & Labels'}
+  ]},
+  {id:'ds6',type:'main',description:'Commissioning',subItems:[
+    {id:'ds6_1',type:'sub',description:'Testing & Commissioning'},
+    {id:'ds6_2',type:'sub',description:'Clear Punch List'},
+    {id:'ds6_3',type:'sub',description:'Monitoring System Setup'},
+    {id:'ds6_4',type:'sub',description:'System Integration Test'}
+  ]},
+  {id:'ds7',type:'main',description:'Operating Date and Handover',subItems:[
+    {id:'ds7_1',type:'sub',description:'Document Handover'},
+    {id:'ds7_2',type:'sub',description:'As-Built Drawing'},
+    {id:'ds7_3',type:'sub',description:'ใบอนุญาตก่อสร้าง (อ.1)'},
+    {id:'ds7_4',type:'sub',description:'ใบอนุญาตเชื่อมต่อระบบ PEA'},
+    {id:'ds7_5',type:'sub',description:'Final Handover'},
+    {id:'ds7_6',type:'sub',description:'De-mobilization'}
+  ]}
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const STORE_KEY = 'pp_app_v3';
+const SAMPLE_KEY = 'pp_sample_v3';
 let appData = null;
 let currentProject = null;
+let sampleItems = [];
 let scChart = null;
 let sortInsts = [];
-
-function defaultData(){
-  return {
-    user:{fullName:'',username:'admin',password:'1234',logo:'',company:'',address:'',phone:''},
-    projects:[],
-    currentProjectId:null
-  };
-}
-
-function loadStore(){
-  try{ appData = JSON.parse(localStorage.getItem(STORE_KEY)) || defaultData(); }
-  catch(e){ appData = defaultData(); }
-  syncCurrentProject();
-}
-
-function saveStore(){
-  if(currentProject){
-    const idx = appData.projects.findIndex(p=>p.id===currentProject.id);
-    if(idx>=0) appData.projects[idx]=currentProject;
-    else appData.projects.push(currentProject);
-    appData.currentProjectId = currentProject.id;
-  }
-  localStorage.setItem(STORE_KEY, JSON.stringify(appData));
-}
-
-function syncCurrentProject(){
-  if(appData.currentProjectId){
-    currentProject = appData.projects.find(p=>p.id===appData.currentProjectId) || null;
-  }
-  if(!currentProject && appData.projects.length>0){
-    currentProject = appData.projects[0];
-  }
-}
+let draggedItem = null; // {type:'main'|'sub', data, mainId?}
 
 /* ═══════════════════════════════════════════
    UTILS
 ═══════════════════════════════════════════ */
-function uuid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function uuid(){ return 'id'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
 
-function toast(msg, dur=2500){
+function toast(msg, dur=2800){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), dur);
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>t.classList.remove('show'), dur);
 }
 
-function formatDateTH(d){
-  if(!d) return '';
-  const dt = typeof d==='string' ? new Date(d) : d;
-  if(isNaN(dt)) return '';
-  return dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'});
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* Thai date formatting */
+function thaiDate(iso){
+  if(!iso) return '—';
+  const d=new Date(iso+'T00:00:00');
+  if(isNaN(d)) return '—';
+  return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+}
+function thaiDateLong(iso){
+  if(!iso) return '—';
+  const d=new Date(iso+'T00:00:00');
+  if(isNaN(d)) return '—';
+  return d.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+}
+function toISO(d){ return d.toISOString().slice(0,10); }
+function todayISO(){ return toISO(new Date()); }
+
+/* Calendar days (inclusive) */
+function calDays(s,e){
+  if(!s||!e) return 0;
+  const ms=new Date(s+'T00:00:00'), me=new Date(e+'T00:00:00');
+  if(isNaN(ms)||isNaN(me)) return 0;
+  return Math.max(0,Math.round((me-ms)/86400000)+1);
 }
 
-function toInputDate(d){
-  if(!d) return '';
-  const dt = typeof d==='string' ? new Date(d) : d;
-  if(isNaN(dt)) return '';
-  return dt.toISOString().slice(0,10);
-}
-
-function diffDays(a,b){
-  const da=new Date(a), db=new Date(b);
-  if(isNaN(da)||isNaN(db)) return 0;
-  return Math.round((db-da)/(86400000))+1;
-}
-
-function calcWorkDays(a,b){
-  let d=new Date(a), end=new Date(b), cnt=0;
-  d.setHours(0,0,0,0); end.setHours(0,0,0,0);
-  while(d<=end){ const wd=d.getDay(); if(wd!==0&&wd!==6) cnt++; d.setDate(d.getDate()+1); }
+/* WorkDays (Mon-Fri) */
+function calcWorkDays(s,e){
+  if(!s||!e) return 0;
+  let d=new Date(s+'T00:00:00'), end=new Date(e+'T00:00:00'), cnt=0;
+  if(isNaN(d)||isNaN(end)) return 0;
+  while(d<=end){ const w=d.getDay(); if(w>0&&w<6) cnt++; d.setDate(d.getDate()+1); }
   return cnt;
 }
 
-function addCalDays(dateStr, n){
-  if(!dateStr) return '';
-  const d=new Date(dateStr);
-  d.setDate(d.getDate()+n);
-  return toInputDate(d);
+/* Add N workdays to a start date → return ISO end date */
+function addWorkDays(startISO, wd){
+  if(!startISO||wd<=0) return startISO||'';
+  let d=new Date(startISO+'T00:00:00');
+  if(isNaN(d)) return startISO;
+  let rem=wd-1;
+  while(rem>0){ d.setDate(d.getDate()+1); const w=d.getDay(); if(w>0&&w<6) rem--; }
+  return toISO(d);
+}
+
+/* File name: projectName_ThaiDate_HHmm.ext */
+function makeFileName(ext){
+  const now=new Date();
+  const pname=(currentProject&&currentProject.projectName)||'โครงการ';
+  const datePart=now.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const safe=pname.replace(/[\\/:*?"<>|]/g,'_');
+  return `${safe}_${datePart}_${h}${m}.${ext}`;
+}
+
+/* ═══════════════════════════════════════════
+   STORAGE
+═══════════════════════════════════════════ */
+function defaultData(){
+  return {user:{fullName:'',username:'admin',password:'1234',logo:'',company:'',address:'',phone:''},
+    projects:[],currentProjectId:null};
+}
+function loadStore(){
+  try{ appData=JSON.parse(localStorage.getItem(STORE_KEY))||defaultData(); }
+  catch(e){ appData=defaultData(); }
+  try{ sampleItems=JSON.parse(localStorage.getItem(SAMPLE_KEY))||deepCopySample(DEFAULT_SAMPLE); }
+  catch(e){ sampleItems=deepCopySample(DEFAULT_SAMPLE); }
+  syncCurrentProject();
+}
+function saveStore(){
+  if(currentProject){
+    const idx=appData.projects.findIndex(p=>p.id===currentProject.id);
+    if(idx>=0) appData.projects[idx]=currentProject;
+    else appData.projects.push(currentProject);
+    appData.currentProjectId=currentProject.id;
+  }
+  localStorage.setItem(STORE_KEY,JSON.stringify(appData));
+}
+function saveSampleStore(){ localStorage.setItem(SAMPLE_KEY,JSON.stringify(sampleItems)); }
+function syncCurrentProject(){
+  if(appData.currentProjectId)
+    currentProject=appData.projects.find(p=>p.id===appData.currentProjectId)||null;
+  if(!currentProject&&appData.projects.length>0) currentProject=appData.projects[0];
+}
+function deepCopySample(items){
+  return JSON.parse(JSON.stringify(items)).map(m=>({
+    ...m, id:uuid(),
+    subItems:(m.subItems||[]).map(s=>({...s,id:uuid()}))
+  }));
 }
 
 /* ═══════════════════════════════════════════
@@ -521,18 +631,15 @@ function doLogin(){
   const u=document.getElementById('inp-user').value.trim();
   const p=document.getElementById('inp-pass').value;
   const err=document.getElementById('login-err');
-  if(u===appData.user.username && p===appData.user.password){
+  if(u===appData.user.username&&p===appData.user.password){
     err.style.display='none';
     document.getElementById('login-screen').style.display='none';
     document.getElementById('main-app').style.display='flex';
     document.getElementById('sb-username').textContent='👤 '+u;
     renderMenu1Fields();
     showMenu(1);
-  } else {
-    err.style.display='block';
-  }
+  } else { err.style.display='block'; }
 }
-
 function doLogout(){
   document.getElementById('main-app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
@@ -553,16 +660,15 @@ function showMenu(n){
   if(n===3) renderGantt();
   if(n===4) renderSCurve();
 }
-
-function showTab(id, btn){
+function showTab(id,btn){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
+  if(id==='tab-tasks') renderTaskTable();
 }
-
 function toggleDark(on){
-  document.documentElement.setAttribute('data-theme', on?'dark':'light');
+  document.documentElement.setAttribute('data-theme',on?'dark':'light');
 }
 
 /* ═══════════════════════════════════════════
@@ -578,30 +684,28 @@ function renderMenu1Fields(){
   document.getElementById('u-addr').value=u.address||'';
   document.getElementById('u-phone').value=u.phone||'';
   const prev=document.getElementById('logo-preview');
-  if(u.logo){ prev.innerHTML=`<img src="${u.logo}" alt="logo"/>`; }
-  else { prev.innerHTML='<span class="logo-placeholder">🏢</span>'; }
+  prev.innerHTML=u.logo?`<img src="${u.logo}" alt="logo"/>`:'<span class="logo-placeholder">🏢</span>';
 }
-
 function handleLogo(inp){
   const f=inp.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=e=>{
+  new FileReader().onload=e=>{
     appData.user.logo=e.target.result;
     document.getElementById('logo-preview').innerHTML=`<img src="${e.target.result}" alt="logo"/>`;
-  };
+  }, new FileReader().readAsDataURL(f);
+  // Fix: use proper FileReader
+  const r=new FileReader();
+  r.onload=e=>{ appData.user.logo=e.target.result; document.getElementById('logo-preview').innerHTML=`<img src="${e.target.result}" alt="logo"/>`; };
   r.readAsDataURL(f);
 }
-
 function clearLogo(){
   appData.user.logo='';
   document.getElementById('logo-preview').innerHTML='<span class="logo-placeholder">🏢</span>';
   document.getElementById('logo-file').value='';
 }
-
 function saveUser(){
   const pass=document.getElementById('u-pass').value;
   const pass2=document.getElementById('u-pass2').value;
-  if(pass && pass!==pass2){ toast('❌ รหัสผ่านไม่ตรงกัน'); return; }
+  if(pass&&pass!==pass2){ toast('❌ รหัสผ่านไม่ตรงกัน'); return; }
   appData.user.fullName=document.getElementById('u-name').value.trim();
   appData.user.username=document.getElementById('u-username').value.trim()||'admin';
   if(pass) appData.user.password=pass;
@@ -614,48 +718,52 @@ function saveUser(){
 }
 
 /* ═══════════════════════════════════════════
-   MENU 2 — PROJECT
+   MENU 2 — PROJECT INFO
 ═══════════════════════════════════════════ */
-function newProject(){
-  if(!confirm('สร้างโครงการใหม่? ข้อมูลที่ยังไม่บันทึกจะสูญหาย')) return;
-  currentProject = blankProject();
-  fillProjectForm();
-  renderTaskTable();
-  toast('✅ สร้างโครงการใหม่แล้ว');
-}
-
 function blankProject(){
   return {id:uuid(),projectName:'',address:'',contact:'',projectManager:'',
-    startDate:'',endDate:'',workDays:0,notes:'',items:[]};
+    leads:[],startDate:'',endDate:'',workDays:0,notes:'',items:[]};
 }
-
-function renderMenu2(){
+function newProject(){
+  if(!confirm('สร้างโครงการใหม่? ข้อมูลที่ยังไม่บันทึกจะสูญหาย')) return;
+  currentProject=blankProject();
   fillProjectForm();
   renderTaskTable();
+  renderSampleList();
+  toast('✅ สร้างโครงการใหม่แล้ว');
 }
-
+function renderMenu2(){
+  if(!currentProject) currentProject=blankProject();
+  fillProjectForm();
+  renderLeadsTags();
+  renderSampleList();
+  renderTaskTable();
+}
 function fillProjectForm(){
-  if(!currentProject){ currentProject=blankProject(); }
+  if(!currentProject) return;
   document.getElementById('p-name').value=currentProject.projectName||'';
   document.getElementById('p-addr').value=currentProject.address||'';
   document.getElementById('p-contact').value=currentProject.contact||'';
   document.getElementById('p-pm').value=currentProject.projectManager||'';
   document.getElementById('p-start').value=currentProject.startDate||'';
   document.getElementById('p-end').value=currentProject.endDate||'';
-  document.getElementById('p-workdays').textContent=currentProject.workDays||'—';
+  document.getElementById('p-start-th').textContent=thaiDate(currentProject.startDate);
+  document.getElementById('p-end-th').textContent=thaiDate(currentProject.endDate);
+  document.getElementById('p-workdays').textContent=(currentProject.workDays||0)+' วัน';
   document.getElementById('p-notes').value=currentProject.notes||'';
 }
-
-function recalcWorkDays(){
+function onProjectDateChange(){
   const s=document.getElementById('p-start').value;
   const e=document.getElementById('p-end').value;
+  if(currentProject){ currentProject.startDate=s; currentProject.endDate=e; }
+  document.getElementById('p-start-th').textContent=thaiDate(s);
+  document.getElementById('p-end-th').textContent=thaiDate(e);
   if(s&&e){
     const wd=calcWorkDays(s,e);
     document.getElementById('p-workdays').textContent=wd+' วัน';
     if(currentProject) currentProject.workDays=wd;
   }
 }
-
 function collectProjectForm(){
   if(!currentProject) currentProject=blankProject();
   currentProject.projectName=document.getElementById('p-name').value.trim();
@@ -668,13 +776,11 @@ function collectProjectForm(){
     currentProject.workDays=calcWorkDays(currentProject.startDate,currentProject.endDate);
   currentProject.notes=document.getElementById('p-notes').value;
 }
-
 function saveProject(){
   collectProjectForm();
   saveStore();
   toast('✅ บันทึกโครงการแล้ว');
 }
-
 function loadProjectJSON(inp){
   const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
@@ -682,239 +788,552 @@ function loadProjectJSON(inp){
     try{
       const p=JSON.parse(e.target.result);
       if(!p.id) p.id=uuid();
+      if(!p.leads) p.leads=[];
       currentProject=p;
       appData.currentProjectId=p.id;
-      const exists=appData.projects.findIndex(x=>x.id===p.id);
-      if(exists>=0) appData.projects[exists]=p; else appData.projects.push(p);
+      const idx=appData.projects.findIndex(x=>x.id===p.id);
+      if(idx>=0) appData.projects[idx]=p; else appData.projects.push(p);
       fillProjectForm();
+      renderLeadsTags();
       renderTaskTable();
-      toast('✅ นำเข้าโครงการสำเร็จ: '+p.projectName);
+      toast('✅ นำเข้าโครงการ: '+p.projectName);
     } catch(err){ toast('❌ ไม่สามารถอ่านไฟล์ JSON ได้'); }
   };
-  r.readAsText(f, 'UTF-8');
+  r.readAsText(f,'UTF-8');
   inp.value='';
 }
 
-/* ── TASK EDITOR ── */
+/* LEADS MANAGEMENT */
+function renderLeadsTags(){
+  const leads=(currentProject&&currentProject.leads)||[];
+  const wrap=document.getElementById('leads-tags');
+  if(!wrap) return;
+  wrap.innerHTML=leads.map((l,i)=>
+    `<span class="lead-tag">${esc(l)}<button onclick="removeLead(${i})" title="ลบ">×</button></span>`
+  ).join('');
+}
+function addLead(){
+  const inp=document.getElementById('new-lead');
+  const val=inp.value.trim(); if(!val) return;
+  if(!currentProject) currentProject=blankProject();
+  if(!currentProject.leads) currentProject.leads=[];
+  if(!currentProject.leads.includes(val)){ currentProject.leads.push(val); renderLeadsTags(); }
+  inp.value='';
+}
+function removeLead(i){
+  if(!currentProject||!currentProject.leads) return;
+  currentProject.leads.splice(i,1);
+  renderLeadsTags();
+}
+
+/* ═══════════════════════════════════════════
+   SAMPLE LIST
+═══════════════════════════════════════════ */
+function renderSampleList(){
+  const el=document.getElementById('sample-list');
+  if(!el) return;
+  el.innerHTML='';
+  sampleItems.forEach((m,mi)=>{
+    const collapsed=m._collapsed;
+    const wrap=document.createElement('div');
+    wrap.className='sample-main-item';
+    wrap.setAttribute('data-sample-id',m.id);
+    wrap.setAttribute('draggable','true');
+    wrap.addEventListener('dragstart',e=>onSampleDragStart(e,{type:'main',data:m}));
+
+    const hdr=document.createElement('div');
+    hdr.className='sample-main-hdr';
+    hdr.innerHTML=`
+      <span class="drag-handle">⠿</span>
+      <span class="desc-text" contenteditable="true" onblur="updateSampleDesc('${m.id}',null,this.textContent)"
+        onclick="event.stopPropagation()">${esc(m.description)}</span>
+      <button class="add-btn" onclick="event.stopPropagation();addFromSampleMain('${m.id}')" title="เพิ่มทั้งหมดในโครงการ">➕</button>
+      <button class="toggle-btn" onclick="toggleSampleItem('${m.id}')" title="${collapsed?'ขยาย':'ย่อ'}">${collapsed?'▶':'▼'}</button>`;
+    wrap.appendChild(hdr);
+
+    if(!collapsed&&m.subItems&&m.subItems.length>0){
+      const subWrap=document.createElement('div');
+      subWrap.className='sample-subs';
+      subWrap.id='sample-subs-'+m.id;
+      m.subItems.forEach(s=>{
+        const sEl=document.createElement('div');
+        sEl.className='sample-sub-item';
+        sEl.setAttribute('data-sample-sub-id',s.id);
+        sEl.setAttribute('data-parent-id',m.id);
+        sEl.setAttribute('draggable','true');
+        sEl.addEventListener('dragstart',e=>{e.stopPropagation();onSampleDragStart(e,{type:'sub',data:s,parentId:m.id});});
+        sEl.innerHTML=`
+          <span class="drag-handle">⠿</span>
+          <span class="desc-text" contenteditable="true" onblur="updateSampleDesc('${m.id}','${s.id}',this.textContent)"
+            onclick="event.stopPropagation()">${esc(s.description)}</span>
+          <button class="add-btn" onclick="event.stopPropagation();addFromSampleSub('${m.id}','${s.id}')" title="เพิ่มในโครงการ">➕</button>`;
+        subWrap.appendChild(sEl);
+      });
+      wrap.appendChild(subWrap);
+
+      // Sortable for sub-items in sample
+      Sortable.create(subWrap,{
+        animation:120,handle:'.drag-handle',draggable:'.sample-sub-item',
+        onEnd:()=>{
+          const ids=[...subWrap.querySelectorAll('.sample-sub-item')].map(el=>el.getAttribute('data-sample-sub-id'));
+          const oldSubs=[...m.subItems];
+          m.subItems=ids.map(id=>oldSubs.find(s=>s.id===id)).filter(Boolean);
+          saveSampleStore();
+        }
+      });
+    }
+    el.appendChild(wrap);
+  });
+
+  // Sortable for main items in sample
+  Sortable.create(el,{
+    animation:120,handle:'.sample-main-item>.sample-main-hdr>.drag-handle',draggable:'.sample-main-item',
+    onEnd:()=>{
+      const ids=[...el.querySelectorAll('.sample-main-item')].map(el=>el.getAttribute('data-sample-id'));
+      const old=[...sampleItems];
+      sampleItems=ids.map(id=>old.find(m=>m.id===id)).filter(Boolean);
+      saveSampleStore();
+    }
+  });
+}
+
+function toggleSampleItem(id){
+  const m=sampleItems.find(x=>x.id===id);
+  if(m){ m._collapsed=!m._collapsed; renderSampleList(); }
+}
+
+function updateSampleDesc(mainId,subId,val){
+  const m=sampleItems.find(x=>x.id===mainId);
+  if(!m) return;
+  if(subId){ const s=m.subItems.find(x=>x.id===subId); if(s) s.description=val.trim(); }
+  else { m.description=val.trim(); }
+  saveSampleStore();
+}
+
+/* Add from sample to task table (click) */
+function addFromSampleMain(sampleMainId){
+  if(!currentProject) currentProject=blankProject();
+  const sm=sampleItems.find(m=>m.id===sampleMainId);
+  if(!sm) return;
+  const pStart=currentProject.startDate||todayISO();
+  const newMain={id:uuid(),type:'main',description:sm.description,lead:'',
+    startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0,
+    subItems:(sm.subItems||[]).map(s=>({
+      id:uuid(),type:'sub',description:s.description,lead:'',
+      startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0
+    }))
+  };
+  currentProject.items.push(newMain);
+  renumberItems();
+  renderTaskTable();
+  toast('✅ เพิ่ม "'+sm.description+'" ในรายการงานแล้ว');
+}
+function addFromSampleSub(sampleMainId, sampleSubId){
+  if(!currentProject) currentProject=blankProject();
+  const sm=sampleItems.find(m=>m.id===sampleMainId);
+  const ss=sm&&sm.subItems.find(s=>s.id===sampleSubId);
+  if(!ss) return;
+  const pStart=currentProject.startDate||todayISO();
+  // Add to last main item, or create one
+  let lastMain=currentProject.items[currentProject.items.length-1];
+  if(!lastMain){
+    lastMain={id:uuid(),type:'main',description:'หัวข้อใหม่',lead:'',startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0,subItems:[]};
+    currentProject.items.push(lastMain);
+  }
+  lastMain.subItems.push({id:uuid(),type:'sub',description:ss.description,lead:'',
+    startDate:lastMain.startDate,endDate:lastMain.endDate,workDays:1,days:1,percentDone:0});
+  renumberItems();
+  renderTaskTable();
+  toast('✅ เพิ่ม "'+ss.description+'" แล้ว');
+}
+
+/* Export sample list as JSON */
+function exportSampleJSON(){
+  const blob=new Blob([JSON.stringify(sampleItems,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='รายการตัวอย่าง_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.json';
+  a.click();
+  toast('✅ ส่งออกรายการตัวอย่างแล้ว');
+}
+function importSampleJSON(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      let data=JSON.parse(e.target.result);
+      // Accept any format: array of items with description field
+      if(!Array.isArray(data)) data=[data];
+      // Normalize: ensure each has id, type, subItems
+      sampleItems=data.map(item=>{
+        const m={
+          id:uuid(),
+          type:'main',
+          description:item.description||item.name||item.taskName||item.desc||'',
+          subItems:[]
+        };
+        const subs=item.subItems||item.children||item.tasks||item.subtasks||[];
+        m.subItems=subs.map(s=>({
+          id:uuid(),type:'sub',
+          description:s.description||s.name||s.taskName||s.desc||''
+        }));
+        return m;
+      });
+      saveSampleStore();
+      renderSampleList();
+      toast('✅ นำเข้ารายการตัวอย่างแล้ว ('+sampleItems.length+' หัวข้อ)');
+    } catch(err){ toast('❌ ไม่สามารถอ่านไฟล์ JSON ได้'); }
+  };
+  r.readAsText(f,'UTF-8');
+  inp.value='';
+}
+
+/* ═══════════════════════════════════════════
+   DRAG-AND-DROP (Sample ↔ Task Table)
+═══════════════════════════════════════════ */
+function onSampleDragStart(e,item){
+  draggedItem=item;
+  e.dataTransfer.effectAllowed='copy';
+  e.dataTransfer.setData('text/plain', JSON.stringify(item));
+}
+
+/* From sample → task table */
+function onTaskDropOver(e){
+  e.preventDefault(); e.dataTransfer.dropEffect='copy';
+  document.getElementById('task-drop-area').style.outline='2px dashed var(--primary)';
+}
+function onTaskDropLeave(e){
+  document.getElementById('task-drop-area').style.outline='';
+}
+function onDropToTask(e){
+  e.preventDefault();
+  document.getElementById('task-drop-area').style.outline='';
+  let item=draggedItem;
+  if(!item){
+    try{ item=JSON.parse(e.dataTransfer.getData('text/plain')); }
+    catch(ex){ return; }
+  }
+  if(!currentProject) currentProject=blankProject();
+  const pStart=currentProject.startDate||todayISO();
+  if(item.type==='main'){
+    const src=item.data;
+    const newMain={id:uuid(),type:'main',description:src.description,lead:'',
+      startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0,
+      subItems:(src.subItems||[]).map(s=>({id:uuid(),type:'sub',description:s.description,lead:'',
+        startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0}))
+    };
+    currentProject.items.push(newMain);
+  } else {
+    const src=item.data;
+    let lastMain=currentProject.items[currentProject.items.length-1];
+    if(!lastMain){
+      lastMain={id:uuid(),type:'main',description:'หัวข้อใหม่',lead:'',startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0,subItems:[]};
+      currentProject.items.push(lastMain);
+    }
+    lastMain.subItems.push({id:uuid(),type:'sub',description:src.description,lead:'',
+      startDate:lastMain.startDate,endDate:lastMain.endDate,workDays:1,days:1,percentDone:0});
+  }
+  draggedItem=null;
+  renumberItems();
+  renderTaskTable();
+  toast('✅ เพิ่มรายการแล้ว');
+}
+
+/* From task table → sample list */
+function onSampleDropOver(e){ e.preventDefault(); document.getElementById('sample-drop-zone').classList.add('over'); }
+function onSampleDropLeave(e){ document.getElementById('sample-drop-zone').classList.remove('over'); }
+function onDropToSample(e){
+  e.preventDefault();
+  document.getElementById('sample-drop-zone').classList.remove('over');
+  let item=draggedItem;
+  if(!item){
+    try{ item=JSON.parse(e.dataTransfer.getData('text/plain')); }
+    catch(ex){ return; }
+  }
+  if(!item||!item.data) return;
+  const src=item.data;
+  if(item.type==='main'){
+    sampleItems.push({id:uuid(),type:'main',description:src.description,subItems:(src.subItems||[]).map(s=>({id:uuid(),type:'sub',description:s.description}))});
+  } else {
+    // Add as standalone main item in sample
+    sampleItems.push({id:uuid(),type:'main',description:src.description,subItems:[]});
+  }
+  draggedItem=null;
+  saveSampleStore();
+  renderSampleList();
+  toast('✅ บันทึกในรายการตัวอย่างแล้ว');
+}
+
+/* ═══════════════════════════════════════════
+   TASK TABLE
+═══════════════════════════════════════════ */
 function addMainItem(){
   if(!currentProject) currentProject=blankProject();
-  const items=currentProject.items;
-  items.push({id:uuid(),description:'',lead:'',startDate:'',endDate:'',days:0,workDays:0,percentDone:0,subItems:[]});
+  const pStart=currentProject.startDate||todayISO();
+  currentProject.items.push({id:uuid(),type:'main',description:'',lead:'',
+    startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0,subItems:[]});
   renumberItems();
   renderTaskTable();
 }
-
 function addSubItem(mainId){
-  const main=currentProject.items.find(m=>m.id===mainId);
-  if(!main) return;
-  main.subItems.push({id:uuid(),description:'',lead:'',startDate:'',endDate:'',days:0,workDays:0,percentDone:0});
+  const m=currentProject.items.find(x=>x.id===mainId);
+  if(!m) return;
+  m.subItems.push({id:uuid(),type:'sub',description:'',lead:'',
+    startDate:m.startDate||currentProject.startDate||todayISO(),
+    endDate:m.endDate||m.startDate||currentProject.startDate||todayISO(),
+    workDays:1,days:1,percentDone:0});
   renumberItems();
   renderTaskTable();
 }
-
 function deleteMainItem(mainId){
   if(!confirm('ลบหัวข้อหลักนี้และหัวข้อย่อยทั้งหมด?')) return;
   currentProject.items=currentProject.items.filter(m=>m.id!==mainId);
   renumberItems();
   renderTaskTable();
 }
-
 function deleteSubItem(mainId,subId){
-  const main=currentProject.items.find(m=>m.id===mainId);
-  if(!main) return;
-  main.subItems=main.subItems.filter(s=>s.id!==subId);
+  const m=currentProject.items.find(x=>x.id===mainId);
+  if(!m) return;
+  m.subItems=m.subItems.filter(s=>s.id!==subId);
   renumberItems();
   renderTaskTable();
 }
-
+function moveToSampleFromTask(mainId){
+  const m=currentProject.items.find(x=>x.id===mainId);
+  if(!m) return;
+  sampleItems.push({id:uuid(),type:'main',description:m.description,
+    subItems:m.subItems.map(s=>({id:uuid(),type:'sub',description:s.description}))});
+  saveSampleStore();
+  renderSampleList();
+  toast('✅ บันทึก "'+m.description+'" ในรายการตัวอย่างแล้ว');
+}
 function renumberItems(){
   if(!currentProject) return;
   currentProject.items.forEach((m,mi)=>{
-    m.itemNo=(mi+1).toString();
+    m.itemNo=String(mi+1);
     m.subItems.forEach((s,si)=>{ s.itemNo=(mi+1)+'.'+(si+1); });
   });
 }
 
-function updateField(type, mainId, subId, field, val){
-  if(type==='main'){
-    const m=currentProject.items.find(x=>x.id===mainId);
-    if(!m) return;
-    if(field==='startDate'||field==='endDate'){
-      m[field]=val;
-      if(m.startDate&&m.endDate){ m.days=diffDays(m.startDate,m.endDate); m.workDays=calcWorkDays(m.startDate,m.endDate); }
-    } else if(field==='days'){
-      m.days=parseInt(val)||0;
-      if(m.startDate&&m.days>0){ m.endDate=addCalDays(m.startDate,m.days-1); m.workDays=calcWorkDays(m.startDate,m.endDate); }
-    } else if(field==='percentDone'){
-      m.percentDone=Math.min(100,Math.max(0,parseFloat(val)||0));
-    } else { m[field]=val; }
-  } else {
-    const m=currentProject.items.find(x=>x.id===mainId);
-    if(!m) return;
-    const s=m.subItems.find(x=>x.id===subId);
-    if(!s) return;
-    if(field==='startDate'||field==='endDate'){
-      s[field]=val;
-      if(s.startDate&&s.endDate){ s.days=diffDays(s.startDate,s.endDate); s.workDays=calcWorkDays(s.startDate,s.endDate); }
-    } else if(field==='days'){
-      s.days=parseInt(val)||0;
-      if(s.startDate&&s.days>0){ s.endDate=addCalDays(s.startDate,s.days-1); s.workDays=calcWorkDays(s.startDate,s.endDate); }
-    } else if(field==='percentDone'){
-      s.percentDone=Math.min(100,Math.max(0,parseFloat(val)||0));
-    } else { s[field]=val; }
+/* Update task field */
+function updateField(type,mainId,subId,field,val){
+  const items=currentProject&&currentProject.items;
+  if(!items) return;
+  let obj;
+  if(type==='main'){ obj=items.find(x=>x.id===mainId); }
+  else { const m=items.find(x=>x.id===mainId); obj=m&&m.subItems.find(x=>x.id===subId); }
+  if(!obj) return;
+
+  const pStart=currentProject.startDate||todayISO();
+  const parentStart=type==='sub'?(()=>{const m=items.find(x=>x.id===mainId);return m?m.startDate||pStart:pStart;})():null;
+
+  if(field==='startDate'){
+    obj.startDate=val;
+    if(obj.workDays>0){ obj.endDate=addWorkDays(val,obj.workDays); }
+    obj.days=calDays(obj.startDate,obj.endDate);
+    // If main, update sub-items default start
+    if(type==='main') obj.subItems.forEach(s=>{ if(!s._dateCustomized){ s.startDate=val; if(s.workDays>0) s.endDate=addWorkDays(val,s.workDays); s.days=calDays(s.startDate,s.endDate); } });
+  } else if(field==='workDays'){
+    obj.workDays=Math.max(0,parseInt(val)||0);
+    const base=type==='main'?obj.startDate||pStart:(parentStart||obj.startDate||pStart);
+    if(obj.workDays>0) obj.endDate=addWorkDays(base,obj.workDays);
+    obj.days=calDays(obj.startDate||base,obj.endDate);
+    if(type==='sub') obj._dateCustomized=true;
+  } else if(field==='percentDone'){
+    obj.percentDone=Math.min(100,Math.max(0,parseFloat(val)||0));
+  } else if(field==='description'||field==='lead'){
+    obj[field]=val;
   }
-  // Update cells without full re-render
-  refreshRowCells(type,mainId,subId);
+  // Re-render just the affected row cells (not full re-render)
+  updateRowDisplay(type,mainId,subId,obj);
 }
 
-function refreshRowCells(type,mainId,subId){
-  const rowId = type==='main'?'row-m-'+mainId:'row-s-'+subId;
+function updateRowDisplay(type,mainId,subId,obj){
+  const rowId=type==='main'?'row-m-'+mainId:'row-s-'+subId;
   const row=document.getElementById(rowId);
   if(!row) return;
-  let obj;
-  if(type==='main') obj=currentProject.items.find(x=>x.id===mainId);
-  else { const m=currentProject.items.find(x=>x.id===mainId); obj=m?m.subItems.find(x=>x.id===subId):null; }
-  if(!obj) return;
-  const dEl=row.querySelector('[data-field=days]');
-  if(dEl&&dEl!==document.activeElement) dEl.value=obj.days||0;
-  const wEl=row.querySelector('[data-field=workDays]');
-  if(wEl) wEl.textContent=obj.workDays||0;
-  const eEl=row.querySelector('[data-field=endDate]');
-  if(eEl&&eEl!==document.activeElement) eEl.value=obj.endDate||'';
-  const pEl=row.querySelector('[data-field=percentDone]');
-  if(pEl&&pEl!==document.activeElement) pEl.value=obj.percentDone||0;
-  const pBar=row.querySelector('.percent-fill');
-  if(pBar) pBar.style.width=(obj.percentDone||0)+'%';
+  const endEl=row.querySelector('[data-field=endDate]');
+  if(endEl){ endEl.textContent=thaiDate(obj.endDate); endEl.setAttribute('data-val',obj.endDate||''); }
+  const daysEl=row.querySelector('[data-field=days]');
+  if(daysEl) daysEl.textContent=obj.days||0;
+  const wdEl=row.querySelector('[data-field=workDays]');
+  if(wdEl&&wdEl!==document.activeElement) wdEl.value=obj.workDays||0;
+  const sdEl=row.querySelector('[data-field=startDate]');
+  if(sdEl){ sdEl.textContent=thaiDate(obj.startDate); sdEl.setAttribute('data-val',obj.startDate||''); }
+  const pFill=row.querySelector('.percent-fill');
+  if(pFill) pFill.style.width=(obj.percentDone||0)+'%';
 }
 
 function renderTaskTable(){
-  if(!currentProject){ document.getElementById('task-tbody').innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-m)">ยังไม่มีโครงการ — สร้างโครงการใหม่หรือนำเข้าจาก JSON</td></tr>'; return; }
-  renumberItems();
   destroySortables();
   const tbody=document.getElementById('task-tbody');
+  if(!tbody) return;
   tbody.innerHTML='';
-
-  const mainList=document.createElement('tbody');
-  mainList.id='sortable-main';
+  if(!currentProject||!currentProject.items||currentProject.items.length===0){
+    tbody.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-m);font-size:13px">
+      ยังไม่มีรายการงาน — คลิก "เพิ่มหัวข้อหลัก" หรือลากจาก "รายการตัวอย่าง" มาวาง
+    </td></tr>`;
+    return;
+  }
+  renumberItems();
+  const leads=(currentProject.leads||[]);
+  const leadOpts=leads.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join('');
 
   currentProject.items.forEach(m=>{
-    // Main row
+    // ── MAIN ROW ──
     const mtr=document.createElement('tr');
-    mtr.className='main-row'; mtr.id='row-m-'+m.id; mtr.setAttribute('data-main-id',m.id);
+    mtr.className='main-row'; mtr.id='row-m-'+m.id;
+    mtr.setAttribute('data-main-id',m.id);
+    mtr.setAttribute('draggable','true');
+    mtr.addEventListener('dragstart',e=>{
+      draggedItem={type:'main',data:m};
+      e.dataTransfer.effectAllowed='copy';
+      e.dataTransfer.setData('text/plain',JSON.stringify({type:'main',data:m}));
+    });
     mtr.innerHTML=`
-      <td><span class="drag-handle" title="ลาก">⠿</span></td>
-      <td class="item-no">${m.itemNo||''}</td>
-      <td><input class="task-input" data-field="description" value="${esc(m.description)}" onblur="updateField('main','${m.id}',null,'description',this.value)"/></td>
-      <td><input class="task-input" data-field="lead" value="${esc(m.lead)}" onblur="updateField('main','${m.id}',null,'lead',this.value)" placeholder="ผู้รับผิดชอบ"/></td>
-      <td><input class="task-input date-input" type="date" data-field="startDate" value="${m.startDate||''}" onchange="updateField('main','${m.id}',null,'startDate',this.value)"/></td>
-      <td><input class="task-input date-input" type="date" data-field="endDate" value="${m.endDate||''}" onchange="updateField('main','${m.id}',null,'endDate',this.value)"/></td>
-      <td><input class="task-input num-input" type="number" data-field="days" value="${m.days||0}" onblur="updateField('main','${m.id}',null,'days',this.value)" min="0"/></td>
-      <td><span class="item-no" data-field="workDays">${m.workDays||0}</span></td>
+      <td><span class="drag-handle">⠿</span></td>
+      <td class="item-no">${m.itemNo}</td>
+      <td><input class="task-input" value="${esc(m.description)}" placeholder="คำอธิบายหัวข้อ"
+          onblur="updateField('main','${m.id}',null,'description',this.value)"/></td>
+      <td><select class="task-input" onchange="updateField('main','${m.id}',null,'lead',this.value)">
+            <option value="">— เลือก —</option>${leadOpts}
+            <option value="${esc(m.lead)}" ${m.lead&&!leads.includes(m.lead)?'selected':''}>${m.lead&&!leads.includes(m.lead)?esc(m.lead):''}</option>
+            ${leads.map(l=>`<option value="${esc(l)}" ${m.lead===l?'selected':''}>${esc(l)}</option>`).join('')}
+          </select></td>
+      <td class="date-cell" data-type="main" data-main-id="${m.id}" data-field="startDate" data-val="${m.startDate||''}">
+        <span class="date-disp" data-field="startDate">${thaiDate(m.startDate)}</span>
+        <input type="date" class="date-edit" value="${m.startDate||''}"/>
+      </td>
+      <td class="date-cell" data-type="main" data-main-id="${m.id}" data-field="endDate" data-val="${m.endDate||''}">
+        <span class="date-disp" data-field="endDate">${thaiDate(m.endDate)}</span>
+        <input type="date" class="date-edit" value="${m.endDate||''}"/>
+      </td>
+      <td><input class="task-input num-input" type="number" data-field="workDays" value="${m.workDays||0}" min="0"
+          onblur="updateField('main','${m.id}',null,'workDays',this.value)" onchange="updateField('main','${m.id}',null,'workDays',this.value)"/></td>
+      <td><span class="days-readonly" data-field="days">${m.days||0}</span></td>
       <td>
-        <div class="percent-bar" title="${m.percentDone||0}%">
-          <div class="percent-fill" style="width:${m.percentDone||0}%"></div>
-        </div>
-        <input class="task-input num-input" type="number" data-field="percentDone" value="${m.percentDone||0}" min="0" max="100"
-          onblur="updateField('main','${m.id}',null,'percentDone',this.value)" style="width:55px;margin-top:2px"/>
+        <div class="percent-bar"><div class="percent-fill" style="width:${m.percentDone||0}%"></div></div>
+        <input class="task-input num-input" type="number" value="${m.percentDone||0}" min="0" max="100" style="width:50px;font-size:11px"
+          onblur="updateField('main','${m.id}',null,'percentDone',this.value)"/>
       </td>
       <td>
-        <button class="add-sub-btn" onclick="addSubItem('${m.id}')">➕ ย่อย</button>
-        <button class="btn btn-danger btn-sm mt8" onclick="deleteMainItem('${m.id}')" style="margin-top:4px;font-size:11px">🗑</button>
+        <button class="btn btn-success btn-xs mb4" onclick="addSubItem('${m.id}')">+ย่อย</button>
+        <button class="btn btn-info btn-xs mb4" onclick="moveToSampleFromTask('${m.id}')" title="บันทึกในรายการตัวอย่าง">💾</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteMainItem('${m.id}')">🗑</button>
       </td>`;
     tbody.appendChild(mtr);
 
-    // Sub rows container (uses a wrapper tr with a td)
+    // ── SUB ROWS ──
     const subWrap=document.createElement('tr');
-    subWrap.className='sub-wrap'; subWrap.setAttribute('data-parent',m.id);
+    subWrap.className='sub-wrap';
     const subTd=document.createElement('td');
     subTd.colSpan=10; subTd.style.padding='0';
-    const subTable=document.createElement('table');
-    subTable.style.cssText='width:100%;border-collapse:collapse';
     const subTbody=document.createElement('tbody');
-    subTbody.id='sortable-sub-'+m.id;
+    subTbody.id='sort-sub-'+m.id;
     subTbody.setAttribute('data-parent',m.id);
 
     m.subItems.forEach(s=>{
       const str=document.createElement('tr');
-      str.className='sub-row'; str.id='row-s-'+s.id; str.setAttribute('data-sub-id',s.id);
+      str.className='sub-row'; str.id='row-s-'+s.id;
+      str.setAttribute('data-sub-id',s.id);
+      str.setAttribute('draggable','true');
+      str.addEventListener('dragstart',e=>{
+        e.stopPropagation();
+        draggedItem={type:'sub',data:s,parentId:m.id};
+        e.dataTransfer.effectAllowed='copy';
+        e.dataTransfer.setData('text/plain',JSON.stringify({type:'sub',data:s,parentId:m.id}));
+      });
       str.innerHTML=`
-        <td style="width:30px"><span class="drag-handle">⠿</span></td>
-        <td style="width:55px;padding-left:16px" class="item-no">${s.itemNo||''}</td>
-        <td style="min-width:200px;padding-left:16px"><input class="task-input" data-field="description" value="${esc(s.description)}" onblur="updateField('sub','${m.id}','${s.id}','description',this.value)"/></td>
-        <td style="min-width:130px"><input class="task-input" data-field="lead" value="${esc(s.lead)}" onblur="updateField('sub','${m.id}','${s.id}','lead',this.value)" placeholder="ผู้รับผิดชอบ"/></td>
-        <td style="width:130px"><input class="task-input date-input" type="date" data-field="startDate" value="${s.startDate||''}" onchange="updateField('sub','${m.id}','${s.id}','startDate',this.value)"/></td>
-        <td style="width:130px"><input class="task-input date-input" type="date" data-field="endDate" value="${s.endDate||''}" onchange="updateField('sub','${m.id}','${s.id}','endDate',this.value)"/></td>
-        <td style="width:65px"><input class="task-input num-input" type="number" data-field="days" value="${s.days||0}" onblur="updateField('sub','${m.id}','${s.id}','days',this.value)" min="0"/></td>
-        <td style="width:65px"><span class="item-no" data-field="workDays">${s.workDays||0}</span></td>
-        <td style="width:80px">
-          <div class="percent-bar" title="${s.percentDone||0}%"><div class="percent-fill" style="width:${s.percentDone||0}%"></div></div>
-          <input class="task-input num-input" type="number" data-field="percentDone" value="${s.percentDone||0}" min="0" max="100"
-            onblur="updateField('sub','${m.id}','${s.id}','percentDone',this.value)" style="width:55px;margin-top:2px"/>
+        <td><span class="drag-handle">⠿</span></td>
+        <td class="item-no" style="padding-left:12px">${s.itemNo}</td>
+        <td><input class="task-input" value="${esc(s.description)}" placeholder="คำอธิบาย"
+            onblur="updateField('sub','${m.id}','${s.id}','description',this.value)"/></td>
+        <td><select class="task-input" onchange="updateField('sub','${m.id}','${s.id}','lead',this.value)">
+              <option value="">— เลือก —</option>
+              ${leads.map(l=>`<option value="${esc(l)}" ${s.lead===l?'selected':''}>${esc(l)}</option>`).join('')}
+            </select></td>
+        <td class="date-cell" data-type="sub" data-main-id="${m.id}" data-sub-id="${s.id}" data-field="startDate" data-val="${s.startDate||''}">
+          <span class="date-disp" data-field="startDate">${thaiDate(s.startDate)}</span>
+          <input type="date" class="date-edit" value="${s.startDate||''}"/>
         </td>
-        <td style="width:110px">
-          <button class="btn btn-danger btn-sm" onclick="deleteSubItem('${m.id}','${s.id}')" style="font-size:11px">🗑 ลบ</button>
-        </td>`;
+        <td class="date-cell" data-type="sub" data-main-id="${m.id}" data-sub-id="${s.id}" data-field="endDate" data-val="${s.endDate||''}">
+          <span class="date-disp" data-field="endDate">${thaiDate(s.endDate)}</span>
+          <input type="date" class="date-edit" value="${s.endDate||''}"/>
+        </td>
+        <td><input class="task-input num-input" type="number" data-field="workDays" value="${s.workDays||0}" min="0"
+            onblur="updateField('sub','${m.id}','${s.id}','workDays',this.value)" onchange="updateField('sub','${m.id}','${s.id}','workDays',this.value)"/></td>
+        <td><span class="days-readonly" data-field="days">${s.days||0}</span></td>
+        <td>
+          <div class="percent-bar"><div class="percent-fill" style="width:${s.percentDone||0}%"></div></div>
+          <input class="task-input num-input" type="number" value="${s.percentDone||0}" min="0" max="100" style="width:50px;font-size:11px"
+            onblur="updateField('sub','${m.id}','${s.id}','percentDone',this.value)"/>
+        </td>
+        <td><button class="btn btn-danger btn-xs" onclick="deleteSubItem('${m.id}','${s.id}')">🗑 ลบ</button></td>`;
       subTbody.appendChild(str);
     });
-
-    subTable.appendChild(subTbody);
-    subTd.appendChild(subTable);
+    subTd.appendChild(document.createElement('table')).appendChild(subTbody);
     subWrap.appendChild(subTd);
     tbody.appendChild(subWrap);
+  });
+
+  // Date cell click handling (event delegation)
+  tbody.addEventListener('click',function(e){
+    const cell=e.target.closest('.date-cell');
+    if(!cell||e.target.classList.contains('date-edit')) return;
+    const disp=cell.querySelector('.date-disp');
+    const inp=cell.querySelector('.date-edit');
+    if(!inp) return;
+    disp.style.display='none';
+    inp.style.display='block';
+    inp.focus();
+    inp.onchange=function(){
+      const type=cell.dataset.type, mainId=cell.dataset.mainId, subId=cell.dataset.subId||null, field=cell.dataset.field;
+      updateField(type,mainId,subId,field,this.value);
+      cell.setAttribute('data-val',this.value);
+      disp.textContent=thaiDate(this.value);
+      disp.style.display=''; inp.style.display='none';
+    };
+    inp.onblur=function(){ if(!inp.value){ disp.style.display=''; inp.style.display='none'; } };
   });
 
   initSortables();
 }
 
-function esc(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 function destroySortables(){
   sortInsts.forEach(s=>{ try{s.destroy()}catch(e){} });
   sortInsts=[];
 }
-
 function initSortables(){
   if(!currentProject) return;
-  // Main items sortable
-  const mainBody=document.getElementById('task-tbody');
-  if(!mainBody) return;
-  const mainSrt=Sortable.create(mainBody,{
-    animation:150,
-    handle:'.main-row .drag-handle',
-    draggable:'.main-row, .sub-wrap',
-    onEnd:e=>{
-      // Rebuild items array from DOM order
-      const mainIds=[...mainBody.querySelectorAll('.main-row')].map(r=>r.getAttribute('data-main-id'));
-      const oldItems=[...currentProject.items];
-      currentProject.items=mainIds.map(id=>oldItems.find(m=>m.id===id)).filter(Boolean);
+  const tbody=document.getElementById('task-tbody');
+  if(!tbody) return;
+  // Sort main items (only .main-row elements, interleaved with .sub-wrap)
+  const mainSrt=Sortable.create(tbody,{
+    animation:150, handle:'.main-row .drag-handle', draggable:'.main-row',
+    onEnd:()=>{
+      const ids=[...tbody.querySelectorAll('.main-row')].map(r=>r.getAttribute('data-main-id'));
+      const old=[...currentProject.items];
+      // Rebuild preserving sub-wraps
+      currentProject.items=ids.map(id=>old.find(m=>m.id===id)).filter(Boolean);
       renumberItems();
-      // Update item numbers in DOM
-      currentProject.items.forEach(m=>{
-        const r=document.getElementById('row-m-'+m.id);
-        if(r){ const no=r.querySelector('.item-no'); if(no) no.textContent=m.itemNo; }
-      });
+      renderTaskTable();
     }
   });
   sortInsts.push(mainSrt);
-
-  // Sub-item sortables
+  // Sort sub-items within each main
   currentProject.items.forEach(m=>{
-    const subTbody=document.getElementById('sortable-sub-'+m.id);
-    if(!subTbody) return;
-    const srt=Sortable.create(subTbody,{
-      animation:150,
-      handle:'.drag-handle',
-      draggable:'.sub-row',
+    const st=document.getElementById('sort-sub-'+m.id);
+    if(!st) return;
+    const srt=Sortable.create(st,{
+      animation:150, handle:'.drag-handle', draggable:'.sub-row',
       group:'sub-'+m.id,
       onEnd:()=>{
-        const subIds=[...subTbody.querySelectorAll('.sub-row')].map(r=>r.getAttribute('data-sub-id'));
-        const oldSubs=[...m.subItems];
-        m.subItems=subIds.map(id=>oldSubs.find(s=>s.id===id)).filter(Boolean);
+        const ids=[...st.querySelectorAll('.sub-row')].map(r=>r.getAttribute('data-sub-id'));
+        const old=[...m.subItems];
+        m.subItems=ids.map(id=>old.find(s=>s.id===id)).filter(Boolean);
         renumberItems();
-        m.subItems.forEach(s=>{
-          const r=document.getElementById('row-s-'+s.id);
-          if(r){ const no=r.querySelector('.item-no'); if(no) no.textContent=s.itemNo; }
-        });
+        // Update item numbers in DOM
+        m.subItems.forEach(s=>{ const r=document.getElementById('row-s-'+s.id); if(r){const no=r.querySelector('.item-no');if(no)no.textContent=s.itemNo;} });
       }
     });
     sortInsts.push(srt);
@@ -930,157 +1349,115 @@ function exportJSON(){
   const blob=new Blob([JSON.stringify(currentProject,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=(currentProject.projectName||'project')+'.json';
+  a.download=makeFileName('json');
   a.click();
-  toast('✅ บันทึก JSON แล้ว');
+  toast('✅ บันทึก JSON แล้ว: '+makeFileName('json'));
 }
 
 /* ═══════════════════════════════════════════
-   MENU 3 — GANTT VIEW
+   MENU 3 — GANTT
 ═══════════════════════════════════════════ */
 function renderGantt(){
   if(!currentProject||!currentProject.projectName){
-    document.getElementById('gantt-container').innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--text-m)">กรุณาสร้างหรือเลือกโครงการในเมนู "ตั้งค่าโครงการ" ก่อน</div>';
-    document.getElementById('gantt-project-info').innerHTML='';
-    return;
+    document.getElementById('gantt-container').innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--text-m)">กรุณาสร้างโครงการก่อน</div>';
+    document.getElementById('gantt-project-info').innerHTML=''; return;
   }
   const p=currentProject;
-  // Project info header
-  document.getElementById('gantt-project-info').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;font-size:13px">
-      <div><b>โครงการ:</b> ${p.projectName}</div>
-      <div><b>ที่อยู่:</b> ${p.address||'—'}</div>
-      <div><b>PM:</b> ${p.projectManager||'—'}</div>
-      <div><b>เริ่ม:</b> ${formatDateTH(p.startDate)||'—'}</div>
-      <div><b>สิ้นสุด:</b> ${formatDateTH(p.endDate)||'—'}</div>
-      <div><b>วันทำงาน:</b> ${p.workDays||'—'} วัน</div>
-    </div>`;
+  document.getElementById('gantt-project-info').innerHTML=`<div class="gantt-info-bar">
+    <span><b>โครงการ:</b> ${p.projectName}</span>
+    <span><b>ที่อยู่:</b> ${p.address||'—'}</span>
+    <span><b>PM:</b> ${p.projectManager||'—'}</span>
+    <span><b>เริ่ม:</b> ${thaiDate(p.startDate)}</span>
+    <span><b>สิ้นสุด:</b> ${thaiDate(p.endDate)}</span>
+    <span><b>วันทำงาน:</b> ${p.workDays||'—'} วัน</span>
+  </div>`;
 
-  // Build gantt table rows
   const allRows=[];
-  p.items.forEach(m=>{
-    allRows.push({type:'main',obj:m});
-    m.subItems.forEach(s=>allRows.push({type:'sub',obj:s}));
-  });
+  p.items.forEach(m=>{ allRows.push({type:'main',obj:m}); m.subItems.forEach(s=>allRows.push({type:'sub',obj:s})); });
 
-  // Date range for gantt
-  const pStart=p.startDate?new Date(p.startDate):null;
-  const pEnd=p.endDate?new Date(p.endDate):null;
-  if(!pStart||!pEnd){ document.getElementById('gantt-container').innerHTML='<div class="card" style="padding:20px;color:var(--text-m)">กรุณาระบุวันเริ่มต้นและสิ้นสุดโครงการ</div>'; return; }
-  const totalMs=pEnd-pStart;
-  const totalDays=Math.round(totalMs/86400000)+1;
-
-  // Build monthly columns
-  const months=[];
-  let cur=new Date(pStart.getFullYear(),pStart.getMonth(),1);
-  while(cur<=pEnd){
-    const mEnd=new Date(cur.getFullYear(),cur.getMonth()+1,0);
-    const mLabel=cur.toLocaleDateString('th-TH',{month:'short',year:'2-digit'});
-    const mStart2=new Date(Math.max(cur,pStart));
-    const mEnd2=new Date(Math.min(mEnd,pEnd));
-    const daysInRange=Math.round((mEnd2-mStart2)/86400000)+1;
-    months.push({label:mLabel,startDate:new Date(cur),endDate:mEnd,rangeStart:mStart2,rangeEnd:mEnd2,daysInRange});
-    cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+  const pStart=p.startDate?new Date(p.startDate+'T00:00:00'):null;
+  const pEnd=p.endDate?new Date(p.endDate+'T00:00:00'):null;
+  if(!pStart||!pEnd){
+    document.getElementById('gantt-container').innerHTML='<div class="card" style="padding:20px;color:var(--text-m)">กรุณาระบุวันเริ่มต้นและสิ้นสุดโครงการ</div>';
+    return;
   }
 
-  const COL_W=80; // px per month column
+  const months=buildMonths(pStart,pEnd);
+  const COL_W=85;
 
-  // Build HTML
   let html=`<div style="display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;font-size:12px">`;
-
-  // Left (fixed) section
-  html+=`<div style="flex-shrink:0;overflow:hidden;border-right:2px solid var(--primary)">
-    <table style="border-collapse:collapse">
-      <thead>
-        <tr>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);width:45px">Item</th>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);min-width:180px">คำอธิบาย</th>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);width:100px">Lead</th>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);width:95px">เริ่ม</th>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);width:95px">สิ้นสุด</th>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);width:40px">วัน</th>
-          <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.2);width:50px">%งาน</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
+  // Left
+  html+=`<div style="flex-shrink:0;border-right:2px solid var(--primary)"><table style="border-collapse:collapse">
+    <thead><tr>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);width:42px">Item</th>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);min-width:160px">คำอธิบาย</th>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);width:90px">Lead</th>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);width:90px">วันเริ่ม</th>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);width:90px">วันสิ้นสุด</th>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);width:45px">วันทำงาน</th>
+      <th style="background:var(--primary);color:#fff;padding:5px 8px;border:1px solid rgba(255,255,255,.15);width:38px">%</th>
+    </tr></thead><tbody>`;
   allRows.forEach(r=>{
-    const o=r.obj;
-    const bg=r.type==='main'?'background:var(--surface2);font-weight:600':'background:var(--surface)';
-    const indent=r.type==='sub'?'padding-left:16px':'';
+    const o=r.obj, isMain=r.type==='main';
+    const bg=isMain?'background:var(--surface2);font-weight:600':'background:var(--surface)';
+    const pl=isMain?'':'padding-left:14px';
     html+=`<tr style="${bg}">
-      <td style="padding:5px 8px;border:1px solid var(--border);color:var(--primary);font-weight:700">${o.itemNo||''}</td>
-      <td style="padding:5px 8px;border:1px solid var(--border);${indent}">${o.description||''}</td>
-      <td style="padding:5px 8px;border:1px solid var(--border)">${o.lead||''}</td>
-      <td style="padding:5px 8px;border:1px solid var(--border)">${formatDateTH(o.startDate)||''}</td>
-      <td style="padding:5px 8px;border:1px solid var(--border)">${formatDateTH(o.endDate)||''}</td>
-      <td style="padding:5px 8px;border:1px solid var(--border);text-align:right">${o.days||''}</td>
-      <td style="padding:5px 8px;border:1px solid var(--border);text-align:right">${o.percentDone||0}%</td>
+      <td style="padding:5px 6px;border:1px solid var(--border);color:var(--primary);font-weight:700">${o.itemNo||''}</td>
+      <td style="padding:5px 6px;border:1px solid var(--border);${pl}">${esc(o.description)}</td>
+      <td style="padding:5px 6px;border:1px solid var(--border)">${esc(o.lead)||''}</td>
+      <td style="padding:5px 6px;border:1px solid var(--border);font-size:11px">${thaiDate(o.startDate)}</td>
+      <td style="padding:5px 6px;border:1px solid var(--border);font-size:11px">${thaiDate(o.endDate)}</td>
+      <td style="padding:5px 6px;border:1px solid var(--border);text-align:right">${o.workDays||0}</td>
+      <td style="padding:5px 6px;border:1px solid var(--border);text-align:right">${o.percentDone||0}%</td>
     </tr>`;
   });
   html+=`</tbody></table></div>`;
 
-  // Right (Gantt) section
-  html+=`<div style="flex:1;overflow-x:auto">`;
-
-  // Month headers
-  html+=`<div style="display:flex;border-bottom:2px solid var(--primary)">`;
-  months.forEach(m=>{
-    html+=`<div style="width:${COL_W}px;min-width:${COL_W}px;text-align:center;padding:5px 2px;font-weight:700;color:var(--primary);font-size:11px;border-right:1px solid var(--border);flex-shrink:0">${m.label}</div>`;
-  });
+  // Right Gantt
+  html+=`<div style="flex:1;overflow-x:auto"><div style="display:flex;border-bottom:2px solid var(--primary)">`;
+  months.forEach(m=>{ html+=`<div style="width:${COL_W}px;min-width:${COL_W}px;text-align:center;padding:5px 2px;font-weight:700;color:var(--primary);font-size:11px;border-right:1px solid var(--border);flex-shrink:0">${m.label}</div>`; });
   html+=`</div>`;
-
-  // Today line
-  const todayPct=Math.max(0,Math.min(100,(new Date()-pStart)/(pEnd-pStart)*100));
-  const todayX=todayPct/100*months.length*COL_W;
-
-  // Gantt rows
   allRows.forEach(r=>{
-    const o=r.obj;
-    const bg=r.type==='main'?'background:var(--surface2)':'background:var(--surface)';
-    html+=`<div style="display:flex;height:32px;border-bottom:1px solid var(--border);${bg};position:relative">`;
-
+    const o=r.obj, isMain=r.type==='main';
+    const bg=isMain?'background:var(--surface2)':'background:var(--surface)';
+    const todayX=(new Date()-pStart)/(pEnd-pStart)*months.length*COL_W;
+    html+=`<div style="display:flex;height:30px;border-bottom:1px solid var(--border);${bg};position:relative">`;
     months.forEach(m=>{
-      // Calculate bar within this month
-      let barLeft=0, barWidth=0, progWidth=0;
+      let bl=0,bw=0,pw=0;
       if(o.startDate&&o.endDate){
-        const ts=new Date(o.startDate), te=new Date(o.endDate);
-        const ms=m.rangeStart, me=m.rangeEnd;
-        const overlap=ts<=me&&te>=ms;
-        if(overlap){
-          const segStart=new Date(Math.max(ts,ms));
-          const segEnd=new Date(Math.min(te,me));
-          const mTotalDays=Math.round((m.rangeEnd-m.rangeStart)/86400000)+1;
-          const segStartOff=Math.round((segStart-ms)/86400000);
-          const segDays=Math.round((segEnd-segStart)/86400000)+1;
-          barLeft=segStartOff/mTotalDays*COL_W;
-          barWidth=segDays/mTotalDays*COL_W;
-          progWidth=barWidth*(o.percentDone||0)/100;
+        const ts=new Date(o.startDate+'T00:00:00'), te=new Date(o.endDate+'T00:00:00');
+        if(ts<=m.rangeEnd&&te>=m.rangeStart){
+          const ss=new Date(Math.max(ts,m.rangeStart)), se=new Date(Math.min(te,m.rangeEnd));
+          const md=Math.round((m.rangeEnd-m.rangeStart)/86400000)+1;
+          bl=Math.round((ss-m.rangeStart)/86400000)/md*COL_W;
+          bw=Math.round((se-ss)/86400000+1)/md*COL_W;
+          pw=bw*(o.percentDone||0)/100;
         }
       }
       html+=`<div style="width:${COL_W}px;min-width:${COL_W}px;flex-shrink:0;border-right:1px solid var(--border);position:relative;overflow:hidden">`;
-      if(barWidth>0){
-        html+=`<div style="position:absolute;left:${barLeft}px;top:7px;width:${barWidth}px;height:16px;background:var(--accent2);border-radius:3px"></div>`;
-        if(progWidth>0){
-          html+=`<div style="position:absolute;left:${barLeft}px;top:7px;width:${progWidth}px;height:16px;background:var(--primary-l);border-radius:3px;opacity:.85"></div>`;
-        }
+      if(bw>0){
+        html+=`<div style="position:absolute;left:${bl}px;top:6px;width:${bw}px;height:16px;background:var(--accent2);border-radius:3px"></div>`;
+        if(pw>0) html+=`<div style="position:absolute;left:${bl}px;top:6px;width:${pw}px;height:16px;background:var(--primary-l);border-radius:3px;opacity:.85"></div>`;
       }
       html+=`</div>`;
     });
-
-    // Today line (absolute, over all month cells)
-    html+=`<div style="position:absolute;left:${todayX}px;top:0;bottom:0;width:2px;background:var(--danger);opacity:.6;z-index:5;pointer-events:none"></div>`;
-    html+=`</div>`;
+    html+=`<div style="position:absolute;left:${todayX}px;top:0;bottom:0;width:2px;background:var(--danger);opacity:.55;pointer-events:none"></div></div>`;
   });
-
   html+=`</div></div>`;
-
-  // Notes
-  if(p.notes){
-    html+=`<div class="card mt16"><div class="card-title">บันทึกเพิ่มเติม</div><p style="white-space:pre-wrap;font-size:13px">${p.notes}</p></div>`;
-  }
-
+  if(p.notes) html+=`<div class="card mt16"><div class="card-title">บันทึกเพิ่มเติม</div><p style="white-space:pre-wrap;font-size:13px">${esc(p.notes)}</p></div>`;
   document.getElementById('gantt-container').innerHTML=html;
+}
+
+function buildMonths(pStart,pEnd){
+  const months=[];
+  let cur=new Date(pStart.getFullYear(),pStart.getMonth(),1);
+  while(cur<=pEnd){
+    const mEnd=new Date(cur.getFullYear(),cur.getMonth()+1,0);
+    const label=cur.toLocaleDateString('th-TH',{month:'short',year:'2-digit'});
+    months.push({label,rangeStart:new Date(Math.max(cur,pStart)),rangeEnd:new Date(Math.min(mEnd,pEnd))});
+    cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+  }
+  return months;
 }
 
 /* ═══════════════════════════════════════════
@@ -1088,185 +1465,110 @@ function renderGantt(){
 ═══════════════════════════════════════════ */
 async function exportGanttPDF(){
   if(!currentProject){ toast('❌ ยังไม่มีโครงการ'); return; }
-  toast('⏳ กำลังสร้าง PDF...');
-  const p=currentProject;
-  const u=appData.user;
+  collectProjectForm();
+  toast('⏳ กำลังสร้าง PDF...',5000);
+  const p=currentProject, u=appData.user;
   const {jsPDF}=window.jspdf;
-
-  const margin=13; // ~0.5 inch in mm
-  const pageW=297; const pageH=210;
-  const usableW=pageW-2*margin; // 271mm
-  const footH=12;
-  const headH=22;
+  const margin=13, pageW=297, pageH=210;
+  const usableW=pageW-2*margin, footH=14, headH=20;
   const usableH=pageH-2*margin-footH-headH;
-  const rowH=7;
+  const rowH=7.5;
 
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
 
-  // Build rows
   const allRows=[];
-  p.items.forEach(m=>{
-    allRows.push({type:'main',obj:m,mainId:m.id});
-    m.subItems.forEach(s=>allRows.push({type:'sub',obj:s,mainId:m.id}));
-  });
+  p.items.forEach(m=>{ allRows.push({type:'main',obj:m}); m.subItems.forEach(s=>allRows.push({type:'sub',obj:s})); });
 
-  // Gantt date range
-  const pStart=p.startDate?new Date(p.startDate):null;
-  const pEnd=p.endDate?new Date(p.endDate):null;
+  const pStart=p.startDate?new Date(p.startDate+'T00:00:00'):null;
+  const pEnd=p.endDate?new Date(p.endDate+'T00:00:00'):null;
   const totalMs=pStart&&pEnd?(pEnd-pStart):0;
-  const totalDays=totalMs?Math.round(totalMs/86400000)+1:1;
 
-  // Column widths
-  const cols={item:12,desc:55,lead:22,start:22,end:22,days:10,pct:12};
-  const dataW=Object.values(cols).reduce((a,b)=>a+b,0); // ~155mm
-  const ganttW=usableW-dataW; // ~116mm
+  const cols={item:12,desc:55,lead:22,start:24,end:24,wd:14,pct:11};
+  const dataW=Object.values(cols).reduce((a,b)=>a+b,0);
+  const ganttW=Math.max(0,usableW-dataW);
+  const months=pStart&&pEnd?buildMonths(pStart,pEnd):[];
 
-  // Monthly labels for gantt header
-  const months=[];
-  if(pStart&&pEnd){
-    let cur=new Date(pStart.getFullYear(),pStart.getMonth(),1);
-    while(cur<=pEnd){
-      const mEnd=new Date(cur.getFullYear(),cur.getMonth()+1,0);
-      const mLabel=cur.toLocaleDateString('th-TH',{month:'short',year:'2-digit'});
-      const mStart2=new Date(Math.max(cur,pStart));
-      const mEnd2=new Date(Math.min(mEnd,pEnd));
-      months.push({label:mLabel,rangeStart:mStart2,rangeEnd:mEnd2});
-      cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
-    }
-  }
-
-  let pageNum=1;
-  let totalPages=1;
-
-  // Calculate total pages
-  const maxRowsPerPage=Math.floor(usableH/rowH);
-  let rowBuffer=0;
-  let groups=[];
+  // Group rows by main item
+  const groups=[];
   let curGroup=[];
-  allRows.forEach((r,i)=>{
-    if(r.type==='main'&&curGroup.length>0){
-      groups.push({rows:[...curGroup]});
-      curGroup=[];
-    }
-    curGroup.push(r);
-  });
-  if(curGroup.length>0) groups.push({rows:curGroup});
-  totalPages=1;
-  let pageRows=0;
-  groups.forEach(g=>{
-    if(pageRows>0&&pageRows+g.rows.length>maxRowsPerPage){ totalPages++; pageRows=0; }
-    pageRows+=g.rows.length;
-  });
+  allRows.forEach(r=>{ if(r.type==='main'&&curGroup.length>0){groups.push([...curGroup]);curGroup=[];} curGroup.push(r); });
+  if(curGroup.length>0) groups.push(curGroup);
 
-  function drawPageHeader(doc,pn){
-    doc.setFillColor(46,125,50);
-    doc.rect(margin,margin,usableW,10,'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(11); doc.setFont('helvetica','bold');
+  const maxRowsPP=Math.floor(usableH/rowH);
+  let totalPages=1, rowCount=0;
+  groups.forEach(g=>{ if(rowCount>0&&rowCount+g.length>maxRowsPP){totalPages++;rowCount=0;} rowCount+=g.length; });
+
+  function drawHeader(doc,pn){
+    doc.setFillColor(46,125,50); doc.rect(margin,margin,usableW,10,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
     doc.text(p.projectName||'Schedule Project',margin+2,margin+7);
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text(`PM: ${p.projectManager||''}  |  ${formatDateTH(p.startDate)} - ${formatDateTH(p.endDate)}  |  ${p.workDays||0} วันทำงาน`, pageW-margin-2, margin+7,{align:'right'});
-
-    // Table header row
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(`${thaiDate(p.startDate)} — ${thaiDate(p.endDate)}  |  PM: ${p.projectManager||''}  |  ${p.workDays||0} วันทำงาน`,pageW-margin-2,margin+7,{align:'right'});
+    // Column headers
     let x=margin; const y=margin+12;
-    doc.setFillColor(200,230,201); doc.rect(x,y,usableW,rowH,'F');
-    doc.setTextColor(27,94,32); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    const hdr=[['Item',cols.item],['คำอธิบาย (Description)',cols.desc],['Lead',cols.lead],['เริ่ม',cols.start],['สิ้นสุด',cols.end],['วัน',cols.days],['%',cols.pct],['Gantt',ganttW]];
-    hdr.forEach(([lbl,w])=>{
-      doc.text(lbl,x+1,y+5,{maxWidth:w-2});
-      x+=w;
-    });
-    // Gantt month labels
-    if(months.length>0&&ganttW>0){
-      const ganttX=margin+dataW;
-      const mW=ganttW/months.length;
-      months.forEach((m,i)=>{
-        const mx=ganttX+i*mW;
-        doc.setFontSize(7);
-        doc.text(m.label,mx+mW/2,y+5,{align:'center',maxWidth:mW-1});
-      });
+    doc.setFillColor(200,232,200); doc.rect(x,y,usableW,rowH,'F');
+    doc.setTextColor(27,94,32); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    const hdrs=[['Item',cols.item],['คำอธิบาย',cols.desc],['Lead',cols.lead],['วันเริ่ม',cols.start],['วันสิ้นสุด',cols.end],['วันทำงาน',cols.wd],['%',cols.pct],['Gantt',ganttW]];
+    hdrs.forEach(([lbl,w])=>{ doc.text(lbl,x+1,y+5,{maxWidth:w-1}); x+=w; });
+    if(ganttW>0&&months.length>0){
+      const gx=margin+dataW, mw=ganttW/months.length;
+      months.forEach((m,i)=>{ doc.setFontSize(6.5); doc.text(m.label,gx+i*mw+mw/2,y+5,{align:'center',maxWidth:mw-0.5}); });
+    }
+  }
+  function drawFooter(doc,pn,tot){
+    const fy=pageH-margin-footH+3;
+    doc.setDrawColor(160,200,160); doc.line(margin,fy,pageW-margin,fy);
+    doc.setTextColor(100,100,100); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    const ft=`${u.fullName||''}${u.company?' | '+u.company:''}${u.address?' | '+u.address:''}${u.phone?' | '+u.phone:''}`;
+    doc.text(ft,margin,fy+5,{maxWidth:usableW-35});
+    doc.text(`หน้า ${pn}/${tot}`,pageW-margin,fy+5,{align:'right'});
+    if(u.logo){try{doc.addImage(u.logo,'PNG',pageW-margin-28,fy-1,22,10);}catch(e){}}
+  }
+  function drawRow(doc,r,y){
+    const o=r.obj, isMain=r.type==='main';
+    if(isMain){doc.setFillColor(232,245,233);doc.rect(margin,y,usableW,rowH,'F');}
+    doc.setDrawColor(180,215,180); doc.line(margin,y+rowH,margin+usableW,y+rowH);
+    doc.setTextColor(isMain?46:70,isMain?125:90,isMain?50:70);
+    doc.setFontSize(7.5); doc.setFont('helvetica',isMain?'bold':'normal');
+    let x=margin; const pl=isMain?0:3;
+    doc.text(o.itemNo||'',x+1,y+5,{maxWidth:cols.item-1}); x+=cols.item;
+    doc.text((o.description||'').slice(0,38),x+1+pl,y+5,{maxWidth:cols.desc-2}); x+=cols.desc;
+    doc.text(o.lead||'',x+1,y+5,{maxWidth:cols.lead-1}); x+=cols.lead;
+    doc.text(thaiDate(o.startDate),x+1,y+5,{maxWidth:cols.start-1}); x+=cols.start;
+    doc.text(thaiDate(o.endDate),x+1,y+5,{maxWidth:cols.end-1}); x+=cols.end;
+    doc.text(String(o.workDays||0),x+1,y+5,{maxWidth:cols.wd-1}); x+=cols.wd;
+    doc.text(String(o.percentDone||0)+'%',x+1,y+5,{maxWidth:cols.pct-1}); x+=cols.pct;
+    if(ganttW>0&&pStart&&pEnd&&totalMs>0&&o.startDate&&o.endDate){
+      const ts=new Date(o.startDate+'T00:00:00'), te=new Date(o.endDate+'T00:00:00');
+      const bl=Math.max(0,(ts-pStart)/totalMs*ganttW);
+      const bw=Math.min(ganttW-bl,Math.max(1,(te-ts+86400000)/totalMs*ganttW));
+      doc.setFillColor(165,214,167); doc.rect(x+bl,y+2,bw,rowH-4,'F');
+      const pw=bw*(o.percentDone||0)/100;
+      if(pw>0){doc.setFillColor(76,175,80);doc.rect(x+bl,y+2,pw,rowH-4,'F');}
     }
   }
 
-  function drawFooter(doc,pn,total){
-    const fy=pageH-margin-footH+4;
-    doc.setDrawColor(180,180,180); doc.line(margin,fy-2,pageW-margin,fy-2);
-    doc.setTextColor(100,100,100); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    const leftTxt=`${u.fullName||''}${u.company?' | '+u.company:''}${u.address?' | '+u.address:''}${u.phone?' | '+u.phone:''}`;
-    doc.text(leftTxt, margin, fy+4, {maxWidth:usableW-30});
-    doc.text(`หน้า ${pn}/${total}`, pageW-margin, fy+4, {align:'right'});
-    // Logo
-    if(u.logo){
-      try{
-        const ext=u.logo.includes('png')?'PNG':'JPEG';
-        doc.addImage(u.logo,ext,pageW-margin-25,fy-1,20,8);
-      }catch(e){}
-    }
-  }
-
-  function drawRow(doc,row,y,isMain){
-    const o=row.obj;
-    if(isMain){ doc.setFillColor(232,245,233); doc.rect(margin,y,usableW,rowH,'F'); }
-    doc.setDrawColor(180,210,180); doc.line(margin,y+rowH,margin+usableW,y+rowH);
-    doc.setTextColor(isMain?46:60,isMain?125:80,isMain?50:60);
-    doc.setFontSize(8); doc.setFont('helvetica',isMain?'bold':'normal');
-
-    let x=margin;
-    const indent=isMain?0:4;
-    doc.text(o.itemNo||'',x+1,y+5,{maxWidth:cols.item-2}); x+=cols.item;
-    doc.text((o.description||'').substring(0,35),x+1+indent,y+5,{maxWidth:cols.desc-2}); x+=cols.desc;
-    doc.text(o.lead||'',x+1,y+5,{maxWidth:cols.lead-2}); x+=cols.lead;
-    doc.text(formatDateTH(o.startDate)||'',x+1,y+5,{maxWidth:cols.start-2}); x+=cols.start;
-    doc.text(formatDateTH(o.endDate)||'',x+1,y+5,{maxWidth:cols.end-2}); x+=cols.end;
-    doc.text(String(o.days||''),x+1,y+5,{maxWidth:cols.days-2}); x+=cols.days;
-    doc.text(String(o.percentDone||0)+'%',x+1,y+5,{maxWidth:cols.pct-2}); x+=cols.pct;
-
-    // Gantt bar
-    if(o.startDate&&o.endDate&&pStart&&pEnd&&ganttW>0){
-      const ts=new Date(o.startDate), te=new Date(o.endDate);
-      const barLeft=(ts-pStart)/(pEnd-pStart)*ganttW;
-      const barW=(te-ts)/(pEnd-pStart)*ganttW+ganttW/totalDays;
-      const clampedLeft=Math.max(0,barLeft);
-      const clampedW=Math.min(ganttW-clampedLeft,barW);
-      if(clampedW>0){
-        doc.setFillColor(165,214,167); doc.rect(x+clampedLeft,y+2,clampedW,rowH-4,'F');
-        const progW=clampedW*(o.percentDone||0)/100;
-        if(progW>0){ doc.setFillColor(76,175,80); doc.rect(x+clampedLeft,y+2,progW,rowH-4,'F'); }
-      }
-    }
-  }
-
-  // Render pages
-  let curY=margin+headH+1;
-  let curPg=1;
-  drawPageHeader(doc,curPg);
-
+  let curY=margin+headH+1, pg=1;
+  drawHeader(doc,pg);
   for(const g of groups){
-    if(curY+g.rows.length*rowH>pageH-margin-footH-2&&curY>margin+headH+1){
-      drawFooter(doc,curPg,totalPages);
-      doc.addPage(); curPg++;
-      curY=margin+headH+1;
-      drawPageHeader(doc,curPg);
+    if(curY>margin+headH+1&&curY+g.length*rowH>pageH-margin-footH){
+      drawFooter(doc,pg,totalPages); doc.addPage(); pg++; curY=margin+headH+1; drawHeader(doc,pg);
     }
-    g.rows.forEach(r=>{
-      drawRow(doc,r,curY,r.type==='main');
-      curY+=rowH;
-    });
+    g.forEach(r=>{ drawRow(doc,r,curY); curY+=rowH; });
   }
-  drawFooter(doc,curPg,totalPages);
-
-  // Notes page if needed
+  drawFooter(doc,pg,totalPages);
   if(p.notes){
     doc.addPage();
-    doc.setTextColor(46,125,50); doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.setTextColor(46,125,50); doc.setFont('helvetica','bold'); doc.setFontSize(12);
     doc.text('บันทึกเพิ่มเติม',margin,margin+8);
-    doc.setTextColor(60,60,60); doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text(p.notes,margin,margin+16,{maxWidth:usableW});
-    drawFooter(doc,curPg+1,totalPages+1);
+    doc.setTextColor(60,60,60); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    const lines=doc.splitTextToSize(p.notes,usableW);
+    doc.text(lines,margin,margin+16);
+    drawFooter(doc,pg+1,totalPages+1);
   }
-
-  doc.save((p.projectName||'project')+'_gantt.pdf');
-  toast('✅ บันทึก PDF แล้ว');
+  const fn=makeFileName('pdf');
+  doc.save(fn);
+  toast('✅ บันทึก PDF แล้ว: '+fn);
 }
 
 /* ═══════════════════════════════════════════
@@ -1274,128 +1576,96 @@ async function exportGanttPDF(){
 ═══════════════════════════════════════════ */
 function renderSCurve(){
   if(!currentProject||!currentProject.projectName){
-    document.getElementById('sc-project-info').innerHTML='<div style="color:var(--text-m)">กรุณาสร้างหรือเลือกโครงการก่อน</div>';
-    return;
+    document.getElementById('sc-project-info').innerHTML='<div style="color:var(--text-m)">กรุณาสร้างโครงการก่อน</div>'; return;
   }
   const p=currentProject;
-  document.getElementById('sc-project-info').innerHTML=`
-    <div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap">
-      <span><b>โครงการ:</b> ${p.projectName}</span>
-      <span><b>PM:</b> ${p.projectManager||'—'}</span>
-      <span><b>ระยะเวลา:</b> ${formatDateTH(p.startDate)} — ${formatDateTH(p.endDate)}</span>
-    </div>`;
-  const data=calcSCurveData(p);
-  if(scChart){ scChart.destroy(); scChart=null; }
+  document.getElementById('sc-project-info').innerHTML=`<div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap">
+    <span><b>โครงการ:</b> ${p.projectName}</span>
+    <span><b>PM:</b> ${p.projectManager||'—'}</span>
+    <span><b>เริ่ม:</b> ${thaiDate(p.startDate)}</span>
+    <span><b>สิ้นสุด:</b> ${thaiDate(p.endDate)}</span>
+  </div>`;
+  const data=calcSCurve(p);
+  if(scChart){scChart.destroy();scChart=null;}
   const ctx=document.getElementById('scurve-canvas').getContext('2d');
   scChart=new Chart(ctx,{
     type:'line',
-    data:{
-      labels:data.labels,
-      datasets:[
-        {label:'แผนงาน (Planned)',data:data.planned,borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.08)',borderWidth:2.5,fill:true,tension:.4,pointRadius:2},
-        {label:'ผลงาน (Actual)',data:data.actual,borderColor:'#e65100',backgroundColor:'transparent',borderWidth:2,borderDash:[6,4],tension:.4,pointRadius:2}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-      scales:{
-        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{maxTicksLimit:12,maxRotation:45}},
-        y:{min:0,max:100,grid:{color:'rgba(0,0,0,.06)'},
-          ticks:{callback:v=>v+'%'},
-          title:{display:true,text:'ความคืบหน้า (%)'}}
-      }
-    }
+    data:{labels:data.labels,datasets:[
+      {label:'แผนงาน',data:data.planned,borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.07)',fill:true,tension:.4,borderWidth:2.5,pointRadius:2},
+      {label:'ผลงาน',data:data.actual,borderColor:'#e65100',borderDash:[6,4],tension:.4,borderWidth:2,pointRadius:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{maxTicksLimit:14,maxRotation:45}},
+        y:{min:0,max:100,grid:{color:'rgba(0,0,0,.05)'},ticks:{callback:v=>v+'%'},title:{display:true,text:'ความคืบหน้า (%)'}}}}
   });
 }
-
-function calcSCurveData(p){
+function calcSCurve(p){
   if(!p.startDate||!p.endDate) return {labels:[],planned:[],actual:[]};
-  const start=new Date(p.startDate), end=new Date(p.endDate);
+  const start=new Date(p.startDate+'T00:00:00'), end=new Date(p.endDate+'T00:00:00');
   const totalDays=Math.round((end-start)/86400000)+1;
   const allRows=[];
   p.items.forEach(m=>{ allRows.push(m); m.subItems.forEach(s=>allRows.push(s)); });
-
-  // Collect weekly dates
+  const step=Math.max(1,Math.round(totalDays/26));
   const labels=[], planned=[], actual=[];
-  const step=Math.max(1,Math.round(totalDays/26)); // ~26 data points
-
   for(let d=0;d<=totalDays;d+=step){
-    const curDate=new Date(start.getTime()+d*86400000);
-    labels.push(curDate.toLocaleDateString('th-TH',{month:'short',day:'numeric'}));
-
-    // Planned: linear from 0→100 based on calendar
-    const plPct=Math.min(100,d/totalDays*100);
-    planned.push(parseFloat(plPct.toFixed(1)));
-
-    // Actual: weighted average of percentDone for tasks that started by curDate
+    const cur=new Date(start.getTime()+d*86400000);
+    labels.push(cur.toLocaleDateString('th-TH',{month:'short',day:'numeric'}));
+    planned.push(parseFloat(Math.min(100,d/totalDays*100).toFixed(1)));
     let wSum=0, wTot=0;
     allRows.forEach(o=>{
-      if(!o.days) return;
-      const ts=o.startDate?new Date(o.startDate):null;
-      const te=o.endDate?new Date(o.endDate):null;
+      if(!o.workDays) return;
+      const ts=o.startDate?new Date(o.startDate+'T00:00:00'):null;
+      const te=o.endDate?new Date(o.endDate+'T00:00:00'):null;
       if(!ts||!te) return;
-      const w=o.days;
-      wTot+=w;
-      if(curDate>=ts){
-        // How much of this task is done by curDate
-        const taskProgress=(curDate>=te)?1:((curDate-ts)/(te-ts));
-        wSum+=w*(o.percentDone||0)/100;
-      }
+      wTot+=o.workDays;
+      if(cur>=ts) wSum+=o.workDays*(o.percentDone||0)/100;
     });
     actual.push(wTot>0?parseFloat((wSum/wTot*100).toFixed(1)):0);
   }
   return {labels,planned,actual};
 }
-
-/* ═══════════════════════════════════════════
-   S-CURVE PDF EXPORT
-═══════════════════════════════════════════ */
 async function exportSCurvePDF(){
-  if(!currentProject){ toast('❌ ยังไม่มีโครงการ'); return; }
-  toast('⏳ กำลังสร้าง PDF...');
-  const p=currentProject; const u=appData.user;
+  if(!currentProject){toast('❌ ยังไม่มีโครงการ');return;}
+  toast('⏳ กำลังสร้าง PDF...',5000);
+  const p=currentProject, u=appData.user;
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const margin=13; const pageW=297; const pageH=210;
-
-  // Header
+  const margin=13, pageW=297, pageH=210;
   doc.setFillColor(46,125,50); doc.rect(margin,margin,pageW-2*margin,10,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
-  doc.text('S-Curve — '+p.projectName,margin+2,margin+7);
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text(`${formatDateTH(p.startDate)} - ${formatDateTH(p.endDate)}  |  PM: ${p.projectManager||''}`, pageW-margin-2,margin+7,{align:'right'});
-
-  // Chart as image
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.text('S-Curve — '+(p.projectName||''),margin+2,margin+7);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.text(`${thaiDate(p.startDate)} — ${thaiDate(p.endDate)}  |  PM: ${p.projectManager||''}`,pageW-margin-2,margin+7,{align:'right'});
   const canvas=document.getElementById('scurve-canvas');
-  try{
-    const img=canvas.toDataURL('image/png');
-    doc.addImage(img,'PNG',margin,margin+14,pageW-2*margin,pageH-2*margin-26);
-  } catch(e){ doc.text('ไม่สามารถแสดงกราฟได้',margin,margin+40); }
-
-  // Footer
+  try{ doc.addImage(canvas.toDataURL('image/png'),'PNG',margin,margin+14,pageW-2*margin,pageH-2*margin-26); }
+  catch(e){ doc.setTextColor(100,100,100); doc.text('ไม่สามารถแสดงกราฟได้',margin,margin+40); }
   const fy=pageH-margin-8;
-  doc.setDrawColor(180,180,180); doc.line(margin,fy-2,pageW-margin,fy-2);
-  doc.setTextColor(100,100,100); doc.setFontSize(8);
-  const ftxt=`${u.fullName||''}${u.company?' | '+u.company:''}${u.phone?' | '+u.phone:''}`;
-  doc.text(ftxt,margin,fy+2,{maxWidth:pageW-2*margin-30});
+  doc.setDrawColor(160,200,160); doc.line(margin,fy-2,pageW-margin,fy-2);
+  doc.setTextColor(100,100,100); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.text(`${u.fullName||''}${u.company?' | '+u.company:''}${u.phone?' | '+u.phone:''}`,margin,fy+2,{maxWidth:pageW-2*margin-35});
   doc.text('หน้า 1/1',pageW-margin,fy+2,{align:'right'});
-  if(u.logo){try{doc.addImage(u.logo,'PNG',pageW-margin-25,fy-4,20,8);}catch(e){}}
-
-  doc.save((p.projectName||'project')+'_scurve.pdf');
-  toast('✅ บันทึก PDF แล้ว');
+  if(u.logo){try{doc.addImage(u.logo,'PNG',pageW-margin-28,fy-4,22,9);}catch(e){}}
+  const fn=makeFileName('pdf');
+  doc.save(fn);
+  toast('✅ บันทึก PDF แล้ว: '+fn);
 }
 
 /* ═══════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════ */
 loadStore();
-
-// Check dark mode preference
 if(window.matchMedia('(prefers-color-scheme: dark)').matches){
   document.documentElement.setAttribute('data-theme','dark');
   document.getElementById('dark-chk').checked=true;
 }
+// Fix double FileReader bug in handleLogo
+window.handleLogo=function(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{ appData.user.logo=e.target.result; document.getElementById('logo-preview').innerHTML=`<img src="${e.target.result}" alt="logo"/>`; };
+  r.readAsDataURL(f);
+};
 </script>
 </body>
 </html>
