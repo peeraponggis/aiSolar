@@ -1870,7 +1870,7 @@ async function exportGanttPDF(){
   const margin=13, pageW=297, pageH=210;
   const usableW=pageW-2*margin, footH=14, headH=20;
   const usableH=pageH-2*margin-footH-headH;
-  const rowH=7.5;
+  const rowH=9.5;
 
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
   setupThaiFont(doc);
@@ -1908,10 +1908,10 @@ async function exportGanttPDF(){
     doc.setFillColor(200,232,200); doc.rect(x,y,usableW,rowH,'F');
     doc.setTextColor(27,94,32); doc.setFont('Sarabun','bold'); doc.setFontSize(7.5);
     const hdrs=[['Item',cols.item],['คำอธิบาย',cols.desc],['Lead',cols.lead],['วันเริ่ม',cols.start],['วันสิ้นสุด',cols.end],['วันทำงาน',cols.wd],['%',cols.pct],['Gantt',ganttW]];
-    hdrs.forEach(([lbl,w])=>{ doc.text(lbl,x+1,y+5,{maxWidth:w-1}); x+=w; });
+    hdrs.forEach(([lbl,w])=>{ doc.text(lbl,x+1,y+6.5,{maxWidth:w-1}); x+=w; });
     if(ganttW>0&&months.length>0){
       const gx=margin+dataW, mw=ganttW/months.length;
-      months.forEach((m,i)=>{ doc.setFontSize(6.5); doc.text(m.label,gx+i*mw+mw/2,y+5,{align:'center',maxWidth:mw-0.5}); });
+      months.forEach((m,i)=>{ doc.setFontSize(6.5); doc.text(m.label,gx+i*mw+mw/2,y+6.5,{align:'center',maxWidth:mw-0.5}); });
     }
   }
   function drawFooter(doc,pn,tot){
@@ -1930,20 +1930,20 @@ async function exportGanttPDF(){
     doc.setTextColor(isMain?46:70,isMain?125:90,isMain?50:70);
     doc.setFontSize(7.5); doc.setFont('Sarabun',isMain?'bold':'normal');
     let x=margin; const pl=isMain?0:3;
-    doc.text(o.itemNo||'',x+1,y+5,{maxWidth:cols.item-1}); x+=cols.item;
-    doc.text((o.description||'').slice(0,38),x+1+pl,y+5,{maxWidth:cols.desc-2}); x+=cols.desc;
-    doc.text(o.lead||'',x+1,y+5,{maxWidth:cols.lead-1}); x+=cols.lead;
-    doc.text(thaiDate(o.startDate),x+1,y+5,{maxWidth:cols.start-1}); x+=cols.start;
-    doc.text(thaiDate(o.endDate),x+1,y+5,{maxWidth:cols.end-1}); x+=cols.end;
-    doc.text(String(o.workDays||0),x+1,y+5,{maxWidth:cols.wd-1}); x+=cols.wd;
-    doc.text(String(o.percentDone||0)+'%',x+1,y+5,{maxWidth:cols.pct-1}); x+=cols.pct;
+    doc.text(o.itemNo||'',x+1,y+6.5,{maxWidth:cols.item-1}); x+=cols.item;
+    doc.text((o.description||'').slice(0,38),x+1+pl,y+6.5,{maxWidth:cols.desc-2}); x+=cols.desc;
+    doc.text(o.lead||'',x+1,y+6.5,{maxWidth:cols.lead-1}); x+=cols.lead;
+    doc.text(thaiDate(o.startDate),x+1,y+6.5,{maxWidth:cols.start-1}); x+=cols.start;
+    doc.text(thaiDate(o.endDate),x+1,y+6.5,{maxWidth:cols.end-1}); x+=cols.end;
+    doc.text(String(o.workDays||0),x+1,y+6.5,{maxWidth:cols.wd-1}); x+=cols.wd;
+    doc.text(String(o.percentDone||0)+'%',x+1,y+6.5,{maxWidth:cols.pct-1}); x+=cols.pct;
     if(ganttW>0&&pStart&&pEnd&&totalMs>0&&o.startDate&&o.endDate){
       const ts=new Date(o.startDate+'T00:00:00'), te=new Date(o.endDate+'T00:00:00');
       const bl=Math.max(0,(ts-pStart)/totalMs*ganttW);
       const bw=Math.min(ganttW-bl,Math.max(1,(te-ts+86400000)/totalMs*ganttW));
-      doc.setFillColor(165,214,167); doc.rect(x+bl,y+2,bw,rowH-4,'F');
+      doc.setFillColor(165,214,167); doc.rect(x+bl,y+2.5,bw,rowH-5,'F');
       const pw=bw*(o.percentDone||0)/100;
-      if(pw>0){doc.setFillColor(76,175,80);doc.rect(x+bl,y+2,pw,rowH-4,'F');}
+      if(pw>0){doc.setFillColor(76,175,80);doc.rect(x+bl,y+2.5,pw,rowH-5,'F');}
     }
   }
 
@@ -2283,7 +2283,7 @@ async function exportWeeklyPDF(){
     t.actual.length?(t.actual.reduce((a,b)=>a+b,0)/t.actual.length).toFixed(1)+'%':'—'
   ]);
   doc.autoTable({startY:margin+14,head:[['รายการงาน','แผน%','ผล%']],body:rows,
-    headStyles:{fillColor:[46,125,50]},styles:{fontSize:9,font:'Sarabun'},margin:{left:margin,right:margin}});
+    headStyles:{fillColor:[46,125,50]},styles:{fontSize:9,font:'Sarabun',cellPadding:{top:3,right:2,bottom:3,left:2},minCellHeight:10},margin:{left:margin,right:margin}});
   let fy=doc.lastAutoTable.finalY+8;
   if(week.summary){ doc.setFontSize(9); doc.text('สรุป: '+week.summary,margin,fy,{maxWidth:usableW}); fy+=10; }
   // Footer
@@ -2451,7 +2451,7 @@ async function exportDailyPDF(wid,dateISO){
   doc.text(p.projectName||'',pageW-margin-2,margin+7,{align:'right'});
   const rows=dr.activities.map(a=>[a.taskDesc,a.plannedPct+'%',a.actualPct+'%',a.remarks]);
   doc.autoTable({startY:margin+14,head:[['รายการงาน','แผน%','ผล%','หมายเหตุ']],body:rows,
-    headStyles:{fillColor:[46,125,50]},styles:{fontSize:9,font:'Sarabun'},margin:{left:margin,right:margin}});
+    headStyles:{fillColor:[46,125,50]},styles:{fontSize:9,font:'Sarabun',cellPadding:{top:3,right:2,bottom:3,left:2},minCellHeight:10},margin:{left:margin,right:margin}});
   let fy=doc.lastAutoTable.finalY+6;
   if(dr.notes){ doc.setFontSize(9); doc.text('บันทึก: '+dr.notes,margin,fy,{maxWidth:usableW}); }
   doc.setFontSize(8); doc.setTextColor(120,120,120);
@@ -2575,7 +2575,7 @@ async function exportKickOffPDF(){
   setupThaiFont(doc);
   const usableW=pageW-2*margin, footH=14, headH=20;
   const usableH=pageH-2*margin-footH-headH;
-  const rowH=7.5;
+  const rowH=9.5;
   const allRows=[];
   p.items.forEach(m=>{ allRows.push({type:'main',obj:m}); m.subItems.forEach(s=>allRows.push({type:'sub',obj:s})); });
   const pStart=p.startDate?new Date(p.startDate+'T00:00:00'):null;
@@ -2603,8 +2603,8 @@ async function exportKickOffPDF(){
     let x=margin; const y=margin+12;
     doc.setFillColor(200,232,200); doc.rect(x,y,usableW,rowH,'F');
     doc.setTextColor(27,94,32); doc.setFont('Sarabun','bold'); doc.setFontSize(7.5);
-    [['Item',cols.item],['คำอธิบาย',cols.desc],['Lead',cols.lead],['แผน%',cols.planPct],['ผล%',cols.actPct],['Gantt',ganttW]].forEach(([lbl,w])=>{ doc.text(lbl,x+1,y+5,{maxWidth:w-1}); x+=w; });
-    if(ganttW>0) months.forEach((m,i)=>{ doc.setFontSize(6.5); doc.text(m.label,margin+dataW+i*ganttW/months.length+ganttW/months.length/2,y+5,{align:'center',maxWidth:ganttW/months.length-1}); });
+    [['Item',cols.item],['คำอธิบาย',cols.desc],['Lead',cols.lead],['แผน%',cols.planPct],['ผล%',cols.actPct],['Gantt',ganttW]].forEach(([lbl,w])=>{ doc.text(lbl,x+1,y+6.5,{maxWidth:w-1}); x+=w; });
+    if(ganttW>0) months.forEach((m,i)=>{ doc.setFontSize(6.5); doc.text(m.label,margin+dataW+i*ganttW/months.length+ganttW/months.length/2,y+6.5,{align:'center',maxWidth:ganttW/months.length-1}); });
   }
   function drawKOFooter(pg,tot){
     const fy=pageH-margin-footH+3;
@@ -2622,18 +2622,18 @@ async function exportKickOffPDF(){
     doc.setFontSize(7.5); doc.setFont('Sarabun',isMain?'bold':'normal');
     const pPct=calcPlannedPct(o,todayLocalPDF);
     let x=margin; const pl=isMain?0:3;
-    doc.text(o.itemNo||'',x+1,y+5,{maxWidth:cols.item-1}); x+=cols.item;
-    doc.text((o.description||'').slice(0,38),x+1+pl,y+5,{maxWidth:cols.desc-2}); x+=cols.desc;
-    doc.text(o.lead||'',x+1,y+5,{maxWidth:cols.lead-1}); x+=cols.lead;
-    doc.text(pPct+'%',x+1,y+5,{maxWidth:cols.planPct-1}); x+=cols.planPct;
-    doc.text(String(o.percentDone||0)+'%',x+1,y+5,{maxWidth:cols.actPct-1}); x+=cols.actPct;
+    doc.text(o.itemNo||'',x+1,y+6.5,{maxWidth:cols.item-1}); x+=cols.item;
+    doc.text((o.description||'').slice(0,38),x+1+pl,y+6.5,{maxWidth:cols.desc-2}); x+=cols.desc;
+    doc.text(o.lead||'',x+1,y+6.5,{maxWidth:cols.lead-1}); x+=cols.lead;
+    doc.text(pPct+'%',x+1,y+6.5,{maxWidth:cols.planPct-1}); x+=cols.planPct;
+    doc.text(String(o.percentDone||0)+'%',x+1,y+6.5,{maxWidth:cols.actPct-1}); x+=cols.actPct;
     if(ganttW>0&&pStart&&pEnd&&totalMs>0&&o.startDate&&o.endDate){
       const ts=new Date(o.startDate+'T00:00:00'), te=new Date(o.endDate+'T00:00:00');
       const bl=Math.max(0,(ts-pStart)/totalMs*ganttW);
       const bw=Math.min(ganttW-bl,Math.max(1,(te-ts+86400000)/totalMs*ganttW));
-      doc.setFillColor(165,214,167); doc.rect(x+bl,y+2,bw,rowH-4,'F');
+      doc.setFillColor(165,214,167); doc.rect(x+bl,y+2.5,bw,rowH-5,'F');
       const pw=bw*(o.percentDone||0)/100;
-      if(pw>0){doc.setFillColor(46,125,50);doc.rect(x+bl,y+2,pw,rowH-4,'F');}
+      if(pw>0){doc.setFillColor(46,125,50);doc.rect(x+bl,y+2.5,pw,rowH-5,'F');}
       // today line
       const tx=(today-pStart)/totalMs*ganttW;
       doc.setDrawColor(198,40,40); doc.line(x+tx,y,x+tx,y+rowH);
