@@ -723,6 +723,87 @@ async function confirmTrim() {
   closeTrim();
 }
 
+// ── Voice Preview ──
+
+async function previewVoice() {
+  const text = document.getElementById("customScriptInput").value.trim();
+  if (!text) return showToast("กรุณาใส่สคริปต์ก่อนทดสอบเสียง", true);
+  const btn = document.getElementById("previewVoiceBtn");
+  btn.disabled = true;
+  btn.textContent = "กำลังสร้างเสียง...";
+  try {
+    const params = new URLSearchParams({ text, voice: selectedVoice, tone: selectedTone });
+    const resp = await fetch(`/api/preview-voice?${params}`, { method: "POST" });
+    if (!resp.ok) throw new Error();
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const player = document.getElementById("voicePreviewPlayer");
+    player.src = url;
+    player.classList.remove("hidden");
+    player.play();
+  } catch {
+    showToast("ทดสอบเสียงไม่สำเร็จ", true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "ทดสอบเสียง";
+  }
+}
+
+// ── Replacements Editor ──
+
+let _replacements = {};
+
+async function openReplacements() {
+  try {
+    const resp = await fetch("/api/replacements");
+    _replacements = await resp.json();
+  } catch { _replacements = {}; }
+  renderReplacements();
+  document.getElementById("replacementsModal").classList.remove("hidden");
+}
+
+function closeReplacements() {
+  document.getElementById("replacementsModal").classList.add("hidden");
+}
+
+function renderReplacements() {
+  const el = document.getElementById("replacementsList");
+  const sorted = Object.entries(_replacements).sort((a, b) => a[0].localeCompare(b[0]));
+  el.innerHTML = sorted.map(([eng, thai]) =>
+    `<div class="repl-item"><div>${escapeHtml(eng)} <span>&rarr;</span> ${escapeHtml(thai)}</div><button class="repl-remove" onclick="removeReplacement('${eng.replace(/'/g, "\\'")}')">&times;</button></div>`
+  ).join("");
+}
+
+function addReplacement() {
+  const eng = document.getElementById("replEng").value.trim();
+  const thai = document.getElementById("replThai").value.trim();
+  if (!eng || !thai) return showToast("กรุณากรอกทั้งคำอังกฤษและคำอ่านไทย", true);
+  _replacements[eng] = thai;
+  document.getElementById("replEng").value = "";
+  document.getElementById("replThai").value = "";
+  renderReplacements();
+}
+
+function removeReplacement(eng) {
+  delete _replacements[eng];
+  renderReplacements();
+}
+
+async function saveReplacements() {
+  try {
+    const resp = await fetch("/api/replacements", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_replacements),
+    });
+    if (!resp.ok) throw new Error();
+    showToast("บันทึกคำแทนสำเร็จ");
+    closeReplacements();
+  } catch {
+    showToast("บันทึกไม่สำเร็จ", true);
+  }
+}
+
 // ── Generate ──
 
 async function startGenerate() {

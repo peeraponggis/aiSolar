@@ -17,11 +17,11 @@ VOICES = {
 
 TONE_PRESETS = {
     "normal": {"base_rate": 0, "base_pitch": 0, "variation": 0},
-    "cheerful": {"base_rate": 5, "base_pitch": 10, "variation": 20},
-    "serious": {"base_rate": -8, "base_pitch": -8, "variation": 12},
-    "energetic": {"base_rate": 12, "base_pitch": 8, "variation": 25},
-    "warm": {"base_rate": -5, "base_pitch": 5, "variation": 15},
-    "news": {"base_rate": 5, "base_pitch": -3, "variation": 18},
+    "cheerful": {"base_rate": 3, "base_pitch": 5, "variation": 8},
+    "serious": {"base_rate": -5, "base_pitch": -5, "variation": 5},
+    "energetic": {"base_rate": 8, "base_pitch": 5, "variation": 10},
+    "warm": {"base_rate": -3, "base_pitch": 3, "variation": 6},
+    "news": {"base_rate": 3, "base_pitch": -2, "variation": 7},
 }
 
 

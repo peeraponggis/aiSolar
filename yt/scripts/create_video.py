@@ -218,15 +218,16 @@ def _build_overlay_text_filter(text: str, fontsize: int,
     )
 
     if animation == "fade":
-        dur = duration
+        fade_dur = max(0.5, duration * 0.08)
         base += (
             f":y={y_pos}"
-            f":alpha='if(lt(t\\,0.5)\\,t/0.5\\,"
-            f"if(gt(t\\,{dur - 0.5:.2f})\\,({dur:.2f}-t)/0.5\\,1))'"
+            f":alpha='if(lt(t\\,{fade_dur:.2f})\\,t/{fade_dur:.2f}\\,"
+            f"if(gt(t\\,{duration - fade_dur:.2f})\\,({duration:.2f}-t)/{fade_dur:.2f}\\,1))'"
         )
     elif animation == "slide_up":
+        slide_dur = max(0.5, duration * 0.06)
         base += (
-            f":y='if(lt(t\\,0.6)\\,h-((h-350)*t/0.6)\\,{y_pos})'"
+            f":y='if(lt(t\\,{slide_dur:.2f})\\,h-((h-350)*t/{slide_dur:.2f})\\,{y_pos})'"
         )
     else:
         base += f":y={y_pos}"

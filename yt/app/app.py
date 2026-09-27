@@ -5,7 +5,7 @@ import uuid as _uuid
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Query, UploadFile
+from fastapi import FastAPI, File, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -291,6 +291,63 @@ async def trim_video(
     if result.returncode != 0:
         return JSONResponse({"error": "Trim failed"}, status_code=500)
     return {"filename": safe_name, "type": "video", "ok": True}
+
+
+# ── Voice preview endpoint ──
+
+
+@app.post("/api/preview-voice")
+async def preview_voice_tts(
+    text: str = Query(..., min_length=1),
+    voice: str = Query("female"),
+    tone: str = Query("normal"),
+):
+    from scripts.generate_audio import (
+        VOICES, TONE_PRESETS, _clean_script_for_tts,
+        apply_replacements, load_replacements, _tts_with_retry,
+    )
+
+    processed = _clean_script_for_tts(text)
+    replacements = load_replacements()
+    processed = apply_replacements(processed, replacements)
+    if len(processed) > 500:
+        processed = processed[:500]
+
+    voice_name = VOICES.get(voice, VOICES["female"])
+    preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
+    r_val = preset["base_rate"]
+    p_val = preset["base_pitch"]
+    rate = f"+{r_val}%" if r_val >= 0 else f"{r_val}%"
+    pitch = f"+{p_val}Hz" if p_val >= 0 else f"{p_val}Hz"
+
+    preview_dir = UPLOAD_DIR / "previews"
+    preview_dir.mkdir(parents=True, exist_ok=True)
+    safe = f"preview_{_uuid.uuid4().hex[:8]}.mp3"
+    output = str(preview_dir / safe)
+    await _tts_with_retry(processed, voice_name, output, rate, pitch)
+    return FileResponse(output, media_type="audio/mpeg", filename="preview.mp3")
+
+
+# ── Replacements endpoints ──
+
+
+@app.get("/api/replacements")
+async def get_replacements():
+    from scripts.generate_audio import load_replacements
+    return load_replacements()
+
+
+@app.post("/api/replacements")
+async def save_replacements(request: Request):
+    body = await request.json()
+    if not isinstance(body, dict):
+        return JSONResponse({"error": "Expected JSON object"}, status_code=400)
+    config_dir = BASE_DIR / "config"
+    config_dir.mkdir(exist_ok=True)
+    import json
+    with open(config_dir / "replacements.json", "w", encoding="utf-8") as f:
+        json.dump(body, f, ensure_ascii=False, indent=2)
+    return {"ok": True, "count": len(body)}
 
 
 # ── Pexels search endpoints ──
