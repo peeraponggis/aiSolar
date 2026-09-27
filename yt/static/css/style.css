@@ -790,6 +790,85 @@ audio, video { width: 100%; margin-top: 8px; }
   font-size: 0.85rem;
 }
 
+/* ── Script Tools Row ── */
+
+.script-tools-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.tool-btn {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+.tool-btn:hover { background: var(--accent); }
+.tool-btn:disabled { opacity: 0.5; cursor: wait; }
+.voice-preview-audio {
+  height: 32px;
+  flex: 1;
+  min-width: 150px;
+}
+
+/* ── Replacements Modal ── */
+
+.replacements-content {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 550px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.replacements-desc {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+.replacements-add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.replacements-add-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.replacements-list {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.repl-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.repl-item span { color: var(--accent); margin: 0 8px; }
+.repl-remove {
+  background: none;
+  border: none;
+  color: #f44;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 4px;
+}
+
 /* ── Console Panel ── */
 
 .console-panel {
