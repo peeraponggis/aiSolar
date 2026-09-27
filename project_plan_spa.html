@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f1f8e9;--surface:#fff;--surface2:#e8f5e9;
@@ -107,6 +108,11 @@ button{cursor:pointer}
 .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
 .tab-btn:hover{color:var(--primary)}
 .tab-panel{display:none}.tab-panel.active{display:block}
+
+/* FILE DROP OVERLAY */
+.task-table-wrap{position:relative}
+.file-drop-overlay{display:none;position:absolute;inset:0;background:rgba(46,125,50,0.12);border:3px dashed var(--primary);border-radius:8px;z-index:50;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--primary);pointer-events:none}
+.task-table-wrap.file-drop-active .file-drop-overlay{display:flex}
 
 /* SPLIT PANEL (Sample + Task) */
 .split-panel{display:flex;gap:12px;align-items:flex-start}
@@ -375,6 +381,7 @@ button{cursor:pointer}
                 <div class="btn-group">
                   <button class="btn btn-secondary btn-xs" onclick="document.getElementById('sample-import').click()" title="นำเข้า JSON">📂</button>
                   <button class="btn btn-outline btn-xs" onclick="exportSampleJSON()" title="ส่งออก JSON">💾</button>
+                  <button class="btn btn-outline btn-xs" onclick="addAllSamplesToTask()" title="ส่งรายการตัวอย่างทั้งหมดไปยังตารางงาน" style="background:#e8f5e9;border-color:var(--primary)">📤 ส่งทั้งหมด</button>
                   <input type="file" id="sample-import" accept=".json" onchange="importSampleJSON(this)" style="display:none"/>
                 </div>
               </div>
@@ -398,6 +405,7 @@ button{cursor:pointer}
               <div class="task-table-wrap"
                 id="task-drop-area"
                 ondragover="onTaskDropOver(event)" ondragleave="onTaskDropLeave(event)" ondrop="onDropToTask(event)">
+                <div class="file-drop-overlay">📁 วางไฟล์ที่นี่เพื่อนำเข้าข้อมูล (xls/xlsx/csv)</div>
                 <table class="task-table" id="task-table">
                   <thead>
                     <tr>
@@ -866,6 +874,9 @@ function saveUser(){
   saveStore();
   toast('✅ บันทึกข้อมูลผู้ใช้งานแล้ว');
   document.getElementById('sb-username').textContent='👤 '+appData.user.username;
+  const now=new Date();
+  const fn='1.'+appData.user.username+'_'+now.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+'.json';
+  saveLocalFile(new Blob([JSON.stringify(appData.user,null,2)],{type:'application/json'}),fn);
 }
 
 /* ═══════════════════════════════════════════
@@ -932,6 +943,9 @@ function saveProject(){
   collectProjectForm();
   saveStore();
   toast('✅ บันทึกโครงการแล้ว');
+  const now=new Date();
+  const fn='2.ตั้งค่าโครงการ_'+now.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+'.json';
+  saveLocalFile(new Blob([JSON.stringify(currentProject,null,2)],{type:'application/json'}),fn);
 }
 function loadProjectJSON(inp){
   const f=inp.files[0]; if(!f) return;
@@ -1100,6 +1114,24 @@ function addFromSampleSub(sampleMainId, sampleSubId){
   renderTaskTable();
   toast('✅ เพิ่ม "'+ss.description+'" แล้ว');
 }
+function addAllSamplesToTask(){
+  if(!currentProject) currentProject=blankProject();
+  if(!sampleItems.length){ toast('❌ ไม่มีรายการตัวอย่าง'); return; }
+  if(currentProject.items.length>0 && !confirm('จะเพิ่มรายการตัวอย่างทั้งหมดลงในตารางงาน ต้องการดำเนินการหรือไม่?')) return;
+  const pStart=currentProject.startDate||todayISO();
+  sampleItems.forEach(sm=>{
+    currentProject.items.push({id:uuid(),type:'main',description:sm.description,lead:'',
+      startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0,
+      subItems:(sm.subItems||[]).map(s=>({
+        id:uuid(),type:'sub',description:s.description,lead:'',
+        startDate:pStart,endDate:pStart,workDays:1,days:1,percentDone:0
+      }))
+    });
+  });
+  renumberItems();
+  renderTaskTable();
+  toast('✅ เพิ่มรายการตัวอย่างทั้งหมด '+sampleItems.length+' หัวข้อแล้ว');
+}
 
 /* Export sample list as JSON */
 async function exportSampleJSON(){
@@ -1148,17 +1180,31 @@ function onSampleDragStart(e,item){
   e.dataTransfer.setData('text/plain', JSON.stringify(item));
 }
 
-/* From sample → task table */
+/* From sample → task table (or file drop) */
 function onTaskDropOver(e){
   e.preventDefault(); e.dataTransfer.dropEffect='copy';
-  document.getElementById('task-drop-area').style.outline='2px dashed var(--primary)';
+  const area=document.getElementById('task-drop-area');
+  if(e.dataTransfer.types.includes('Files')){
+    area.classList.add('file-drop-active');
+    area.style.outline='';
+  } else {
+    area.style.outline='2px dashed var(--primary)';
+  }
 }
 function onTaskDropLeave(e){
-  document.getElementById('task-drop-area').style.outline='';
+  const area=document.getElementById('task-drop-area');
+  area.style.outline='';
+  area.classList.remove('file-drop-active');
 }
 function onDropToTask(e){
   e.preventDefault();
-  document.getElementById('task-drop-area').style.outline='';
+  const area=document.getElementById('task-drop-area');
+  area.style.outline='';
+  area.classList.remove('file-drop-active');
+  if(e.dataTransfer.files&&e.dataTransfer.files.length>0){
+    handleFileImport(e.dataTransfer.files);
+    return;
+  }
   let item=draggedItem;
   if(!item){
     try{ item=JSON.parse(e.dataTransfer.getData('text/plain')); }
@@ -1188,6 +1234,85 @@ function onDropToTask(e){
   renumberItems();
   renderTaskTable();
   toast('✅ เพิ่มรายการแล้ว');
+}
+
+/* ═══════════════════════════════════════════
+   FILE IMPORT (Drag & Drop xls/xlsx/csv/pdf/img)
+═══════════════════════════════════════════ */
+function handleFileImport(files){
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    const ext=f.name.split('.').pop().toLowerCase();
+    if(['xlsx','xls','csv'].includes(ext)){
+      parseSpreadsheet(f);
+    } else if(['pdf','png','jpg','jpeg'].includes(ext)){
+      toast('⚠️ ไฟล์ '+f.name+' — ไม่สามารถอ่านข้อมูลอัตโนมัติได้ กรุณาเพิ่มข้อมูลด้วยตนเอง');
+    } else {
+      toast('❌ ไม่รองรับไฟล์ประเภท .'+ext);
+    }
+  }
+}
+function parseSpreadsheet(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!rows.length){ toast('❌ ไฟล์ว่างเปล่า'); return; }
+      if(!currentProject) currentProject=blankProject();
+      const pStart=currentProject.startDate||todayISO();
+      const headers=Object.keys(rows[0]);
+      const descCol=headers.find(h=>/คำอธิบาย|description|รายการ|task|name|งาน|หัวข้อ/i.test(h))||headers[0];
+      const leadCol=headers.find(h=>/ผู้รับผิดชอบ|lead|responsible|ผู้นำ/i.test(h));
+      const startCol=headers.find(h=>/วันเริ่ม|start|เริ่ม/i.test(h));
+      const endCol=headers.find(h=>/วันสิ้นสุด|end|สิ้นสุด/i.test(h));
+      const wdCol=headers.find(h=>/วันทำงาน|work.?day|duration|ระยะ/i.test(h));
+      const itemCol=headers.find(h=>/item|ลำดับ|no\.?|#/i.test(h));
+      let lastMain=null;
+      rows.forEach(r=>{
+        const desc=String(r[descCol]||'').trim();
+        if(!desc) return;
+        const lead=leadCol?String(r[leadCol]||'').trim():'';
+        const sd=startCol?excelDateToISO(r[startCol])||pStart:pStart;
+        const ed=endCol?excelDateToISO(r[endCol])||sd:sd;
+        const wd=wdCol?parseInt(r[wdCol])||1:1;
+        const itemNo=itemCol?String(r[itemCol]||'').trim():'';
+        const isMain=!itemNo||!itemNo.includes('.')||!lastMain;
+        if(isMain){
+          lastMain={id:uuid(),type:'main',description:desc,lead:lead,
+            startDate:sd,endDate:ed,workDays:wd,days:wd,percentDone:0,subItems:[]};
+          currentProject.items.push(lastMain);
+        } else {
+          lastMain.subItems.push({id:uuid(),type:'sub',description:desc,lead:lead,
+            startDate:sd,endDate:ed,workDays:wd,days:wd,percentDone:0});
+        }
+      });
+      renumberItems();
+      renderTaskTable();
+      toast('✅ นำเข้า '+file.name+' สำเร็จ ('+rows.length+' แถว)');
+    }catch(ex){
+      toast('❌ อ่านไฟล์ไม่สำเร็จ: '+ex.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function excelDateToISO(val){
+  if(!val) return '';
+  if(val instanceof Date){
+    const y=val.getFullYear(), m=String(val.getMonth()+1).padStart(2,'0'), d=String(val.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+d;
+  }
+  const s=String(val).trim();
+  const iso=/^\d{4}-\d{2}-\d{2}/.exec(s);
+  if(iso) return iso[0];
+  const d=new Date(s);
+  if(!isNaN(d.getTime())){
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+dd;
+  }
+  return '';
 }
 
 /* From task table → sample list */
