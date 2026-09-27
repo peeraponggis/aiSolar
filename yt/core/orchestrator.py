@@ -65,7 +65,7 @@ class Orchestrator:
     def list_projects(self) -> list[dict]:
         return [s.to_dict() for s in self.projects.values()]
 
-    async def generate(self, project_id: str, topic: str, voice_settings: VoiceSettings | None = None, skip_media_fetch: bool = False, subtitles: bool = True, persona: str = "", custom_script: str = "", bgm_path: str = "", bgm_volume: float = 0.2, aspect_ratios: list[str] | None = None, mode: str = "narration", voice_b: str = ""):
+    async def generate(self, project_id: str, topic: str, voice_settings: VoiceSettings | None = None, skip_media_fetch: bool = False, subtitles: bool = True, persona: str = "", custom_script: str = "", bgm_path: str = "", bgm_volume: float = 0.2, aspect_ratios: list[str] | None = None, mode: str = "narration", voice_b: str = "", overlay_opts: dict | None = None):
         vs = voice_settings or VoiceSettings()
         status = self.projects[project_id]
         try:
@@ -138,6 +138,7 @@ class Orchestrator:
                     bgm_path=bgm_path, bgm_volume=bgm_volume,
                     aspect_ratio=ratio,
                     mode=mode,
+                    overlay_opts=overlay_opts or {},
                 )
                 video_paths[ratio] = vp
 

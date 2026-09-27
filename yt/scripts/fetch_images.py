@@ -45,14 +45,14 @@ def _get_keywords_from_topic(topic: str) -> list[str]:
         return [" ".join(words[:3]), "technology", "computer", "digital"]
 
 
-def _search_pexels_videos(query: str, per_page: int = 1) -> list[dict]:
+def _search_pexels_videos(query: str, per_page: int = 1, orientation: str = "portrait") -> list[dict]:
     key = _get_pexels_key()
     if not key:
         return []
     url = "https://api.pexels.com/videos/search?" + urllib.parse.urlencode({
         "query": query,
         "per_page": per_page,
-        "orientation": "portrait",
+        "orientation": orientation,
         "size": "medium",
     })
     req = urllib.request.Request(url, headers={
@@ -68,14 +68,14 @@ def _search_pexels_videos(query: str, per_page: int = 1) -> list[dict]:
         return []
 
 
-def _search_pexels_photos(query: str, per_page: int = 1) -> list[dict]:
+def _search_pexels_photos(query: str, per_page: int = 1, orientation: str = "portrait") -> list[dict]:
     key = _get_pexels_key()
     if not key:
         return []
     url = "https://api.pexels.com/v1/search?" + urllib.parse.urlencode({
         "query": query,
         "per_page": per_page,
-        "orientation": "portrait",
+        "orientation": orientation,
         "size": "medium",
     })
     req = urllib.request.Request(url, headers={
@@ -91,18 +91,20 @@ def _search_pexels_photos(query: str, per_page: int = 1) -> list[dict]:
         return []
 
 
-def _pick_best_video_file(video: dict) -> str | None:
-    """Pick the best quality portrait-friendly video file from Pexels response."""
+def _pick_best_video_file(video: dict, orientation: str = "portrait") -> str | None:
+    """Pick the best quality video file from Pexels response matching orientation."""
     files = video.get("video_files", [])
-    # Prefer HD quality, portrait orientation
     best = None
     best_height = 0
     for f in files:
         h = f.get("height", 0)
         w = f.get("width", 0)
-        # Prefer portrait or square, skip ultra-wide
-        if w > h * 1.5:
-            continue
+        if orientation == "landscape":
+            if h > w * 1.5:
+                continue
+        else:
+            if w > h * 1.5:
+                continue
         if 720 <= h <= 1920 and h > best_height:
             best = f.get("link")
             best_height = h

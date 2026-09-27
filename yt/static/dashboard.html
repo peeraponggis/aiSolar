@@ -82,8 +82,8 @@
       <div class="setting-row">
         <label>อัตราส่วน <button class="help-btn" onclick="showHelp('aspect')">?</button></label>
         <div class="aspect-toggle">
-          <button class="aspect-btn active" data-ratio="9:16" onclick="toggleAspectRatio('9:16')">&#9647; 9:16 Shorts/Reels/TikTok</button>
-          <button class="aspect-btn" data-ratio="16:9" onclick="toggleAspectRatio('16:9')">&#9645; 16:9 YouTube</button>
+          <button class="aspect-btn active" data-ratio="9:16" onclick="toggleAspectRatio('9:16')">&#9647; แนวตั้ง Shorts/Reels/TikTok</button>
+          <button class="aspect-btn" data-ratio="16:9" onclick="toggleAspectRatio('16:9')">&#9645; แนวนอน YouTube</button>
         </div>
       </div>
 
@@ -119,6 +119,23 @@
         <label>สคริปต์กำหนดเอง <button class="help-btn" onclick="event.stopPropagation();showHelp('script')">?</button> <span class="field-hint">(ถ้าใส่จะข้ามการสร้างสคริปต์อัตโนมัติ)</span></label>
         <textarea id="customScriptInput" rows="6" oninput="updateScriptCounter()" placeholder="เขียนสคริปต์เอง หรือปล่อยว่างเพื่อให้ AI สร้างให้&#10;&#10;[Hook 3 วินาที] — ประโยคเปิด&#10;[ปัญหา 10 วินาที] — ...&#10;[วิธีแก้ 15 วินาที] — ...&#10;[ประโยชน์ 10 วินาที] — ...&#10;[CTA 7 วินาที] — ..."></textarea>
         <div id="scriptCounter" class="script-counter hidden"></div>
+      </div>
+      <div class="script-field">
+        <label>เพิ่มข้อความในคลิป <span class="field-hint">(ไม่บังคับ — รองรับ #แฮชแทก)</span></label>
+        <textarea id="overlayTextInput" rows="2" placeholder="เช่น #เทคโนโลยี #AI ข้อความที่ต้องการแสดง"></textarea>
+        <div class="overlay-options">
+          <select id="overlayFont">
+            <option value="sarabun">Sarabun</option>
+            <option value="kanit">Kanit</option>
+            <option value="prompt">Prompt</option>
+            <option value="mitr">Mitr</option>
+          </select>
+          <select id="overlayAnimation">
+            <option value="static">คงที่</option>
+            <option value="fade">Fade In/Out</option>
+            <option value="slide_up">เลื่อนขึ้น</option>
+          </select>
+        </div>
       </div>
     </div>
   </section>
@@ -244,6 +261,49 @@
       <button class="help-close" onclick="closeHelp()">&times;</button>
     </div>
     <div id="helpBody"></div>
+  </div>
+</div>
+
+<div id="cropModal" class="help-modal hidden" onclick="if(event.target===this)closeCrop()">
+  <div class="crop-content">
+    <div class="help-header">
+      <span>ครอปรูปภาพ</span>
+      <button class="help-close" onclick="closeCrop()">&times;</button>
+    </div>
+    <div class="crop-canvas-wrapper">
+      <canvas id="cropCanvas"></canvas>
+    </div>
+    <div class="crop-actions">
+      <button class="clear-btn" onclick="resetCrop()">รีเซ็ต</button>
+      <button class="generate-btn" onclick="confirmCrop()">ครอป</button>
+    </div>
+  </div>
+</div>
+
+<div id="trimModal" class="help-modal hidden" onclick="if(event.target===this)closeTrim()">
+  <div class="trim-content">
+    <div class="help-header">
+      <span>ตัดต่อวิดีโอ</span>
+      <button class="help-close" onclick="closeTrim()">&times;</button>
+    </div>
+    <video id="trimPlayer" controls></video>
+    <div class="trim-controls">
+      <div class="trim-range-row">
+        <label>เริ่ม</label>
+        <input type="range" id="trimStart" min="0" step="0.1" value="0" oninput="updateTrimPreview()">
+        <span id="trimStartLabel">0:00</span>
+      </div>
+      <div class="trim-range-row">
+        <label>จบ</label>
+        <input type="range" id="trimEnd" min="0" step="0.1" value="0" oninput="updateTrimPreview()">
+        <span id="trimEndLabel">0:00</span>
+      </div>
+      <div class="trim-duration">ความยาว: <span id="trimDuration">0:00</span></div>
+    </div>
+    <div class="crop-actions">
+      <button class="clear-btn" onclick="closeTrim()">ยกเลิก</button>
+      <button class="generate-btn" onclick="confirmTrim()">ตัด</button>
+    </div>
   </div>
 </div>
 
