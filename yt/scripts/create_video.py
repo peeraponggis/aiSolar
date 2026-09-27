@@ -10,6 +10,14 @@ load_dotenv(_ENV_PATH)
 
 FFMPEG = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
 FONT_PATH = os.getenv("FONT_PATH", "F:/LocalAI/tools/fonts/Sarabun-Regular.ttf")
+FONTS_DIR = os.path.dirname(FONT_PATH)
+
+FONT_MAP = {
+    "sarabun": os.path.join(FONTS_DIR, "Sarabun-Regular.ttf"),
+    "kanit": os.path.join(FONTS_DIR, "Kanit-Regular.ttf"),
+    "prompt": os.path.join(FONTS_DIR, "Prompt-Regular.ttf"),
+    "mitr": os.path.join(FONTS_DIR, "Mitr-Regular.ttf"),
+}
 
 XFADE_DUR = 0.5
 
@@ -22,15 +30,19 @@ def _extract_media_order(path: str) -> int:
 ASPECT_CONFIGS = {
     "9:16": {
         "w": 1080, "h": 1920, "fps": 30,
-        "audio_br": "192k",
+        "audio_br": "128k",
         "pre_w": 1920, "pre_h": 3412,
-        "sub_fs": 42, "sub_y": "h-200",
+        "sub_fs": 42, "sub_y": "h-250",
+        "sub_max_chars": 35,
+        "overlay_fs": 36,
     },
     "16:9": {
         "w": 1920, "h": 1080, "fps": 30,
-        "audio_br": "384k",
+        "audio_br": "192k",
         "pre_w": 3412, "pre_h": 1920,
-        "sub_fs": 38, "sub_y": "h-120",
+        "sub_fs": 38, "sub_y": "h-250",
+        "sub_max_chars": 65,
+        "overlay_fs": 32,
     },
 }
 
@@ -84,31 +96,59 @@ def _escape_drawtext(text: str) -> str:
     return text
 
 
+def _wrap_text(text: str, max_chars: int, max_lines: int = 2) -> list[str]:
+    if len(text) <= max_chars:
+        return [text]
+    lines: list[str] = []
+    remaining = text
+    for i in range(max_lines):
+        if not remaining:
+            break
+        if i == max_lines - 1 or len(remaining) <= max_chars:
+            if len(remaining) > max_chars:
+                remaining = remaining[:max_chars]
+            lines.append(remaining)
+            remaining = ""
+            break
+        break_at = max_chars
+        space_pos = remaining.rfind(" ", max(0, max_chars // 2), max_chars + 1)
+        if space_pos > 0:
+            break_at = space_pos
+        lines.append(remaining[:break_at].rstrip())
+        remaining = remaining[break_at:].lstrip()
+    return lines
+
+
 def _build_subtitle_filter(sections: list[str], total_duration: float,
-                           fontsize: int = 42, y_expr: str = "h-200") -> str:
+                           fontsize: int = 42, y_expr: str = "h-200",
+                           max_chars: int = 35) -> str:
     if not sections:
         return ""
     segment_dur = total_duration / len(sections)
     font_path = FONT_PATH.replace("\\", "/").replace(":", "\\:")
+    line_height = int(fontsize * 1.5)
     filters = []
     for i, text in enumerate(sections):
-        if len(text) > 80:
-            text = text[:80]
+        lines = _wrap_text(text, max_chars)
         start = i * segment_dur
         end = start + segment_dur
-        escaped = _escape_drawtext(text)
-        f = (
-            f"drawtext=fontfile='{font_path}'"
-            f":text='{escaped}'"
-            f":fontsize={fontsize}"
-            f":fontcolor=white"
-            f":borderw=3"
-            f":bordercolor=black"
-            f":x=(w-text_w)/2"
-            f":y={y_expr}"
-            f":enable='between(t\\,{start:.2f}\\,{end:.2f})'"
-        )
-        filters.append(f)
+        num_lines = len(lines)
+        for j, line_text in enumerate(lines):
+            escaped = _escape_drawtext(line_text)
+            y_offset = (num_lines - 1 - j) * line_height
+            y = y_expr if y_offset == 0 else f"{y_expr}-{y_offset}"
+            f = (
+                f"drawtext=fontfile='{font_path}'"
+                f":text='{escaped}'"
+                f":fontsize={fontsize}"
+                f":fontcolor=white"
+                f":borderw=3"
+                f":bordercolor=black"
+                f":x=(w-text_w)/2"
+                f":y={y}"
+                f":enable='between(t\\,{start:.2f}\\,{end:.2f})'"
+            )
+            filters.append(f)
     return ",".join(filters)
 
 
@@ -117,33 +157,96 @@ SPEAKER_COLORS = {"A": "white", "B": "#FFD700"}
 
 def _build_dialogue_subtitle_filter(
     timing: list[dict], fontsize: int = 42, y_expr: str = "h-200",
+    max_chars: int = 35,
 ) -> str:
     if not timing:
         return ""
     font_path = FONT_PATH.replace("\\", "/").replace(":", "\\:")
+    line_height = int(fontsize * 1.5)
     filters = []
     for entry in timing:
         text = entry["text"]
-        if len(text) > 70:
-            text = text[:70]
+        lines = _wrap_text(text, max_chars)
         speaker = entry.get("speaker", "A")
         color = SPEAKER_COLORS.get(speaker, "white")
-        escaped = _escape_drawtext(text)
         start = entry["start"]
         end = entry["end"]
-        f = (
-            f"drawtext=fontfile='{font_path}'"
-            f":text='{escaped}'"
-            f":fontsize={fontsize}"
-            f":fontcolor={color}"
-            f":borderw=3"
-            f":bordercolor=black"
-            f":x=(w-text_w)/2"
-            f":y={y_expr}"
-            f":enable='between(t\\,{start:.2f}\\,{end:.2f})'"
-        )
-        filters.append(f)
+        num_lines = len(lines)
+        for j, line_text in enumerate(lines):
+            escaped = _escape_drawtext(line_text)
+            y_offset = (num_lines - 1 - j) * line_height
+            y = y_expr if y_offset == 0 else f"{y_expr}-{y_offset}"
+            f = (
+                f"drawtext=fontfile='{font_path}'"
+                f":text='{escaped}'"
+                f":fontsize={fontsize}"
+                f":fontcolor={color}"
+                f":borderw=3"
+                f":bordercolor=black"
+                f":x=(w-text_w)/2"
+                f":y={y}"
+                f":enable='between(t\\,{start:.2f}\\,{end:.2f})'"
+            )
+            filters.append(f)
     return ",".join(filters)
+
+
+def _resolve_font(font_name: str) -> str:
+    path = FONT_MAP.get(font_name, FONT_PATH)
+    if not os.path.exists(path):
+        path = FONT_PATH
+    return path.replace("\\", "/").replace(":", "\\:")
+
+
+def _build_overlay_text_filter(text: str, fontsize: int,
+                               font_name: str, animation: str,
+                               duration: float) -> str:
+    if not text.strip():
+        return ""
+    font_path = _resolve_font(font_name)
+    escaped = _escape_drawtext(text.strip())
+    y_pos = "h-350"
+
+    base = (
+        f"drawtext=fontfile='{font_path}'"
+        f":text='{escaped}'"
+        f":fontsize={fontsize}"
+        f":fontcolor=white"
+        f":borderw=2"
+        f":bordercolor=black@0.8"
+        f":x=(w-text_w)/2"
+    )
+
+    if animation == "fade":
+        dur = duration
+        base += (
+            f":y={y_pos}"
+            f":alpha='if(lt(t\\,0.5)\\,t/0.5\\,"
+            f"if(gt(t\\,{dur - 0.5:.2f})\\,({dur:.2f}-t)/0.5\\,1))'"
+        )
+    elif animation == "slide_up":
+        base += (
+            f":y='if(lt(t\\,0.6)\\,h-((h-350)*t/0.6)\\,{y_pos})'"
+        )
+    else:
+        base += f":y={y_pos}"
+
+    return base
+
+
+def _build_watermark_filter(fontsize: int) -> str:
+    font_path = FONT_PATH.replace("\\", "/").replace(":", "\\:")
+    escaped = _escape_drawtext("Created by Lungpee0945@gmail.com")
+    return (
+        f"drawtext=fontfile='{font_path}'"
+        f":text='{escaped}'"
+        f":fontsize={fontsize}"
+        f":fontcolor=#000080"
+        f":borderw=1"
+        f":bordercolor=white@0.5"
+        f":x=w-text_w-20"
+        f":y=20"
+    )
 
 
 def _mix_with_bgm(narration_path: str, bgm_path: str, output_path: str,
@@ -177,7 +280,8 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
                        subtitles: bool = True,
                        bgm_path: str = "", bgm_volume: float = 0.2,
                        aspect_ratio: str = "9:16",
-                       mode: str = "narration") -> str:
+                       mode: str = "narration",
+                       overlay_opts: dict | None = None) -> str:
     cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
     W, H = cfg["w"], cfg["h"]
 
@@ -195,6 +299,7 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
                                     volume=bgm_volume, duration=duration)
 
     subtitle_filter = ""
+    max_chars = cfg.get("sub_max_chars", 35)
     if subtitles:
         timing_path = os.path.join(project_dir, "audio", "dialogue_timing.json")
         if mode == "dialogue" and os.path.exists(timing_path):
@@ -202,12 +307,29 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
             with open(timing_path, "r", encoding="utf-8") as f:
                 timing = json.load(f)
             subtitle_filter = _build_dialogue_subtitle_filter(
-                timing, fontsize=cfg["sub_fs"], y_expr=cfg["sub_y"])
+                timing, fontsize=cfg["sub_fs"], y_expr=cfg["sub_y"],
+                max_chars=max_chars)
         elif script:
             sections = _parse_script_sections(script)
             subtitle_filter = _build_subtitle_filter(
                 sections, duration,
-                fontsize=cfg["sub_fs"], y_expr=cfg["sub_y"])
+                fontsize=cfg["sub_fs"], y_expr=cfg["sub_y"],
+                max_chars=max_chars)
+
+    overlay_filter = ""
+    opts = overlay_opts or {}
+    overlay_fs = cfg.get("overlay_fs", 36)
+    if opts.get("overlay_text"):
+        overlay_filter = _build_overlay_text_filter(
+            opts["overlay_text"], overlay_fs,
+            opts.get("overlay_font", "sarabun"),
+            opts.get("overlay_animation", "static"),
+            duration)
+    watermark_filter = _build_watermark_filter(overlay_fs // 2)
+
+    extra_filters = ",".join(f for f in [overlay_filter, watermark_filter] if f)
+    if extra_filters:
+        subtitle_filter = (subtitle_filter + "," + extra_filters) if subtitle_filter else extra_filters
 
     videos = [v for v in (background_videos or []) if os.path.exists(v)]
     images = [img for img in (background_images or []) if os.path.exists(img)]
@@ -257,7 +379,7 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
         "-i", audio_path,
         "-vf", ",".join(vf_parts),
         *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "44100", "-ac", "2",
+        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
         "-movflags", "+faststart",
         output_path,
@@ -352,7 +474,7 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
         "-map", final_map,
         "-map", f"{n}:a",
         *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "44100", "-ac", "2",
+        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
         "-movflags", "+faststart",
         output_path,
@@ -443,7 +565,7 @@ def _create_video_with_images(images: list[str], audio_path: str,
         "-map", final_map,
         "-map", f"{n}:a",
         *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "44100", "-ac", "2",
+        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
         "-movflags", "+faststart",
         output_path,
@@ -510,7 +632,7 @@ def _create_simple_slideshow(images: list[str], audio_path: str,
         "-map", final_map,
         "-map", f"{n}:a",
         *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "44100", "-ac", "2",
+        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
         "-movflags", "+faststart",
         output_path,

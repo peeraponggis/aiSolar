@@ -71,6 +71,9 @@ async def generate_video(
     tone_var: int = Query(0),
     tone_rate: int = Query(0),
     tone_pitch: int = Query(0),
+    overlay_text: str = Query(""),
+    overlay_font: str = Query("sarabun"),
+    overlay_animation: str = Query("static"),
 ):
     project_id = orchestrator.create_project(topic)
     skip_fetch = False
@@ -119,6 +122,15 @@ async def generate_video(
     else:
         ratios = ["9:16"]
     gen_mode = mode if mode in ("narration", "dialogue") else "narration"
+    overlay_opts = {}
+    if overlay_text.strip():
+        valid_fonts = {"sarabun", "kanit", "prompt", "mitr"}
+        valid_anims = {"static", "fade", "slide_up"}
+        overlay_opts = {
+            "overlay_text": overlay_text.strip(),
+            "overlay_font": overlay_font if overlay_font in valid_fonts else "sarabun",
+            "overlay_animation": overlay_animation if overlay_animation in valid_anims else "static",
+        }
     asyncio.create_task(
         orchestrator.generate(project_id, topic, vs,
                               skip_media_fetch=skip_fetch,
@@ -129,7 +141,8 @@ async def generate_video(
                               bgm_volume=bgm_volume / 100.0,
                               aspect_ratios=ratios,
                               mode=gen_mode,
-                              voice_b=voice_b)
+                              voice_b=voice_b,
+                              overlay_opts=overlay_opts)
     )
     return {"id": project_id, "status": "processing"}
 
@@ -239,6 +252,47 @@ async def clear_uploads():
     return {"ok": True}
 
 
+# ── Trim endpoint ──
+
+
+@app.post("/api/uploads/trim")
+async def trim_video(
+    filename: str = Query(...),
+    start: float = Query(0),
+    end: float = Query(0),
+):
+    if "/" in filename or "\\" in filename or ".." in filename:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    src = UPLOAD_DIR / filename
+    if not src.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    duration = end - start
+    if duration < 0.5:
+        return JSONResponse({"error": "Duration too short"}, status_code=400)
+
+    from scripts.create_video import FFMPEG
+    import subprocess
+
+    safe_name = f"trimmed_{_uuid.uuid4().hex[:8]}.mp4"
+    out_path = str(UPLOAD_DIR / safe_name)
+    cmd = [
+        FFMPEG, "-y",
+        "-ss", f"{start:.3f}",
+        "-i", str(src),
+        "-t", f"{duration:.3f}",
+        "-c", "copy",
+        "-movflags", "+faststart",
+        out_path,
+    ]
+    result = await asyncio.to_thread(
+        subprocess.run, cmd, capture_output=True, timeout=120,
+        encoding="utf-8", errors="replace"
+    )
+    if result.returncode != 0:
+        return JSONResponse({"error": "Trim failed"}, status_code=500)
+    return {"filename": safe_name, "type": "video", "ok": True}
+
+
 # ── Pexels search endpoints ──
 
 
@@ -246,6 +300,7 @@ async def clear_uploads():
 async def search_pexels(
     q: str = Query(..., min_length=1),
     media_type: str = Query("video"),
+    orientation: str = Query("portrait"),
 ):
     from scripts.fetch_images import (
         _pick_best_video_file,
@@ -253,11 +308,12 @@ async def search_pexels(
         _search_pexels_videos,
     )
 
+    orient = orientation if orientation in ("portrait", "landscape") else "portrait"
     if media_type == "video":
-        results = await asyncio.to_thread(_search_pexels_videos, q, 8)
+        results = await asyncio.to_thread(_search_pexels_videos, q, 8, orient)
         items = []
         for v in results:
-            dl_url = _pick_best_video_file(v)
+            dl_url = _pick_best_video_file(v, orient)
             if dl_url:
                 items.append({
                     "id": v.get("id"),
@@ -268,7 +324,7 @@ async def search_pexels(
                 })
         return items
     else:
-        results = await asyncio.to_thread(_search_pexels_photos, q, 8)
+        results = await asyncio.to_thread(_search_pexels_photos, q, 8, orient)
         items = []
         for p in results:
             src = p.get("src", {})

@@ -308,9 +308,14 @@ async function searchPexels() {
   const grid = document.getElementById("pexelsResults");
   grid.innerHTML = '<p class="loading">กำลังค้นหา...</p>';
   try {
+    const orientation = (selectedAspectRatios[0] || "9:16") === "16:9" ? "landscape" : "portrait";
     const resp = await fetch(
-      `/api/pexels/search?q=${encodeURIComponent(query)}&media_type=${type}`
+      `/api/pexels/search?q=${encodeURIComponent(query)}&media_type=${type}&orientation=${orientation}`
     );
+    if (!resp.ok) {
+      grid.innerHTML = '<p class="no-results">ค้นหาไม่สำเร็จ</p>';
+      return;
+    }
     const items = await resp.json();
     if (!items.length) {
       grid.innerHTML = '<p class="no-results">ไม่พบผลลัพธ์</p>';
@@ -415,6 +420,10 @@ function renderMediaGrid() {
       }
       <span class="media-order">${i + 1}</span>
       <button class="media-remove" onclick="event.stopPropagation();removeMedia(${i})">&#215;</button>
+      ${m.type === "video"
+        ? `<button class="media-trim" onclick="event.stopPropagation();openTrimTool(${i})" title="ตัดวิดีโอ">&#9988;</button>`
+        : `<button class="media-crop" onclick="event.stopPropagation();openCropTool(${i})" title="ครอปรูป">&#9986;</button>`
+      }
       <span class="media-type-badge">${m.type === "video" ? "VID" : "IMG"}</span>
     </div>`
     )
@@ -482,6 +491,238 @@ async function clearAllMedia() {
   renderMediaGrid();
 }
 
+// ── Crop Tool ──
+
+let cropImageIndex = null;
+let cropRect = null;
+let cropImg = null;
+let _cropDragging = false;
+let _cropStart = null;
+
+function openCropTool(index) {
+  cropImageIndex = index;
+  const m = selectedMedia[index];
+  const url = m.thumbnail || `/api/uploads/file/${m.filename}`;
+  const canvas = document.getElementById("cropCanvas");
+  const ctx = canvas.getContext("2d");
+  cropImg = new Image();
+  cropImg.crossOrigin = "anonymous";
+  cropImg.onload = () => {
+    const maxW = 560, maxH = window.innerHeight * 0.55;
+    let scale = Math.min(maxW / cropImg.width, maxH / cropImg.height, 1);
+    canvas.width = Math.round(cropImg.width * scale);
+    canvas.height = Math.round(cropImg.height * scale);
+    cropRect = { x: 0, y: 0, w: canvas.width, h: canvas.height };
+    _fitCropToRatio();
+    _drawCrop();
+    document.getElementById("cropModal").classList.remove("hidden");
+  };
+  cropImg.src = url;
+}
+
+function _getCropRatio() {
+  const primary = selectedAspectRatios[0] || "9:16";
+  return primary === "16:9" ? 16 / 9 : 9 / 16;
+}
+
+function _fitCropToRatio() {
+  const canvas = document.getElementById("cropCanvas");
+  const ratio = _getCropRatio();
+  let w = canvas.width, h = canvas.height;
+  if (w / h > ratio) {
+    w = Math.round(h * ratio);
+  } else {
+    h = Math.round(w / ratio);
+  }
+  cropRect = {
+    x: Math.round((canvas.width - w) / 2),
+    y: Math.round((canvas.height - h) / 2),
+    w, h
+  };
+}
+
+function _drawCrop() {
+  const canvas = document.getElementById("cropCanvas");
+  const ctx = canvas.getContext("2d");
+  const scale = canvas.width / cropImg.width;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+  ctx.drawImage(cropImg,
+    cropRect.x / scale, cropRect.y / scale, cropRect.w / scale, cropRect.h / scale,
+    cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+  ctx.strokeStyle = "#7c3aed";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("cropCanvas");
+  if (!canvas) return;
+  canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    _cropDragging = true;
+    _cropStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  });
+  canvas.addEventListener("mousemove", (e) => {
+    if (!_cropDragging || !_cropStart) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const ratio = _getCropRatio();
+    let w = Math.abs(mx - _cropStart.x);
+    let h = Math.round(w / ratio);
+    if (h > canvas.height) { h = canvas.height; w = Math.round(h * ratio); }
+    if (w > canvas.width) { w = canvas.width; h = Math.round(w / ratio); }
+    let x = Math.min(_cropStart.x, mx);
+    let y = Math.min(_cropStart.y, my);
+    if (x + w > canvas.width) x = canvas.width - w;
+    if (y + h > canvas.height) y = canvas.height - h;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    cropRect = { x, y, w, h };
+    _drawCrop();
+  });
+  canvas.addEventListener("mouseup", () => { _cropDragging = false; });
+  canvas.addEventListener("mouseleave", () => { _cropDragging = false; });
+});
+
+function resetCrop() {
+  _fitCropToRatio();
+  _drawCrop();
+}
+
+function closeCrop() {
+  document.getElementById("cropModal").classList.add("hidden");
+  cropImageIndex = null;
+}
+
+async function confirmCrop() {
+  if (cropImageIndex === null || !cropImg) return;
+  const canvas = document.getElementById("cropCanvas");
+  const scale = cropImg.width / canvas.width;
+  const sx = Math.round(cropRect.x * scale);
+  const sy = Math.round(cropRect.y * scale);
+  const sw = Math.round(cropRect.w * scale);
+  const sh = Math.round(cropRect.h * scale);
+
+  const offscreen = document.createElement("canvas");
+  offscreen.width = sw;
+  offscreen.height = sh;
+  const octx = offscreen.getContext("2d");
+  octx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  const blob = await new Promise(r => offscreen.toBlob(r, "image/jpeg", 0.92));
+  const form = new FormData();
+  form.append("files", blob, "cropped.jpg");
+  try {
+    const resp = await fetch("/api/upload", { method: "POST", body: form });
+    const [uploaded] = await resp.json();
+    if (uploaded) {
+      const old = selectedMedia[cropImageIndex];
+      try { await fetch(`/api/uploads/${old.filename}`, { method: "DELETE" }); } catch {}
+      selectedMedia[cropImageIndex] = {
+        filename: uploaded.filename,
+        type: "image",
+        thumbnail: `/api/uploads/file/${uploaded.filename}`,
+      };
+      renderMediaGrid();
+      showToast("ครอปสำเร็จ");
+    }
+  } catch (e) {
+    showToast("ครอปไม่สำเร็จ", true);
+  }
+  closeCrop();
+}
+
+// ── Trim Tool ──
+
+let trimVideoIndex = null;
+
+function openTrimTool(index) {
+  trimVideoIndex = index;
+  const m = selectedMedia[index];
+  const player = document.getElementById("trimPlayer");
+  player.src = `/api/uploads/file/${m.filename}`;
+  player.onloadedmetadata = () => {
+    const dur = player.duration;
+    const startEl = document.getElementById("trimStart");
+    const endEl = document.getElementById("trimEnd");
+    startEl.max = dur;
+    endEl.max = dur;
+    startEl.value = 0;
+    endEl.value = dur;
+    updateTrimPreview();
+    document.getElementById("trimModal").classList.remove("hidden");
+  };
+  player.load();
+}
+
+function _fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function updateTrimPreview() {
+  const s = parseFloat(document.getElementById("trimStart").value);
+  let e = parseFloat(document.getElementById("trimEnd").value);
+  if (e <= s + 1) e = s + 1;
+  document.getElementById("trimEnd").value = e;
+  document.getElementById("trimStartLabel").textContent = _fmtTime(s);
+  document.getElementById("trimEndLabel").textContent = _fmtTime(e);
+  document.getElementById("trimDuration").textContent = _fmtTime(e - s);
+  const player = document.getElementById("trimPlayer");
+  if (Math.abs(player.currentTime - s) > 0.5) player.currentTime = s;
+}
+
+function closeTrim() {
+  document.getElementById("trimModal").classList.add("hidden");
+  const player = document.getElementById("trimPlayer");
+  player.pause();
+  player.src = "";
+  trimVideoIndex = null;
+}
+
+async function confirmTrim() {
+  if (trimVideoIndex === null) return;
+  const start = parseFloat(document.getElementById("trimStart").value);
+  const end = parseFloat(document.getElementById("trimEnd").value);
+  const m = selectedMedia[trimVideoIndex];
+  const btn = document.querySelector("#trimModal .generate-btn");
+  btn.disabled = true;
+  btn.textContent = "กำลังตัด...";
+  try {
+    const resp = await fetch(
+      `/api/uploads/trim?filename=${encodeURIComponent(m.filename)}&start=${start}&end=${end}`,
+      { method: "POST" }
+    );
+    if (!resp.ok) {
+      showToast("ตัดไม่สำเร็จ", true);
+      return;
+    }
+    const result = await resp.json();
+    if (result.filename) {
+      try { await fetch(`/api/uploads/${m.filename}`, { method: "DELETE" }); } catch {}
+      selectedMedia[trimVideoIndex] = {
+        filename: result.filename,
+        type: "video",
+        thumbnail: m.thumbnail,
+      };
+      renderMediaGrid();
+      showToast("ตัดวิดีโอสำเร็จ");
+    }
+  } catch (e) {
+    showToast("ตัดไม่สำเร็จ", true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "ตัด";
+  }
+  closeTrim();
+}
+
 // ── Generate ──
 
 async function startGenerate() {
@@ -526,6 +767,9 @@ async function startGenerate() {
     tone_var: selectedTone === "custom" ? (document.getElementById("customToneVar").value || 10) : 0,
     tone_rate: selectedTone === "custom" ? (document.getElementById("customToneRate").value || 0) : 0,
     tone_pitch: selectedTone === "custom" ? (document.getElementById("customTonePitch").value || 0) : 0,
+    overlay_text: (document.getElementById("overlayTextInput").value || "").trim(),
+    overlay_font: document.getElementById("overlayFont").value,
+    overlay_animation: document.getElementById("overlayAnimation").value,
   });
   if (selectedMedia.length) {
     params.set("media_files", selectedMedia.map((m) => m.filename).join(","));
@@ -624,13 +868,13 @@ function showResult(data) {
 
     if (ratios.length > 1) {
       ratioTabsEl.classList.remove("hidden");
-      const TAB_LABELS = {"9:16": "9:16 Shorts", "16:9": "16:9 YouTube"};
+      const TAB_LABELS = {"9:16": "แนวตั้ง Shorts", "16:9": "แนวนอน YouTube"};
       ratioTabsEl.innerHTML = ratios.map((r, i) =>
         `<button class="ratio-tab ${i===0?'active':''}" onclick="switchVideoRatio('${data.project_id}','${r}',this)">${TAB_LABELS[r] || r}</button>`
       ).join("");
     }
 
-    const RATIO_LABELS = {"9:16": "9:16 Shorts/Reels/TikTok", "16:9": "16:9 YouTube"};
+    const RATIO_LABELS = {"9:16": "แนวตั้ง Shorts/Reels/TikTok", "16:9": "แนวนอน YouTube"};
     dlContainer.innerHTML = ratios.map(r => {
       const tag = r.replace(":", "x");
       const url = `/api/download/${data.project_id}?ratio=${encodeURIComponent(r)}`;
@@ -834,7 +1078,7 @@ const HELP_TEXTS = {
   },
   aspect: {
     title: "อัตราส่วนวิดีโอ",
-    body: "<b>9:16</b> — แนวตั้ง สำหรับ Shorts/Reels/TikTok\n<b>16:9</b> — แนวนอน สำหรับ YouTube\n\nกดเลือกได้ทั้ง 2 อัน = ระบบจะสร้าง 2 ไฟล์ในครั้งเดียว"
+    body: "<b>แนวตั้ง (9:16)</b> — สำหรับ Shorts/Reels/TikTok\n<b>แนวนอน (16:9)</b> — สำหรับ YouTube\n\nกดเลือกได้ทั้ง 2 อัน = ระบบจะสร้าง 2 ไฟล์ในครั้งเดียว"
   },
   tone: {
     title: "โทนเสียง",
