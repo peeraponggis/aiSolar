@@ -713,6 +713,35 @@ function makeFileName(ext){
   return `${safe}_${datePart}_${h}${m}.${ext}`;
 }
 
+/* Save file to local disk — uses File System Access API (Chrome 86+) with fallback to <a> download */
+async function saveLocalFile(blob, filename){
+  const ext=filename.split('.').pop().toLowerCase();
+  const mimeMap={pdf:'application/pdf',json:'application/json',csv:'text/csv'};
+  const mime=mimeMap[ext]||'application/octet-stream';
+  if(window.showSaveFilePicker){
+    try{
+      const handle=await window.showSaveFilePicker({
+        suggestedName:filename,
+        types:[{description:ext.toUpperCase()+' File',accept:{[mime]:['.'+ext]}}]
+      });
+      const writable=await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      toast('✅ บันทึกไฟล์แล้ว: '+filename);
+      return;
+    } catch(e){
+      if(e.name==='AbortError') return; // user cancelled
+    }
+  }
+  // Fallback: browser download
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  toast('✅ บันทึก: '+filename);
+}
+
 /* ═══════════════════════════════════════════
    STORAGE
 ═══════════════════════════════════════════ */
@@ -1073,13 +1102,10 @@ function addFromSampleSub(sampleMainId, sampleSubId){
 }
 
 /* Export sample list as JSON */
-function exportSampleJSON(){
+async function exportSampleJSON(){
+  const fn='รายการตัวอย่าง_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.json';
   const blob=new Blob([JSON.stringify(sampleItems,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='รายการตัวอย่าง_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.json';
-  a.click();
-  toast('✅ ส่งออกรายการตัวอย่างแล้ว');
+  await saveLocalFile(blob,fn);
 }
 function importSampleJSON(inp){
   const f=inp.files[0]; if(!f) return;
@@ -1468,15 +1494,11 @@ function initSortables(){
 /* ═══════════════════════════════════════════
    JSON EXPORT
 ═══════════════════════════════════════════ */
-function exportJSON(){
+async function exportJSON(){
   if(!currentProject){ toast('❌ ยังไม่มีโครงการ'); return; }
   collectProjectForm();
   const blob=new Blob([JSON.stringify(currentProject,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=makeFileName('json');
-  a.click();
-  toast('✅ บันทึก JSON แล้ว: '+makeFileName('json'));
+  await saveLocalFile(blob,makeFileName('json'));
 }
 
 /* ═══════════════════════════════════════════
@@ -1692,8 +1714,7 @@ async function exportGanttPDF(){
     drawFooter(doc,pg+1,totalPages+1);
   }
   const fn=makeFileName('pdf');
-  doc.save(fn);
-  toast('✅ บันทึก PDF แล้ว: '+fn);
+  await saveLocalFile(new Blob([doc.output('arraybuffer')],{type:'application/pdf'}),fn);
 }
 
 /* ═══════════════════════════════════════════
@@ -1772,8 +1793,7 @@ async function exportSCurvePDF(){
   doc.text('หน้า 1/1',pageW-margin,fy+2,{align:'right'});
   if(u.logo){try{doc.addImage(u.logo,'PNG',pageW-margin-28,fy-4,22,9);}catch(e){}}
   const fn=makeFileName('pdf');
-  doc.save(fn);
-  toast('✅ บันทึก PDF แล้ว: '+fn);
+  await saveLocalFile(new Blob([doc.output('arraybuffer')],{type:'application/pdf'}),fn);
 }
 
 /* ═══════════════════════════════════════════
@@ -2018,8 +2038,7 @@ async function exportWeeklyPDF(){
   doc.text('หน้า 1/1',pageW-margin,pageH-margin,{align:'right'});
   if(u.logo){try{doc.addImage(u.logo,'PNG',pageW-margin-24,pageH-margin-8,20,8);}catch(e){}}
   const fn=makeFileName('pdf').replace('.pdf',`_Week${week.weekNo}.pdf`);
-  doc.save(fn);
-  toast('✅ PDF Weekly: '+fn);
+  await saveLocalFile(new Blob([doc.output('arraybuffer')],{type:'application/pdf'}),fn);
 }
 
 /* --- Daily Report tab --- */
@@ -2183,8 +2202,7 @@ async function exportDailyPDF(wid,dateISO){
   doc.text('หน้า 1/1',pageW-margin,pageH-margin,{align:'right'});
   if(u.logo){try{doc.addImage(u.logo,'PNG',pageW-margin-24,pageH-margin-8,20,8);}catch(e){}}
   const fn=makeFileName('pdf').replace('.pdf','_Daily_'+dateISO+'.pdf');
-  doc.save(fn);
-  toast('✅ PDF Daily: '+fn);
+  await saveLocalFile(new Blob([doc.output('arraybuffer')],{type:'application/pdf'}),fn);
 }
 
 /* --- Kick Off Plan tab --- */
@@ -2372,8 +2390,7 @@ async function exportKickOffPDF(){
   }
   drawKOFooter(pg,totalPages);
   const fn=makeFileName('pdf').replace('.pdf','_KickOff.pdf');
-  doc.save(fn);
-  toast('✅ PDF Kick Off: '+fn);
+  await saveLocalFile(new Blob([doc.output('arraybuffer')],{type:'application/pdf'}),fn);
 }
 
 /* ═══════════════════════════════════════════
