@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 from app_log import setup_logging
 from flow_layout import Flow
 from float_icon import FloatIcon
+from history_panel import HistoryPanel
 from qa_panel import QAPanel
 from engine import (
     API_PRESETS, BACKEND, DEFAULT_MODEL, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
@@ -213,7 +214,7 @@ def run_gui(minimized=False):
     opts_btn = ttk.Button(hdr, text="▾ ตัวเลือก", command=lambda: toggle_opts()); hdr.add(opts_btn)
     level_summary = tk.StringVar()
     hdr.add(ttk.Label(hdr, textvariable=level_summary, font=small_font, foreground="#555"), padx=(0, 16))
-    hist_btn = ttk.Button(hdr, text="ประวัติ ▾", command=lambda: toggle_history()); hdr.add(hist_btn)
+    hist_btn = ttk.Button(hdr, text="ประวัติ ▾"); hdr.add(hist_btn)  # command ผูกใน HistoryPanel ด้านล่าง
     hdr.add(ttk.Button(hdr, text="glossary", command=lambda: os.startfile(GLOSSARY_FILE) if os.path.exists(GLOSSARY_FILE) else None))
     hdr.add(ttk.Button(hdr, text="⚙ ผู้ให้บริการ", command=lambda: open_provider_dialog()), padx=(12, 6))
 
@@ -339,35 +340,8 @@ def run_gui(minimized=False):
     tts_row.add(ttk.Checkbutton(tts_row, text="อ่านอัตโนมัติ", variable=autospeak_var,
                                 command=lambda: (settings.update(autospeak=autospeak_var.get()), save_settings())))
 
-    # ---------- history panel (ซ่อนได้)
-    hist_frame = ttk.Frame(root, padding=(10, 0, 10, 6))
-    hist_list = tk.Listbox(hist_frame, height=6, font=small_font, activestyle="none")
-    hist_list.pack(side="left", fill="both", expand=True)
-    hsb = ttk.Scrollbar(hist_frame, command=hist_list.yview); hsb.pack(side="right", fill="y")
-    hist_list.config(yscrollcommand=hsb.set)
-    hist_shown = {"on": False}
-
-    def refresh_history():
-        hist_list.delete(0, "end")
-        for h in reversed(history[-60:]):
-            s = h["src"].replace("\n", " ")[:60]; d = h["dst"].replace("\n", " ")[:60]
-            hist_list.insert("end", f"[{LEVELS.get(h.get('level'), LEVELS['general'])['label']}] {s}  →  {d}")
-
-    def toggle_history():
-        hist_shown["on"] = not hist_shown["on"]
-        if hist_shown["on"]:
-            refresh_history(); hist_frame.pack(side="bottom", fill="x", padx=10, pady=(0, 6), before=bottom_box); hist_btn.config(text="ประวัติ ▴")
-        else:
-            hist_frame.pack_forget(); hist_btn.config(text="ประวัติ ▾")
-
-    def load_history_item(_=None):
-        sel = hist_list.curselection()
-        if not sel:
-            return
-        h = list(reversed(history[-60:]))[sel[0]]
-        src.delete("1.0", "end"); src.insert("1.0", h["src"])
-        dst.delete("1.0", "end"); dst.insert("1.0", h["dst"])
-    hist_list.bind("<Double-Button-1>", load_history_item)
+    # ---------- history panel แบบซ่อน/โชว์ได้ (ดู history_panel.py)
+    history_panel = HistoryPanel(root, hist_btn, bottom_box, small_font, history, src, dst)
 
     # ==================== Q&A: ถามโมเดลเกี่ยวกับข้อความหลังแปล (ดู qa_panel.py) ====================
     # สร้างจริงหลัง stop_speech()/speak_text() ถูกนิยามแล้ว (ดูท้ายฟังก์ชัน หลังบล็อกเสียงอ่าน)
@@ -430,8 +404,7 @@ def run_gui(minimized=False):
         if result and not worker["stop"].is_set():
             history.append({"ts": time.strftime("%Y-%m-%d %H:%M"), "level": level, "src": text, "dst": result})
             save_history()
-            if hist_shown["on"]:
-                refresh_history()
+            history_panel.notify_new_entry()
         ev, ed = stats.get("eval_count") or 0, stats.get("eval_duration") or 0
         speed = f" · {ev/(ed/1e9):.1f} tok/s" if ed else ""
         set_status(("หยุดแล้ว" if worker["stop"].is_set() else "แปลเสร็จ") + f" · {elapsed:.1f} วินาที{speed} · {st['model']}")
