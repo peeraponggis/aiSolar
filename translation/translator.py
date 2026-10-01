@@ -52,7 +52,7 @@ from engine import (
 from tts_engine import (
     EN_VOICES, TTS_RATES, TTS_TMP, TTS_VOICES, Player, TtsPipeline,
     apply_replacements, clean_for_tts, list_clone_profiles, load_replacements,
-    pop_sentences, split_tts_chunks, tts_synthesize,
+    pop_sentences, sapi_synthesize, split_tts_chunks, tts_synthesize,
 )
 from win_hooks import KEYEVENTF_KEYUP, VK_MENU, win_event_thread
 
@@ -683,11 +683,39 @@ if __name__ == "__main__":
     ap.add_argument("--model")
     ap.add_argument("--minimized", action="store_true", help="เปิดแบบย่อหน้าต่าง (สำหรับ Startup)")
     ap.add_argument("--tts", metavar="TEXT", help="ทดสอบเสียงอ่าน: สังเคราะห์และเล่นข้อความนี้")
+    ap.add_argument("--stt-selftest", action="store_true",
+                    help="ทดสอบถอดเสียง: สังเคราะห์เสียงด้วย SAPI แล้วถอดกลับด้วย whisper (เช็กว่า build นี้ใช้งานได้)")
     ap.add_argument("--ask", metavar="QUESTION", help="(ใช้กับ --cli) ถามคำถามเกี่ยวกับข้อความหลังแปล")
     ap.add_argument("text", nargs="?")
     a = ap.parse_args()
     if a.cli:
         sys.exit(run_cli(a))
+    if a.stt_selftest:
+        import numpy as np
+        from scipy.io import wavfile
+        from scipy.signal import resample_poly
+        from voice_input import SAMPLE_RATE, _get_model
+        text = "ทดสอบระบบถอดเสียงภาษาไทย วันนี้อากาศเป็นอย่างไรบ้าง"
+        wav = os.path.join(BASE, "_stt_selftest.wav")
+        print("synthesizing with SAPI ..."); sapi_synthesize(text, "Pattara", "+0%", wav)
+        rate, data = wavfile.read(wav)
+        if data.ndim > 1:
+            data = data.mean(axis=1)
+        data = (data.astype(np.float32) / np.iinfo(data.dtype).max) if data.dtype.kind == "i" else data.astype(np.float32)
+        if rate != SAMPLE_RATE:
+            data = resample_poly(data, SAMPLE_RATE, rate).astype(np.float32)
+        print("loading faster-whisper model (first run downloads ~500MB) ...")
+        model = _get_model()
+        segments, info = model.transcribe(data, language=None, vad_filter=True)
+        out_text = "".join(s.text for s in segments).strip()
+        print("ORIGINAL :", text)
+        print("WHISPER  :", out_text)
+        print("LANG     :", info.language, f"(p={info.language_probability:.2f})")
+        try:
+            os.remove(wav)
+        except Exception:
+            pass
+        sys.exit(0)
     if a.tts:
         lang = detect_lang(a.tts)
         v = "th-TH-PremwadeeNeural" if lang == "th" else "en-US-JennyNeural"
