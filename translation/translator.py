@@ -36,24 +36,27 @@ log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------- โมดูลย่อย (แยกจาก translator.py)
 from app_log import setup_logging
+from autostart import autostart_enabled, set_autostart as _set_autostart
 from flow_layout import Flow
 from clipboard_hotkey import ClipboardHotkey
 from edit_bindings import setup_edit_bindings
 from float_icon import FloatIcon
 from history_panel import HistoryPanel
+from model_connection import ModelConnection
 from provider_dialog import open_provider_dialog
 from qa_panel import QAPanel
 from replacements_dialog import open_replacements_dialog
+from speech_controller import SpeechController
 from engine import (
-    BACKEND, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
+    DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
     LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
     build_messages, chat_stream, clean_output, detect_lang,
-    ensure_ollama, glossary_for, load_glossary, pick_model, run_cli, warm_up,
+    glossary_for, load_glossary, run_cli,
 )
 from tts_engine import (
-    EN_VOICES, TTS_RATES, TTS_TMP, TTS_VOICES, Player, TtsPipeline,
-    apply_replacements, clean_for_tts, list_clone_profiles, load_replacements,
-    pop_sentences, sapi_synthesize, split_tts_chunks, tts_synthesize,
+    TTS_RATES, TTS_VOICES, Player,
+    apply_replacements, list_clone_profiles, load_replacements,
+    sapi_synthesize, tts_synthesize,
 )
 from win_hooks import KEYEVENTF_KEYUP, VK_MENU, win_event_thread
 
@@ -159,39 +162,9 @@ def run_gui(minimized=False):
         except Exception:
             log.warning("บันทึก history.json ไม่ได้ (%s)", HISTORY_FILE, exc_info=True)
 
-    # ---------- เปิดอัตโนมัติเมื่อเปิดเครื่อง (ทางลัดในโฟลเดอร์ Startup)
-    def startup_lnk():
-        return os.path.join(os.environ.get("APPDATA", ""), "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "Local Translator.lnk")
-
-    def autostart_enabled():
-        return os.path.exists(startup_lnk())
-
+    # ---------- เปิดอัตโนมัติเมื่อเปิดเครื่อง (ดู autostart.py)
     def set_autostart(enable):
-        import subprocess
-        lnk = startup_lnk()
-        if not enable:
-            try:
-                os.remove(lnk)
-            except Exception:
-                pass
-            set_status("ยกเลิกเปิดอัตโนมัติแล้ว"); return
-        if FROZEN:
-            target, args = sys.executable, "--minimized"
-        else:
-            # รันจากซอร์สโค้ด (ไม่มี Translate.bat แล้ว): เปิดด้วย pythonw.exe ตรง ๆ ไม่มีหน้าต่างคอนโซล
-            pyw = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
-            target = pyw if os.path.exists(pyw) else sys.executable
-            args = f'"{os.path.abspath(__file__)}" --minimized'
-        ps = (f"$s=(New-Object -ComObject WScript.Shell).CreateShortcut('{lnk}');$s.TargetPath='{target}';$s.Arguments='{args}';"
-              f"$s.WorkingDirectory='{BASE}';$s.IconLocation='{os.path.join(BASE, 'translator.ico')},0';$s.WindowStyle=7;"
-              f"$s.Description='Local Translator autostart';$s.Save()")
-        try:
-            subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, timeout=30,
-                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-            set_status("ตั้งเปิดอัตโนมัติเมื่อเปิดเครื่องแล้ว (Startup)" if os.path.exists(lnk) else "สร้างทางลัด Startup ไม่สำเร็จ")
-        except Exception as e:
-            log.warning("สร้างทางลัด Startup ไม่สำเร็จ", exc_info=True)
-            set_status("สร้างทางลัด Startup ไม่สำเร็จ: " + str(e))
+        _set_autostart(enable, FROZEN, BASE, os.path.abspath(__file__), set_status)
 
     # ==================== เลย์เอาต์มาตรฐาน ====================
     # หลักการ: (1) ทุกแถวปุ่ม/ตัวเลือกใช้ Flow = ไหลลงบรรทัดใหม่เมื่อความกว้างไม่พอ ไม่มีปุ่มถูกตัด
@@ -252,30 +225,8 @@ def run_gui(minimized=False):
     model_cb = ttk.Combobox(f_model, textvariable=model_var, state="readonly", width=36); model_cb.pack(side="left", padx=(4, 0))
     row2.add(f_model)
 
-    API_TAG = "☁ "   # รายการโมเดลออนไลน์ในช่องโมเดลขึ้นต้นด้วยเครื่องหมายนี้
-
-    def api_configured():
-        a = settings.get("api") or {}
-        return bool(a.get("base") and a.get("key") and a.get("model"))
-
-    def use_backend(mode):
-        """สลับเส้นทางที่ใช้จริง: 'local' หรือ 'api'"""
-        a = settings.get("api") or {}
-        BACKEND.update(mode=mode, base=a.get("base", ""), key=a.get("key", ""), model=a.get("model", ""))
-        st["backend"] = mode
-        if mode == "api":
-            st["model"] = a.get("model", "")   # ให้ปุ่มแปล/ถามผ่านการตรวจ "มีโมเดล" (chat_stream ใช้ BACKEND['model'] เอง)
-
-    def on_model_change(_=None):
-        name = model_var.get()
-        if name.startswith(API_TAG):
-            use_backend("api"); settings["model"] = name; save_settings()
-            set_status(f"ใช้โมเดลออนไลน์ {BACKEND['model']} ผ่าน API"); return
-        use_backend("local")
-        st["model"] = name; settings["model"] = name; save_settings()
-        threading.Thread(target=warm_up, args=(st["model"],), daemon=True).start()
-        set_status(f"กำลังโหลด {st['model']} เข้า GPU ...")
-    model_cb.bind("<<ComboboxSelected>>", on_model_change)
+    # ---------- เชื่อมต่อ/สลับเส้นทางโมเดล (ดู model_connection.py) - สร้างจริงทีหลังหลัง start_translate
+    # ถูกนิยามแล้ว (ใช้ใน on_ready callback ของ TRANSLATOR_SPEAK_DEMO)
 
     row3 = Flow(opts); row3.pack(fill="x", pady=(2, 0))
     topmost_var = tk.BooleanVar(value=settings["topmost"])
@@ -305,7 +256,7 @@ def run_gui(minimized=False):
     # ---------- แถวปุ่มหลัก (จองที่ด้านล่าง เหนือแถบสถานะ ไหลลงบรรทัดใหม่ได้)
     btns = Flow(bottom_box, padding=(10, 6, 10, 2)); btns.pack(fill="x")
     translate_btn = ttk.Button(btns, text="แปล  (Ctrl+Enter)", style="Big.TButton", command=lambda: start_translate()); btns.add(translate_btn)
-    stop_btn = ttk.Button(btns, text="หยุด", command=lambda: (worker["stop"].set(), stop_speech(), set_status("หยุดแล้ว"))); btns.add(stop_btn)  # หยุดทั้งการแปลและเสียงอ่าน ใช้ได้ตลอด
+    stop_btn = ttk.Button(btns, text="หยุด", command=lambda: (worker["stop"].set(), speech.stop_speech(), set_status("หยุดแล้ว"))); btns.add(stop_btn)  # หยุดทั้งการแปลและเสียงอ่าน ใช้ได้ตลอด
     btns.add(ttk.Button(btns, text="แปลอีกสำนวน", command=lambda: start_translate(variant=True)))
     btns.add(ttk.Button(btns, text="⇄ สลับ", command=lambda: swap()))
     btns.add(ttk.Button(btns, text="วาง+แปล", command=lambda: clip_hotkey.paste_and_translate()))
@@ -329,8 +280,8 @@ def run_gui(minimized=False):
     dst.pack(fill="both", expand=True)
 
     # ---------- แถวเสียงอ่าน (ฟังก์ชันจากโปรเจกต์ yt)
-    tts_row.add(ttk.Button(tts_row, text="🔊 อ่านคำแปล", command=lambda: speak_text(dst.get("1.0", "end"))), padx=(0, 4))
-    tts_row.add(ttk.Button(tts_row, text="⏹", width=3, command=lambda: stop_speech()), padx=(0, 8))
+    tts_row.add(ttk.Button(tts_row, text="🔊 อ่านคำแปล", command=lambda: speech.speak_text(dst.get("1.0", "end"))), padx=(0, 4))
+    tts_row.add(ttk.Button(tts_row, text="⏹", width=3, command=lambda: speech.stop_speech()), padx=(0, 8))
     voice_names = list(TTS_VOICES.keys())
     clone_profiles = list_clone_profiles()
     voice_names += [f"โคลน: {p.get('name', p['id'])}" for p in clone_profiles]
@@ -349,7 +300,7 @@ def run_gui(minimized=False):
     history_panel = HistoryPanel(root, hist_btn, bottom_box, small_font, history, src, dst)
 
     # ==================== Q&A: ถามโมเดลเกี่ยวกับข้อความหลังแปล (ดู qa_panel.py) ====================
-    # สร้างจริงหลัง stop_speech()/speak_text() ถูกนิยามแล้ว (ดูท้ายฟังก์ชัน หลังบล็อกเสียงอ่าน)
+    # สร้างจริงหลัง speech (SpeechController) ถูกสร้างแล้ว (ดูท้ายฟังก์ชัน หลังบล็อกเสียงอ่าน)
 
     # ---------- actions
     def current_direction(text):
@@ -376,10 +327,10 @@ def run_gui(minimized=False):
         msgs = build_messages(text, s, d, level, hits, variant)
         src_lbl.set(f"ข้อความต้นทาง ({LANGS[s]})"); dst_lbl.set(f"คำแปล ({LANGS[d]})")
         dst.delete("1.0", "end")
-        stop_speech()
+        speech.stop_speech()
         qa_panel.clear()               # ข้อความใหม่ -> ล้างบทสนทนาถาม-ตอบเดิม
         if autospeak_var.get():
-            stream_speak_begin(d)      # อ่านประโยคแรกทันทีที่แปลเสร็จ ไม่ต้องรอทั้งหมด
+            speech.stream_speak_begin(d)      # อ่านประโยคแรกทันทีที่แปลเสร็จ ไม่ต้องรอทั้งหมด
         last_src["text"] = text        # จำข้อความที่กำลังแปล ถ้าต้นทางเปลี่ยนไปจากนี้จะล้างกล่องแปล/คำตอบ
         worker["stop"].clear(); worker["busy"] = True
         translate_btn.state(["disabled"]); stop_btn.state(["!disabled"])
@@ -420,105 +371,15 @@ def run_gui(minimized=False):
             st["qa_demo_done"] = True
             root.after(500, lambda: qa_panel.ask(qa_demo))
         if worker["stop"].is_set():
-            stop_speech()
+            speech.stop_speech()
         else:
-            stream_speak_end(result)
+            speech.stream_speak_end(result)
 
-    # ---------- เสียงอ่าน: แบ่งท่อน สร้างขนาน เล่นทันทีที่ท่อนแรกเสร็จ (เสียงเก่าถูกหยุดก่อนเสมอ ไม่ซ้อนกัน)
-    replacements = load_replacements()
-
-    def cleanup_tts_tmp():
-        """ลบไฟล์เสียงชั่วคราวที่เก่ากว่า 1 วัน"""
-        try:
-            cutoff = time.time() - 86400
-            for f in os.listdir(TTS_TMP):
-                p = os.path.join(TTS_TMP, f)
-                if os.path.isfile(p) and os.path.getmtime(p) < cutoff:
-                    os.remove(p)
-        except Exception:
-            pass
-    threading.Thread(target=cleanup_tts_tmp, daemon=True).start()
-    pipeline = TtsPipeline(lambda kind, msg: q.put(("tts_event", kind, msg)))
-
-    speak = {"on": False, "buf": "", "lang": "th"}   # สถานะการอ่านแบบสตรีมระหว่างแปล
-
-    def speech_config(lang):
-        """เลือกเสียงตามภาษาของข้อความ (edge-tts ไม่ส่งเสียงถ้าเสียงกับภาษาไม่ตรงกัน) คืน (voice, rate, clone_id, ชื่อที่แสดง)"""
-        name = tts_voice_var.get()
-        clone_id = clone_ids.get(name)
-        base_voice = TTS_VOICES.get(name, ("th-TH-PremwadeeNeural", "th"))[0] if not clone_id else "th-TH-NiwatNeural"
-        voice = base_voice if lang == "th" else EN_VOICES.get(base_voice, "en-US-JennyNeural")
-        return voice, TTS_RATES.get(tts_rate_var.get(), "+0%"), (clone_id if lang == "th" else None), name
-
-    def feed_sentence(text, lang):
-        text = clean_for_tts(text)
-        if not text:
-            return
-        if lang == "th":
-            text = apply_replacements(text, replacements)
-        pipeline.feed(text)
-
-    def speak_text(text):
-        """ปุ่ม 🔊: อ่านทั้งข้อความ แบ่งเป็นประโยค เริ่มเล่นทันทีที่ประโยคแรกเสร็จ"""
-        text = clean_for_tts(text or "")
-        if not text:
-            return
-        stop_speech()
-        lang = detect_lang(text)
-        voice, rate, clone_id, name = speech_config(lang)
-        pipeline.begin(voice, rate, clone_id)
-        # เสียงโคลนใช้เวลาต่อครั้งนานมาก จึงส่งทั้งก้อนเดียว ส่วนเสียงปกติแบ่งประโยคเพื่อให้เริ่มได้เร็ว
-        chunks = [text] if clone_id else split_tts_chunks(text)
-        set_status(f"กำลังสร้างเสียง ({name}{' · โคลน' if clone_id else ''}) {len(chunks)} ท่อน ...")
-        for c in chunks:
-            feed_sentence(c, lang)
-        pipeline.finish()
-
-    def stream_speak_begin(lang):
-        """เริ่มอ่านตั้งแต่ประโยคแรกที่แปลเสร็จ (เรียกตอนเริ่มแปล เมื่อเปิด 'อ่านอัตโนมัติ')"""
-        voice, rate, clone_id, name = speech_config(lang)
-        pipeline.begin(voice, rate, clone_id)
-        speak.update(on=True, buf="", lang=lang, clone=bool(clone_id))
-
-    def stream_speak_piece(piece):
-        if not speak["on"]:
-            return
-        speak["buf"] += piece
-        if speak["clone"]:
-            return                                   # โคลน: รอจบแล้วอ่านทีเดียว
-        sents, speak["buf"] = pop_sentences(speak["buf"])
-        for s in sents:
-            feed_sentence(s, speak["lang"])
-
-    def stream_speak_end(full_text):
-        if not speak["on"]:
-            return
-        speak["on"] = False
-        if speak["clone"]:
-            feed_sentence(clean_output(full_text), speak["lang"])
-        else:
-            sents, _ = pop_sentences(speak["buf"], final=True)
-            for s in sents:
-                feed_sentence(s, speak["lang"])
-        speak["buf"] = ""
-        pipeline.finish()
-
-    def stop_speech():
-        speak["on"] = False; speak["buf"] = ""
-        pipeline.stop()
+    # ---------- เสียงอ่าน: แบ่งท่อน สร้างขนาน เล่นทันทีที่ท่อนแรกเสร็จ (ดู speech_controller.py)
+    speech = SpeechController(q, set_status, tts_voice_var, tts_rate_var, clone_ids, st)
 
     qa_panel = QAPanel(root, btns, bottom_box, settings, save_settings, set_status,
-                       text_font, small_font, worker, st, src, dst, q, speak_text, stop_speech)
-
-    def on_tts_event(kind, msg):
-        if st.get("demo_t0"):
-            print(f"[demo] {time.time() - st['demo_t0']:5.1f}s  {kind}: {msg}", file=sys.stderr, flush=True)
-        if kind == "status":
-            set_status(msg)
-        elif kind == "done":
-            set_status(msg)
-        elif kind == "error":
-            set_status("เสียงอ่านไม่สำเร็จ: " + msg[:140])
+                       text_font, small_font, worker, st, src, dst, q, speech.speak_text, speech.stop_speech)
 
     # ---------- ไอคอนลอยเมื่อเลือกข้อความ: พื้นโปร่งใส เด้งขึ้นลง เปลี่ยนสีวน (ดู float_icon.py)
     float_icon = FloatIcon(root, BASE, fam, q, worker, float_var)
@@ -531,15 +392,15 @@ def run_gui(minimized=False):
                 if kind == "piece":
                     dst.insert("end", item[1]); dst.see("end")
                     if item[1]:
-                        stream_speak_piece(item[1])
+                        speech.stream_speak_piece(item[1])
                 elif kind == "done":
                     worker["busy"] = False; translate_btn.state(["!disabled"])
                     finish(*item[1:])
                 elif kind == "error":
                     worker["busy"] = False; translate_btn.state(["!disabled"])
-                    stop_speech(); set_status("ผิดพลาด: " + item[1][:200])
+                    speech.stop_speech(); set_status("ผิดพลาด: " + item[1][:200])
                 elif kind == "models":
-                    on_models(item[1])
+                    model_conn.on_models(item[1])
                 elif kind == "hotkey":
                     clip_hotkey.hotkey_captured()
                 elif kind == "select":
@@ -547,7 +408,7 @@ def run_gui(minimized=False):
                 elif kind == "hide_float":
                     float_icon.maybe_hide()
                 elif kind == "tts_event":
-                    on_tts_event(item[1], item[2])
+                    speech.on_tts_event(item[1], item[2])
                 elif kind == "qa_piece":
                     qa_panel.on_piece(item[1])
                 elif kind == "qa_done":
@@ -573,37 +434,10 @@ def run_gui(minimized=False):
     clip_hotkey = ClipboardHotkey(root, st, src, dst, set_status, start_translate, worker,
                                   settings, clip_var, hotkey_var, topmost_var, q)
 
-    def on_models(models):
-        """models = รายการโมเดลในเครื่อง (None = ไม่พบ Ollama) -> เลือกเส้นทางตามโหมดใน ⚙ ผู้ให้บริการ"""
-        a = settings.get("api") or {}
-        mode = a.get("mode", "auto")
-        local_ok = bool(models)
-        api_ok = api_configured()
-        api_entry = (API_TAG + a.get("model", "")) if api_ok else None
-        values = list(models or []) + ([api_entry] if api_entry else [])
-        st["models"] = list(models or []); model_cb["values"] = values
-        want_api = (mode == "api" and api_ok) or (mode == "auto" and not local_ok and api_ok)
-        if want_api:
-            use_backend("api"); model_var.set(api_entry)
-            why = "" if mode == "api" else " (ไม่พบโมเดลในเครื่อง จึงสลับให้อัตโนมัติ)"
-            set_status(f"พร้อมใช้งาน · โมเดลออนไลน์ {a.get('model')} ผ่าน API{why}")
-        elif local_ok:
-            use_backend("local")
-            saved = settings.get("model", "")
-            chosen = saved if saved in models else pick_model(models)
-            model_var.set(chosen); st["model"] = chosen
-            note = "" if chosen.startswith("scb10x/typhoon2.5") else " (แนะนำ typhoon2.5-qwen3-4b สำหรับภาษาไทย)"
-            set_status(f"พร้อม · โมเดล {chosen}{note} · กำลังอุ่นเครื่องเข้า GPU ...")
-            threading.Thread(target=lambda: (warm_up(chosen), q.put(("piece", ""))), daemon=True).start()
-            root.after(1500, lambda: set_status(f"พร้อมใช้งาน · {chosen}") if not worker["busy"] else None)
-        else:
-            use_backend("local"); st["model"] = ""
-            model_var.set("ไม่พบโมเดล" if models is None else "ยังไม่มีโมเดลในเครื่อง")
-            set_status(("เชื่อมต่อ Ollama ไม่ได้" if models is None else "Ollama ทำงานแต่ยังไม่มีโมเดล")
-                       + " - กด ⚙ ผู้ให้บริการ เพื่อดาวน์โหลดโมเดลในเครื่อง หรือใส่ API key ใช้โมเดลออนไลน์")
-            return
+    def on_speak_demo_ready(models):
+        """สำหรับทดสอบ: TRANSLATOR_SPEAK_DEMO=<ข้อความ> -> แปล + อ่านอัตโนมัติด้วยเสียงที่ระบุ"""
         demo_text = os.environ.get("TRANSLATOR_SPEAK_DEMO")
-        if demo_text and not st.get("demo_started"):   # สำหรับทดสอบ: แปล + อ่านอัตโนมัติด้วยเสียงที่ระบุ
+        if demo_text and not st.get("demo_started"):
             st["demo_started"] = True
             voice_pick = os.environ.get("TRANSLATOR_SPEAK_VOICE")
 
@@ -615,9 +449,10 @@ def run_gui(minimized=False):
                 start_translate()
             root.after(4000, demo)
 
-    def connect():
-        set_status("กำลังเชื่อมต่อ Ollama (ถ้ายังไม่เปิดจะเปิดให้เอง) ...")
-        threading.Thread(target=lambda: q.put(("models", ensure_ollama())), daemon=True).start()
+    # ---------- เชื่อมต่อ/สลับเส้นทางโมเดล (ดู model_connection.py)
+    model_conn = ModelConnection(root, settings, save_settings, st, worker, q, model_cb, model_var,
+                                 set_status, on_ready=on_speak_demo_ready)
+    connect = model_conn.connect
 
     # ---------- ⚙ ผู้ให้บริการ: ตั้งค่า API ออนไลน์สำรอง (ดู provider_dialog.py)
     def show_provider_dialog():
@@ -643,13 +478,13 @@ def run_gui(minimized=False):
         if last_src["text"] is not None and cur != last_src["text"]:
             last_src["text"] = None
             dst.delete("1.0", "end"); qa_panel.clear()
-            stop_speech()
+            speech.stop_speech()
     src.bind("<<Modified>>", on_src_modified)
     root.bind("<Escape>", lambda e: worker["stop"].set())
     root.bind("<F5>", lambda e: connect())
     src.bind("<Control-a>", lambda e: (src.tag_add("sel", "1.0", "end"), "break"))
     dst.bind("<Control-a>", lambda e: (dst.tag_add("sel", "1.0", "end"), "break"))
-    root.protocol("WM_DELETE_WINDOW", lambda: (worker["stop"].set(), stop_speech(), save_settings(), root.destroy()))
+    root.protocol("WM_DELETE_WINDOW", lambda: (worker["stop"].set(), speech.stop_speech(), save_settings(), root.destroy()))
 
     apply_topmost()
     connect()
