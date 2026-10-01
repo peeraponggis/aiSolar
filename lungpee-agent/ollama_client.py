@@ -136,22 +136,27 @@ def chat(model, messages, temperature=0.4, tools=None, stop_event=None):
     }
 
 
-def stream_chat(model, messages, temperature=0.4, stop_event=None):
-    """generator: yield ข้อความทีละส่วน; คืน stats ผ่าน StopIteration.value
-    ใช้สำหรับคำตอบสุดท้าย (ไม่มี tool_calls แล้ว) ที่อยากให้เริ่มพูด/แสดงผลได้ทันทีโดยไม่ต้องรอทั้งก้อน"""
-    body = json.dumps({
+def stream_chat(model, messages, temperature=0.4, tools=None, stop_event=None):
+    """generator: yield ข้อความทีละส่วนทันทีที่โมเดลสร้างออกมา (ไม่ต้องรอทั้งก้อนเหมือน chat())
+    เพื่อให้เริ่มพูด/แสดงผลได้เร็วที่สุด - ลดความหน่วงที่ผู้ใช้รู้สึกได้ชัดตอนคำตอบยาว คืน
+    {"tool_calls": [...], "stats": {...}} ผ่าน StopIteration.value (Ollama ส่ง tool_calls มาใน
+    message ก้อนสุดท้ายของสตรีมถ้าโมเดลตัดสินใจเรียกเครื่องมือแทนที่จะตอบเป็นข้อความ)"""
+    body = {
         "model": model, "messages": messages, "stream": True, "think": False,
         "keep_alive": KEEP_ALIVE,
         "options": {"num_ctx": NUM_CTX, "temperature": temperature, "top_p": 0.9, "repeat_penalty": 1.05},
-    }).encode("utf-8")
-    req = urllib.request.Request(OLLAMA_URL + "/api/chat", data=body, headers={"Content-Type": "application/json"})
-    stats = {}
+    }
+    if tools:
+        body["tools"] = tools
+    data = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(OLLAMA_URL + "/api/chat", data=data, headers={"Content-Type": "application/json"})
+    result = {"tool_calls": [], "stats": {}}
     try:
         resp = urllib.request.urlopen(req, timeout=600)
     except urllib.error.HTTPError as e:
         msg = e.read().decode("utf-8", "replace")
         if "think" in msg:
-            body = json.loads(body.decode("utf-8")); body.pop("think", None)
+            body.pop("think", None)
             req = urllib.request.Request(OLLAMA_URL + "/api/chat", data=json.dumps(body).encode("utf-8"),
                                          headers={"Content-Type": "application/json"})
             resp = urllib.request.urlopen(req, timeout=600)
@@ -166,12 +171,15 @@ def stream_chat(model, messages, temperature=0.4, stop_event=None):
             d = json.loads(line.decode("utf-8"))
             if "error" in d:
                 raise RuntimeError(d["error"])
-            piece = d.get("message", {}).get("content", "")
+            msg_d = d.get("message", {})
+            piece = msg_d.get("content", "")
             if piece:
                 yield piece
+            if msg_d.get("tool_calls"):
+                result["tool_calls"] = msg_d["tool_calls"]
             if d.get("done"):
-                stats = {k: d.get(k) for k in ("eval_count", "eval_duration", "load_duration", "total_duration")}
-    return stats
+                result["stats"] = {k: d.get(k) for k in ("eval_count", "eval_duration", "load_duration", "total_duration")}
+    return result
 
 
 def clean_output(text):

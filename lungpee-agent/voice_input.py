@@ -15,8 +15,15 @@ Tkinter หรือโค้ดเฉพาะโปรแกรมแปลผ
 โมเดลถูกโหลดครั้งแรกตอนเริ่มอัดเสียงครั้งแรก (lazy, ในเธรดพื้นหลัง ไม่บล็อก UI) เพื่อไม่ให้
 ผู้ที่ไม่ใช้ฟีเจอร์นี้ต้องรอโหลดฟรีๆ ตอนเปิดโปรแกรม ครั้งแรกจะดาวน์โหลดจาก Hugging Face
 (~500 MB ต้องต่ออินเทอร์เน็ต) แล้วแคชไว้ใช้ครั้งต่อไปโดยไม่ต้องโหลดซ้ำ
+
+คำศัพท์เฉพาะ (ชื่อ "ลุงพี" เอง, ชื่อโปรแกรม ฯลฯ) ที่ Whisper มักฟังผิด ("ลุงพี" เคยถูกถอดเป็น
+"ลงคี่"/"ลงพี่" ตอนทดสอบจริง) แก้โดยส่ง initial_prompt ให้โมเดล - เป็นฟีเจอร์มาตรฐานของ Whisper
+ที่ช่วย "โน้มเอียง" คำศัพท์/โทนการถอดเสียงไปทางคำที่กำหนดไว้ ไม่ใช่การเทรนโมเดลใหม่หรือเก็บเสียง
+ผู้ใช้จริงๆ (เบากว่ามากและไม่ต้องมีขั้นตอนอัดเสียงฝึกโมเดลแยก) รายชื่อคำอยู่ใน voice_vocab.txt
+แก้ไฟล์นั้นเพิ่มคำเองได้เลยโดยไม่ต้องแก้โค้ด
 """
 import logging
+import os
 import threading
 
 import numpy as np
@@ -28,6 +35,18 @@ MODEL_SIZE = "small"
 SAMPLE_RATE = 16000
 MAX_SECONDS = 30          # กันอัดค้างถ้าผู้ใช้ลืมกดหยุด
 MIN_SECONDS = 0.3         # สั้นกว่านี้ถือว่าไม่ได้พูดอะไร (กดพลาด/ปล่อยเร็วไป)
+VOCAB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_vocab.txt")
+
+
+def _load_vocab_prompt():
+    """อ่านรายการคำศัพท์จาก voice_vocab.txt (บรรทัดละคำ/วลี, # นำหน้า = คอมเมนต์) มาต่อกันเป็น
+    ข้อความเดียวให้ Whisper ใช้เป็น initial_prompt คืน None ถ้าไม่มีไฟล์/ไม่มีคำเลย"""
+    try:
+        with open(VOCAB_FILE, "r", encoding="utf-8") as f:
+            words = [line.strip() for line in f if line.strip() and not line.strip().startswith("#")]
+        return " ".join(words) if words else None
+    except Exception:
+        return None
 
 _model = None
 _model_lock = threading.Lock()
@@ -102,7 +121,8 @@ class VoiceInput:
         def job():
             try:
                 model = _get_model()
-                segments, _info = model.transcribe(audio, language=None, vad_filter=True)
+                segments, _info = model.transcribe(audio, language=None, vad_filter=True,
+                                                   initial_prompt=_load_vocab_prompt())
                 text = "".join(seg.text for seg in segments).strip()
                 if text:
                     self.q.put(("stt_done", text))
