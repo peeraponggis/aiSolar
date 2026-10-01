@@ -551,6 +551,12 @@ def run_gui(minimized=False):
                     qa_panel.on_done(item[1], item[2], item[3])
                 elif kind == "qa_error":
                     qa_panel.on_error(item[1])
+                elif kind == "stt_recording":
+                    qa_panel.on_stt_recording(item[1])
+                elif kind == "stt_done":
+                    qa_panel.on_stt_done(item[1])
+                elif kind == "stt_error":
+                    qa_panel.on_stt_error(item[1])
         except queue.Empty:
             pass
         root.after(60, pump)
