@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------- โมดูลย่อย (แยกจาก translator.py)
 from app_log import setup_logging
 from flow_layout import Flow
+from float_icon import FloatIcon
 from qa_panel import QAPanel
 from engine import (
     API_PRESETS, BACKEND, DEFAULT_MODEL, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
@@ -50,10 +51,7 @@ from tts_engine import (
     apply_replacements, clean_for_tts, list_clone_profiles, load_replacements,
     pop_sentences, split_tts_chunks, tts_synthesize,
 )
-from win_hooks import (
-    GA_ROOT, KEYEVENTF_KEYUP, VK_MENU,
-    build_float_frames, make_noactivate, send_ctrl_c, win_event_thread,
-)
+from win_hooks import KEYEVENTF_KEYUP, VK_MENU, send_ctrl_c, win_event_thread
 
 # ---------------------------------------------------------------- GUI
 MUTEX_NAME = "Local\\ThaiLocalTranslator.single"
@@ -544,87 +542,8 @@ def run_gui(minimized=False):
         elif kind == "error":
             set_status("เสียงอ่านไม่สำเร็จ: " + msg[:140])
 
-    # ---------- ไอคอนลอยเมื่อเลือกข้อความ: พื้นโปร่งใส เด้งขึ้นลง เปลี่ยนสีวน
-    FLOAT_KEY = "#010203"          # สีคีย์ที่ Windows ทำให้โปร่งใส
-    FLOAT_SIZE, FLOAT_FRAMES = 56, 16
-    frames = build_float_frames(FLOAT_SIZE, FLOAT_FRAMES, FLOAT_KEY)
-    if not frames:
-        try:
-            frames = [tk.PhotoImage(file=os.path.join(BASE, "translator.png")).subsample(5)]
-        except Exception:
-            frames = []
-    flt = tk.Toplevel(root); flt.title("translator-float-icon"); flt.overrideredirect(True); flt.attributes("-topmost", True); flt.withdraw()
-    flt.configure(background=FLOAT_KEY)
-    try:
-        flt.attributes("-transparentcolor", FLOAT_KEY)
-    except Exception:
-        pass
-    flt_btn = tk.Label(flt, image=frames[0] if frames else None, text="" if frames else "แปล", background=FLOAT_KEY,
-                       foreground="#56E0D8", cursor="hand2", borderwidth=0, padx=0, pady=0, font=(fam, 10, "bold"))
-    flt_btn.pack()
-    flt_state = {"hwnd": None, "timer": None, "shown_at": 0, "anim": None, "x": 0, "y": 0, "tick": 0}
-
-    def animate_float():
-        if flt.state() == "withdrawn":
-            flt_state["anim"] = None; return
-        t = flt_state["tick"] = flt_state["tick"] + 1
-        if frames:
-            flt_btn.configure(image=frames[t % len(frames)])          # เปลี่ยนสีวน
-        bounce = int(abs(math.sin(t / 5.0)) * 10)                        # เด้งขึ้นลง 10 px
-        flt.geometry(f"+{flt_state['x']}+{flt_state['y'] - bounce}")
-        flt_state["anim"] = root.after(70, animate_float)
-
-    def float_hwnd():
-        if flt_state["hwnd"] is None:
-            try:
-                flt_state["hwnd"] = make_noactivate(flt.winfo_id())
-            except Exception:
-                flt_state["hwnd"] = 0
-        return flt_state["hwnd"]
-
-    def show_float(x, y):
-        if not float_var.get() or worker["busy"]:
-            return
-        sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
-        w = h = FLOAT_SIZE
-        px, py = min(x + 14, sw - w - 4), min(y + 18, sh - h - 4)
-        flt_state["x"], flt_state["y"] = px, py
-        flt.geometry(f"+{px}+{py}"); flt.deiconify(); flt.lift(); flt.attributes("-topmost", True)
-        float_hwnd()
-        flt_state["shown_at"] = time.time()
-        if flt_state["timer"]:
-            root.after_cancel(flt_state["timer"])
-        flt_state["timer"] = root.after(5000, hide_float)
-        if not flt_state["anim"]:
-            animate_float()
-
-    def hide_float():
-        if flt_state["timer"]:
-            root.after_cancel(flt_state["timer"]); flt_state["timer"] = None
-        if flt_state["anim"]:
-            root.after_cancel(flt_state["anim"]); flt_state["anim"] = None
-        flt.withdraw()
-
-    def float_clicked(_=None):
-        hide_float()
-        threading.Thread(target=lambda: (send_ctrl_c(), time.sleep(0.25), q.put(("hotkey",))), daemon=True).start()
-    flt_btn.bind("<Button-1>", float_clicked)
-
-    def is_own_window(fg_hwnd, x, y):
-        """คลิกในหน้าต่างโปรแกรมเราหรือบนไอคอนลอย ไม่ต้องแสดงไอคอน"""
-        try:
-            user32 = ctypes.windll.user32
-            ours = user32.GetAncestor(root.winfo_id(), GA_ROOT)
-            if fg_hwnd == ours:
-                return True
-            if flt.state() != "withdrawn":
-                fx, fy = flt.winfo_rootx(), flt.winfo_rooty()
-                if fx - 2 <= x <= fx + flt.winfo_width() + 2 and fy - 2 <= y <= fy + flt.winfo_height() + 2:
-                    return True
-        except Exception:
-            pass
-        return False
-
+    # ---------- ไอคอนลอยเมื่อเลือกข้อความ: พื้นโปร่งใส เด้งขึ้นลง เปลี่ยนสีวน (ดู float_icon.py)
+    float_icon = FloatIcon(root, BASE, fam, q, worker, float_var)
 
     def pump():
         try:
@@ -646,10 +565,9 @@ def run_gui(minimized=False):
                 elif kind == "hotkey":
                     hotkey_captured()
                 elif kind == "select":
-                    show_float(item[1], item[2])
+                    float_icon.show(item[1], item[2])
                 elif kind == "hide_float":
-                    if flt.state() != "withdrawn" and time.time() - flt_state["shown_at"] > 0.3:
-                        hide_float()
+                    float_icon.maybe_hide()
                 elif kind == "tts_event":
                     on_tts_event(item[1], item[2])
                 elif kind == "qa_piece":
@@ -969,7 +887,7 @@ def run_gui(minimized=False):
     connect()
     threading.Thread(target=win_event_thread, daemon=True,
                      args=(on_hotkey, lambda x, y: q.put(("select", x, y)), lambda: q.put(("hide_float",)),
-                           is_own_window, hotkey_status)).start()
+                           float_icon.is_own_window, hotkey_status)).start()
     root.after(60, pump)
     root.after(1000, clip_poll)
     src.focus_set()
@@ -979,10 +897,10 @@ def run_gui(minimized=False):
     if os.environ.get("TRANSLATOR_PROVIDER_DEMO"):   # สำหรับทดสอบ: เปิดหน้าต่างตั้งค่าผู้ให้บริการ
         root.after(2500, open_provider_dialog)
     if os.environ.get("TRANSLATOR_FLOAT_DEMO"):  # สำหรับทดสอบ: โชว์ไอคอนลอยกลางจอซ้ำทุก 4 วินาที
-        print("float frames:", len(frames), file=sys.stderr)
+        print("float frames:", len(float_icon.frames), file=sys.stderr)
 
         def demo():
-            show_float(root.winfo_screenwidth() // 2, root.winfo_screenheight() // 2); root.after(4000, demo)
+            float_icon.show(root.winfo_screenwidth() // 2, root.winfo_screenheight() // 2); root.after(4000, demo)
         root.after(1500, demo)
     if minimized:
         root.iconify()
