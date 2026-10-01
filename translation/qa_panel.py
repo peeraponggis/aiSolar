@@ -19,6 +19,7 @@ from tkinter import ttk
 
 from engine import DEFAULT_QUESTIONS, build_qa_messages, chat_stream, clean_output, detect_lang
 from flow_layout import Flow
+from voice_input import VoiceInput
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class QAPanel:
         self.state = {"busy": False, "stop": threading.Event(), "history": [], "open": False,
                       "edit": False, "question": ""}
         self.pill_widgets = []
+        self.voice = VoiceInput(self.q)
 
         self.btn = ttk.Button(btns, text="❓ ถามโมเดล ▾", style="Big.TButton", command=self.toggle)
         btns.add(self.btn, padx=(12, 0))
@@ -51,6 +53,7 @@ class QAPanel:
         row = Flow(self.frame); row.pack(fill="x", pady=(4, 2))
         self.inp = ttk.Entry(row, width=48); row.add(self.inp, padx=(0, 8))
         self.ask_btn = ttk.Button(row, text="ถาม", command=lambda: self.ask(self.inp.get())); row.add(self.ask_btn)
+        self.mic_btn = ttk.Button(row, text="🎤 พูดถาม", command=self.toggle_voice); row.add(self.mic_btn)
         row.add(ttk.Button(row, text="+ บันทึกเป็นปุ่ม", command=lambda: self.add_question(self.inp.get())))
         self.edit_btn = ttk.Button(row, text="แก้ไขปุ่ม", command=self.toggle_edit); row.add(self.edit_btn)
         bar = Flow(self.frame); bar.pack(fill="x", pady=(4, 0), side="bottom")   # แถวปุ่มอยู่ล่างสุดเสมอ ไม่ถูกช่องคำตอบดันหลุด
@@ -136,6 +139,7 @@ class QAPanel:
     def set_busy(self, busy):
         self.state["busy"] = busy
         self.ask_btn.state(["disabled"] if busy else ["!disabled"])
+        self.mic_btn.state(["disabled"] if busy else ["!disabled"])
         for b in self.pill_widgets:
             try:
                 b.state(["disabled"] if busy else ["!disabled"])
@@ -148,6 +152,23 @@ class QAPanel:
     def clear(self):
         """ใช้ตอนข้อความต้นทางเปลี่ยน (เริ่มแปลใหม่) - ล้างทั้งกล่องคำตอบและบทสนทนาเดิม"""
         self.out.delete("1.0", "end"); self.reset()
+
+    # ---------- ถามด้วยเสียง (push-to-talk ดู voice_input.py)
+    def toggle_voice(self):
+        if self.state["busy"]:
+            self.set_status("กำลังตอบคำถามก่อนหน้าอยู่ รอให้เสร็จก่อนถามด้วยเสียง"); return
+        self.voice.toggle()
+
+    def on_stt_recording(self, active):
+        self.mic_btn.config(text="⏹ หยุด (กำลังฟัง...)" if active else "🎤 พูดถาม")
+        self.set_status("กำลังฟัง... พูดคำถามแล้วกดปุ่มอีกครั้งเพื่อหยุด" if active else "กำลังถอดเสียงเป็นข้อความ ...")
+
+    def on_stt_done(self, text):
+        self.inp.delete(0, "end"); self.inp.insert(0, text)
+        self.ask(text)
+
+    def on_stt_error(self, msg):
+        self.set_status("ถอดเสียงไม่สำเร็จ: " + msg[:200])
 
     def ask(self, question):
         question = (question or "").strip()
