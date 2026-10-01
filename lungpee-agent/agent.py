@@ -12,6 +12,7 @@ schema ทั้งหมดใน tool_registry.py และด่านขอ�
 เพื่อหยุด ลุงพีจะถอดเสียง ส่งเข้าโมเดล Ollama ในเครื่อง แล้วพูดคำตอบกลับ หรือคลิกขวาที่ไอคอน
 ในถาดระบบเพื่อเริ่ม/หยุดพูดด้วยเมาส์แทนคีย์ลัดก็ได้
 """
+import ctypes
 import json
 import logging
 import os
@@ -32,6 +33,19 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 ICON_PATH = os.path.join(BASE, "lungpee-agent.ico")
 MAX_HISTORY_TURNS = 10   # เก็บบทสนทนาล่าสุดไว้กี่คู่ ถาม-ตอบ (กัน context ยาวเกิน NUM_CTX)
 MAX_TOOL_TURNS = 5       # กันลูปเรียกเครื่องมือไม่รู้จบถ้าโมเดลสับสน
+MUTEX_NAME = "Local\\LungpeeAgent.single"
+
+
+def acquire_single_instance():
+    """กันเปิดซ้อนหลายชุด (ไม่งั้นจะได้คีย์ลัด/ไอคอนถาดระบบซ้อนกันหลายตัว คีย์ลัดใช้ได้แค่ตัวแรกที่เปิด
+    ทำให้งงว่าทำไมพูดแล้วไม่ตอบ) แพทเทิร์นเดียวกับ Local Translator's acquire_single_instance() แต่
+    ตัวนี้ไม่มีหน้าต่างหลักให้ดึงขึ้นมาแทน (เป็นแค่ไอคอนถาดระบบ) จึงแค่แจ้งเตือนแล้วปิดตัวที่เปิดซ้ำ"""
+    k32 = ctypes.windll.kernel32
+    k32.CreateMutexW.restype = ctypes.c_void_p
+    handle = k32.CreateMutexW(None, False, MUTEX_NAME)
+    if k32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+        return False
+    return handle
 
 SYSTEM_PROMPT = (
     "คุณชื่อ \"ลุงพี\" เป็นผู้ช่วย AI ที่ทำงานในเครื่องของผู้ใช้ ตอบเป็นภาษาไทยเป็นหลัก "
@@ -43,7 +57,11 @@ SYSTEM_PROMPT = (
     "ต้องเรียก list_ui_controls ก่อนเพื่อดูชื่อปุ่มจริง แล้วเรียก click_control ตามชื่อที่เจอจริง ห้ามเดาชื่อเอง /no_think"
 )
 
-st = {"model": "", "voice": "เปรมวดี (หญิง)", "rate": "ปกติ", "history": []}
+st = {"model": "", "voice": "ปัตตรา (ในเครื่อง เร็ว ออฟไลน์)", "rate": "ปกติ", "history": []}
+# ใช้เสียงออฟไลน์ (SAPI) เป็นค่าเริ่มต้น ไม่ใช่ edge-tts: ทดสอบมาตลอดเซสชันนี้ (ทั้งใน Local
+# Translator และลุงพี) พบว่า edge-tts เชื่อมต่อไม่ติดบ่อยในเครื่อง/เน็ตนี้ ต้องลองซ้ำ 5 ครั้งก่อน
+# fallback มาเสียงออฟไลน์ ทำให้รอ 5-10+ วินาทีก่อนได้ยินเสียงทุกครั้ง - สำหรับผู้ช่วยเสียงแบบโต้ตอบ
+# สด ความเร็ว (~0.2 วินาที) สำคัญกว่าความเป็นธรรมชาติของเสียง edge-tts
 pipeline = TtsPipeline(lambda kind, msg: log.info("tts %s: %s", kind, msg))
 
 
@@ -158,6 +176,15 @@ def on_hotkey_status(hot_ok):
 
 def main():
     setup_logging()
+    if not acquire_single_instance():
+        log.warning("ลุงพีเปิดอยู่แล้ว (ดูไอคอนในถาดระบบ) - ปิดตัวที่เปิดซ้ำนี้ลง")
+        try:
+            ctypes.windll.user32.MessageBoxW(
+                0, "ลุงพีกำลังทำงานอยู่แล้วครับ ดูไอคอนในถาดระบบ (มุมขวาล่างจอ) ได้เลย",
+                "ลุงพี", 0x40)   # MB_ICONINFORMATION
+        except Exception:
+            pass
+        return
     log.info("ลุงพี agent (Phase 3: พูดคุยทั่วไป + เรียกเครื่องมือ + คลิก/พิมพ์ในโปรแกรมอื่น) เริ่มทำงาน")
     q = queue.Queue()
     voice = VoiceInput(q)
