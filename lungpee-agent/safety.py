@@ -20,8 +20,11 @@ RISK_TIER = {
     "launch_app": "A",
     "list_dir": "A",
     "read_file": "A",
+    "list_ui_controls": "A",
     "translate_file": "B",
     "write_file": "B",
+    "click_control": "B",
+    "type_text": "B",
     "run_shell": "C",
     "delete_file": "C",
 }

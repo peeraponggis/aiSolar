@@ -7,7 +7,7 @@ parameter + ตาราง dispatch เรียกฟังก์ชันจ�
 ตั้งใจให้จำนวนเครื่องมือน้อยและ schema ชัดเจน (ทีละคำสั่งต่อรอบ) ตามงานวิจัยที่สำรวจไว้ก่อน
 เริ่ม Phase 2: โมเดลขนาดเล็ก (4B) แม่นยำน้อยลงถ้าต้องเลือกจากเครื่องมือเยอะ/คลุมเครือพร้อมกัน
 """
-from tools import apps, files, shell
+from tools import apps, files, shell, ui_automation
 from tools import translate as translate_tool
 
 TOOLS = [
@@ -57,6 +57,29 @@ TOOLS = [
         }, "required": ["path"]},
     }},
     {"type": "function", "function": {
+        "name": "list_ui_controls",
+        "description": "ดูรายชื่อปุ่ม/ช่องกรอก/ตัวควบคุมทั้งหมดในหน้าต่างโปรแกรมที่กำลังโฟกัสอยู่ตอนนี้ "
+                       "เรียกก่อนเสมอเมื่อจะคลิกปุ่มหรือพิมพ์ลงช่องเฉพาะเจาะจงในโปรแกรมอื่น เพื่อดูชื่อจริงก่อนเลือก",
+        "parameters": {"type": "object", "properties": {}},
+    }},
+    {"type": "function", "function": {
+        "name": "click_control",
+        "description": "คลิกปุ่มหรือตัวควบคุมที่ชื่อตรงกับที่ระบุ ในหน้าต่างโปรแกรมที่กำลังโฟกัสอยู่ "
+                       "(ดูชื่อที่มีจริงจาก list_ui_controls ก่อนเรียกเครื่องมือนี้เสมอ)",
+        "parameters": {"type": "object", "properties": {
+            "name": {"type": "string", "description": "ชื่อปุ่ม/ตัวควบคุมที่จะคลิก (หรือบางส่วนของชื่อ)"},
+        }, "required": ["name"]},
+    }},
+    {"type": "function", "function": {
+        "name": "type_text",
+        "description": "พิมพ์ข้อความลงช่องกรอกที่ระบุชื่อ ในหน้าต่างโปรแกรมที่กำลังโฟกัสอยู่ ถ้าไม่ระบุชื่อช่อง "
+                       "จะพิมพ์ลงตำแหน่งที่กำลังโฟกัสอยู่ตอนนั้นแทน (ดูชื่อช่องที่มีจริงจาก list_ui_controls ก่อน)",
+        "parameters": {"type": "object", "properties": {
+            "text": {"type": "string", "description": "ข้อความที่จะพิมพ์"},
+            "control_name": {"type": "string", "description": "ชื่อช่องกรอกที่จะพิมพ์ลงไป (ไม่ระบุก็ได้)"},
+        }, "required": ["text"]},
+    }},
+    {"type": "function", "function": {
         "name": "translate_file",
         "description": "แปลไฟล์ข้อความเป็นภาษาไทยหรืออังกฤษ แล้วบันทึกเป็นไฟล์ใหม่ (ไม่ทับไฟล์ต้นฉบับ "
                        "เว้นแต่ระบุ output_path เป็นไฟล์เดิมเอง) ใช้แปลทีละไฟล์ - ถ้าต้องการแปลทั้งโฟลเดอร์ "
@@ -99,6 +122,18 @@ def _translate_file(args, ctx):
                                          args.get("output_path"), model=ctx.get("model"))
 
 
+def _list_ui_controls(args, ctx):
+    return ui_automation.list_ui_controls()
+
+
+def _click_control(args, ctx):
+    return ui_automation.click_control(args.get("name", ""))
+
+
+def _type_text(args, ctx):
+    return ui_automation.type_text(args.get("text", ""), args.get("control_name"))
+
+
 DISPATCH = {
     "launch_app": _launch_app,
     "run_shell": _run_shell,
@@ -107,4 +142,7 @@ DISPATCH = {
     "write_file": _write_file,
     "delete_file": _delete_file,
     "translate_file": _translate_file,
+    "list_ui_controls": _list_ui_controls,
+    "click_control": _click_control,
+    "type_text": _type_text,
 }
