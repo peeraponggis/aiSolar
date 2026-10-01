@@ -37,6 +37,7 @@ ALLOWED_APPS = {
     "notepad", "โน้ตแพด", "calculator", "calc", "เครื่องคิดเลข",
     "explorer", "file explorer", "ตัวจัดการไฟล์", "paint", "wordpad",
     "chrome", "google chrome", "edge", "msedge", "code", "vscode", "visual studio code",
+    "line", "ไลน์", "freecad", "freecad 1.1",
 }
 
 MB_YESNO, MB_ICONWARNING, MB_TOPMOST = 0x4, 0x30, 0x40000

@@ -13,9 +13,9 @@ from tools import translate as translate_tool
 TOOLS = [
     {"type": "function", "function": {
         "name": "launch_app",
-        "description": "เปิดโปรแกรมที่ติดตั้งในเครื่อง เช่น notepad, calculator, chrome, explorer",
+        "description": "เปิดโปรแกรมใดก็ได้ที่ติดตั้งในเครื่อง เช่น line, freecad, notepad, chrome",
         "parameters": {"type": "object", "properties": {
-            "name": {"type": "string", "description": "ชื่อโปรแกรมที่จะเปิด เช่น notepad, calculator, chrome"},
+            "name": {"type": "string", "description": "ชื่อโปรแกรมตามที่ผู้ใช้พูดมาตรงๆ ห้ามเปลี่ยนเป็นโปรแกรมอื่น"},
         }, "required": ["name"]},
     }},
     {"type": "function", "function": {
