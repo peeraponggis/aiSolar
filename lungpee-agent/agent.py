@@ -18,14 +18,20 @@ import logging
 import os
 import queue
 import threading
+import tkinter as tk
 
 import safety
 from app_log import setup_logging
+from avatar import AvatarWindow
 from hotkey import hotkey_thread
+from text_input import TextInputPopup
 from voice_input import VoiceInput
-from ollama_client import chat, clean_output, ensure_ollama, pick_model, warm_up
+from ollama_client import clean_output, ensure_ollama, pick_model, stream_chat, warm_up
 from tool_registry import DISPATCH, TOOLS
-from tts_engine import EN_VOICES, TTS_RATES, TTS_VOICES, TtsPipeline, clean_for_tts, detect_lang, split_tts_chunks
+from tts_engine import (
+    EN_VOICES, TTS_RATES, TTS_VOICES, TtsPipeline,
+    clean_for_tts, detect_lang, pop_sentences, split_tts_chunks,
+)
 
 log = logging.getLogger(__name__)
 
@@ -62,22 +68,94 @@ st = {"model": "", "voice": "ปัตตรา (ในเครื่อง เ
 # Translator และลุงพี) พบว่า edge-tts เชื่อมต่อไม่ติดบ่อยในเครื่อง/เน็ตนี้ ต้องลองซ้ำ 5 ครั้งก่อน
 # fallback มาเสียงออฟไลน์ ทำให้รอ 5-10+ วินาทีก่อนได้ยินเสียงทุกครั้ง - สำหรับผู้ช่วยเสียงแบบโต้ตอบ
 # สด ความเร็ว (~0.2 วินาที) สำคัญกว่าความเป็นธรรมชาติของเสียง edge-tts
-pipeline = TtsPipeline(lambda kind, msg: log.info("tts %s: %s", kind, msg))
+avatar = None       # ตั้งค่าจริงใน main() หลังสร้าง Tk root แล้ว (ดู avatar.py)
+text_popup = None   # ตั้งค่าจริงใน main() เช่นกัน (ดู text_input.py)
+
+
+def _ui(fn):
+    """เรียก fn() บนเธรดหลักของ Tkinter อย่างปลอดภัย - ถูกเรียกจากเธรดพื้นหลังหลายจุด (pump,
+    handle_command, เธรดเล่นเสียงของ TtsPipeline) ซึ่งห้ามแตะวิดเจ็ต Tkinter ตรงๆ"""
+    if avatar is not None:
+        try:
+            avatar.root.after(0, fn)
+        except Exception:
+            pass
+
+
+def _on_tts_event(kind, msg):
+    log.info("tts %s: %s", kind, msg)
+    if kind == "status":
+        _ui(lambda: avatar.show("🗣️ กำลังพูด..."))
+    elif kind in ("done", "error"):
+        _ui(avatar.hide)
+
+
+pipeline = TtsPipeline(_on_tts_event)
+
+
+def _voice_for_lang(lang):
+    base_voice = TTS_VOICES.get(st["voice"], ("th-TH-PremwadeeNeural", "th"))[0]
+    voice = base_voice if lang == "th" else EN_VOICES.get(base_voice, "en-US-JennyNeural")
+    return voice, TTS_RATES.get(st["rate"], "+0%")
 
 
 def speak(text):
+    """พูดข้อความสำเร็จรูปทั้งก้อน (ข้อความ error/แจ้งเตือนสั้นๆ) - คำตอบจริงจากโมเดลใช้
+    stream_speak_begin/piece/end ด้านล่างแทน เพื่อเริ่มพูดได้ทันทีตั้งแต่ประโยคแรกไม่ต้องรอทั้งก้อน"""
     text = clean_for_tts(text)
     if not text:
+        _ui(avatar.hide)
         return
     pipeline.stop()
-    lang = detect_lang(text)
-    base_voice = TTS_VOICES.get(st["voice"], ("th-TH-PremwadeeNeural", "th"))[0]
-    voice = base_voice if lang == "th" else EN_VOICES.get(base_voice, "en-US-JennyNeural")
-    rate = TTS_RATES.get(st["rate"], "+0%")
+    _ui(lambda: avatar.show("🗣️ กำลังพูด..."))
+    voice, rate = _voice_for_lang(detect_lang(text))
     pipeline.begin(voice, rate)
     for c in split_tts_chunks(text):
         pipeline.feed(c)
     pipeline.finish()
+
+
+_stream_speak = {"on": False, "buf": "", "started": False}
+
+
+def stream_speak_begin():
+    pipeline.stop()
+    _stream_speak.update(on=True, buf="", started=False)
+    _ui(lambda: avatar.show("🗣️ กำลังพูด..."))
+
+
+def _stream_feed(sentence):
+    sentence = clean_for_tts(sentence)
+    if not sentence:
+        return
+    if not _stream_speak["started"]:
+        voice, rate = _voice_for_lang(detect_lang(sentence))
+        pipeline.begin(voice, rate)
+        _stream_speak["started"] = True
+    pipeline.feed(sentence)
+
+
+def stream_speak_piece(piece):
+    if not _stream_speak["on"]:
+        return
+    _stream_speak["buf"] += piece
+    sents, _stream_speak["buf"] = pop_sentences(_stream_speak["buf"])
+    for s in sents:
+        _stream_feed(s)
+
+
+def stream_speak_end():
+    if not _stream_speak["on"]:
+        return
+    _stream_speak["on"] = False
+    sents, _ = pop_sentences(_stream_speak["buf"], final=True)
+    for s in sents:
+        _stream_feed(s)
+    _stream_speak["buf"] = ""
+    if _stream_speak["started"]:
+        pipeline.finish()
+    else:
+        _ui(avatar.hide)   # ไม่มีอะไรถูกพูดเลย (เช่นโมเดลเรียก tool ตรงๆ ไม่พูดอะไรนำก่อน)
 
 
 def execute_tool(name, args):
@@ -115,25 +193,43 @@ def handle_command(text):
     if not st["model"]:
         log.warning("ยังไม่ได้เชื่อมต่อโมเดล - ข้ามคำถามนี้")
         speak("ขอโทษครับ ยังเชื่อมต่อโมเดลไม่ได้"); return
+    _ui(lambda: avatar.show("🤔 กำลังคิด..."))
     st["history"].append({"role": "user", "content": text})
     messages = [{"role": "system", "content": SYSTEM_PROMPT}] + st["history"][-MAX_HISTORY_TURNS * 2:]
 
     for _ in range(MAX_TOOL_TURNS):
+        buf = []
+        stream_speak_begin()   # เริ่มพูดได้ทันทีตั้งแต่ประโยคแรกของรอบนี้ ไม่ต้องรอทั้งคำตอบ/tool call เสร็จก่อน
         try:
-            result = chat(st["model"], messages, temperature=0.4, tools=TOOLS)
+            gen = stream_chat(st["model"], messages, temperature=0.4, tools=TOOLS)
+            result = {"tool_calls": [], "stats": {}}
+            while True:
+                try:
+                    piece = next(gen)
+                except StopIteration as e:
+                    result = e.value or result
+                    break
+                buf.append(piece)
+                stream_speak_piece(piece)
         except Exception:
             log.exception("เรียกโมเดลผิดพลาด (model=%s)", st["model"])
+            stream_speak_end()
             speak("ขอโทษครับ เรียกโมเดลไม่สำเร็จ"); return
+        stream_speak_end()
 
-        tool_calls = result["tool_calls"]
+        content = clean_output("".join(buf))
+        tool_calls = result.get("tool_calls") or []
+
         if not tool_calls:
-            answer = clean_output(result["content"]) or "ขอโทษครับ ผมตอบไม่ได้ตอนนี้"
+            answer = content or "ขอโทษครับ ผมตอบไม่ได้ตอนนี้"
             st["history"].append({"role": "assistant", "content": answer})
             log.info("คำตอบ: %s", answer)
-            speak(answer)
+            if not content:
+                speak(answer)   # ไม่มีข้อความถูกพูดระหว่างสตรีมเลย (buf ว่าง) - พูดข้อความสำรองแทน
             return
 
-        messages.append({"role": "assistant", "content": result["content"], "tool_calls": tool_calls})
+        _ui(lambda: avatar.show("🔧 กำลังทำงาน..."))
+        messages.append({"role": "assistant", "content": content, "tool_calls": tool_calls})
         for tc in tool_calls:
             fn_info = tc.get("function", {})
             name = fn_info.get("name", "")
@@ -148,16 +244,26 @@ def handle_command(text):
     speak("ขอโทษครับ งานนี้ซับซ้อนเกินไป ลองแบ่งเป็นขั้นตอนย่อยๆ ดูครับ")
 
 
+def ask_async(text):
+    threading.Thread(target=handle_command, args=(text,), daemon=True).start()
+
+
 def pump(q):
     while True:
         item = q.get()
         kind = item[0]
         if kind == "stt_recording":
             log.info("สถานะอัดเสียง: %s", "เริ่ม" if item[1] else "หยุด")
+            if item[1]:
+                _ui(lambda: avatar.show("🎙️ กำลังฟัง..."))
+            else:
+                _ui(lambda: avatar.show("🤔 กำลังถอดเสียง..."))
         elif kind == "stt_done":
-            threading.Thread(target=handle_command, args=(item[1],), daemon=True).start()
+            ask_async(item[1])
         elif kind == "stt_error":
             log.warning("ถอดเสียงไม่สำเร็จ: %s", item[1])
+            _ui(avatar.hide)
+            _ui(lambda: text_popup.show(f"ฟังไม่รู้เรื่องครับ ({item[1]}) ลองพิมพ์คำถามแทนได้เลย"))
 
 
 def connect_model():
@@ -188,6 +294,16 @@ def main():
     log.info("ลุงพี agent (Phase 3: พูดคุยทั่วไป + เรียกเครื่องมือ + คลิก/พิมพ์ในโปรแกรมอื่น) เริ่มทำงาน")
     q = queue.Queue()
     voice = VoiceInput(q)
+
+    # Tk root ไม่โชว์หน้าต่างเปล่าๆ ใช้แค่ขับ mainloop ให้ AvatarWindow (หน้าต่างลอยแสดงสถานะ
+    # ฟัง/คิด/พูด ดู avatar.py) - ต้องรันบนเธรดหลักเสมอ ส่วน pystray ย้ายไปรันในเธรดแยกแทน
+    global avatar, text_popup
+    root = tk.Tk()
+    root.withdraw()
+    avatar = AvatarWindow(root)
+    text_popup = TextInputPopup(root, ask_async)
+    text_popup.show()   # ขึ้นค้างไว้ตลอดตั้งแต่เปิดโปรแกรม ไม่ต้องรอให้พูดไม่รู้เรื่องก่อนถึงจะเห็น
+
     threading.Thread(target=pump, args=(q,), daemon=True).start()
     threading.Thread(target=connect_model, daemon=True).start()
     threading.Thread(target=hotkey_thread, args=(voice.toggle, on_hotkey_status), daemon=True).start()
@@ -206,17 +322,23 @@ def main():
     def on_reconnect(icon, item):
         threading.Thread(target=connect_model, daemon=True).start()
 
+    def on_type_instead(icon, item):
+        root.after(0, lambda: text_popup.show("พิมพ์คำถามหรือคำสั่งถึงลุงพีได้เลยครับ"))
+
     def on_quit(icon, item):
         pipeline.stop()
         icon.stop()
+        root.after(0, root.quit)
 
     menu = pystray.Menu(
         pystray.MenuItem("พูดคุยกับลุงพี (หรือกด Ctrl+Alt+L)", on_toggle),
+        pystray.MenuItem("พิมพ์ถามแทน", on_type_instead),
         pystray.MenuItem("เชื่อมต่อโมเดลใหม่", on_reconnect),
         pystray.MenuItem("ออกจากโปรแกรม", on_quit),
     )
     icon = pystray.Icon("lungpee-agent", image, "ลุงพี", menu)
-    icon.run()
+    threading.Thread(target=icon.run, daemon=True).start()
+    root.mainloop()
 
 
 if __name__ == "__main__":
