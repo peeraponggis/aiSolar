@@ -14,11 +14,14 @@ import ctypes
 import logging
 import os
 
+from tools.files import _normalize_path
+
 log = logging.getLogger(__name__)
 
 RISK_TIER = {
     "launch_app": "A",
     "list_dir": "A",
+    "find_file": "A",
     "read_file": "A",
     "list_ui_controls": "A",
     "translate_file": "B",
@@ -74,7 +77,7 @@ def check(tool_name, args):
         return True, None
 
     if tool_name == "write_file":
-        path = args.get("path") or ""
+        path = _normalize_path(args.get("path") or "")
         if os.path.exists(path):   # เขียนทับของเดิม = ยกระดับเป็น Tier C
             ok = confirm("ลุงพีขออนุญาต", _describe(tool_name, args))
             return (True, None) if ok else (False, "ผู้ใช้ไม่อนุญาตให้เขียนทับไฟล์นี้")
