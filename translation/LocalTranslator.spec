@@ -6,6 +6,12 @@ binaries = []
 hiddenimports = ['make_icon']
 tmp_ret = collect_all('edge_tts')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+# ถอดเสียงถามด้วยเสียง (voice_input.py): av/onnxruntime/sounddevice มี hook สำเร็จรูปจาก
+# pyinstaller-hooks-contrib อยู่แล้ว (เก็บเฉพาะ binary ที่จำเป็นจริง ไม่ลาก submodule ที่ไม่ใช้
+# เช่น onnxruntime.transformers ซึ่งพ่วง pandas/matplotlib มาด้วยถ้าใช้ collect_all) จึงปล่อยให้
+# PyInstaller ตรวจจับอัตโนมัติ เหลือแค่ ctranslate2 ที่ไม่มี hook ให้ ต้อง collect_all เอง
+tmp_ret = collect_all('ctranslate2')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
