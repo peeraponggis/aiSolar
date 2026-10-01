@@ -29,7 +29,7 @@ from tts_engine import EN_VOICES, TTS_RATES, TTS_VOICES, TtsPipeline, clean_for_
 log = logging.getLogger(__name__)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-ICON_PATH = os.path.normpath(os.path.join(BASE, "..", "lung_pee.ico"))
+ICON_PATH = os.path.join(BASE, "lungpee-agent.ico")
 MAX_HISTORY_TURNS = 10   # เก็บบทสนทนาล่าสุดไว้กี่คู่ ถาม-ตอบ (กัน context ยาวเกิน NUM_CTX)
 MAX_TOOL_TURNS = 5       # กันลูปเรียกเครื่องมือไม่รู้จบถ้าโมเดลสับสน
 
