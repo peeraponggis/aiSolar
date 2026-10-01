@@ -37,12 +37,13 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------- โมดูลย่อย (แยกจาก translator.py)
 from app_log import setup_logging
 from flow_layout import Flow
+from clipboard_hotkey import ClipboardHotkey
 from float_icon import FloatIcon
 from history_panel import HistoryPanel
 from qa_panel import QAPanel
 from engine import (
     API_PRESETS, BACKEND, DEFAULT_MODEL, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
-    HOTKEY_LABEL, LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
+    LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
     build_messages, chat_stream, clean_output, detect_lang,
     ensure_ollama, find_ollama_exe, glossary_for, list_models, list_models_openai,
     load_glossary, pick_model, pull_model, run_cli, stream_chat_openai, warm_up,
@@ -52,7 +53,7 @@ from tts_engine import (
     apply_replacements, clean_for_tts, list_clone_profiles, load_replacements,
     pop_sentences, split_tts_chunks, tts_synthesize,
 )
-from win_hooks import KEYEVENTF_KEYUP, VK_MENU, send_ctrl_c, win_event_thread
+from win_hooks import KEYEVENTF_KEYUP, VK_MENU, win_event_thread
 
 # ---------------------------------------------------------------- GUI
 MUTEX_NAME = "Local\\ThaiLocalTranslator.single"
@@ -303,8 +304,8 @@ def run_gui(minimized=False):
     stop_btn = ttk.Button(btns, text="หยุด", command=lambda: (worker["stop"].set(), stop_speech(), set_status("หยุดแล้ว"))); btns.add(stop_btn)  # หยุดทั้งการแปลและเสียงอ่าน ใช้ได้ตลอด
     btns.add(ttk.Button(btns, text="แปลอีกสำนวน", command=lambda: start_translate(variant=True)))
     btns.add(ttk.Button(btns, text="⇄ สลับ", command=lambda: swap()))
-    btns.add(ttk.Button(btns, text="วาง+แปล", command=lambda: paste_and_translate()))
-    btns.add(ttk.Button(btns, text="คัดลอก", command=lambda: copy_result()))
+    btns.add(ttk.Button(btns, text="วาง+แปล", command=lambda: clip_hotkey.paste_and_translate()))
+    btns.add(ttk.Button(btns, text="คัดลอก", command=lambda: clip_hotkey.copy_result()))
     btns.add(ttk.Button(btns, text="ล้าง", command=lambda: (src.delete("1.0", "end"), dst.delete("1.0", "end"))))
     # ปุ่ม "ถามโมเดล" ถูกสร้างโดย QAPanel เอง (ดูด้านล่าง หลังจากสร้าง src/dst/worker/st/q ครบ)
 
@@ -536,7 +537,7 @@ def run_gui(minimized=False):
                 elif kind == "models":
                     on_models(item[1])
                 elif kind == "hotkey":
-                    hotkey_captured()
+                    clip_hotkey.hotkey_captured()
                 elif kind == "select":
                     float_icon.show(item[1], item[2])
                 elif kind == "hide_float":
@@ -558,54 +559,9 @@ def run_gui(minimized=False):
         src.delete("1.0", "end"); dst.delete("1.0", "end")
         src.insert("1.0", b); dst.insert("1.0", a)
 
-    def copy_result():
-        r = dst.get("1.0", "end").strip()
-        if r:
-            root.clipboard_clear(); root.clipboard_append(r); st["last_clip"] = r
-            set_status("คัดลอกคำแปลแล้ว")
-
-    def read_clipboard():
-        try:
-            return root.clipboard_get()
-        except Exception:
-            return ""
-
-    def paste_and_translate():
-        t = read_clipboard().strip()
-        if t:
-            src.delete("1.0", "end"); src.insert("1.0", t); start_translate()
-
-    def bring_to_front():
-        root.deiconify(); root.lift(); root.attributes("-topmost", True)
-        root.after(300, lambda: root.attributes("-topmost", topmost_var.get())); root.focus_force()
-
-    def hotkey_captured():
-        t = read_clipboard().strip()
-        if t and t != st["last_result"]:
-            src.delete("1.0", "end"); src.insert("1.0", t)
-            bring_to_front(); start_translate()
-        else:
-            bring_to_front(); set_status("ไม่พบข้อความที่เลือก - ลากคลุมข้อความก่อนแล้วกด " + HOTKEY_LABEL)
-
-    def on_hotkey():           # เรียกจากเธรด hotkey
-        send_ctrl_c(); time.sleep(0.25); q.put(("hotkey",))
-
-    def hotkey_status(hot_ok, hook_ok):
-        st["hotkey_ok"] = hot_ok
-        parts = []
-        parts.append("ลากคลุมข้อความในโปรแกรมใดก็ได้ แล้วคลิกไอคอนหุ่นยนต์ที่ลอยขึ้นมา" if hook_ok else "ตรวจการลากคลุมไม่ได้")
-        parts.append(f"หรือกด {hot_ok}" if hot_ok else "คีย์ลัด Ctrl+Alt+T/Y ถูกโปรแกรมอื่นใช้อยู่")
-        hotkey_var.set(" · ".join(parts))
-
-    def clip_poll():
-        if clip_var.get() and not worker["busy"]:
-            t = read_clipboard()
-            if t and t.strip() and t != st["last_clip"] and t.strip() != st["last_result"]:
-                st["last_clip"] = t
-                src.delete("1.0", "end"); src.insert("1.0", t.strip()); start_translate()
-            elif st["last_clip"] is None:
-                st["last_clip"] = t
-        root.after(700, clip_poll)
+    # ---------- เฝ้าคลิปบอร์ด + คีย์ลัดทั่วเครื่อง (ดู clipboard_hotkey.py)
+    clip_hotkey = ClipboardHotkey(root, st, src, dst, set_status, start_translate, worker,
+                                  settings, clip_var, hotkey_var, topmost_var, q)
 
     def on_models(models):
         """models = รายการโมเดลในเครื่อง (None = ไม่พบ Ollama) -> เลือกเส้นทางตามโหมดใน ⚙ ผู้ให้บริการ"""
@@ -859,10 +815,10 @@ def run_gui(minimized=False):
     apply_topmost()
     connect()
     threading.Thread(target=win_event_thread, daemon=True,
-                     args=(on_hotkey, lambda x, y: q.put(("select", x, y)), lambda: q.put(("hide_float",)),
-                           float_icon.is_own_window, hotkey_status)).start()
+                     args=(clip_hotkey.on_hotkey, lambda x, y: q.put(("select", x, y)), lambda: q.put(("hide_float",)),
+                           float_icon.is_own_window, clip_hotkey.hotkey_status)).start()
     root.after(60, pump)
-    root.after(1000, clip_poll)
+    root.after(1000, clip_hotkey.clip_poll)
     src.focus_set()
     root.after(300, lambda: pane.sashpos(0, root.winfo_width() // 2 - 10))  # แบ่งสองช่องเท่ากัน
     if settings.get("qaOpen"):
