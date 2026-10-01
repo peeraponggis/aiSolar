@@ -6,12 +6,15 @@ engine.py - เครื่องมือแปลภาษา: การตั
 แยกออกจาก translator.py เพื่อให้ทดสอบ/แก้ไขส่วนตรรกะการแปลได้โดยไม่ต้องแตะ GUI
 """
 import json
+import logging
 import os
 import re
 import sys
 import time
 import urllib.error
 import urllib.request
+
+log = logging.getLogger(__name__)
 
 
 FROZEN = bool(getattr(sys, "frozen", False))          # รันจาก exe ที่สร้างด้วย PyInstaller
@@ -219,7 +222,8 @@ def ollama_get(path, timeout=5):
 def list_models():
     try:
         return [m["name"] for m in ollama_get("/api/tags").get("models", [])]
-    except Exception:
+    except Exception as e:
+        log.debug("เชื่อมต่อ Ollama ที่ %s ไม่ได้: %s", OLLAMA_URL, e)
         return None
 
 
@@ -256,12 +260,15 @@ def ensure_ollama(wait_s=25):
         subprocess.Popen([exe, "serve"], env=env, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
+        log.warning("เปิด Ollama (%s) ไม่สำเร็จ", exe, exc_info=True)
         return None
     for _ in range(wait_s * 2):
         time.sleep(0.5)
         models = list_models()
         if models is not None:
+            log.info("เปิด Ollama (%s) สำเร็จ พบ %d โมเดล", exe, len(models))
             return models
+    log.warning("เปิด Ollama (%s) แล้วแต่รอ %ds ไม่เชื่อมต่อสำเร็จ", exe, wait_s)
     return None
 
 

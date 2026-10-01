@@ -6,9 +6,12 @@ win_hooks.py - ปุ่มลัดทั่วเครื่อง (global ho
 แยกออกจาก translator.py เพราะเป็นโค้ดระดับ Windows API ที่ไม่เกี่ยวกับตรรกะการแปล/GUI
 """
 import ctypes
+import logging
 import os
 import sys
 import time
+
+log = logging.getLogger(__name__)
 
 FROZEN = bool(getattr(sys, "frozen", False))          # รันจาก exe ที่สร้างด้วย PyInstaller
 BASE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
@@ -76,12 +79,16 @@ def win_event_thread(on_hotkey, on_select, on_click_elsewhere, is_own_window, st
                         on_select(x, y)           # ลากคลุม
                 elif wParam in (WM_RBUTTONDOWN, WM_MBUTTONDOWN):
                     on_click_elsewhere()
-            except Exception:
-                pass
+            except Exception as e:
+                log.debug("mouse hook callback error: %s", e)
         return user32.CallNextHookEx(None, nCode, wParam, lParam)
 
     cb = HOOKPROC(proc); _hook_ref["cb"] = cb
     hook = user32.SetWindowsHookExW(WH_MOUSE_LL, cb, None, 0)
+    if not hot_ok:
+        log.warning("ลงทะเบียนคีย์ลัด Ctrl+Alt+T/Y ไม่สำเร็จ (โปรแกรมอื่นอาจจองไว้)")
+    if not hook:
+        log.warning("ติดตั้ง mouse hook ไม่สำเร็จ - ไอคอนลอยเมื่อลากคลุมข้อความจะใช้งานไม่ได้")
     status_cb(hot_ok, bool(hook))
     msg = MSG()
     while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
@@ -110,6 +117,7 @@ def build_float_frames(size, n, key_color):
             out.append(tk.PhotoImage(data=base64.b64encode(buf.getvalue())))
         return out
     except Exception:
+        log.debug("สร้างเฟรมไอคอนลอยสีไม่สำเร็จ - จะใช้ภาพนิ่งแทน", exc_info=True)
         return []
 
 
