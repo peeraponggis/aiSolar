@@ -36,7 +36,16 @@ class TextInputPopup:
         tk.Button(btns, text="ซ่อน", command=self.hide, width=10).pack(side="left", padx=(8, 0))
 
         self.entry.bind("<Return>", lambda e: self._submit())
+        # Tkinter Entry รองรับ Ctrl+C/V/X (copy/paste/cut) อยู่แล้วโดยปริยาย แต่ไม่มี Ctrl+A
+        # (select all) มาให้ - ต้อง bind เพิ่มเอง ไม่งั้นกด Ctrl+A แล้วจะไม่มีอะไรเกิดขึ้น
+        self.entry.bind("<Control-a>", self._select_all)
+        self.entry.bind("<Control-A>", self._select_all)
         self._position()
+
+    def _select_all(self, event):
+        self.entry.select_range(0, "end")
+        self.entry.icursor("end")
+        return "break"   # กัน Entry วิ่งพิมพ์ตัว "a" ทับที่เลือกไว้ซ้ำ
 
     def _position(self):
         self.win.update_idletasks()

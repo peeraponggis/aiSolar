@@ -34,6 +34,15 @@ TOOLS = [
         }, "required": ["path"]},
     }},
     {"type": "function", "function": {
+        "name": "find_file",
+        "description": "ค้นหาไฟล์หรือโฟลเดอร์ด้วยชื่อ (หรือบางส่วนของชื่อ) แบบค้นลึกทุกโฟลเดอร์ย่อยในครั้งเดียว "
+                       "ใช้เครื่องมือนี้ทันทีเมื่อผู้ใช้ขอให้หาไฟล์/โฟลเดอร์ ห้ามถามกลับก่อนลองค้นด้วยเครื่องมือนี้",
+        "parameters": {"type": "object", "properties": {
+            "name": {"type": "string", "description": "ชื่อไฟล์/โฟลเดอร์ที่จะค้นหา (หรือบางส่วนของชื่อ)"},
+            "root": {"type": "string", "description": "โฟลเดอร์ที่จะเริ่มค้น (ไม่ระบุก็ได้ จะค้นจากโฟลเดอร์ผู้ใช้โดยอัตโนมัติ)"},
+        }, "required": ["name"]},
+    }},
+    {"type": "function", "function": {
         "name": "read_file",
         "description": "อ่านเนื้อหาไฟล์ข้อความ (ตัดถ้ายาวเกิน 8000 ตัวอักษร)",
         "parameters": {"type": "object", "properties": {
@@ -105,6 +114,10 @@ def _list_dir(args, ctx):
     return files.list_dir(args.get("path", "."))
 
 
+def _find_file(args, ctx):
+    return files.find_file(args.get("name", ""), args.get("root"))
+
+
 def _read_file(args, ctx):
     return files.read_file(args.get("path", ""))
 
@@ -138,6 +151,7 @@ DISPATCH = {
     "launch_app": _launch_app,
     "run_shell": _run_shell,
     "list_dir": _list_dir,
+    "find_file": _find_file,
     "read_file": _read_file,
     "write_file": _write_file,
     "delete_file": _delete_file,
