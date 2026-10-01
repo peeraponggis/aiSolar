@@ -43,6 +43,7 @@ from float_icon import FloatIcon
 from history_panel import HistoryPanel
 from provider_dialog import open_provider_dialog
 from qa_panel import QAPanel
+from replacements_dialog import open_replacements_dialog
 from engine import (
     BACKEND, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
     LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
@@ -218,6 +219,8 @@ def run_gui(minimized=False):
     hdr.add(ttk.Label(hdr, textvariable=level_summary, font=small_font, foreground="#555"), padx=(0, 16))
     hist_btn = ttk.Button(hdr, text="ประวัติ ▾"); hdr.add(hist_btn)  # command ผูกใน HistoryPanel ด้านล่าง
     hdr.add(ttk.Button(hdr, text="glossary", command=lambda: os.startfile(GLOSSARY_FILE) if os.path.exists(GLOSSARY_FILE) else None))
+    hdr.add(ttk.Button(hdr, text="🔊 คำอ่านภาษาอังกฤษ",
+                       command=lambda: open_replacements_dialog(root, fam, small_font, st)))
     hdr.add(ttk.Button(hdr, text="⚙ ผู้ให้บริการ", command=lambda: show_provider_dialog()), padx=(12, 6))
 
     # ---------- ส่วนตัวเลือก (ย่อ/ขยายได้)
