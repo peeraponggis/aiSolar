@@ -36,10 +36,12 @@ log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------- โมดูลย่อย (แยกจาก translator.py)
 from app_log import setup_logging
+from flow_layout import Flow
+from qa_panel import QAPanel
 from engine import (
     API_PRESETS, BACKEND, DEFAULT_MODEL, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
     HOTKEY_LABEL, LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
-    build_messages, build_qa_messages, chat_stream, clean_output, detect_lang,
+    build_messages, chat_stream, clean_output, detect_lang,
     ensure_ollama, find_ollama_exe, glossary_for, list_models, list_models_openai,
     load_glossary, pick_model, pull_model, run_cli, stream_chat_openai, warm_up,
 )
@@ -193,54 +195,7 @@ def run_gui(minimized=False):
     # หลักการ: (1) ทุกแถวปุ่ม/ตัวเลือกใช้ Flow = ไหลลงบรรทัดใหม่เมื่อความกว้างไม่พอ ไม่มีปุ่มถูกตัด
     #          (2) แถบสถานะ แถวปุ่ม และแผงถามโมเดล จองพื้นที่ด้านล่างก่อน ช่องข้อความรับพื้นที่ที่เหลือ
     #          (3) ส่วน "ตัวเลือก" และ "ถามโมเดล" ย่อ/ขยายได้ด้วยปุ่มของตัวเอง โปรแกรมจำสถานะไว้
-    class Flow(ttk.Frame):
-        """เฟรมจัดวิดเจ็ตแบบไหล: เรียงซ้ายไปขวา เต็มความกว้างแล้วขึ้นบรรทัดใหม่"""
-        def __init__(self, master, padding=(0, 0, 0, 0), **kw):
-            super().__init__(master, **kw)
-            p = padding if isinstance(padding, (tuple, list)) else (padding,) * 4
-            self.pad = (p + p)[:4] if len(p) < 4 else tuple(p[:4])     # (ซ้าย, บน, ขวา, ล่าง)
-            self.items = []; self._pending = None; self._last = None
-            self.bind("<Configure>", lambda e: self.schedule())
-            master.bind("<Configure>", lambda e: self.schedule(), add="+")
-
-        def add(self, w, padx=(0, 6), pady=(0, 4)):
-            self.items.append((w, padx, pady)); self.schedule(); return w
-
-        def clear(self):
-            for w, _, _ in self.items:
-                w.destroy()
-            self.items = []; self._last = None
-
-        def schedule(self):
-            if self._pending is None:
-                self._pending = self.after_idle(self.relayout)
-
-        def relayout(self):
-            """วางด้วย place ทีละชิ้น (ไม่ใช้ grid เพราะคอลัมน์จะยืดตามชิ้นที่กว้างสุด ทำให้ตำแหน่งจริงล้นขอบ)"""
-            self._pending = None
-            top = self.winfo_toplevel()
-            if top.winfo_width() < 50:
-                return
-            # พื้นที่ที่ใช้ได้ = ขอบขวาของหน้าต่าง - ตำแหน่งซ้ายของเฟรมนี้ (พาเรนต์อาจ "ขอ" กว้างเกินหน้าต่าง จึงไม่ใช้ความกว้างพาเรนต์)
-            width = top.winfo_width() - (self.winfo_rootx() - top.winfo_rootx()) - 20 - self.pad[0] - self.pad[2]
-            if self.winfo_width() > 50:
-                width = min(width, self.winfo_width() - self.pad[0] - self.pad[2])
-            x = y = row_h = 0; plan = []
-            for w, padx, pady in self.items:
-                rw, rh = w.winfo_reqwidth(), w.winfo_reqheight()
-                need = rw + padx[0] + padx[1]
-                if x > 0 and x + need > width:
-                    x = 0; y += row_h; row_h = 0
-                plan.append((w, self.pad[0] + x + padx[0], self.pad[1] + y + pady[0]))
-                x += need; row_h = max(row_h, rh + pady[0] + pady[1])
-            total_h = self.pad[1] + y + row_h + self.pad[3]
-            key = (tuple((id(w), px, py) for w, px, py in plan), total_h)
-            if key == self._last:
-                return
-            self._last = key
-            for w, px, py in plan:
-                w.place(x=px, y=py)
-            self.configure(height=total_h)
+    # (Flow อยู่ใน flow_layout.py - import ไว้ด้านบนของไฟล์)
 
     # ---------- แถบสถานะ (จองที่ล่างสุดก่อนทุกส่วน)
     status_bar = Flow(root, padding=(10, 2, 10, 6)); status_bar.pack(fill="x", side="bottom")
@@ -352,7 +307,7 @@ def run_gui(minimized=False):
     btns.add(ttk.Button(btns, text="วาง+แปล", command=lambda: paste_and_translate()))
     btns.add(ttk.Button(btns, text="คัดลอก", command=lambda: copy_result()))
     btns.add(ttk.Button(btns, text="ล้าง", command=lambda: (src.delete("1.0", "end"), dst.delete("1.0", "end"))))
-    qa_btn = ttk.Button(btns, text="❓ ถามโมเดล ▾", style="Big.TButton", command=lambda: toggle_qa()); btns.add(qa_btn, padx=(12, 0))
+    # ปุ่ม "ถามโมเดล" ถูกสร้างโดย QAPanel เอง (ดูด้านล่าง หลังจากสร้าง src/dst/worker/st/q ครบ)
 
     # ---------- ช่องข้อความซ้าย-ขวา (รับพื้นที่ที่เหลือ ลากเส้นแบ่งกลางได้)
     pane = ttk.PanedWindow(root, orient="horizontal"); pane.pack(fill="both", expand=True, padx=10, pady=(4, 0))
@@ -416,152 +371,8 @@ def run_gui(minimized=False):
         dst.delete("1.0", "end"); dst.insert("1.0", h["dst"])
     hist_list.bind("<Double-Button-1>", load_history_item)
 
-    # ==================== Q&A: ถามโมเดลเกี่ยวกับข้อความหลังแปล (บล็อกแยก ปิดเป็นค่าเริ่มต้น) ====================
-    qa = {"busy": False, "stop": threading.Event(), "history": [], "open": False, "edit": False, "question": ""}
-    qa_frame = ttk.LabelFrame(bottom_box, text=" ถามโมเดลเกี่ยวกับข้อความนี้ ", padding=(10, 4))
-    pills = Flow(qa_frame); pills.pack(fill="x")
-    qa_row = Flow(qa_frame); qa_row.pack(fill="x", pady=(4, 2))
-    qa_inp = ttk.Entry(qa_row, width=48); qa_row.add(qa_inp, padx=(0, 8))
-    qa_ask_btn = ttk.Button(qa_row, text="ถาม", command=lambda: ask_question(qa_inp.get())); qa_row.add(qa_ask_btn)
-    qa_row.add(ttk.Button(qa_row, text="+ บันทึกเป็นปุ่ม", command=lambda: add_question(qa_inp.get())))
-    qa_edit_btn = ttk.Button(qa_row, text="แก้ไขปุ่ม", command=lambda: toggle_qa_edit()); qa_row.add(qa_edit_btn)
-    qa_bar = Flow(qa_frame); qa_bar.pack(fill="x", pady=(4, 0), side="bottom")   # แถวปุ่มอยู่ล่างสุดเสมอ ไม่ถูกช่องคำตอบดันหลุด
-    qa_out = tk.Text(qa_frame, wrap="word", font=text_font, padx=8, pady=6, relief="solid", borderwidth=1, height=4, width=20, background="#F4F6FB")
-    qa_out.pack(fill="both", expand=True)
-    qa_stop_btn = ttk.Button(qa_bar, text="หยุด", command=lambda: (qa["stop"].set(), stop_speech(), set_status("หยุดแล้ว"))); qa_bar.add(qa_stop_btn)  # หยุดทั้งคำตอบและเสียงอ่าน ใช้ได้ตลอด
-    qa_bar.add(ttk.Button(qa_bar, text="🔊 อ่านคำตอบ", command=lambda: speak_text(qa_out.get("1.0", "end"))))
-    qa_bar.add(ttk.Button(qa_bar, text="คัดลอกคำตอบ", command=lambda: (root.clipboard_clear(), root.clipboard_append(qa_out.get("1.0", "end").strip()), set_status("คัดลอกคำตอบแล้ว"))))
-    qa_bar.add(ttk.Button(qa_bar, text="ล้างบทสนทนา", command=lambda: (qa_reset(), qa_out.delete("1.0", "end"))))
-    qa_speak_var = tk.BooleanVar(value=settings["qaAutoSpeak"])
-    qa_bar.add(ttk.Checkbutton(qa_bar, text="อ่านคำตอบอัตโนมัติ", variable=qa_speak_var,
-                               command=lambda: (settings.update(qaAutoSpeak=qa_speak_var.get()), save_settings())))
-    qa_size_btn = ttk.Button(qa_bar, text="ขยายช่องคำตอบ ▴", command=lambda: toggle_qa_size()); qa_bar.add(qa_size_btn, padx=(12, 6))
-    qa_hint = ttk.Label(qa_bar, text="", font=small_font, foreground="#555"); qa_bar.add(qa_hint)
-    pill_widgets = []
-
-    def toggle_qa_size():
-        big = qa_out.cget("height") <= 4
-        qa_out.configure(height=12 if big else 4)
-        qa_size_btn.config(text="ย่อช่องคำตอบ ▾" if big else "ขยายช่องคำตอบ ▴")
-
-    def render_question_pills():
-        pills.clear(); pill_widgets.clear()
-        for i, qtext in enumerate(settings["questions"]):
-            if qa["edit"]:
-                b = ttk.Button(pills, text="× " + qtext, command=lambda i=i: delete_question(i))
-            else:
-                b = ttk.Button(pills, text=qtext, command=lambda t=qtext: ask_question(t))
-            pills.add(b); pill_widgets.append(b)
-        if qa["edit"]:
-            b = ttk.Button(pills, text="คืนค่าเริ่มต้น", command=lambda: (settings.update(questions=list(DEFAULT_QUESTIONS)), save_settings(), render_question_pills()))
-            pills.add(b); pill_widgets.append(b)
-        if not settings["questions"] and not qa["edit"]:
-            pills.add(ttk.Label(pills, text="ยังไม่มีปุ่มคำถาม พิมพ์คำถามแล้วกด '+ บันทึกเป็นปุ่ม'", font=small_font, foreground="#777"))
-        qa_hint.config(text="โหมดแก้ไข: คลิกปุ่มเพื่อลบ" if qa["edit"] else "คลิกปุ่มคำถามเพื่อถามทันที · ถามต่อเนื่องได้")
-
-    def add_question(text):
-        text = (text or "").strip()
-        if not text:
-            set_status("พิมพ์คำถามในช่องก่อน แล้วกด '+ บันทึกเป็นปุ่ม'"); return
-        if text in settings["questions"]:
-            set_status("มีปุ่มคำถามนี้อยู่แล้ว"); return
-        settings["questions"].append(text); save_settings(); render_question_pills()
-        set_status(f"เพิ่มปุ่มคำถาม: {text}")
-
-    def delete_question(i):
-        if 0 <= i < len(settings["questions"]):
-            removed = settings["questions"].pop(i); save_settings(); render_question_pills()
-            set_status(f"ลบปุ่มคำถาม: {removed}")
-
-    def toggle_qa_edit():
-        qa["edit"] = not qa["edit"]
-        qa_edit_btn.config(text="เสร็จ" if qa["edit"] else "แก้ไขปุ่ม")
-        render_question_pills()
-
-    def toggle_qa(force=None):
-        want = (not qa["open"]) if force is None else force
-        qa["open"] = want
-        if want:
-            qa_frame.pack(fill="x", padx=10, pady=(0, 4))   # ใต้แถวปุ่มในกล่องล่าง (จองที่ก่อนช่องข้อความ)
-            qa_btn.config(text="❓ ถามโมเดล ▴")
-            render_question_pills()
-            sh = root.winfo_screenheight()
-            if root.winfo_height() < 900 and sh >= 1000:
-                root.geometry(f"{max(root.winfo_width(), 1000)}x{min(980, sh - 80)}")
-            qa_inp.focus_set()
-        else:
-            qa_frame.pack_forget(); qa_btn.config(text="❓ ถามโมเดล ▾")
-        settings["qaOpen"] = want; save_settings()
-
-    def qa_set_busy(busy):
-        qa["busy"] = busy
-        qa_ask_btn.state(["disabled"] if busy else ["!disabled"])
-        for b in pill_widgets:
-            try:
-                b.state(["disabled"] if busy else ["!disabled"])
-            except Exception:
-                pass
-
-    def qa_reset():
-        qa["history"].clear()
-
-    def ask_question(question):
-        question = (question or "").strip()
-        if not question:
-            set_status("พิมพ์คำถาม หรือคลิกปุ่มคำถาม"); return
-        if qa["busy"]:
-            set_status("กำลังตอบคำถามก่อนหน้าอยู่ กด 'หยุด' ก่อนถ้าต้องการถามใหม่"); return
-        if worker["busy"]:
-            set_status("รอให้แปลเสร็จก่อน แล้วค่อยถาม"); return
-        if not st["model"]:
-            set_status("ยังไม่ได้เชื่อมต่อโมเดล"); return
-        src_text = src.get("1.0", "end").strip()
-        translation = dst.get("1.0", "end").strip()
-        if not src_text and not translation:
-            set_status("กรุณาใส่ข้อความหรือแปลก่อน"); return
-        s_lang = detect_lang(src_text) if src_text else ("en" if detect_lang(translation) == "th" else "th")
-        d_lang = "en" if s_lang == "th" else "th"
-        msgs = build_qa_messages(src_text, s_lang, translation, d_lang, qa["history"], question)
-        if not qa["open"]:
-            toggle_qa(True)
-        qa["question"] = question
-        qa_out.delete("1.0", "end")
-        qa["stop"].clear(); qa_set_busy(True); stop_speech()
-        set_status(f"กำลังถาม: {question[:60]} ...")
-
-        def job():
-            t0 = time.time(); buf = []; stats = {}
-            try:
-                gen = chat_stream(st["model"], msgs, 0.4, qa["stop"])
-                while True:
-                    try:
-                        piece = next(gen)
-                    except StopIteration as e:
-                        stats = e.value or {}; break
-                    buf.append(piece); q.put(("qa_piece", piece))
-                q.put(("qa_done", "".join(buf), stats, time.time() - t0))
-            except Exception as e:
-                log.exception("ถามโมเดลผิดพลาด (model=%s)", st["model"])
-                q.put(("qa_error", str(e)))
-        threading.Thread(target=job, daemon=True).start()
-
-    def qa_finish(answer, stats, elapsed):
-        qa_set_busy(False)
-        answer = clean_output(answer)
-        qa_out.delete("1.0", "end"); qa_out.insert("1.0", answer)
-        stopped = qa["stop"].is_set()
-        if answer and not stopped:
-            qa["history"].append((qa["question"], answer))
-        ev, ed = stats.get("eval_count") or 0, stats.get("eval_duration") or 0
-        speed = f" · {ev/(ed/1e9):.1f} tok/s" if ed else ""
-        set_status(("หยุดตอบแล้ว" if stopped else "ตอบเสร็จ") + f" · {elapsed:.1f} วินาที{speed} · ถามต่อได้ ({len(qa['history'])} คำถาม)")
-        if os.environ.get("TRANSLATOR_QA_DEMO"):
-            print(f"[qa-demo] ตอบเสร็จ {elapsed:.1f}s{speed}\n{answer}", file=sys.stderr, flush=True)
-        if answer and not stopped and qa_speak_var.get():
-            speak_text(answer)
-
-    qa_inp.bind("<Return>", lambda e: (ask_question(qa_inp.get()), "break"))
-    # ==================== จบบล็อก Q&A ====================
+    # ==================== Q&A: ถามโมเดลเกี่ยวกับข้อความหลังแปล (ดู qa_panel.py) ====================
+    # สร้างจริงหลัง stop_speech()/speak_text() ถูกนิยามแล้ว (ดูท้ายฟังก์ชัน หลังบล็อกเสียงอ่าน)
 
     # ---------- actions
     def current_direction(text):
@@ -589,11 +400,10 @@ def run_gui(minimized=False):
         src_lbl.set(f"ข้อความต้นทาง ({LANGS[s]})"); dst_lbl.set(f"คำแปล ({LANGS[d]})")
         dst.delete("1.0", "end")
         stop_speech()
-        qa_reset()                     # ข้อความใหม่ -> ล้างบทสนทนาถาม-ตอบเดิม
+        qa_panel.clear()               # ข้อความใหม่ -> ล้างบทสนทนาถาม-ตอบเดิม
         if autospeak_var.get():
             stream_speak_begin(d)      # อ่านประโยคแรกทันทีที่แปลเสร็จ ไม่ต้องรอทั้งหมด
         last_src["text"] = text        # จำข้อความที่กำลังแปล ถ้าต้นทางเปลี่ยนไปจากนี้จะล้างกล่องแปล/คำตอบ
-        qa_out.delete("1.0", "end")
         worker["stop"].clear(); worker["busy"] = True
         translate_btn.state(["disabled"]); stop_btn.state(["!disabled"])
         set_status(f"กำลังแปล {LANGS[s]} → {LANGS[d]} · {LEVELS[level]['label']}" + (f" · glossary {len(hits)} คำ" if hits else "") + " ...")
@@ -632,7 +442,7 @@ def run_gui(minimized=False):
         qa_demo = os.environ.get("TRANSLATOR_QA_DEMO")
         if qa_demo and not st.get("qa_demo_done"):   # สำหรับทดสอบ: ถามคำถามนี้ทันทีหลังแปลเสร็จ
             st["qa_demo_done"] = True
-            root.after(500, lambda: ask_question(qa_demo))
+            root.after(500, lambda: qa_panel.ask(qa_demo))
         if worker["stop"].is_set():
             stop_speech()
         else:
@@ -720,6 +530,9 @@ def run_gui(minimized=False):
     def stop_speech():
         speak["on"] = False; speak["buf"] = ""
         pipeline.stop()
+
+    qa_panel = QAPanel(root, btns, bottom_box, settings, save_settings, set_status,
+                       text_font, small_font, worker, st, src, dst, q, speak_text, stop_speech)
 
     def on_tts_event(kind, msg):
         if st.get("demo_t0"):
@@ -840,11 +653,11 @@ def run_gui(minimized=False):
                 elif kind == "tts_event":
                     on_tts_event(item[1], item[2])
                 elif kind == "qa_piece":
-                    qa_out.insert("end", item[1]); qa_out.see("end")
+                    qa_panel.on_piece(item[1])
                 elif kind == "qa_done":
-                    qa_finish(item[1], item[2], item[3])
+                    qa_panel.on_done(item[1], item[2], item[3])
                 elif kind == "qa_error":
-                    qa_set_busy(False); set_status("ถามไม่สำเร็จ: " + item[1][:200])
+                    qa_panel.on_error(item[1])
         except queue.Empty:
             pass
         root.after(60, pump)
@@ -1143,7 +956,7 @@ def run_gui(minimized=False):
         cur = src.get("1.0", "end").strip()
         if last_src["text"] is not None and cur != last_src["text"]:
             last_src["text"] = None
-            dst.delete("1.0", "end"); qa_out.delete("1.0", "end"); qa_reset()
+            dst.delete("1.0", "end"); qa_panel.clear()
             stop_speech()
     src.bind("<<Modified>>", on_src_modified)
     root.bind("<Escape>", lambda e: worker["stop"].set())
@@ -1162,7 +975,7 @@ def run_gui(minimized=False):
     src.focus_set()
     root.after(300, lambda: pane.sashpos(0, root.winfo_width() // 2 - 10))  # แบ่งสองช่องเท่ากัน
     if settings.get("qaOpen"):
-        root.after(400, lambda: toggle_qa(True))
+        root.after(400, lambda: qa_panel.toggle(True))
     if os.environ.get("TRANSLATOR_PROVIDER_DEMO"):   # สำหรับทดสอบ: เปิดหน้าต่างตั้งค่าผู้ให้บริการ
         root.after(2500, open_provider_dialog)
     if os.environ.get("TRANSLATOR_FLOAT_DEMO"):  # สำหรับทดสอบ: โชว์ไอคอนลอยกลางจอซ้ำทุก 4 วินาที
