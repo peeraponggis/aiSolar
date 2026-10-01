@@ -1012,7 +1012,12 @@ function loadProjectJSON(inp){
   const r=new FileReader();
   r.onload=e=>{
     try{
-      const p=JSON.parse(e.target.result);
+      let raw=JSON.parse(e.target.result);
+      if(raw.project && raw.user){
+        if(raw.user) Object.assign(appData.user, raw.user);
+        raw=raw.project;
+      }
+      const p=raw;
       if(!p.id) p.id=uuid();
       if(!p.leads) p.leads=[];
       if(!p.weeklyReports) p.weeklyReports=[];
@@ -1024,6 +1029,7 @@ function loadProjectJSON(inp){
       fillProjectForm();
       renderLeadsTags();
       renderTaskTable();
+      saveStore();
       toast('✅ นำเข้าโครงการ: '+p.projectName);
     } catch(err){ toast('❌ ไม่สามารถอ่านไฟล์ JSON ได้'); }
   };
