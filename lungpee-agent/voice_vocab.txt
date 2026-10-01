@@ -9,3 +9,8 @@ Edge
 PowerShell
 Ollama
 Visual Studio Code
+ไลน์
+LINE
+FreeCAD
+เปิดโปรแกรม
+ปิดโปรแกรม

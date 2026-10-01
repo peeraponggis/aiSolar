@@ -224,7 +224,13 @@ def handle_command(text):
 
         if not tool_calls:
             answer = content or "ขอโทษครับ ผมตอบไม่ได้ตอนนี้"
-            st["history"].append({"role": "assistant", "content": answer})
+            prev = [m["content"] for m in st["history"] if m["role"] == "assistant"]
+            if prev and prev[-1] == answer:
+                # โมเดลเล็กติดลูปลอกคำตอบเดิมจากประวัติซ้ำทุกคำถาม - ล้างประวัติให้เริ่มใหม่
+                log.warning("โมเดลตอบซ้ำคำตอบก่อนหน้าเป๊ะ - ล้างประวัติสนทนา")
+                st["history"].clear()
+            else:
+                st["history"].append({"role": "assistant", "content": answer})
             log.info("คำตอบ: %s", answer)
             if not content:
                 speak(answer)   # ไม่มีข้อความถูกพูดระหว่างสตรีมเลย (buf ว่าง) - พูดข้อความสำรองแทน
