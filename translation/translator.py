@@ -19,6 +19,7 @@ Local Translator - โปรแกรมช่วยแปลบนเดสก�
 import argparse
 import ctypes
 import json
+import logging
 import math
 import os
 import queue
@@ -31,8 +32,10 @@ import urllib.request
 
 FROZEN = bool(getattr(sys, "frozen", False))          # รันจาก exe ที่สร้างด้วย PyInstaller
 BASE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------- โมดูลย่อย (แยกจาก translator.py)
+from app_log import setup_logging
 from engine import (
     API_PRESETS, BACKEND, DEFAULT_MODEL, DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
     HOTKEY_LABEL, LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
@@ -118,8 +121,10 @@ def run_gui(minimized=False):
     try:
         with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
             settings.update(json.load(f))
-    except Exception:
+    except FileNotFoundError:
         pass
+    except Exception:
+        log.warning("อ่าน settings.json ไม่ได้ (%s) - ใช้ค่าเริ่มต้นแทน", SETTINGS_FILE, exc_info=True)
     if not isinstance(settings.get("questions"), list):
         settings["questions"] = list(DEFAULT_QUESTIONS)
     settings["questions"] = [str(x).strip() for x in settings["questions"] if str(x).strip()]
@@ -127,8 +132,10 @@ def run_gui(minimized=False):
     try:
         with open(HISTORY_FILE, "r", encoding="utf-8") as f:
             history = json.load(f)
-    except Exception:
+    except FileNotFoundError:
         pass
+    except Exception:
+        log.warning("อ่าน history.json ไม่ได้ (%s) - เริ่มประวัติใหม่", HISTORY_FILE, exc_info=True)
     glossary = load_glossary()
     q = queue.Queue()
     worker = {"thread": None, "stop": threading.Event(), "busy": False}
@@ -139,14 +146,14 @@ def run_gui(minimized=False):
             with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
                 json.dump(settings, f, ensure_ascii=False, indent=1)
         except Exception:
-            pass
+            log.warning("บันทึก settings.json ไม่ได้ (%s)", SETTINGS_FILE, exc_info=True)
 
     def save_history():
         try:
             with open(HISTORY_FILE, "w", encoding="utf-8") as f:
                 json.dump(history[-MAX_HISTORY:], f, ensure_ascii=False, indent=1)
         except Exception:
-            pass
+            log.warning("บันทึก history.json ไม่ได้ (%s)", HISTORY_FILE, exc_info=True)
 
     # ---------- เปิดอัตโนมัติเมื่อเปิดเครื่อง (ทางลัดในโฟลเดอร์ Startup)
     def startup_lnk():
@@ -179,6 +186,7 @@ def run_gui(minimized=False):
                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             set_status("ตั้งเปิดอัตโนมัติเมื่อเปิดเครื่องแล้ว (Startup)" if os.path.exists(lnk) else "สร้างทางลัด Startup ไม่สำเร็จ")
         except Exception as e:
+            log.warning("สร้างทางลัด Startup ไม่สำเร็จ", exc_info=True)
             set_status("สร้างทางลัด Startup ไม่สำเร็จ: " + str(e))
 
     # ==================== เลย์เอาต์มาตรฐาน ====================
@@ -533,6 +541,7 @@ def run_gui(minimized=False):
                     buf.append(piece); q.put(("qa_piece", piece))
                 q.put(("qa_done", "".join(buf), stats, time.time() - t0))
             except Exception as e:
+                log.exception("ถามโมเดลผิดพลาด (model=%s)", st["model"])
                 q.put(("qa_error", str(e)))
         threading.Thread(target=job, daemon=True).start()
 
@@ -602,6 +611,7 @@ def run_gui(minimized=False):
                     buf.append(piece); q.put(("piece", piece))
                 q.put(("done", "".join(buf), stats, time.time() - t0, text, level))
             except Exception as e:
+                log.exception("แปลผิดพลาด (model=%s, level=%s)", st["model"], level)
                 q.put(("error", str(e)))
         worker["thread"] = threading.Thread(target=job, daemon=True); worker["thread"].start()
 
@@ -990,6 +1000,7 @@ def run_gui(minimized=False):
                     ids = list_models_openai(base_var.get().strip(), key_var.get().strip())
                     dlg.after(0, lambda: (mcb.configure(values=ids), msg_var.set(f"โหลดได้ {len(ids)} โมเดล เลือกจากรายการได้")))
                 except Exception as e:
+                    log.warning("โหลดรายการโมเดลจาก %s ไม่ได้", base_var.get().strip(), exc_info=True)
                     dlg.after(0, lambda: msg_var.set("โหลดรายการไม่ได้: " + str(e)[:160]))
             threading.Thread(target=job, daemon=True).start()
         ttk.Button(body, text="โหลดรายการโมเดล", command=load_models).grid(row=9, column=2, sticky="w", padx=(6, 0))
@@ -1006,6 +1017,7 @@ def run_gui(minimized=False):
                     out = "".join(stream_chat_openai(b, k, m, [{"role": "user", "content": "แปลเป็นอังกฤษ: สวัสดี ตอบเฉพาะคำแปล"}], 0.2))
                     dlg.after(0, lambda: msg_var.set(f"สำเร็จใน {time.time()-t0:.1f} วินาที · ตอบว่า: {clean_output(out)[:80]}"))
                 except Exception as e:
+                    log.warning("ทดสอบ API %s (โมเดล %s) ไม่ผ่าน", b, m, exc_info=True)
                     dlg.after(0, lambda: msg_var.set("ทดสอบไม่ผ่าน: " + str(e)[:200]))
             threading.Thread(target=job, daemon=True).start()
 
@@ -1051,6 +1063,7 @@ def run_gui(minimized=False):
                     pull_model(name, prog)
                     dlg.after(0, lambda: (pull_msg.set(f"ติดตั้ง {name} เสร็จแล้ว โปรแกรมจะเชื่อมต่อใหม่"), refresh_local_info(), pull_btn.state(["!disabled"]), connect()))
                 except Exception as e:
+                    log.warning("ดาวน์โหลดโมเดล %s ไม่สำเร็จ", name, exc_info=True)
                     dlg.after(0, lambda: (pull_msg.set("ดาวน์โหลดไม่สำเร็จ: " + str(e)[:200]), pull_btn.state(["!disabled"])))
             threading.Thread(target=job, daemon=True).start()
         pull_btn.config(command=do_pull)
@@ -1165,6 +1178,7 @@ def run_gui(minimized=False):
 
 # ---------------------------------------------------------------- main
 if __name__ == "__main__":
+    setup_logging()
     ap = argparse.ArgumentParser(description="Local Translator (Ollama)")
     ap.add_argument("--cli", action="store_true", help="แปลใน console แทนหน้าต่าง")
     ap.add_argument("--level", choices=LEVEL_ORDER, default="general")

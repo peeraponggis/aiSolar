@@ -7,12 +7,15 @@ tts_engine.py - เสียงอ่านคำแปล: edge-tts (เปร�
 """
 import ctypes
 import json
+import logging
 import os
 import queue
 import re
 import sys
 import threading
 import time
+
+log = logging.getLogger(__name__)
 
 FROZEN = bool(getattr(sys, "frozen", False))          # รันจาก exe ที่สร้างด้วย PyInstaller
 BASE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
@@ -115,6 +118,7 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
                     return
             except Exception as e:
                 last = e
+                log.debug("edge-tts ลองครั้งที่ %d ไม่สำเร็จ (%s): %s", attempt + 1, voice, e)
             await asyncio.sleep(0.4 * (attempt + 1))   # ข้อผิดพลาดชั่วคราวของ edge-tts มักผ่านเมื่อลองซ้ำทันที ไม่ต้องรอนาน
         raise last or RuntimeError("edge-tts ไม่ส่งเสียงกลับมา")
     try:
@@ -122,6 +126,8 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
     except Exception:
         # บริการ edge-tts ล่มชั่วคราว -> ใช้เสียงในเครื่องของ Windows แทน เพื่อให้ยังได้ยินเสียง (ปัตตรา/Zira)
         fallback = "Pattara" if voice.startswith("th") else "Zira"
+        log.warning("edge-tts (%s) ล้มเหลวหลังลอง %d ครั้ง - ใช้เสียงในเครื่อง %s แทน",
+                    voice, max_retries, fallback, exc_info=True)
         return sapi_synthesize(text, fallback, rate, out[:-4] + ".wav")
     if clone_id:
         try:
@@ -232,6 +238,7 @@ class TtsPipeline:
                 if not ev.is_set():
                     self.on_event("done", f"อ่านเสียงจบแล้ว ({played} ท่อน)")
             except Exception as e:
+                log.exception("TtsPipeline เล่นเสียงผิดพลาด")
                 self.player.stop()
                 self.on_event("error", str(e))
             finally:
