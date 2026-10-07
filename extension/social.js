@@ -10,7 +10,7 @@
     HOST.includes('youtube')  ? 'YouTube'  :
     HOST.includes('tiktok')   ? 'TikTok'   : HOST;
 
-  const DEFAULT_KW = ['peerapong','aisolar','ai','พีระพงษ์','อ.พี'];
+  const DEFAULT_KW = ['peerapong','aisolar','พีระพงษ์','อ.พี'];
   let keywords = [];
   const sent = new Set();
 
