@@ -6,9 +6,10 @@
 const NEWS_FEEDS = [
   { url: 'https://news.google.com/rss/search?q=(AI%20OR%20%22language%20model%22%20OR%20LLM%20OR%20ปัญญาประดิษฐ์)%20when:3d&hl=th&gl=TH&ceid=TH:th', source: 'Google News (ไทย)' },
   { url: 'https://news.google.com/rss/search?q=(AI%20OR%20LLM%20OR%20%22open%20model%22%20OR%20Ollama)%20when:2d&hl=en-US&gl=US&ceid=US:en', source: 'Google News' },
-  { url: 'https://hnrss.org/newest?q=AI+OR+LLM+OR+model+OR+GPU&count=20', source: 'Hacker News' }
 ];
-const DEFAULT_KEYWORDS = ['peerapong','aisolar','ai','พีระพงษ์','อ.พี'];
+// hnrss.org ล่ม (502) ตั้งแต่ ต.ค. 2026 -> ใช้ HN Algolia API (JSON) แทน
+const HN_QUERIES = ['LLM', 'AI model', 'Ollama', 'GPU'];
+const DEFAULT_KEYWORDS = ['peerapong','aisolar','พีระพงษ์','อ.พี'];
 
 function stripTags(s){ return (s||'').replace(/<[^>]+>/g,' ').replace(/&[a-z]+;/gi,' ').replace(/\s+/g,' ').trim(); }
 function pick(block, tag){
@@ -42,6 +43,20 @@ async function fetchNews(){
       const xml = await res.text();
       all = all.concat(parseRSS(xml, f.source).slice(0, 15));
     }catch(e){ /* ข้าม feed ที่ล้มเหลว */ }
+  }
+  for(const q of HN_QUERIES){
+    try{
+      const res = await fetch('https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=10&query='+encodeURIComponent(q), { cache:'no-store' });
+      if(!res.ok) continue;
+      const j = await res.json();
+      for(const h of j.hits || []){
+        if(!h.title) continue;
+        all.push({ type:'news', source:'Hacker News', title:h.title,
+          url: h.url || ('https://news.ycombinator.com/item?id='+h.objectID),
+          snippet: `Points: ${h.points||0} # Comments: ${h.num_comments||0}`,
+          time: (h.created_at_i||0)*1000 || Date.now() });
+      }
+    }catch(e){}
   }
   return all;
 }
