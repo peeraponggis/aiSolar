@@ -97,8 +97,10 @@ def sapi_synthesize(text, voice_name, rate, out_wav):
     return out_wav
 
 
-def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_retries=5):
-    """สังเคราะห์เสียงเป็นไฟล์ (mp3 หรือ wav ถ้าโคลน) คืน path; วนลองซ้ำเหมือน yt เพราะ edge-tts ล้มเหลวชั่วคราวบ่อย"""
+def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_retries=5, deadline=None):
+    """สังเคราะห์เสียงเป็นไฟล์ (mp3 หรือ wav ถ้าโคลน) คืน path; วนลองซ้ำเหมือน yt เพราะ edge-tts ล้มเหลวชั่วคราวบ่อย
+    deadline (วินาที): ถ้า edge-tts ยังไม่ได้เสียงภายในเวลานี้ ให้ใช้เสียงในเครื่องแทนทันที (ปกติใช้ ~0.8 วินาที
+    แต่บางครั้งบริการตอบ "No audio was received" หลัง 3-4 วินาทีแล้วลองซ้ำอีก ~7 วินาที ทำให้เสียงเงียบนาน)"""
     import asyncio
     import edge_tts
     os.makedirs(TTS_TMP, exist_ok=True)
@@ -121,13 +123,21 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
                 log.debug("edge-tts ลองครั้งที่ %d ไม่สำเร็จ (%s): %s", attempt + 1, voice, e)
             await asyncio.sleep(0.4 * (attempt + 1))   # ข้อผิดพลาดชั่วคราวของ edge-tts มักผ่านเมื่อลองซ้ำทันที ไม่ต้องรอนาน
         raise last or RuntimeError("edge-tts ไม่ส่งเสียงกลับมา")
+    async def run_with_deadline():
+        if deadline:
+            await asyncio.wait_for(run(), timeout=deadline)
+        else:
+            await run()
     try:
-        asyncio.run(run())
-    except Exception:
-        # บริการ edge-tts ล่มชั่วคราว -> ใช้เสียงในเครื่องของ Windows แทน เพื่อให้ยังได้ยินเสียง (ปัตตรา/Zira)
+        asyncio.run(run_with_deadline())
+    except Exception as e:
+        # บริการ edge-tts ล่ม/ช้าชั่วคราว -> ใช้เสียงในเครื่องของ Windows แทน เพื่อให้ยังได้ยินเสียง (ปัตตรา/Zira)
         fallback = "Pattara" if voice.startswith("th") else "Zira"
-        log.warning("edge-tts (%s) ล้มเหลวหลังลอง %d ครั้ง - ใช้เสียงในเครื่อง %s แทน",
-                    voice, max_retries, fallback, exc_info=True)
+        if isinstance(e, asyncio.TimeoutError):
+            log.info("edge-tts (%s) ช้าเกิน %.1f วินาที - ใช้เสียงในเครื่อง %s แทนสำหรับท่อนนี้", voice, deadline, fallback)
+        else:
+            log.warning("edge-tts (%s) ล้มเหลวหลังลอง %d ครั้ง - ใช้เสียงในเครื่อง %s แทน",
+                        voice, max_retries, fallback, exc_info=True)
         return sapi_synthesize(text, fallback, rate, out[:-4] + ".wav")
     if clone_id:
         try:
@@ -192,10 +202,34 @@ def pop_sentences(buf, final=False, min_len=60, max_len=140):
     return out, buf
 
 
+_warmed = {}
+EDGE_DEADLINE_S = 4.0
+
+
+def warm_up_tts(voice, min_interval=120):
+    """edge-tts ครั้งแรกหลังว่างนานใช้ ~9 วินาที (ต่อเซิร์ฟเวอร์ใหม่/ลองซ้ำ) ครั้งถัดไป ~1.5 วินาที
+    จึงสังเคราะห์ข้อความสั้นทิ้งไว้ล่วงหน้าในเธรดพื้นหลัง ให้ท่อนแรกของการอ่านจริงไม่ต้องรอส่วนนี้"""
+    if not voice or voice.startswith("sapi:") or time.time() - _warmed.get(voice, 0) < min_interval:
+        return
+    _warmed[voice] = time.time()
+
+    def run():
+        # วัดจริง: คำขอแรกของโปรเซสล้มเหลว "No audio was received" แล้วลองซ้ำ (~10 วินาที) และคำขอถัดมาทันที
+        # ยังช้า 4-7 วินาที จึงยิงสองครั้งติดกัน หลังจากนั้นเร็วคงที่ ~0.8 วินาที แม้สร้างพร้อมกัน 3 ท่อน
+        for _ in range(2):
+            try:
+                path = tts_synthesize("สวัสดี" if voice.startswith("th") else "Hello", voice, max_retries=2)
+                os.remove(path)
+            except Exception:
+                log.debug("อุ่นเครื่อง edge-tts (%s) ไม่สำเร็จ", voice, exc_info=True)
+    threading.Thread(target=run, daemon=True).start()
+
+
 class TtsPipeline:
     """รับข้อความทีละท่อนขณะกำลังแปล สร้างเสียงแบบขนาน (สูงสุด 3 ท่อน) และเล่นตามลำดับทันทีที่ท่อนแรกเสร็จ
     begin() -> feed() ซ้ำได้ -> finish(); stop() หยุดทุกอย่างและทิ้งท่อนที่รอ (เสียงเก่าจะไม่ซ้อนกับเสียงใหม่)
-    on_event(kind, msg): 'status' ระหว่างทำงาน, 'done' เมื่อจบ, 'error' เมื่อผิดพลาด"""
+    on_event(kind, msg): 'status' ระหว่างทำงาน, 'playing' (session, ลำดับท่อน เริ่มที่ 0) ตอนเริ่มเล่นแต่ละท่อน,
+    'done' เมื่อจบ, 'error' เมื่อผิดพลาด"""
     def __init__(self, on_event):
         self.on_event = on_event
         self.stop_event = threading.Event()
@@ -204,6 +238,7 @@ class TtsPipeline:
         self.pool = None
         self.jobs = None
         self.count = 0
+        self.session = 0
 
     @property
     def running(self):
@@ -217,7 +252,8 @@ class TtsPipeline:
         self.pool = ThreadPoolExecutor(max_workers=3)
         self.jobs = queue.Queue()
         self.count = 0
-        ev, jobs, pool = self.stop_event, self.jobs, self.pool
+        self.session += 1
+        ev, jobs, pool, sid = self.stop_event, self.jobs, self.pool, self.session
 
         def run():
             played = 0
@@ -231,6 +267,7 @@ class TtsPipeline:
                         break
                     played += 1
                     self.on_event("status", f"กำลังอ่านท่อนที่ {played} ...")
+                    self.on_event("playing", (sid, played - 1))
                     self.player.play(path)
                     while self.player.is_playing() and not ev.is_set():
                         time.sleep(0.1)
@@ -246,10 +283,15 @@ class TtsPipeline:
         self.thread = threading.Thread(target=run, daemon=True); self.thread.start()
 
     def feed(self, text):
+        """คืน True ถ้ารับท่อนนี้เข้าคิว (ลำดับท่อนตรงกับลำดับ 'playing' ที่จะส่งออกมา)"""
         if self.jobs is None or self.stop_event.is_set() or not text.strip():
-            return
+            return False
         self.count += 1
-        self.jobs.put(self.pool.submit(tts_synthesize, text, self.voice, self.rate, "+0Hz", self.clone_id))
+        # เสียงโคลนต้องใช้ edge-tts ก่อนแปลงเสียง จึงไม่ตัดเวลา (ช้าเป็นปกติอยู่แล้ว)
+        deadline = None if self.clone_id else EDGE_DEADLINE_S
+        self.jobs.put(self.pool.submit(tts_synthesize, text, self.voice, self.rate, "+0Hz", self.clone_id,
+                                       deadline=deadline))
+        return True
 
     def finish(self):
         if self.jobs is not None:

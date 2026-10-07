@@ -278,9 +278,10 @@ def run_gui(minimized=False):
     tts_row = Flow(right, padding=(0, 6, 0, 0)); tts_row.pack(side="bottom", fill="x")   # แถวเสียงอยู่ใต้ช่องคำแปลเสมอ
     dst = tk.Text(right, wrap="word", font=text_font, padx=8, pady=6, relief="solid", borderwidth=1, background="#F7F8F4", height=3, width=20)
     dst.pack(fill="both", expand=True)
+    dst.tag_configure("speaking", background="#FFE58A")
 
     # ---------- แถวเสียงอ่าน (ฟังก์ชันจากโปรเจกต์ yt)
-    tts_row.add(ttk.Button(tts_row, text="🔊 อ่านคำแปล", command=lambda: speech.speak_text(dst.get("1.0", "end"))), padx=(0, 4))
+    tts_row.add(ttk.Button(tts_row, text="🔊 อ่านคำแปล", command=lambda: speech.speak_text(dst.get("1.0", "end"), highlight=True)), padx=(0, 4))
     tts_row.add(ttk.Button(tts_row, text="⏹", width=3, command=lambda: speech.stop_speech()), padx=(0, 8))
     voice_names = list(TTS_VOICES.keys())
     clone_profiles = list_clone_profiles()
@@ -288,7 +289,7 @@ def run_gui(minimized=False):
     clone_ids = {f"โคลน: {p.get('name', p['id'])}": p["id"] for p in clone_profiles}
     tts_voice_var = tk.StringVar(value=settings["ttsVoice"] if settings["ttsVoice"] in voice_names else voice_names[0])
     vcb = ttk.Combobox(tts_row, textvariable=tts_voice_var, values=voice_names, state="readonly", width=15); tts_row.add(vcb, padx=(0, 4))
-    vcb.bind("<<ComboboxSelected>>", lambda e: (settings.update(ttsVoice=tts_voice_var.get()), save_settings()))
+    vcb.bind("<<ComboboxSelected>>", lambda e: (settings.update(ttsVoice=tts_voice_var.get()), save_settings(), speech.warm_up()))
     tts_rate_var = tk.StringVar(value=settings["ttsRate"] if settings["ttsRate"] in TTS_RATES else "ปกติ")
     rcb = ttk.Combobox(tts_row, textvariable=tts_rate_var, values=list(TTS_RATES.keys()), state="readonly", width=7); tts_row.add(rcb)
     rcb.bind("<<ComboboxSelected>>", lambda e: (settings.update(ttsRate=tts_rate_var.get()), save_settings()))
@@ -355,7 +356,8 @@ def run_gui(minimized=False):
 
     def finish(result, stats, elapsed, text, level):
         result = clean_output(result)
-        dst.delete("1.0", "end"); dst.insert("1.0", result)
+        if dst.get("1.0", "end-1c") != result:   # เขียนใหม่เฉพาะเมื่อต่างจริง ไม่งั้นไฮไลท์ท่อนที่กำลังอ่านจะหาย
+            dst.delete("1.0", "end"); dst.insert("1.0", result)
         st["last_result"] = result
         if result and not worker["stop"].is_set():
             history.append({"ts": time.strftime("%Y-%m-%d %H:%M"), "level": level, "src": text, "dst": result})
@@ -375,8 +377,26 @@ def run_gui(minimized=False):
         else:
             speech.stream_speak_end(result)
 
+    # ---------- ไฮไลท์ท่อนที่กำลังอ่านในกล่องคำแปล: ค้นข้อความของท่อนต่อจากท่อนก่อนหน้า (ไม่ใช้ตำแหน่งตายตัว
+    # เพราะข้อความในกล่องอาจถูกเขียนใหม่ตอนแปลจบ) ถ้าไม่เจอทั้งท่อนให้ลองด้วย 20 ตัวอักษรแรก
+    speak_hl = {"pos": "1.0"}
+
+    def on_speaking(snippet):
+        dst.tag_remove("speaking", "1.0", "end")
+        if not snippet:
+            speak_hl["pos"] = "1.0"; return
+        for probe in (snippet, snippet[:20]):
+            start = dst.search(probe, speak_hl["pos"], stopindex="end") or dst.search(probe, "1.0", stopindex="end")
+            if start:
+                end = f"{start}+{len(snippet)}c"
+                dst.tag_add("speaking", start, end)
+                speak_hl["pos"] = end
+                if not worker["busy"]:
+                    dst.see(start)
+                return
+
     # ---------- เสียงอ่าน: แบ่งท่อน สร้างขนาน เล่นทันทีที่ท่อนแรกเสร็จ (ดู speech_controller.py)
-    speech = SpeechController(q, set_status, tts_voice_var, tts_rate_var, clone_ids, st)
+    speech = SpeechController(q, set_status, tts_voice_var, tts_rate_var, clone_ids, st, on_speaking=on_speaking)
 
     qa_panel = QAPanel(root, btns, bottom_box, settings, save_settings, set_status,
                        text_font, small_font, worker, st, src, dst, q, speech.speak_text, speech.stop_speech)
