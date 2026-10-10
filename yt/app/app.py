@@ -74,6 +74,8 @@ async def generate_video(
     overlay_text: str = Query(""),
     overlay_font: str = Query("sarabun"),
     overlay_animation: str = Query("static"),
+    duration_preset: str = Query("short"),
+    clone_tau: int = Query(30),
 ):
     project_id = orchestrator.create_project(topic)
     skip_fetch = False
@@ -113,8 +115,11 @@ async def generate_video(
             "base_pitch": max(-30, min(30, tone_pitch)),
             "variation": max(0, min(30, tone_var)),
         }
+    valid_presets = {"short", "medium", "long"}
+    dur_preset = duration_preset if duration_preset in valid_presets else "short"
+    tau_val = max(10, min(80, clone_tau)) / 100.0
     vs = VoiceSettings(voice=voice, rate=rate, pitch=pitch, clone_voice_id=clone_voice_id,
-                       tone=tone_val)
+                       tone=tone_val, clone_tau=tau_val)
     if aspect_ratio == "both":
         ratios = ["9:16", "16:9"]
     elif aspect_ratio in ("9:16", "16:9"):
@@ -142,7 +147,8 @@ async def generate_video(
                               aspect_ratios=ratios,
                               mode=gen_mode,
                               voice_b=voice_b,
-                              overlay_opts=overlay_opts)
+                              overlay_opts=overlay_opts,
+                              duration_preset=dur_preset)
     )
     return {"id": project_id, "status": "processing"}
 

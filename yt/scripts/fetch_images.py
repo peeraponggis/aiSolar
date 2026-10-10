@@ -21,16 +21,16 @@ def _get_pexels_key() -> str:
     return os.getenv("PEXELS_API_KEY", "")
 
 
-def _get_keywords_from_topic(topic: str) -> list[str]:
+def _get_keywords_from_topic(topic: str, count: int = 4) -> list[str]:
     try:
         import google.generativeai as genai
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         model = genai.GenerativeModel("gemini-3.6-flash")
         prompt = (
-            f"Given this YouTube Shorts topic: \"{topic}\"\n"
-            "Return exactly 4 English search keywords for finding relevant stock videos/photos.\n"
+            f"Given this YouTube video topic: \"{topic}\"\n"
+            f"Return exactly {count} English search keywords for finding relevant stock videos/photos.\n"
             "Each keyword should be 1-3 words, suitable for Pexels search.\n"
-            "Focus on visual concepts that would look good as vertical video backgrounds.\n"
+            "Focus on visual concepts that would look good as video backgrounds.\n"
             "Return ONLY a JSON array of strings, nothing else.\n"
             'Example: ["coding laptop", "server room", "artificial intelligence", "technology circuit"]'
         )
@@ -42,7 +42,10 @@ def _get_keywords_from_topic(topic: str) -> list[str]:
     except Exception as e:
         print(f"Keyword generation error: {e}")
         words = topic.split()
-        return [" ".join(words[:3]), "technology", "computer", "digital"]
+        fallback = [" ".join(words[:3]), "technology", "computer", "digital"]
+        while len(fallback) < count:
+            fallback.append("modern technology")
+        return fallback[:count]
 
 
 def _search_pexels_videos(query: str, per_page: int = 1, orientation: str = "portrait") -> list[dict]:
@@ -150,7 +153,7 @@ async def fetch_background_media(project_id: str, topic: str, count: int = 4) ->
     media_dir = os.path.join("projects", project_id, "media")
     os.makedirs(media_dir, exist_ok=True)
 
-    keywords = await asyncio.to_thread(_get_keywords_from_topic, topic)
+    keywords = await asyncio.to_thread(_get_keywords_from_topic, topic, count)
     print(f"Media keywords: {keywords}")
 
     videos = []

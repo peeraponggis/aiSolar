@@ -100,10 +100,12 @@ async def clone_voice(
     reference_audio_path: str,
     output_path: str,
     device: str = "auto",
+    tau: float = 0.3,
 ) -> str:
     import asyncio
     return await asyncio.to_thread(
-        _clone_voice_sync, base_audio_path, reference_audio_path, output_path, device
+        _clone_voice_sync, base_audio_path, reference_audio_path, output_path,
+        device, tau,
     )
 
 
@@ -112,9 +114,11 @@ def _clone_voice_sync(
     reference_audio_path: str,
     output_path: str,
     device: str = "auto",
+    tau: float = 0.3,
 ) -> str:
+    ffmpeg_bin = str(BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe") if (BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe").exists() else "ffmpeg"
     script = f'''
-import sys, os, shutil
+import sys, os, shutil, subprocess
 sys.path.insert(0, r"{BASE_DIR}")
 os.environ["PATH"] = r"F:\\LocalAI\\tools\\ffmpeg" + os.pathsep + os.environ.get("PATH", "")
 
@@ -136,6 +140,7 @@ try:
     converter = ToneColorConverter(
         os.path.join(ckpt_path, "converter", "config.json"),
         device=dev,
+        enable_watermark=False,
     )
     converter.load_ckpt(os.path.join(ckpt_path, "converter", "checkpoint.pth"))
 
@@ -156,7 +161,19 @@ try:
         src_se=source_se,
         tgt_se=target_se,
         output_path=r"{output_path}",
+        tau={tau},
     )
+
+    # Resample from 22050 Hz to 48000 Hz for final video quality
+    resampled = r"{output_path}".replace(".wav", "_48k.wav")
+    subprocess.run([
+        r"{ffmpeg_bin}", "-y",
+        "-i", r"{output_path}",
+        "-ar", "48000", "-acodec", "pcm_s16le",
+        resampled,
+    ], capture_output=True, timeout=60)
+    if os.path.exists(resampled) and os.path.getsize(resampled) > 100:
+        shutil.move(resampled, r"{output_path}")
 
     if dev == "cuda":
         del converter

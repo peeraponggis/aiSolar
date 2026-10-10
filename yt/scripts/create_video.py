@@ -20,6 +20,8 @@ FONT_MAP = {
 }
 
 XFADE_DUR = 0.5
+TRANSITIONS = ["fade", "fadeblack", "slideleft", "slideup", "wipeleft", "circleopen"]
+_ENHANCE = "eq=contrast=1.05:brightness=0.02:saturation=1.1,unsharp=3:3:0.5:3:3:0.0"
 
 
 def _extract_media_order(path: str) -> int:
@@ -30,7 +32,7 @@ def _extract_media_order(path: str) -> int:
 ASPECT_CONFIGS = {
     "9:16": {
         "w": 1080, "h": 1920, "fps": 30,
-        "audio_br": "128k",
+        "audio_br": "192k",
         "pre_w": 1920, "pre_h": 3412,
         "sub_fs": 42, "sub_y": "h-250",
         "sub_max_chars": 35,
@@ -38,7 +40,7 @@ ASPECT_CONFIGS = {
     },
     "16:9": {
         "w": 1920, "h": 1080, "fps": 30,
-        "audio_br": "192k",
+        "audio_br": "256k",
         "pre_w": 3412, "pre_h": 1920,
         "sub_fs": 38, "sub_y": "h-250",
         "sub_max_chars": 65,
@@ -69,9 +71,9 @@ def _check_nvenc() -> bool:
 
 def _video_enc_args() -> list[str]:
     if _check_nvenc():
-        return ["-c:v", "h264_nvenc", "-preset", "p4", "-rc", "vbr", "-cq", "23",
+        return ["-c:v", "h264_nvenc", "-preset", "p5", "-rc", "vbr", "-cq", "20",
                 "-profile:v", "high", "-level", "4.1", "-pix_fmt", "yuv420p"]
-    return ["-c:v", "libx264", "-preset", "fast", "-crf", "23",
+    return ["-c:v", "libx264", "-preset", "medium", "-crf", "20",
             "-profile:v", "high", "-level", "4.1", "-pix_fmt", "yuv420p"]
 
 
@@ -261,8 +263,10 @@ def _mix_with_bgm(narration_path: str, bgm_path: str, output_path: str,
         "-i", narration_path,
         "-stream_loop", "-1", "-i", bgm_path,
         "-filter_complex",
+        f"[0:a]acompressor=threshold=-20dB:ratio=3:attack=5:release=50[voice];"
         f"[1:a]volume={volume:.2f},afade=t=out:st={fade_start:.2f}:d=2[bgm];"
-        f"[0:a][bgm]amix=inputs=2:duration=first:normalize=0[aout]",
+        f"[voice][bgm]amix=inputs=2:duration=first:normalize=0,"
+        f"loudnorm=I=-16:LRA=11:TP=-1.5[aout]",
         "-map", "[aout]",
         "-c:a", "libmp3lame", "-q:a", "2",
         output_path,
@@ -370,6 +374,7 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
         f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2",
         f"fps={cfg['fps']}",
         "format=yuv420p",
+        _ENHANCE,
     ]
     if subtitle_filter:
         vf_parts.append(subtitle_filter)
@@ -380,6 +385,7 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
         "-i", audio_path,
         "-vf", ",".join(vf_parts),
         *_video_enc_args(),
+        "-af", "loudnorm=I=-16:LRA=11:TP=-1.5",
         "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
         "-movflags", "+faststart",
@@ -412,8 +418,8 @@ def _convert_images_to_clips(images: list[str], total_duration: float,
             "-loop", "1", "-t", f"{seg_dur + 1:.2f}", "-i", img,
             "-vf",
             f"scale={W}:{H}:force_original_aspect_ratio=increase,"
-            f"crop={W}:{H},setsar=1,fps={FPS},format=yuv420p",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "18",
+            f"crop={W}:{H},setsar=1,fps={FPS},format=yuv420p,{_ENHANCE}",
+            *_video_enc_args(),
             "-an", clip_path,
         ]
         result = subprocess.run(cmd, capture_output=True, timeout=60,
@@ -435,6 +441,7 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
             f"[0:v]trim=duration={duration:.2f},setpts=PTS-STARTPTS,"
             f"scale={W}:{H}:force_original_aspect_ratio=increase,"
             f"crop={W}:{H},setsar=1,fps={FPS},format=yuv420p,"
+            f"{_ENHANCE},"
             f"tpad=stop_mode=clone:stop_duration=1[merged]"
         )
     else:
@@ -446,14 +453,15 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
                 f"crop={W}:{H},setsar=1,fps={FPS},setpts=PTS-STARTPTS,"
                 f"tpad=stop_mode=clone:stop_duration={seg_dur:.2f},"
                 f"trim=duration={seg_dur:.2f},setpts=PTS-STARTPTS,"
-                f"format=yuv420p[c{i}]"
+                f"format=yuv420p,{_ENHANCE}[c{i}]"
             )
         prev = "c0"
         for i in range(n - 1):
             offset = (i + 1) * (seg_dur - fade)
             out_label = f"x{i}" if i < n - 2 else "xfinal"
+            trans = TRANSITIONS[i % len(TRANSITIONS)]
             filter_parts.append(
-                f"[{prev}][c{i+1}]xfade=transition=fade:duration={fade:.2f}"
+                f"[{prev}][c{i+1}]xfade=transition={trans}:duration={fade:.2f}"
                 f":offset={offset:.2f}[{out_label}]"
             )
             prev = out_label
@@ -465,6 +473,10 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
     else:
         final_map = "[merged]"
 
+    filter_parts.append(
+        f"[{n}:a]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
+    )
+
     cmd = [FFMPEG, "-y"]
     for clip in clips:
         cmd.extend(["-i", clip])
@@ -473,7 +485,7 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
     cmd.extend([
         "-filter_complex", ";".join(filter_parts),
         "-map", final_map,
-        "-map", f"{n}:a",
+        "-map", "[aout]",
         *_video_enc_args(),
         "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
@@ -532,7 +544,8 @@ def _create_video_with_images(images: list[str], audio_path: str,
         filter_parts.append(
             f"[{i}:v]scale={pre_w}:{pre_h},zoompan=z='{zoom}'"
             f":x='{x}':y='{y}'"
-            f":d={frames_per_seg}:s={W}x{H}:fps={FPS},format=yuv420p[v{i}]"
+            f":d={frames_per_seg}:s={W}x{H}:fps={FPS},"
+            f"format=yuv420p,{_ENHANCE}[v{i}]"
         )
 
     if n == 1:
@@ -543,8 +556,9 @@ def _create_video_with_images(images: list[str], audio_path: str,
         for i in range(n - 1):
             offset = (i + 1) * (seg_dur - fade)
             out_label = f"xi{i}" if i < n - 2 else "vcxfade"
+            trans = TRANSITIONS[i % len(TRANSITIONS)]
             filter_parts.append(
-                f"[{prev}][v{i+1}]xfade=transition=fade:duration={fade:.2f}"
+                f"[{prev}][v{i+1}]xfade=transition={trans}:duration={fade:.2f}"
                 f":offset={offset:.2f}[{out_label}]"
             )
             prev = out_label
@@ -556,6 +570,10 @@ def _create_video_with_images(images: list[str], audio_path: str,
     else:
         final_map = "[vconcat]"
 
+    filter_parts.append(
+        f"[{n}:a]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
+    )
+
     cmd = [FFMPEG, "-y"]
     for img in images:
         cmd.extend(["-loop", "1", "-i", img])
@@ -564,7 +582,7 @@ def _create_video_with_images(images: list[str], audio_path: str,
     cmd.extend([
         "-filter_complex", ";".join(filter_parts),
         "-map", final_map,
-        "-map", f"{n}:a",
+        "-map", "[aout]",
         *_video_enc_args(),
         "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",
@@ -605,7 +623,8 @@ def _create_simple_slideshow(images: list[str], audio_path: str,
     for i in range(n):
         filter_parts.append(
             f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=decrease,"
-            f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,fps={FPS},format=yuv420p[s{i}]"
+            f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,fps={FPS},"
+            f"format=yuv420p,{_ENHANCE}[s{i}]"
         )
 
     if n == 1:
@@ -615,8 +634,9 @@ def _create_simple_slideshow(images: list[str], audio_path: str,
         for i in range(n - 1):
             offset = (i + 1) * (seg_dur - fade)
             out_label = f"ss{i}" if i < n - 2 else "ssxfade"
+            trans = TRANSITIONS[i % len(TRANSITIONS)]
             filter_parts.append(
-                f"[{prev}][s{i+1}]xfade=transition=fade:duration={fade:.2f}"
+                f"[{prev}][s{i+1}]xfade=transition={trans}:duration={fade:.2f}"
                 f":offset={offset:.2f}[{out_label}]"
             )
             prev = out_label
@@ -628,10 +648,14 @@ def _create_simple_slideshow(images: list[str], audio_path: str,
     else:
         final_map = "[slideshow]"
 
+    filter_parts.append(
+        f"[{n}:a]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
+    )
+
     cmd.extend([
         "-filter_complex", ";".join(filter_parts),
         "-map", final_map,
-        "-map", f"{n}:a",
+        "-map", "[aout]",
         *_video_enc_args(),
         "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
         "-t", f"{duration + 0.5:.2f}",

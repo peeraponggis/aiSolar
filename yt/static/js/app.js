@@ -11,6 +11,7 @@ let selectedMode = "narration";
 let selectedVoiceB = "male";
 let selectedTone = "cheerful";
 let selectedAspectRatios = ["9:16"];
+let selectedDuration = "short";
 let bgmFilename = "";
 let consoleExpanded = false;
 let logLastTimestamp = 0;
@@ -165,6 +166,25 @@ function selectTone(value) {
   }
 }
 
+const DURATION_THRESHOLDS = {
+  short:  { warn: 50, over: 60 },
+  medium: { warn: 120, over: 180 },
+  long:   { warn: 180, over: 300 },
+};
+
+function selectDuration(preset) {
+  selectedDuration = preset;
+  document.querySelectorAll("[data-dur]").forEach(b => {
+    b.classList.toggle("active", b.dataset.dur === preset);
+  });
+  updateScriptCounter();
+}
+
+function updateTauLabel() {
+  const v = parseInt(document.getElementById("tauSlider").value);
+  document.getElementById("tauLabel").textContent = (v / 100).toFixed(2);
+}
+
 function selectMode(mode) {
   selectedMode = mode;
   document.querySelectorAll("[data-mode]").forEach((b) => {
@@ -213,8 +233,9 @@ function updateScriptCounter() {
   const chars = cleaned.length;
   const thaiRate = 8;
   const estSec = Math.round(chars / thaiRate);
-  el.className = "script-counter" + (estSec > 60 ? " over" : estSec > 50 ? " warn" : "");
-  const icon = estSec > 60 ? "!!" : estSec > 50 ? "!" : "";
+  const th = DURATION_THRESHOLDS[selectedDuration] || DURATION_THRESHOLDS.short;
+  el.className = "script-counter" + (estSec > th.over ? " over" : estSec > th.warn ? " warn" : "");
+  const icon = estSec > th.over ? "!!" : estSec > th.warn ? "!" : "";
   el.innerHTML = `<span>${chars} ตัวอักษร</span><span>~${estSec} วินาที ${icon}</span>`;
 }
 
@@ -845,6 +866,8 @@ async function startGenerate() {
     mode: selectedMode,
     voice_b: selectedMode === "dialogue" ? selectedVoiceB : "",
     tone: selectedTone,
+    duration_preset: selectedDuration,
+    clone_tau: document.getElementById("tauSlider").value,
     tone_var: selectedTone === "custom" ? (document.getElementById("customToneVar").value || 10) : 0,
     tone_rate: selectedTone === "custom" ? (document.getElementById("customToneRate").value || 0) : 0,
     tone_pitch: selectedTone === "custom" ? (document.getElementById("customTonePitch").value || 0) : 0,
@@ -1061,14 +1084,17 @@ async function rebuildProject(projectId) {
 function selectCloneVoice(voiceId) {
   cloneVoiceId = voiceId;
   const info = document.getElementById("cloneVoiceInfo");
+  const tauRow = document.getElementById("cloneTauRow");
   if (voiceId) {
     info.classList.remove("hidden");
+    tauRow.classList.remove("hidden");
     const sel = document.getElementById("cloneVoiceSelect");
     const opt = sel.options[sel.selectedIndex];
     document.getElementById("cloneVoiceName").textContent = opt.text;
     document.getElementById("clonePreview").src = `/api/voices/${voiceId}/preview`;
   } else {
     info.classList.add("hidden");
+    tauRow.classList.add("hidden");
   }
 }
 
@@ -1164,6 +1190,14 @@ const HELP_TEXTS = {
   tone: {
     title: "โทนเสียง",
     body: "ปรับอารมณ์/โทนเสียง TTS ให้ไม่ราบเรียบ โดยใช้ SSML prosody variation ต่อประโยค\n\n<b>ปกติ</b> — เสียงราบเรียบแบบดั้งเดิม ไม่มี variation\n<b>สนุกสนาน</b> — เสียงสดใส มีชีวิตชีวา เหมาะกับ content ทั่วไป (แนะนำ)\n<b>ตื่นเต้น</b> — เร็ว กระตือรือร้น เหมาะกับข่าวเทค/เปิดตัวสินค้า\n<b>อบอุ่น</b> — เสียงนุ่มนวล เป็นกันเอง เหมาะกับ tutorial\n<b>จริงจัง</b> — เสียงหนักแน่น ช้าลงเล็กน้อย เหมาะกับเนื้อหาวิชาการ\n<b>ผู้ประกาศข่าว</b> — จังหวะชัดเจน เหมาะกับรายงานข่าว\n<b>กำหนดเอง</b> — ปรับค่า variation, rate offset, pitch offset ตามต้องการ"
+  },
+  duration: {
+    title: "ความยาวคลิป",
+    body: "เลือกความยาวของวิดีโอที่จะสร้าง\n\n<b>Shorts (45-60 วินาที)</b> — สำหรับ YouTube Shorts / TikTok / Reels\nใช้สื่อ 4 คลิป, สคริปต์ 5 ส่วน\n\n<b>ปานกลาง (2-3 นาที)</b> — เนื้อหาละเอียดขึ้น\nใช้สื่อ 8 คลิป, สคริปต์ 8 ส่วน\n\n<b>ยาว (3-5 นาที)</b> — เนื้อหาเชิงลึก\nใช้สื่อ 12 คลิป, สคริปต์ 11 ส่วน\n\nตัวนับสคริปต์จะปรับ threshold ตามความยาวที่เลือก"
+  },
+  tau: {
+    title: "ระดับการโคลนเสียง (tau)",
+    body: "ควบคุมความเข้มในการแปลงเสียงให้เหมือนเสียงอ้างอิง\n\n<b>ค่าต่ำ (0.10-0.20)</b> — เสียงชัด คุณภาพดี แต่ยังคล้ายเสียง TTS ต้นทาง\n<b>ค่ากลาง (0.25-0.35)</b> — สมดุลระหว่างความชัดกับความเหมือน (แนะนำ)\n<b>ค่าสูง (0.40-0.80)</b> — เหมือนเสียงอ้างอิงมาก แต่อาจมี artifact\n\n<b>คำแนะนำเสียงอ้างอิง:</b>\n• ยาว 20-30 วินาที (ไม่ต่ำกว่า 10 วินาที)\n• ผู้พูดคนเดียว พูดชัด\n• ไม่มีเสียงรบกวน/เพลงประกอบ\n• ใช้ไฟล์ WAV จะได้คุณภาพดีที่สุด"
   },
   clone: {
     title: "โคลนเสียง (OpenVoice V2)",
