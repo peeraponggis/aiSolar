@@ -39,6 +39,14 @@
         <span id="pitchLabel">ปกติ</span>
       </div>
       <div class="setting-row">
+        <label>ความยาว <button class="help-btn" onclick="showHelp('duration')">?</button></label>
+        <div class="duration-toggle">
+          <button class="duration-btn active" data-dur="short" onclick="selectDuration('short')">Shorts</button>
+          <button class="duration-btn" data-dur="medium" onclick="selectDuration('medium')">ปานกลาง</button>
+          <button class="duration-btn" data-dur="long" onclick="selectDuration('long')">ยาว</button>
+        </div>
+      </div>
+      <div class="setting-row">
         <label>โหมด <button class="help-btn" onclick="showHelp('mode')">?</button></label>
         <div class="voice-toggle">
           <button class="voice-btn active" data-mode="narration" onclick="selectMode('narration')">บรรยาย</button>
@@ -101,6 +109,11 @@
         <span id="cloneVoiceName"></span>
         <audio id="clonePreview" controls></audio>
         <button class="clone-remove-btn" onclick="removeCloneVoice()">ลบ</button>
+      </div>
+      <div id="cloneTauRow" class="setting-row hidden">
+        <label>ระดับโคลน <button class="help-btn" onclick="showHelp('tau')">?</button></label>
+        <input type="range" id="tauSlider" min="10" max="80" value="30" oninput="updateTauLabel()">
+        <span id="tauLabel">0.30</span>
       </div>
     </div>
   </section>

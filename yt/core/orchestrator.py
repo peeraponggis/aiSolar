@@ -5,7 +5,7 @@ import uuid
 import traceback
 from dataclasses import dataclass
 from core.logger import ProjectStatus
-from scripts.generate_script import generate_script
+from scripts.generate_script import generate_script, DURATION_PRESETS
 from scripts.generate_audio import generate_audio
 from scripts.create_video import create_video
 from scripts.fetch_images import fetch_background_media
@@ -18,6 +18,7 @@ class VoiceSettings:
     pitch: str = "+0Hz"
     clone_voice_id: str = ""
     tone: str = "normal"
+    clone_tau: float = 0.3
 
 
 class Orchestrator:
@@ -65,7 +66,7 @@ class Orchestrator:
     def list_projects(self) -> list[dict]:
         return [s.to_dict() for s in self.projects.values()]
 
-    async def generate(self, project_id: str, topic: str, voice_settings: VoiceSettings | None = None, skip_media_fetch: bool = False, subtitles: bool = True, persona: str = "", custom_script: str = "", bgm_path: str = "", bgm_volume: float = 0.2, aspect_ratios: list[str] | None = None, mode: str = "narration", voice_b: str = "", overlay_opts: dict | None = None):
+    async def generate(self, project_id: str, topic: str, voice_settings: VoiceSettings | None = None, skip_media_fetch: bool = False, subtitles: bool = True, persona: str = "", custom_script: str = "", bgm_path: str = "", bgm_volume: float = 0.2, aspect_ratios: list[str] | None = None, mode: str = "narration", voice_b: str = "", overlay_opts: dict | None = None, duration_preset: str = "short"):
         vs = voice_settings or VoiceSettings()
         status = self.projects[project_id]
         try:
@@ -78,10 +79,12 @@ class Orchestrator:
 
             if not custom_script.strip():
                 status.log("ระดมสมอง Gemini 3.5 Flash...")
+            preset = DURATION_PRESETS.get(duration_preset, DURATION_PRESETS["short"])
+            status.log(f"ความยาว: {preset['label_th']}")
             status.update("brainstorming", 10)
             script = await generate_script(project_id, topic, voice=vs.voice,
                                            persona=persona, custom_script=custom_script,
-                                           mode=mode)
+                                           mode=mode, duration_preset=duration_preset)
             status.log(f"ได้สคริปต์ {len(script)} ตัวอักษร", "success")
             status.update("script_done", 35, script=script)
 
@@ -99,6 +102,7 @@ class Orchestrator:
                 voice=vs.voice, rate=vs.rate, pitch=vs.pitch,
                 clone_voice_id=vs.clone_voice_id,
                 mode=mode, voice_b=voice_b, tone=vs.tone,
+                clone_tau=vs.clone_tau,
             )
             if vs.clone_voice_id:
                 status.log("ได้เสียง TTS — กำลังโคลนเสียง (OpenVoice V2)...")
@@ -119,7 +123,7 @@ class Orchestrator:
             else:
                 status.log("ดึงสื่อประกอบจาก Pexels...")
                 status.update("creating_video", 75)
-                media = await fetch_background_media(project_id, topic)
+                media = await fetch_background_media(project_id, topic, count=preset["media_count"])
                 status.log(f"ได้สื่อ: {len(media.get('videos',[]))} วิดีโอ, {len(media.get('images',[]))} รูป", "success")
 
             if bgm_path:

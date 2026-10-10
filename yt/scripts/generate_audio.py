@@ -162,14 +162,14 @@ async def _generate_toned_narration(
     filter_parts = []
     for i, clip in enumerate(clip_paths):
         inputs.extend(["-i", clip])
-        filter_parts.append(f"[{i}:a]aresample=24000,aformat=sample_fmts=fltp:channel_layouts=mono[a{i}]")
+        filter_parts.append(f"[{i}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono[a{i}]")
 
     concat_parts = []
     for i in range(len(clip_paths)):
         concat_parts.append(f"[a{i}]")
         if i < len(clip_paths) - 1:
             filter_parts.append(
-                f"aevalsrc=0:s=24000:d={gap_seconds}:c=mono,aformat=sample_fmts=fltp:channel_layouts=mono[gap{i}]"
+                f"aevalsrc=0:s=48000:d={gap_seconds}:c=mono,aformat=sample_fmts=fltp:channel_layouts=mono[gap{i}]"
             )
             concat_parts.append(f"[gap{i}]")
 
@@ -285,16 +285,15 @@ async def _generate_dialogue_audio(
     idx = 0
     for i, clip in enumerate(clip_paths):
         inputs.extend(["-i", clip])
-        filter_parts.append(f"[{idx}:a]aresample=24000,aformat=sample_fmts=fltp:channel_layouts=mono[a{idx}]")
+        filter_parts.append(f"[{idx}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono[a{idx}]")
         idx += 1
 
     concat_parts = []
     for i in range(len(clip_paths)):
         concat_parts.append(f"[a{i}]")
         if i < len(clip_paths) - 1:
-            gap_samples = int(gap_seconds * 24000)
             filter_parts.append(
-                f"aevalsrc=0:s=24000:d={gap_seconds}:c=mono,aformat=sample_fmts=fltp:channel_layouts=mono[gap{i}]"
+                f"aevalsrc=0:s=48000:d={gap_seconds}:c=mono,aformat=sample_fmts=fltp:channel_layouts=mono[gap{i}]"
             )
             concat_parts.append(f"[gap{i}]")
 
@@ -328,6 +327,7 @@ async def generate_audio(
     mode: str = "narration",
     voice_b: str = "",
     tone: str = "normal",
+    clone_tau: float = 0.3,
 ) -> str:
     replacements = load_replacements()
 
@@ -350,19 +350,27 @@ async def generate_audio(
     os.makedirs(output_dir, exist_ok=True)
 
     if clone_voice_id:
-        base_path = os.path.join(output_dir, "base_tts.mp3")
+        base_path = os.path.join(output_dir, "base_tts.wav")
         if tone != "normal":
             await _generate_toned_narration(project_id, processed, voice_name, rate, pitch, tone)
-            import shutil
-            shutil.move(os.path.join(output_dir, "narration.mp3"), base_path)
+            import shutil, subprocess as _sp
+            mp3_path = os.path.join(output_dir, "narration.mp3")
+            _sp.run([FFMPEG, "-y", "-i", mp3_path, "-acodec", "pcm_s16le",
+                     "-ar", "48000", base_path],
+                    capture_output=True, timeout=120)
         else:
-            await _tts_with_retry(processed, voice_name, base_path, rate, pitch)
+            mp3_tmp = os.path.join(output_dir, "base_tts_tmp.mp3")
+            await _tts_with_retry(processed, voice_name, mp3_tmp, rate, pitch)
+            import subprocess as _sp
+            _sp.run([FFMPEG, "-y", "-i", mp3_tmp, "-acodec", "pcm_s16le",
+                     "-ar", "48000", base_path],
+                    capture_output=True, timeout=120)
 
         from scripts.voice_clone import clone_voice, get_reference_path
         ref_path = get_reference_path(clone_voice_id)
         if ref_path:
             output_path = os.path.join(output_dir, "narration.wav")
-            await clone_voice(base_path, ref_path, output_path)
+            await clone_voice(base_path, ref_path, output_path, tau=clone_tau)
         else:
             output_path = os.path.join(output_dir, "narration.mp3")
             os.rename(base_path, output_path)
