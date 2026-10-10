@@ -94,7 +94,6 @@ def _escape_drawtext(text: str) -> str:
     text = text.replace("\\", "\\\\")
     text = text.replace("'", "\u2019")
     text = text.replace(":", "\\:")
-    text = text.replace("%", "%%")
     return text
 
 
@@ -142,6 +141,7 @@ def _build_subtitle_filter(sections: list[str], total_duration: float,
             f = (
                 f"drawtext=fontfile='{font_path}'"
                 f":text='{escaped}'"
+                f":expansion=none"
                 f":fontsize={fontsize}"
                 f":fontcolor=white"
                 f":borderw=3"
@@ -181,6 +181,7 @@ def _build_dialogue_subtitle_filter(
             f = (
                 f"drawtext=fontfile='{font_path}'"
                 f":text='{escaped}'"
+                f":expansion=none"
                 f":fontsize={fontsize}"
                 f":fontcolor={color}"
                 f":borderw=3"
@@ -212,6 +213,7 @@ def _build_overlay_text_filter(text: str, fontsize: int,
     base = (
         f"drawtext=fontfile='{font_path}'"
         f":text='{escaped}'"
+        f":expansion=none"
         f":fontsize={fontsize}"
         f":fontcolor=white"
         f":borderw=2"
@@ -243,6 +245,7 @@ def _build_watermark_filter(fontsize: int) -> str:
     return (
         f"drawtext=fontfile='{font_path}'"
         f":text='{escaped}'"
+        f":expansion=none"
         f":fontsize={fontsize}"
         f":fontcolor=#000080"
         f":borderw=1"
@@ -497,7 +500,11 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
                             encoding="utf-8", errors="replace")
     if result.returncode != 0:
         if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
-            return output_path
+            actual_dur = get_audio_duration(output_path)
+            if actual_dur >= duration * 0.9:
+                return output_path
+            print(f"Partial output ({actual_dur:.1f}s vs {duration:.1f}s expected), retrying without subtitles")
+            os.remove(output_path)
         err = (result.stderr or "unknown error")[-500:]
         print(f"Video clips concat failed: {err}")
         print("Falling back to image slideshow or gradient")
