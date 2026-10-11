@@ -140,8 +140,8 @@ try:
     converter = ToneColorConverter(
         os.path.join(ckpt_path, "converter", "config.json"),
         device=dev,
-        enable_watermark=False,
     )
+    converter.watermark_model = None
     converter.load_ckpt(os.path.join(ckpt_path, "converter", "checkpoint.pth"))
 
     source_se, _ = se_extractor.get_se(
