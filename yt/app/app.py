@@ -99,7 +99,7 @@ async def generate_video(
                 if not src.exists():
                     continue
                 ext = src.suffix.lower()
-                if ext in (".mp4", ".mov", ".avi", ".webm"):
+                if ext in (".mp4", ".mov", ".avi", ".webm", ".gif"):
                     dest = media_dir / f"{idx:02d}_clip{ext}"
                 else:
                     dest = media_dir / f"{idx:02d}_img{ext}"
@@ -307,6 +307,8 @@ async def preview_voice_tts(
     text: str = Query(..., min_length=1),
     voice: str = Query("female"),
     tone: str = Query("normal"),
+    clone_voice_id: str = Query(""),
+    clone_tau: int = Query(30),
 ):
     from scripts.generate_audio import (
         VOICES, TONE_PRESETS, _clean_script_for_tts,
@@ -328,10 +330,32 @@ async def preview_voice_tts(
 
     preview_dir = UPLOAD_DIR / "previews"
     preview_dir.mkdir(parents=True, exist_ok=True)
-    safe = f"preview_{_uuid.uuid4().hex[:8]}.mp3"
-    output = str(preview_dir / safe)
-    await _tts_with_retry(processed, voice_name, output, rate, pitch)
-    return FileResponse(output, media_type="audio/mpeg", filename="preview.mp3")
+    safe = f"preview_{_uuid.uuid4().hex[:8]}"
+    mp3_output = str(preview_dir / f"{safe}.mp3")
+    await _tts_with_retry(processed, voice_name, mp3_output, rate, pitch)
+
+    if clone_voice_id:
+        from scripts.voice_clone import clone_voice, get_reference_path
+        ref_path = get_reference_path(clone_voice_id)
+        if ref_path:
+            import subprocess as _sp
+            wav_base = str(preview_dir / f"{safe}_base.wav")
+            _sp.run([
+                str(BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe")
+                if (BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe").exists()
+                else "ffmpeg",
+                "-y", "-i", mp3_output,
+                "-acodec", "pcm_s16le", "-ar", "48000", wav_base,
+            ], capture_output=True, timeout=60)
+            wav_out = str(preview_dir / f"{safe}_cloned.wav")
+            tau = max(10, min(80, clone_tau)) / 100.0
+            await clone_voice(wav_base, ref_path, wav_out, tau=tau)
+            for tmp in (mp3_output, wav_base):
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+            return FileResponse(wav_out, media_type="audio/wav", filename="preview.wav")
+
+    return FileResponse(mp3_output, media_type="audio/mpeg", filename="preview.mp3")
 
 
 # ── Replacements endpoints ──

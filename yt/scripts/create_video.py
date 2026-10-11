@@ -360,7 +360,7 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
             videos, audio_path, output_path, duration, subtitle_filter, cfg
         )
 
-    if images and len(images) >= 2:
+    if images:
         return _create_video_with_images(
             images, audio_path, output_path, duration, subtitle_filter, cfg
         )
