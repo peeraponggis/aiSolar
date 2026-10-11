@@ -756,7 +756,7 @@ async function previewVoice() {
     const params = new URLSearchParams({ text, voice: selectedVoice, tone: selectedTone });
     if (cloneVoiceId) {
       params.set("clone_voice_id", cloneVoiceId);
-      params.set("clone_tau", document.getElementById("cloneTauSlider")?.value || "30");
+      params.set("clone_tau", document.getElementById("tauSlider")?.value || "30");
     }
     const resp = await fetch(`/api/preview-voice?${params}`, { method: "POST" });
     if (!resp.ok) throw new Error();
