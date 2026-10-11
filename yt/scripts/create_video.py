@@ -29,6 +29,34 @@ def _extract_media_order(path: str) -> int:
     return int(m.group(1)) if m else 999
 
 
+def _compute_segment_durations(
+    n: int, total_duration: float, fade: float,
+    custom_durations: list[float] | None = None,
+) -> list[float]:
+    if not custom_durations or len(custom_durations) != n:
+        if n == 1:
+            return [total_duration]
+        uniform = (total_duration + (n - 1) * fade) / n
+        return [uniform] * n
+
+    has_custom = [(i, d) for i, d in enumerate(custom_durations) if d > 0]
+    auto_indices = [i for i, d in enumerate(custom_durations) if d <= 0]
+    fixed_total = sum(d for _, d in has_custom)
+    overlap = (n - 1) * fade
+    remaining = total_duration + overlap - fixed_total
+    if auto_indices:
+        auto_dur = max(2.0, remaining / len(auto_indices))
+    else:
+        auto_dur = 0
+    result = []
+    for i in range(n):
+        if custom_durations[i] > 0:
+            result.append(custom_durations[i])
+        else:
+            result.append(auto_dur)
+    return result
+
+
 ASPECT_CONFIGS = {
     "9:16": {
         "w": 1080, "h": 1920, "fps": 30,
@@ -289,7 +317,8 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
                        bgm_path: str = "", bgm_volume: float = 0.2,
                        aspect_ratio: str = "9:16",
                        mode: str = "narration",
-                       overlay_opts: dict | None = None) -> str:
+                       overlay_opts: dict | None = None,
+                       media_durations: list[float] | None = None) -> str:
     cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
     W, H = cfg["w"], cfg["h"]
 
@@ -341,28 +370,38 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
 
     videos = [v for v in (background_videos or []) if os.path.exists(v)]
     images = [img for img in (background_images or []) if os.path.exists(img)]
+    durations = media_durations
 
     if images and videos:
         converted = _convert_images_to_clips(images, duration, len(videos), cfg)
         ordered = []
+        dur_map = {}
+        all_sources = list(background_videos or []) + list(background_images or [])
+        if durations and len(durations) == len(all_sources):
+            for src, d in zip(all_sources, durations):
+                dur_map[_extract_media_order(src)] = d
         for v in videos:
             ordered.append((_extract_media_order(v), v))
         for img, conv in zip(images, converted):
             ordered.append((_extract_media_order(img), conv))
         ordered.sort(key=lambda x: x[0])
         all_clips = [clip for _, clip in ordered]
+        sorted_durs = [dur_map.get(k) for k, _ in ordered] if dur_map else None
         return _create_video_with_clips(
-            all_clips, audio_path, output_path, duration, subtitle_filter, cfg
+            all_clips, audio_path, output_path, duration, subtitle_filter, cfg,
+            clip_durations=sorted_durs,
         )
 
     if videos:
         return _create_video_with_clips(
-            videos, audio_path, output_path, duration, subtitle_filter, cfg
+            videos, audio_path, output_path, duration, subtitle_filter, cfg,
+            clip_durations=durations,
         )
 
     if images:
         return _create_video_with_images(
-            images, audio_path, output_path, duration, subtitle_filter, cfg
+            images, audio_path, output_path, duration, subtitle_filter, cfg,
+            img_durations=durations,
         )
 
     bg_path = os.path.join(project_dir, f"background_{ratio_tag}.jpg")
@@ -434,33 +473,38 @@ def _convert_images_to_clips(images: list[str], total_duration: float,
 
 def _create_video_with_clips(clips: list[str], audio_path: str,
                              output_path: str, duration: float,
-                             subtitle_filter: str, cfg: dict) -> str:
+                             subtitle_filter: str, cfg: dict,
+                             clip_durations: list[float] | None = None) -> str:
     W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
     n = len(clips)
+    fade = XFADE_DUR
+
+    seg_durs = _compute_segment_durations(n, duration, fade, clip_durations)
 
     filter_parts = []
     if n == 1:
         filter_parts.append(
-            f"[0:v]trim=duration={duration:.2f},setpts=PTS-STARTPTS,"
+            f"[0:v]trim=duration={seg_durs[0]:.2f},setpts=PTS-STARTPTS,"
             f"scale={W}:{H}:force_original_aspect_ratio=increase,"
             f"crop={W}:{H},setsar=1,fps={FPS},format=yuv420p,"
             f"{_ENHANCE},"
             f"tpad=stop_mode=clone:stop_duration=1[merged]"
         )
     else:
-        fade = XFADE_DUR
-        seg_dur = (duration + (n - 1) * fade) / n
         for i in range(n):
+            sd = seg_durs[i]
             filter_parts.append(
                 f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=increase,"
                 f"crop={W}:{H},setsar=1,fps={FPS},setpts=PTS-STARTPTS,"
-                f"tpad=stop_mode=clone:stop_duration={seg_dur:.2f},"
-                f"trim=duration={seg_dur:.2f},setpts=PTS-STARTPTS,"
+                f"tpad=stop_mode=clone:stop_duration={sd:.2f},"
+                f"trim=duration={sd:.2f},setpts=PTS-STARTPTS,"
                 f"format=yuv420p,{_ENHANCE}[c{i}]"
             )
         prev = "c0"
+        cumulative = seg_durs[0]
         for i in range(n - 1):
-            offset = (i + 1) * (seg_dur - fade)
+            offset = cumulative - fade
+            cumulative += seg_durs[i + 1] - fade
             out_label = f"x{i}" if i < n - 2 else "xfinal"
             trans = TRANSITIONS[i % len(TRANSITIONS)]
             filter_parts.append(
@@ -515,20 +559,16 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
 
 def _create_video_with_images(images: list[str], audio_path: str,
                               output_path: str, duration: float,
-                              subtitle_filter: str, cfg: dict) -> str:
+                              subtitle_filter: str, cfg: dict,
+                              img_durations: list[float] | None = None) -> str:
     W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
     pre_w, pre_h = cfg["pre_w"], cfg["pre_h"]
     n = len(images)
+    fade = XFADE_DUR
+
+    seg_durs = _compute_segment_durations(n, duration, fade, img_durations)
 
     filter_parts = []
-    if n == 1:
-        seg_dur = duration
-        frames_per_seg = int(seg_dur * FPS)
-    else:
-        fade = XFADE_DUR
-        seg_dur = (duration + (n - 1) * fade) / n
-        frames_per_seg = int(seg_dur * FPS)
-
     for i in range(n):
         direction = i % 4
         if direction == 0:
@@ -548,10 +588,11 @@ def _create_video_with_images(images: list[str], audio_path: str,
             x = "iw-iw/zoom"
             y = "0"
 
+        frames = int(seg_durs[i] * FPS)
         filter_parts.append(
             f"[{i}:v]scale={pre_w}:{pre_h},zoompan=z='{zoom}'"
             f":x='{x}':y='{y}'"
-            f":d={frames_per_seg}:s={W}x{H}:fps={FPS},"
+            f":d={frames}:s={W}x{H}:fps={FPS},"
             f"format=yuv420p,{_ENHANCE}[v{i}]"
         )
 
@@ -560,8 +601,10 @@ def _create_video_with_images(images: list[str], audio_path: str,
         filter_parts.append(f"[v0]null[{final_label}]")
     else:
         prev = "v0"
+        cumulative = seg_durs[0]
         for i in range(n - 1):
-            offset = (i + 1) * (seg_dur - fade)
+            offset = cumulative - fade
+            cumulative += seg_durs[i + 1] - fade
             out_label = f"xi{i}" if i < n - 2 else "vcxfade"
             trans = TRANSITIONS[i % len(TRANSITIONS)]
             filter_parts.append(
