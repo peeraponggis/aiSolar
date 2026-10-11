@@ -335,25 +335,26 @@ async def preview_voice_tts(
     await _tts_with_retry(processed, voice_name, mp3_output, rate, pitch)
 
     if clone_voice_id:
-        from scripts.voice_clone import clone_voice, get_reference_path
-        ref_path = get_reference_path(clone_voice_id)
-        if ref_path:
-            import subprocess as _sp
-            wav_base = str(preview_dir / f"{safe}_base.wav")
-            _sp.run([
-                str(BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe")
-                if (BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe").exists()
-                else "ffmpeg",
-                "-y", "-i", mp3_output,
-                "-acodec", "pcm_s16le", "-ar", "48000", wav_base,
-            ], capture_output=True, timeout=60)
-            wav_out = str(preview_dir / f"{safe}_cloned.wav")
-            tau = max(10, min(80, clone_tau)) / 100.0
-            await clone_voice(wav_base, ref_path, wav_out, tau=tau)
-            for tmp in (mp3_output, wav_base):
-                if os.path.exists(tmp):
-                    os.remove(tmp)
-            return FileResponse(wav_out, media_type="audio/wav", filename="preview.wav")
+        try:
+            from scripts.voice_clone import clone_voice, get_reference_path
+            from scripts.generate_audio import FFMPEG
+            ref_path = get_reference_path(clone_voice_id)
+            if ref_path:
+                import subprocess as _sp
+                wav_base = str(preview_dir / f"{safe}_base.wav")
+                _sp.run([
+                    FFMPEG, "-y", "-i", mp3_output,
+                    "-acodec", "pcm_s16le", "-ar", "48000", wav_base,
+                ], capture_output=True, timeout=60)
+                wav_out = str(preview_dir / f"{safe}_cloned.wav")
+                tau = max(10, min(80, clone_tau)) / 100.0
+                await clone_voice(wav_base, ref_path, wav_out, tau=tau)
+                for tmp in (mp3_output, wav_base):
+                    if os.path.exists(tmp):
+                        os.remove(tmp)
+                return FileResponse(wav_out, media_type="audio/wav", filename="preview.wav")
+        except Exception as e:
+            print(f"Voice clone preview failed: {e}")
 
     return FileResponse(mp3_output, media_type="audio/mpeg", filename="preview.mp3")
 
