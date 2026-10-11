@@ -446,6 +446,13 @@ function renderMediaGrid() {
         : `<button class="media-crop" onclick="event.stopPropagation();openCropTool(${i})" title="ครอปรูป">&#9986;</button>`
       }
       <span class="media-type-badge">${m.type === "video" ? "VID" : "IMG"}</span>
+      <div class="media-duration-input">
+        <input type="number" min="0" step="0.5" placeholder="auto"
+          value="${m.displayDuration || ""}"
+          onchange="setMediaDuration(${i}, this.value)"
+          onclick="event.stopPropagation()" title="ความยาว (วินาที)">
+        <span>s</span>
+      </div>
     </div>`
     )
     .join("");
@@ -493,6 +500,11 @@ function onDragEnd(e) {
   document
     .querySelectorAll(".drag-over")
     .forEach((el) => el.classList.remove("drag-over"));
+}
+
+function setMediaDuration(index, value) {
+  const dur = parseFloat(value);
+  selectedMedia[index].displayDuration = dur > 0 ? dur : 0;
 }
 
 async function removeMedia(index) {
@@ -881,6 +893,10 @@ async function startGenerate() {
   });
   if (selectedMedia.length) {
     params.set("media_files", selectedMedia.map((m) => m.filename).join(","));
+    const durations = selectedMedia.map((m) => m.displayDuration || 0);
+    if (durations.some((d) => d > 0)) {
+      params.set("media_durations", durations.join(","));
+    }
   }
 
   try {

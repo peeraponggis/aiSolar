@@ -549,6 +549,31 @@ audio, video { width: 100%; margin-top: 8px; }
   border-radius: 4px;
 }
 
+.media-duration-input {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0,0,0,0.75);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+.media-duration-input input {
+  width: 42px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 1px 3px;
+  text-align: center;
+}
+.media-duration-input input::placeholder { color: rgba(255,255,255,0.5); }
+.media-duration-input input:focus { border-color: var(--accent); outline: none; }
+.media-duration-input span { color: rgba(255,255,255,0.6); font-size: 0.65rem; }
+
 /* Voice Clone */
 .tone-controls { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .tone-controls select { flex: 1; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 0.9rem; }

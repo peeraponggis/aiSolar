@@ -76,6 +76,7 @@ async def generate_video(
     overlay_animation: str = Query("static"),
     duration_preset: str = Query("short"),
     clone_tau: int = Query(30),
+    media_durations: str = Query(""),
 ):
     project_id = orchestrator.create_project(topic)
     skip_fetch = False
@@ -136,6 +137,12 @@ async def generate_video(
             "overlay_font": overlay_font if overlay_font in valid_fonts else "sarabun",
             "overlay_animation": overlay_animation if overlay_animation in valid_anims else "static",
         }
+    dur_list = None
+    if media_durations:
+        try:
+            dur_list = [float(d) for d in media_durations.split(",") if d.strip()]
+        except ValueError:
+            dur_list = None
     asyncio.create_task(
         orchestrator.generate(project_id, topic, vs,
                               skip_media_fetch=skip_fetch,
@@ -148,7 +155,8 @@ async def generate_video(
                               mode=gen_mode,
                               voice_b=voice_b,
                               overlay_opts=overlay_opts,
-                              duration_preset=dur_preset)
+                              duration_preset=dur_preset,
+                              media_durations=dur_list)
     )
     return {"id": project_id, "status": "processing"}
 
