@@ -39,7 +39,13 @@ class Orchestrator:
                 try:
                     with open(status_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                    if data.get("phase") not in ("done", "error"):
+                    # media_ready/rendering-paused states aren't "stuck" -- they're
+                    # waiting on the user (arranging the storyboard, about to click
+                    # "สร้างวิดีโอ") with no async task actually in flight, so a
+                    # restart doesn't interrupt anything and they survive it as-is.
+                    # Only phases with genuine in-flight async work (brainstorming
+                    # through creating_video) are truly orphaned by a restart.
+                    if data.get("phase") not in ("done", "error", "media_ready"):
                         data["phase"] = "error"
                         data["progress"] = 0
                         data["error"] = "Pipeline interrupted (server restarted)"
