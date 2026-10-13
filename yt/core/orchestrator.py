@@ -126,9 +126,46 @@ class Orchestrator:
                 media = await fetch_background_media(project_id, topic, count=preset["media_count"])
                 status.log(f"ได้สื่อ: {len(media.get('videos',[]))} วิดีโอ, {len(media.get('images',[]))} รูป", "success")
 
+            status.render_params = {
+                "subtitles": subtitles,
+                "bgm_path": bgm_path,
+                "bgm_volume": bgm_volume,
+                "aspect_ratios": aspect_ratios or ["9:16"],
+                "mode": mode,
+                "overlay_opts": overlay_opts or {},
+                "media_durations": media_durations,
+            }
+            status.update("media_ready", 80)
+            status.log("จัดเรียง media ใน Storyboard แล้วกด 'สร้างวิดีโอ'")
+
+        except Exception:
+            error_msg = traceback.format_exc()[-500:]
+            status.log(error_msg[:200], "error")
+            status.update("error", 0, error=error_msg)
+
+    async def render_video(self, project_id: str):
+        status = self.projects[project_id]
+        try:
+            params = status.render_params or {}
+            script = status.script or ""
+            audio_path = status.audio_path or ""
+
+            import glob
+            media_dir = os.path.join("projects", project_id, "media")
+            videos = sorted(f for f in glob.glob(os.path.join(media_dir, "[0-9][0-9]_clip*"))
+                            if not os.path.basename(f).startswith("img_clip_"))
+            images = sorted(glob.glob(os.path.join(media_dir, "[0-9][0-9]_img*")))
+
+            bgm_path = params.get("bgm_path", "")
+            bgm_volume = params.get("bgm_volume", 0.2)
+            subtitles = params.get("subtitles", True)
+            ratios = params.get("aspect_ratios", ["9:16"])
+            mode = params.get("mode", "narration")
+            overlay_opts = params.get("overlay_opts", {})
+            media_durations = params.get("media_durations")
+
             if bgm_path:
                 status.log(f"ผสมเสียงประกอบ (volume {int(bgm_volume*100)}%)...")
-            ratios = aspect_ratios or ["9:16"]
             video_paths = {}
             for i, ratio in enumerate(ratios):
                 label = f"{ratio} ({i+1}/{len(ratios)})" if len(ratios) > 1 else ratio
@@ -136,13 +173,13 @@ class Orchestrator:
                 status.update("creating_video", 85 + (i * 10 // len(ratios)))
                 vp = await create_video(
                     project_id, audio_path, script=script,
-                    background_videos=media["videos"],
-                    background_images=media["images"],
+                    background_videos=videos,
+                    background_images=images,
                     subtitles=subtitles,
                     bgm_path=bgm_path, bgm_volume=bgm_volume,
                     aspect_ratio=ratio,
                     mode=mode,
-                    overlay_opts=overlay_opts or {},
+                    overlay_opts=overlay_opts,
                     media_durations=media_durations,
                 )
                 video_paths[ratio] = vp

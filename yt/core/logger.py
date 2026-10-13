@@ -15,6 +15,7 @@ class ProjectStatus:
     audio_path: str | None = None
     video_path: str | None = None
     video_paths: dict | None = None
+    render_params: dict | None = None
     created_at: float = field(default_factory=time.time)
     updated_at: float = field(default_factory=time.time)
     logs: list = field(default_factory=list, repr=False)
@@ -42,6 +43,7 @@ class ProjectStatus:
             "audio_path": self.audio_path,
             "video_path": self.video_path,
             "video_paths": self.video_paths,
+            "render_params": self.render_params,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
@@ -64,6 +66,7 @@ class ProjectStatus:
             audio_path=d.get("audio_path"),
             video_path=d.get("video_path"),
             video_paths=d.get("video_paths"),
+            render_params=d.get("render_params"),
             created_at=d.get("created_at", 0),
             updated_at=d.get("updated_at", 0),
         )

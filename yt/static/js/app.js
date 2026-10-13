@@ -27,6 +27,7 @@ const PHASE_LABELS = {
   audio_done: "ได้เสียงแล้ว",
   cloning_voice: "กำลังโคลนเสียง (OpenVoice)...",
   creating_video: "กำลังสร้างวิดีโอ + ซับไตเติ้ล (FFmpeg)...",
+  media_ready: "จัดเรียง media แล้วกดสร้างวิดีโอ",
   done: "เสร็จสิ้น!",
   error: "เกิดข้อผิดพลาด",
 };
@@ -1035,7 +1036,14 @@ function pollStatus() {
         document.getElementById("scriptContent").textContent = data.script;
       }
 
-      if (data.phase === "done") {
+      if (data.phase === "media_ready") {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        setTimeout(pollLogs, 500);
+        updateEta(0);
+        showStoryboardPreview(data);
+        showToast("จัดเรียง media แล้วกด สร้างวิดีโอ");
+      } else if (data.phase === "done") {
         clearInterval(pollTimer);
         setTimeout(pollLogs, 500);
         updateEta(100);
@@ -1162,6 +1170,42 @@ function playDoneSound() {
 let _sbProjectId = null;
 let _sbScenes = [];
 let _sbMediaFiles = [];
+let _sbPhase = null;
+
+function showStoryboardPreview(data) {
+  const section = document.getElementById("resultSection");
+  section.classList.remove("hidden");
+  document.getElementById("progressSection").classList.remove("hidden");
+
+  if (data.script) {
+    document.getElementById("scriptContent").textContent = data.script;
+  }
+  if (data.audio_path) {
+    document.getElementById("audioPlayer").src =
+      `/api/audio/${data.project_id}`;
+  }
+
+  _sbPhase = "media_ready";
+  switchTab("storyboard");
+  buildStoryboard(data);
+}
+
+async function _startRender() {
+  if (!currentProjectId) return;
+  const btn = document.querySelector(".sb-render-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "กำลังสร้าง..."; }
+  _sbPhase = "rendering";
+
+  try {
+    const resp = await fetch(`/api/project/${currentProjectId}/render`, { method: "POST" });
+    if (!resp.ok) throw new Error("render start failed");
+    pollStatus();
+  } catch (e) {
+    showToast("เริ่มสร้างวิดีโอไม่ได้", true);
+    if (btn) { btn.disabled = false; btn.textContent = "สร้างวิดีโอ"; }
+    _sbPhase = "media_ready";
+  }
+}
 
 async function buildStoryboard(data) {
   const container = document.getElementById("storyboardTimeline");
@@ -1199,6 +1243,13 @@ function _renderStoryboard(data) {
   if (videoUrl) {
     html += `<div class="sb-player">
       <video controls preload="metadata"><source src="${videoUrl}" type="video/mp4"></video>
+    </div>`;
+  }
+
+  if (_sbPhase === "media_ready") {
+    html += `<div class="sb-render-bar">
+      <span>คลิกที่รูปเพื่อสลับ media แต่ละ scene</span>
+      <button class="btn primary sb-render-btn" onclick="_startRender()">สร้างวิดีโอ</button>
     </div>`;
   }
 
