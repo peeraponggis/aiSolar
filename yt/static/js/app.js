@@ -876,6 +876,19 @@ function renderReplacements() {
   ).join("");
 }
 
+function checkDuplicateReplacement() {
+  const eng = document.getElementById("replEng").value.trim();
+  const warn = document.getElementById("replDupWarn");
+  if (!eng) { warn.classList.add("hidden"); return; }
+  const key = Object.keys(_replacements).find(k => k.toLowerCase() === eng.toLowerCase());
+  if (key) {
+    warn.textContent = `"${key}" มีอยู่แล้ว → ${_replacements[key]}`;
+    warn.classList.remove("hidden");
+  } else {
+    warn.classList.add("hidden");
+  }
+}
+
 function addReplacement() {
   const eng = document.getElementById("replEng").value.trim();
   const thai = document.getElementById("replThai").value.trim();
