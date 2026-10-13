@@ -60,9 +60,29 @@ def save_voice_profile(audio_bytes: bytes, filename: str, name: str) -> dict:
     profile_dir.mkdir(parents=True, exist_ok=True)
 
     ext = Path(filename).suffix.lower() or ".wav"
-    ref_path = profile_dir / f"reference{ext}"
-    with open(ref_path, "wb") as f:
+    raw_path = profile_dir / f"upload_raw{ext}"
+    with open(raw_path, "wb") as f:
         f.write(audio_bytes)
+
+    # OpenVoice's se_extractor can silently mis-handle non-WAV references
+    # (soundfile has no AAC/m4a decoder of its own) -- normalize once here so
+    # every later clone call, preview, and comparison gets a format it can
+    # actually read instead of falling back to un-cloned audio.
+    ref_path = profile_dir / "reference.wav"
+    if ext == ".wav":
+        raw_path.rename(ref_path)
+    else:
+        ffmpeg_bin = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
+        result = subprocess.run(
+            [ffmpeg_bin, "-y", "-i", str(raw_path), "-ar", "48000", "-ac", "1", str(ref_path)],
+            capture_output=True, timeout=60,
+        )
+        if ref_path.exists() and ref_path.stat().st_size > 100:
+            raw_path.unlink(missing_ok=True)
+        else:
+            # conversion failed -- keep the original so the profile isn't silently empty
+            raw_path.rename(profile_dir / f"reference{ext}")
+            ref_path = profile_dir / f"reference{ext}"
 
     duration = _get_audio_duration(str(ref_path))
 
@@ -204,3 +224,87 @@ except Exception as e:
         shutil.copy2(base_audio_path, output_path)
 
     return output_path
+
+
+_BATCH_SCRIPT = r'''
+import sys, os, json, shutil, subprocess
+sys.path.insert(0, r"{base_dir}")
+os.environ["PATH"] = r"{ffmpeg_dir}" + os.pathsep + os.environ.get("PATH", "")
+
+import torch
+from openvoice.api import ToneColorConverter
+from openvoice import se_extractor
+
+dev = "cuda" if torch.cuda.is_available() else "cpu"
+ckpt_path = r"{ckpt_path}"
+
+converter = ToneColorConverter(os.path.join(ckpt_path, "converter", "config.json"), device=dev)
+converter.watermark_model = None
+converter.load_ckpt(os.path.join(ckpt_path, "converter", "checkpoint.pth"))
+
+base_audio_path = r"{base_audio_path}"
+# Extracted once and reused for every voice below -- this is the whole point
+# of batching: model load + source-tone extraction dominate the per-call
+# cost, and both are identical across voices when the test text is fixed.
+source_se, _ = se_extractor.get_se(base_audio_path, converter, vad=False)
+
+jobs = json.loads(sys.stdin.read())  # [[voice_id, ref_path, out_path], ...]
+
+for voice_id, ref_path, out_path in jobs:
+    try:
+        try:
+            target_se, _ = se_extractor.get_se(ref_path, converter, vad=True)
+        except AssertionError:
+            target_se, _ = se_extractor.get_se(ref_path, converter, vad=False)
+        converter.convert(
+            audio_src_path=base_audio_path,
+            src_se=source_se,
+            tgt_se=target_se,
+            output_path=out_path,
+            tau={tau},
+        )
+        resampled = out_path + ".48k.wav"
+        subprocess.run(
+            [r"{ffmpeg_bin}", "-y", "-i", out_path, "-ar", "48000", "-acodec", "pcm_s16le", resampled],
+            capture_output=True, timeout=60,
+        )
+        if os.path.exists(resampled) and os.path.getsize(resampled) > 100:
+            shutil.move(resampled, out_path)
+        print(f"VOICE_DONE:{{voice_id}}", flush=True)
+    except Exception as e:
+        print(f"VOICE_FAIL:{{voice_id}}:{{e}}", flush=True)
+
+if dev == "cuda":
+    del converter
+    torch.cuda.empty_cache()
+print("BATCH_DONE", flush=True)
+'''
+
+
+def start_clone_batch_process(
+    base_audio_path: str,
+    jobs: list[tuple[str, str, str]],
+    tau: float = 0.3,
+) -> subprocess.Popen:
+    """Launch one subprocess that loads OpenVoice once and clones against every
+    (voice_id, reference_path, output_path) triple in `jobs`. Prints
+    "VOICE_DONE:{id}" / "VOICE_FAIL:{id}:{err}" per voice as it finishes, then
+    "BATCH_DONE" -- read line-by-line from stdout for live progress.
+    """
+    ffmpeg_bin = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
+    script = _BATCH_SCRIPT.format(
+        base_dir=str(BASE_DIR),
+        ffmpeg_dir=os.path.dirname(ffmpeg_bin),
+        ffmpeg_bin=ffmpeg_bin,
+        ckpt_path=str(BASE_DIR / "models" / "openvoice" / "checkpoints_v2"),
+        base_audio_path=base_audio_path,
+        tau=tau,
+    )
+    proc = subprocess.Popen(
+        [VENV_PYTHON, "-c", script],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, cwd=str(BASE_DIR), bufsize=1,
+    )
+    proc.stdin.write(json.dumps(jobs))
+    proc.stdin.close()
+    return proc

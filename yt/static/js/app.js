@@ -1869,6 +1869,123 @@ async function loadVoiceProfiles() {
   } catch {}
 }
 
+// ── Compare All Voices ──
+
+let _compareVoices = [];
+let _comparePollTimer = null;
+
+async function openCompareVoices() {
+  try {
+    const resp = await fetch("/api/voices");
+    _compareVoices = await resp.json();
+  } catch { _compareVoices = []; }
+
+  document.getElementById("compareProgress").classList.add("hidden");
+  const btn = document.getElementById("compareStartBtn");
+  btn.disabled = false;
+  btn.textContent = "เริ่มเทียบ";
+
+  if (!_compareVoices.length) {
+    document.getElementById("compareVoicesList").innerHTML =
+      '<p class="no-results">ยังไม่มีเสียงโคลนที่บันทึกไว้ — อัปโหลดเสียงก่อน</p>';
+  } else {
+    _renderCompareList(_compareVoices.map((v) => ({ id: v.id, name: v.name, status: "idle" })));
+  }
+  document.getElementById("compareVoicesModal").classList.remove("hidden");
+}
+
+function closeCompareVoices() {
+  document.getElementById("compareVoicesModal").classList.add("hidden");
+  if (_comparePollTimer) { clearInterval(_comparePollTimer); _comparePollTimer = null; }
+}
+
+function _renderCompareList(results) {
+  const el = document.getElementById("compareVoicesList");
+  const icons = { idle: "&#9676;", pending: "&#8987;", done: "&#9989;", error: "&#10060;" };
+  el.innerHTML = results.map((r) => {
+    const icon = icons[r.status] || icons.idle;
+    const player = r.status === "done" && r._jobId
+      ? `<audio controls preload="none" src="/api/compare-voices/audio/${r._jobId}/${r.id}"></audio>`
+      : r.status === "error"
+        ? `<span class="compare-err" title="${escapeHtml(r.error || "")}">ไม่สำเร็จ</span>`
+        : "";
+    return `<div class="repl-item compare-row">
+      <div class="repl-view"><span class="compare-icon">${icon}</span> ${escapeHtml(r.name)}</div>
+      <div class="compare-player">${player}</div>
+    </div>`;
+  }).join("");
+}
+
+async function startCompareVoices() {
+  const text = document.getElementById("compareText").value.trim();
+  if (!text) return showToast("กรุณาใส่ข้อความทดสอบ", true);
+  if (!_compareVoices.length) return;
+
+  const btn = document.getElementById("compareStartBtn");
+  btn.disabled = true;
+  btn.textContent = "กำลังเริ่ม...";
+  const progress = document.getElementById("compareProgress");
+  progress.classList.remove("hidden");
+  progress.textContent = "กำลังโหลดโมเดล OpenVoice (ครั้งเดียว) แล้วเทียบทีละเสียง...";
+
+  try {
+    const resp = await fetch("/api/compare-voices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "เริ่มเทียบเสียงไม่สำเร็จ");
+
+    btn.textContent = "กำลังเทียบ...";
+    _pollCompareStatus(data.job_id, data.total);
+  } catch (e) {
+    showToast(e.message || "เริ่มเทียบเสียงไม่สำเร็จ", true);
+    btn.disabled = false;
+    btn.textContent = "เริ่มเทียบ";
+    progress.classList.add("hidden");
+  }
+}
+
+function _pollCompareStatus(jobId, total) {
+  if (_comparePollTimer) clearInterval(_comparePollTimer);
+  const progress = document.getElementById("compareProgress");
+  const btn = document.getElementById("compareStartBtn");
+
+  _comparePollTimer = setInterval(async () => {
+    try {
+      const resp = await fetch(`/api/compare-voices/status/${jobId}`);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "โหลดสถานะไม่สำเร็จ");
+
+      const results = data.results.map((r) => ({ ...r, _jobId: jobId }));
+      _renderCompareList(results);
+      const doneCount = results.filter((r) => r.status === "done" || r.status === "error").length;
+      progress.textContent = `เทียบแล้ว ${doneCount}/${total} เสียง...`;
+
+      if (data.status === "done") {
+        clearInterval(_comparePollTimer);
+        _comparePollTimer = null;
+        progress.textContent = `เสร็จแล้ว — เทียบ ${total} เสียง`;
+        btn.disabled = false;
+        btn.textContent = "เริ่มเทียบ";
+      } else if (data.status === "error") {
+        clearInterval(_comparePollTimer);
+        _comparePollTimer = null;
+        showToast(data.error || "เทียบเสียงไม่สำเร็จ", true);
+        btn.disabled = false;
+        btn.textContent = "เริ่มเทียบ";
+      }
+    } catch (e) {
+      clearInterval(_comparePollTimer);
+      _comparePollTimer = null;
+      showToast(e.message || "โหลดสถานะไม่สำเร็จ", true);
+      btn.disabled = false;
+      btn.textContent = "เริ่มเทียบ";
+    }
+  }, 1200);
+}
+
 // ── Help system ──
 
 const HELP_TEXTS = {
