@@ -42,7 +42,12 @@ def _clean_script_for_tts(text: str) -> str:
         cleaned = re.sub(r"\[.*?\]", "", line).strip()
         cleaned = re.sub(r"^[—\-–]+\s*", "", cleaned).strip()
         cleaned = re.sub(r"\*{1,2}(.*?)\*{1,2}", r"\1", cleaned)
-        if cleaned:
+        cleaned = re.sub(r"[.]{3,}", "...", cleaned)
+        cleaned = re.sub(r"[!]{2,}", "!", cleaned)
+        cleaned = re.sub(r"[?]{2,}", "?", cleaned)
+        cleaned = re.sub(r"[#~_=|<>^]{2,}", "", cleaned)
+        cleaned = cleaned.strip()
+        if cleaned and not re.fullmatch(r"[.\-–—!?…\s]+", cleaned):
             lines.append(cleaned)
     return "\n".join(lines)
 
@@ -104,10 +109,21 @@ def _calc_sentence_prosody(idx: int, total: int, sent: str,
 async def _tts_with_retry(text: str, voice: str, output_path: str,
                           rate: str, pitch: str, max_retries: int = 5,
                           tone: str = "normal"):
+    clean = re.sub(r"[.]{3,}", "...", text)
+    clean = re.sub(r"[!]{2,}", "!", clean)
+    clean = re.sub(r"[?]{2,}", "?", clean)
+    clean = re.sub(r"[#~_=|<>^]{2,}", "", clean).strip()
+    if not clean or re.fullmatch(r"[.\-–—!?…\s]+", clean):
+        import subprocess
+        subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-i",
+                        "anullsrc=r=48000:cl=mono", "-t", "0.3",
+                        "-c:a", "libmp3lame", "-q:a", "2", output_path],
+                       capture_output=True, timeout=10)
+        return
     last_err = None
     for attempt in range(max_retries):
         try:
-            communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
+            communicate = edge_tts.Communicate(clean, voice, rate=rate, pitch=pitch)
             await communicate.save(output_path)
             if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
                 return

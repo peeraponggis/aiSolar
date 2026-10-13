@@ -260,6 +260,8 @@ function updateMediaAspectRatio() {
   if (grid) grid.classList.toggle("ratio-landscape", isLandscape);
   const pexels = document.getElementById("pexelsResults");
   if (pexels) pexels.classList.toggle("ratio-landscape", isLandscape);
+  const scrape = document.getElementById("scrapeResults");
+  if (scrape) scrape.classList.toggle("ratio-landscape", isLandscape);
 }
 
 function switchVideoRatio(projectId, ratio, btn) {
@@ -377,6 +379,69 @@ async function addPexelsMedia(index) {
         filename: data.filename,
         type: data.type,
         thumbnail: item.thumbnail,
+      });
+      renderMediaGrid();
+      showToast("เพิ่มสื่อสำเร็จ");
+    } else {
+      showToast("ดาวน์โหลดไม่สำเร็จ", true);
+    }
+  } catch (e) {
+    showToast("ดาวน์โหลดไม่สำเร็จ", true);
+  } finally {
+    if (el) el.classList.remove("downloading");
+  }
+}
+
+async function scrapeUrl() {
+  const url = document.getElementById("scrapeUrl").value.trim();
+  if (!url) return;
+  const grid = document.getElementById("scrapeResults");
+  grid.innerHTML = '<p class="loading">กำลังดึงรูปจากเว็บ...</p>';
+  try {
+    const resp = await fetch(`/api/url/scrape?url=${encodeURIComponent(url)}`);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      grid.innerHTML = `<p class="no-results">${err.error || "ไม่สามารถดึงรูปได้"}</p>`;
+      return;
+    }
+    const items = await resp.json();
+    if (!items.length) {
+      grid.innerHTML = '<p class="no-results">ไม่พบรูปภาพ/วิดีโอในหน้านี้</p>';
+      return;
+    }
+    grid.innerHTML = items
+      .map(
+        (item, i) => `
+      <div class="pexels-item" onclick="addScrapedMedia(${i})" data-scrape-index="${i}">
+        <img src="${item.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+        <span class="pexels-badge">${item.type === "video" ? "VID" : "IMG"}</span>
+      </div>`
+      )
+      .join("");
+    window._scrapeResults = items;
+    updateMediaAspectRatio();
+  } catch (e) {
+    grid.innerHTML = '<p class="no-results">ดึงรูปไม่สำเร็จ</p>';
+  }
+}
+
+async function addScrapedMedia(index) {
+  const items = window._scrapeResults;
+  if (!items || !items[index]) return;
+  const item = items[index];
+  const el = document.querySelector(`.pexels-item[data-scrape-index="${index}"]`);
+  if (el) el.classList.add("downloading");
+  try {
+    const resp = await fetch(
+      `/api/url/download?url=${encodeURIComponent(item.url)}&media_type=${item.type}`,
+      { method: "POST" }
+    );
+    const data = await resp.json();
+    if (data.ok) {
+      selectedMedia.push({
+        filename: data.filename,
+        type: data.type,
+        thumbnail: `/api/uploads/file/${data.filename}`,
       });
       renderMediaGrid();
       showToast("เพิ่มสื่อสำเร็จ");

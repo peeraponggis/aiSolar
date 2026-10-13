@@ -1,4 +1,5 @@
 import os
+import random
 import re
 import subprocess
 from pathlib import Path
@@ -20,8 +21,30 @@ FONT_MAP = {
 }
 
 XFADE_DUR = 0.5
-TRANSITIONS = ["fade", "fadeblack", "slideleft", "slideup", "wipeleft", "circleopen"]
+TRANSITIONS = [
+    "fade", "fadeblack", "fadewhite", "dissolve",
+    "slideleft", "slideright", "slideup", "slidedown",
+    "smoothleft", "smoothright", "smoothup", "smoothdown",
+    "wipeleft", "wiperight", "wipeup", "wipedown",
+    "circleopen", "circleclose", "circlecrop", "rectcrop",
+    "radial", "hblur",
+    "diagtl", "diagtr", "diagbl", "diagbr",
+    "hlslice", "hrslice", "vuslice", "vdslice",
+]
 _ENHANCE = "eq=contrast=1.05:brightness=0.02:saturation=1.1,unsharp=3:3:0.5:3:3:0.0"
+
+
+def _get_video_stream_duration(path: str) -> float:
+    import json as _json
+    ffprobe = os.path.join(os.path.dirname(FFMPEG), "ffprobe.exe")
+    r = subprocess.run(
+        [ffprobe, "-v", "quiet", "-select_streams", "v:0",
+         "-show_entries", "stream=duration", "-of", "json", path],
+        capture_output=True, text=True, timeout=10)
+    try:
+        return float(_json.loads(r.stdout)["streams"][0]["duration"])
+    except Exception:
+        return 0.0
 
 
 def _extract_media_order(path: str) -> int:
@@ -121,7 +144,10 @@ def _parse_script_sections(script: str) -> list[str]:
 def _escape_drawtext(text: str) -> str:
     text = text.replace("\\", "\\\\")
     text = text.replace("'", "\u2019")
+    text = text.replace('"', "\u201d")
     text = text.replace(":", "\\:")
+    text = text.replace(";", "\\;")
+    text = text.replace("%", "%%%%")
     return text
 
 
@@ -487,8 +513,7 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
             f"[0:v]trim=duration={seg_durs[0]:.2f},setpts=PTS-STARTPTS,"
             f"scale={W}:{H}:force_original_aspect_ratio=increase,"
             f"crop={W}:{H},setsar=1,fps={FPS},format=yuv420p,"
-            f"{_ENHANCE},"
-            f"tpad=stop_mode=clone:stop_duration=1[merged]"
+            f"{_ENHANCE}[merged]"
         )
     else:
         for i in range(n):
@@ -496,7 +521,6 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
             filter_parts.append(
                 f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=increase,"
                 f"crop={W}:{H},setsar=1,fps={FPS},setpts=PTS-STARTPTS,"
-                f"tpad=stop_mode=clone:stop_duration={sd:.2f},"
                 f"trim=duration={sd:.2f},setpts=PTS-STARTPTS,"
                 f"format=yuv420p,{_ENHANCE}[c{i}]"
             )
@@ -506,7 +530,7 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
             offset = cumulative - fade
             cumulative += seg_durs[i + 1] - fade
             out_label = f"x{i}" if i < n - 2 else "xfinal"
-            trans = TRANSITIONS[i % len(TRANSITIONS)]
+            trans = random.choice(TRANSITIONS)
             filter_parts.append(
                 f"[{prev}][c{i+1}]xfade=transition={trans}:duration={fade:.2f}"
                 f":offset={offset:.2f}[{out_label}]"
@@ -526,7 +550,7 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
 
     cmd = [FFMPEG, "-y"]
     for clip in clips:
-        cmd.extend(["-i", clip])
+        cmd.extend(["-stream_loop", "-1", "-i", clip])
     cmd.extend(["-i", audio_path])
 
     cmd.extend([
@@ -544,10 +568,10 @@ def _create_video_with_clips(clips: list[str], audio_path: str,
                             encoding="utf-8", errors="replace")
     if result.returncode != 0:
         if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
-            actual_dur = get_audio_duration(output_path)
-            if actual_dur >= duration * 0.9:
+            video_dur = _get_video_stream_duration(output_path)
+            if video_dur >= duration * 0.8:
                 return output_path
-            print(f"Partial output ({actual_dur:.1f}s vs {duration:.1f}s expected), retrying without subtitles")
+            print(f"Partial output (video={video_dur:.1f}s vs {duration:.1f}s expected), retrying without subtitles")
             os.remove(output_path)
         err = (result.stderr or "unknown error")[-500:]
         print(f"Video clips concat failed: {err}")
@@ -606,7 +630,7 @@ def _create_video_with_images(images: list[str], audio_path: str,
             offset = cumulative - fade
             cumulative += seg_durs[i + 1] - fade
             out_label = f"xi{i}" if i < n - 2 else "vcxfade"
-            trans = TRANSITIONS[i % len(TRANSITIONS)]
+            trans = random.choice(TRANSITIONS)
             filter_parts.append(
                 f"[{prev}][v{i+1}]xfade=transition={trans}:duration={fade:.2f}"
                 f":offset={offset:.2f}[{out_label}]"
@@ -684,7 +708,7 @@ def _create_simple_slideshow(images: list[str], audio_path: str,
         for i in range(n - 1):
             offset = (i + 1) * (seg_dur - fade)
             out_label = f"ss{i}" if i < n - 2 else "ssxfade"
-            trans = TRANSITIONS[i % len(TRANSITIONS)]
+            trans = random.choice(TRANSITIONS)
             filter_parts.append(
                 f"[{prev}][s{i+1}]xfade=transition={trans}:duration={fade:.2f}"
                 f":offset={offset:.2f}[{out_label}]"
