@@ -340,10 +340,11 @@
     </div>
     <div class="replacements-desc">เพิ่มคำภาษาอังกฤษที่ต้องการให้อ่านเป็นภาษาไทย เช่น AI &rarr; เอ-ไอ</div>
     <div class="replacements-add-row">
-      <input id="replEng" type="text" placeholder="คำอังกฤษ">
+      <input id="replEng" type="text" placeholder="คำอังกฤษ" oninput="checkDuplicateReplacement()" onpaste="setTimeout(checkDuplicateReplacement,0)">
       <input id="replThai" type="text" placeholder="คำอ่านไทย">
       <button class="generate-btn" onclick="addReplacement()">เพิ่ม</button>
     </div>
+    <div id="replDupWarn" class="repl-dup-warn hidden"></div>
     <div id="replacementsList" class="replacements-list"></div>
     <div class="crop-actions">
       <button class="generate-btn" onclick="saveReplacements()">บันทึก</button>

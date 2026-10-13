@@ -881,7 +881,15 @@ audio, video { width: 100%; margin-top: 8px; }
 .replacements-add-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+.repl-dup-warn {
+  color: #f59e0b;
+  font-size: 0.82rem;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  background: rgba(245,158,11,0.1);
+  border-radius: 4px;
 }
 .replacements-add-row input {
   flex: 1;
