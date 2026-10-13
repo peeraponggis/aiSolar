@@ -442,10 +442,18 @@ async function scrapeUrl() {
       )
       .join("");
     window._scrapeResults = items;
+    document.getElementById("clearScrapeBtn").classList.remove("hidden");
     updateMediaAspectRatio();
   } catch (e) {
     grid.innerHTML = '<p class="no-results">ดึงรูปไม่สำเร็จ</p>';
   }
+}
+
+function clearScrape() {
+  document.getElementById("scrapeResults").innerHTML = "";
+  document.getElementById("scrapeUrl").value = "";
+  document.getElementById("clearScrapeBtn").classList.add("hidden");
+  window._scrapeResults = null;
 }
 
 async function addScrapedMedia(index) {
@@ -1143,7 +1151,7 @@ function showToast(msg, isError = false) {
 function playDoneSound() {
   try {
     const audio = new Audio("/static/sounds/clip_done.mp3");
-    audio.volume = 0.8;
+    audio.volume = 0.4;
     audio.play().catch(() => {});
   } catch {}
 }
