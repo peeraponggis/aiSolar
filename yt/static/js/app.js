@@ -1120,16 +1120,7 @@ async function startGenerate() {
   document.getElementById("etaText").textContent = "";
 
   const persona = document.getElementById("personaInput").value.trim();
-  const scriptInput = document.getElementById("customScriptInput");
-  const selStart = scriptInput.selectionStart;
-  const selEnd = scriptInput.selectionEnd;
-  const selected = selEnd > selStart
-    ? scriptInput.value.substring(selStart, selEnd).trim()
-    : "";
-  const customScript = selected || scriptInput.value.trim();
-  if (selected) {
-    showToast(`ใช้เฉพาะส่วนที่ไฮไลท์ (${selected.length} ตัวอักษร)`);
-  }
+  const customScript = document.getElementById("customScriptInput").value.trim();
 
   const bgmVolume = document.getElementById("bgmVolumeSlider").value;
   const params = new URLSearchParams({
