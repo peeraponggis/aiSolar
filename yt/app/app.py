@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import shutil
 import uuid as _uuid
@@ -696,6 +697,60 @@ async def regenerate_notification():
         return {"ok": True, "size": os.path.getsize(out_path)}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+DRAFTS_DIR = BASE_DIR / "drafts"
+DRAFTS_DIR.mkdir(exist_ok=True)
+
+
+@app.get("/api/drafts")
+async def list_drafts():
+    drafts = []
+    for f in sorted(DRAFTS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            drafts.append({
+                "id": f.stem,
+                "topic": data.get("topic", ""),
+                "saved_at": data.get("saved_at", ""),
+                "mode": data.get("mode", "narration"),
+                "tone": data.get("tone", ""),
+            })
+        except Exception:
+            pass
+    return drafts
+
+
+@app.post("/api/drafts/save")
+async def save_draft(request: Request):
+    data = await request.json()
+    from datetime import datetime
+    data["saved_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    draft_id = data.get("id") or _uuid.uuid4().hex[:8]
+    data["id"] = draft_id
+    path = DRAFTS_DIR / f"{draft_id}.json"
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"id": draft_id, "saved_at": data["saved_at"]}
+
+
+@app.get("/api/drafts/{draft_id}")
+async def load_draft(draft_id: str):
+    if "/" in draft_id or "\\" in draft_id or ".." in draft_id:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    path = DRAFTS_DIR / f"{draft_id}.json"
+    if not path.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.delete("/api/drafts/{draft_id}")
+async def delete_draft(draft_id: str):
+    if "/" in draft_id or "\\" in draft_id or ".." in draft_id:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    path = DRAFTS_DIR / f"{draft_id}.json"
+    if path.exists():
+        path.unlink()
+    return {"ok": True}
 
 
 if __name__ == "__main__":
