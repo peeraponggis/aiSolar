@@ -188,6 +188,8 @@ async def list_project_media(project_id: str):
     files = sorted(media_dir.iterdir())
     result = []
     for f in files:
+        if f.name.startswith("img_clip_"):
+            continue
         ext = f.suffix.lower()
         if ext in (".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"):
             ftype = "image"
@@ -211,6 +213,29 @@ async def serve_project_media(project_id: str, filename: str):
              ".webp": "image/webp", ".avif": "image/avif", ".gif": "image/gif",
              ".mp4": "video/mp4", ".mov": "video/quicktime", ".webm": "video/webm"}
     return FileResponse(str(path), media_type=types.get(ext, "application/octet-stream"))
+
+
+@app.post("/api/project/{project_id}/media/swap")
+async def swap_project_media(project_id: str, request: Request):
+    body = await request.json()
+    a, b = body.get("a", ""), body.get("b", "")
+    if not a or not b or a == b:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    media_dir = BASE_DIR / "projects" / project_id / "media"
+    path_a, path_b = media_dir / a, media_dir / b
+    if not path_a.exists() or not path_b.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    prefix_a = a.split("_", 1)[0]
+    prefix_b = b.split("_", 1)[0]
+    suffix_a = a[len(prefix_a):]
+    suffix_b = b[len(prefix_b):]
+    new_a = prefix_b + suffix_a
+    new_b = prefix_a + suffix_b
+    tmp = media_dir / f"_swap_{a}"
+    path_a.rename(tmp)
+    path_b.rename(media_dir / new_b)
+    tmp.rename(media_dir / new_a)
+    return {"ok": True, "a": new_a, "b": new_b}
 
 
 @app.get("/api/download/{project_id}")

@@ -1159,6 +1159,10 @@ function playDoneSound() {
 
 // ── Storyboard ──
 
+let _sbProjectId = null;
+let _sbScenes = [];
+let _sbMediaFiles = [];
+
 async function buildStoryboard(data) {
   const container = document.getElementById("storyboardTimeline");
   if (!data.script || !data.project_id) {
@@ -1166,21 +1170,28 @@ async function buildStoryboard(data) {
     return;
   }
 
-  const scenes = data.script
+  _sbProjectId = data.project_id;
+  _sbScenes = data.script
     .split(/\n\s*\n/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
-  let mediaFiles = [];
   try {
     const resp = await fetch(`/api/project/${data.project_id}/media`);
-    if (resp.ok) mediaFiles = await resp.json();
+    if (resp.ok) _sbMediaFiles = await resp.json();
   } catch {}
 
-  const videoUrl = data.video_paths
-    ? `/api/download/${data.project_id}?ratio=${encodeURIComponent(Object.keys(data.video_paths)[0] || "9:16")}`
-    : data.video_path
-      ? `/api/download/${data.project_id}`
+  _renderStoryboard(data);
+}
+
+function _renderStoryboard(data) {
+  const container = document.getElementById("storyboardTimeline");
+  const pid = _sbProjectId;
+
+  const videoUrl = data && data.video_paths
+    ? `/api/download/${pid}?ratio=${encodeURIComponent(Object.keys(data.video_paths)[0] || "9:16")}`
+    : data && data.video_path
+      ? `/api/download/${pid}`
       : null;
 
   let html = "";
@@ -1192,22 +1203,23 @@ async function buildStoryboard(data) {
   }
 
   html += '<div class="sb-scenes">';
-  const maxScenes = Math.max(scenes.length, mediaFiles.length);
+  const maxScenes = Math.max(_sbScenes.length, _sbMediaFiles.length);
   for (let i = 0; i < maxScenes; i++) {
-    const media = mediaFiles[i];
-    const text = scenes[i] || "";
+    const media = _sbMediaFiles[i];
+    const text = _sbScenes[i] || "";
     const sceneNum = i + 1;
+    const fname = media ? _escapeAttr(media.filename) : "";
 
-    let thumbHtml;
+    let thumbContent;
     if (media) {
-      const src = `/api/project/${data.project_id}/media/${media.filename}`;
+      const src = `/api/project/${pid}/media/${media.filename}`;
       if (media.type === "video") {
-        thumbHtml = `<video src="${src}" preload="metadata" muted></video>`;
+        thumbContent = `<video src="${src}" preload="metadata" muted></video>`;
       } else {
-        thumbHtml = `<img src="${src}" alt="Scene ${sceneNum}" loading="lazy">`;
+        thumbContent = `<img src="${src}" alt="Scene ${sceneNum}" loading="lazy">`;
       }
     } else {
-      thumbHtml = '<div class="sb-no-media">No media</div>';
+      thumbContent = '<div class="sb-no-media">No media</div>';
     }
 
     const truncated =
@@ -1215,13 +1227,75 @@ async function buildStoryboard(data) {
 
     html += `<div class="sb-scene">
       <div class="sb-scene-num">${sceneNum}</div>
-      <div class="sb-thumb">${thumbHtml}</div>
+      <div class="sb-thumb sb-thumb-pick" onclick="openMediaPicker(${i},'${fname}')" title="คลิกเพื่อเปลี่ยน media">${thumbContent}</div>
       <div class="sb-text">${_escapeHtml(truncated)}</div>
     </div>`;
   }
   html += "</div>";
 
   container.innerHTML = html;
+}
+
+function openMediaPicker(sceneIdx, currentFilename) {
+  let existing = document.getElementById("sbPickerOverlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "sbPickerOverlay";
+  overlay.className = "sb-picker-overlay";
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  let grid = "";
+  for (const m of _sbMediaFiles) {
+    const src = `/api/project/${_sbProjectId}/media/${m.filename}`;
+    const active = m.filename === currentFilename ? " sb-pick-active" : "";
+    const tag = m.type === "video"
+      ? `<video src="${src}" preload="metadata" muted></video>`
+      : `<img src="${src}" loading="lazy">`;
+    grid += `<div class="sb-pick-item${active}" data-fname="${_escapeAttr(m.filename)}">
+      ${tag}<span>${_escapeHtml(m.filename)}</span>
+    </div>`;
+  }
+
+  overlay.innerHTML = `<div class="sb-picker">
+    <div class="sb-picker-header">
+      <span>เลือก media — Scene ${sceneIdx + 1}</span>
+      <button onclick="this.closest('.sb-picker-overlay').remove()">✕</button>
+    </div>
+    <div class="sb-picker-grid">${grid}</div>
+  </div>`;
+
+  overlay.querySelectorAll(".sb-pick-item").forEach((el) => {
+    el.onclick = () => _pickMedia(sceneIdx, currentFilename, el.dataset.fname, overlay);
+  });
+
+  document.body.appendChild(overlay);
+}
+
+async function _pickMedia(sceneIdx, currentFname, targetFname, overlay) {
+  if (currentFname === targetFname || !targetFname) return;
+  if (!currentFname) {
+    overlay.remove();
+    return;
+  }
+  try {
+    const resp = await fetch(`/api/project/${_sbProjectId}/media/swap`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ a: currentFname, b: targetFname }),
+    });
+    if (!resp.ok) throw new Error("swap failed");
+    const listResp = await fetch(`/api/project/${_sbProjectId}/media`);
+    if (listResp.ok) _sbMediaFiles = await listResp.json();
+    _renderStoryboard(null);
+  } catch (e) {
+    showToast("สลับ media ไม่สำเร็จ", "error");
+  }
+  overlay.remove();
+}
+
+function _escapeAttr(str) {
+  return str.replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 }
 
 function _escapeHtml(str) {

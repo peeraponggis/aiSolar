@@ -35,8 +35,13 @@ _ENHANCE = "eq=contrast=1.05:brightness=0.02:saturation=1.1,unsharp=3:3:0.5:3:3:
 
 
 def _fit_blur_filter(idx: str, W: int, H: int, FPS: int,
-                     prefix: str = "", out_label: str = "") -> str:
-    """Scale to fit + blurred background fill (no stretching/cropping)."""
+                     prefix: str = "", out_label: str = "",
+                     still_frames: int = 0) -> str:
+    """Scale to fit + blurred background fill (no stretching/cropping).
+
+    still_frames: when >0, use loop filter instead of expecting -stream_loop.
+    Processes the heavy filter chain once, then repeats the output frame.
+    """
     p = prefix or idx.replace(":", "").replace("[", "").replace("]", "")
     result = (
         f"[{idx}]split[bg{p}][fg{p}];"
@@ -44,9 +49,18 @@ def _fit_blur_filter(idx: str, W: int, H: int, FPS: int,
         f"crop={W}:{H},scale=iw/8:-1,scale={W}:{H}:flags=bilinear[blr{p}];"
         f"[fg{p}]scale={W}:{H}:force_original_aspect_ratio=decrease,"
         f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:color=black@0[fpad{p}];"
-        f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,fps={FPS},"
-        f"format=yuv420p,{_ENHANCE}"
     )
+    if still_frames > 0:
+        result += (
+            f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,"
+            f"format=yuv420p,{_ENHANCE},"
+            f"loop={still_frames}:1:0,fps={FPS}"
+        )
+    else:
+        result += (
+            f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,fps={FPS},"
+            f"format=yuv420p,{_ENHANCE}"
+        )
     if out_label:
         result += f"[{out_label}]"
     return result
@@ -455,19 +469,21 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
         bg_path = os.path.join(project_dir, f"background_{ratio_tag}.jpg")
         _generate_gradient_bg(bg_path, f"{W}x{H}")
 
+    frames = int((duration + 2) * cfg['fps'])
     vf_parts = [
         f"scale={W}:{H}:force_original_aspect_ratio=decrease",
         f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2",
-        f"fps={cfg['fps']}",
         "format=yuv420p",
         _ENHANCE,
+        f"loop={frames}:1:0",
+        f"fps={cfg['fps']}",
     ]
     if subtitle_filter:
         vf_parts.append(subtitle_filter)
 
     cmd = [
         FFMPEG, "-y",
-        "-stream_loop", "-1", "-i", bg_path,
+        "-i", bg_path,
         "-i", audio_path,
         "-vf", ",".join(vf_parts),
         *_video_enc_args(),
@@ -499,16 +515,19 @@ def _convert_images_to_clips(images: list[str], total_duration: float,
     for i, img in enumerate(images):
         out_dir = os.path.dirname(img)
         clip_path = os.path.join(out_dir, f"img_clip_{i:02d}.mp4")
-        fit_f = _fit_blur_filter("0:v", W, H, FPS, prefix=f"s{i}", out_label="vout")
+        frames = int((seg_dur + 2) * FPS)
+        fit_f = _fit_blur_filter("0:v", W, H, FPS, prefix=f"s{i}", out_label="vout",
+                                  still_frames=frames)
         cmd = [
             FFMPEG, "-y",
-            "-stream_loop", "-1", "-t", f"{seg_dur + 1:.2f}", "-i", img,
+            "-i", img,
             "-filter_complex", fit_f,
             "-map", "[vout]",
             *_video_enc_args(),
+            "-t", f"{seg_dur + 1:.2f}",
             "-an", clip_path,
         ]
-        result = subprocess.run(cmd, capture_output=True, timeout=180,
+        result = subprocess.run(cmd, capture_output=True, timeout=60,
                                 encoding="utf-8", errors="replace")
         if result.returncode == 0 and os.path.exists(clip_path):
             clips.append(clip_path)
@@ -669,7 +688,7 @@ def _create_video_with_images(images: list[str], audio_path: str,
 
     cmd = [FFMPEG, "-y"]
     for img in images:
-        cmd.extend(["-stream_loop", "-1", "-i", img])
+        cmd.extend(["-i", img])
     cmd.extend(["-i", audio_path])
 
     cmd.extend([
@@ -709,12 +728,14 @@ def _create_simple_slideshow(images: list[str], audio_path: str,
 
     cmd = [FFMPEG, "-y"]
     for img in images:
-        cmd.extend(["-stream_loop", "-1", "-t", f"{seg_dur:.2f}", "-i", img])
+        cmd.extend(["-i", img])
     cmd.extend(["-i", audio_path])
 
     filter_parts = []
     for i in range(n):
-        fit_f = _fit_blur_filter(f"{i}:v", W, H, FPS, prefix=f"fb{i}", out_label=f"s{i}")
+        frames = int((seg_dur + 2) * FPS)
+        fit_f = _fit_blur_filter(f"{i}:v", W, H, FPS, prefix=f"fb{i}", out_label=f"s{i}",
+                                  still_frames=frames)
         filter_parts.append(fit_f)
 
     if n == 1:
