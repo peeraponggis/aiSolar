@@ -1,0 +1,19 @@
+{
+  "scenes": [
+    {"image": "aerial view of vast solar panel farm at golden hour, Thailand, lush green fields", "narration": "โซลาร์เซลล์ พลังงานสะอาดที่มาแรงที่สุดในยุคนี้"},
+    {"image": "close-up of blue photovoltaic solar cell, sunlight reflection, macro shot", "narration": "โซลาร์เซลล์ หรือเซลล์แสงอาทิตย์ คืออุปกรณ์ที่เปลี่ยนแสงแดดให้เป็นไฟฟ้า"},
+    {"image": "diagram of solar cell layers, silicon wafer, electrons flowing, clean infographic", "narration": "ทำงานด้วยสารกึ่งตัวนำ ซิลิคอน ดูดซับโฟตอนจากแสงอาทิตย์ ปล่อยอิเล็กตรอนให้ไหล"},
+    {"image": "rooftop solar panels on modern thai house, blue sky, residential", "narration": "ติดตั้งได้ทั้งบนหลังคาบ้าน โรงงาน หรือฟาร์มขนาดใหญ่"},
+    {"image": "solar panels with rice field in background, thai countryside", "narration": "ในประเทศไทยเรามีแสงแดดมากถึง 5.5 กิโลวัตต์ต่อตารางเมตรต่อวัน"},
+    {"image": "happy family with electricity bill, saving money concept", "narration": "ช่วยลดค่าไฟได้มาก คืนทุนภายใน 5-7 ปี แล้วใช้ฟรีอีกนับสิบปี"},
+    {"image": "green earth with solar panels, clean energy concept, eco friendly", "narration": "ลดคาร์บอน ลดโลกร้อน สร้างอนาคตที่ยั่งยืนให้คนรุ่นถัดไป"},
+    {"image": "sunrise over solar farm, bright future, hopeful atmosphere", "narration": "โซลาร์เซลล์ คำตอบของพลังงานวันพรุ่งนี้ เริ่มวันนี้"}
+  ],
+  "voice": "th-TH-PremwadeeNeural",
+  "ffmpeg": "F:\\LocalAI\\tools\\ffmpeg\\ffmpeg.exe",
+  "workdir": "F:\\LocalAI\\clips\\_work",
+  "out": "F:\\LocalAI\\clips\\solar_cell_clip.mp4",
+  "format": "portrait",
+  "subtitle": true,
+  "music": "default"
+}
