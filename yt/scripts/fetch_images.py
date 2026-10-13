@@ -165,7 +165,7 @@ async def fetch_background_media(project_id: str, topic: str, count: int = 4) ->
         if results:
             video_url = _pick_best_video_file(results[0])
             if video_url:
-                out_path = os.path.join(media_dir, f"clip_{i:02d}.mp4")
+                out_path = os.path.join(media_dir, f"{i:02d}_clip.mp4")
                 ok = await asyncio.to_thread(_download_file, video_url, out_path)
                 if ok:
                     videos.append(out_path)
@@ -179,7 +179,7 @@ async def fetch_background_media(project_id: str, topic: str, count: int = 4) ->
             img_url = (photo.get("src", {}).get("large2x")
                        or photo.get("src", {}).get("large", ""))
             if img_url:
-                out_path = os.path.join(media_dir, f"bg_{i:02d}.jpg")
+                out_path = os.path.join(media_dir, f"{i:02d}_img.jpg")
                 ok = await asyncio.to_thread(_download_file, img_url, out_path)
                 if ok:
                     images.append(out_path)
