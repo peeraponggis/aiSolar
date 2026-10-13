@@ -107,7 +107,7 @@ def _calc_sentence_prosody(idx: int, total: int, sent: str,
 
 
 async def _tts_with_retry(text: str, voice: str, output_path: str,
-                          rate: str, pitch: str, max_retries: int = 5,
+                          rate: str, pitch: str, max_retries: int = 8,
                           tone: str = "normal"):
     clean = re.sub(r"[.]{3,}", "...", text)
     clean = re.sub(r"[!]{2,}", "!", clean)
@@ -129,9 +129,20 @@ async def _tts_with_retry(text: str, voice: str, output_path: str,
                 return
         except (edge_tts.exceptions.NoAudioReceived, Exception) as e:
             last_err = e
-        wait = 2 ** attempt
+        wait = 3 * (2 ** attempt)
+        if wait > 60:
+            wait = 60
         print(f"edge-tts retry {attempt + 1}/{max_retries} (wait {wait}s)")
         await asyncio.sleep(wait)
+    print("edge-tts failed, falling back to gTTS")
+    try:
+        from gtts import gTTS as _gTTS
+        tts = _gTTS(text=clean, lang="th")
+        tts.save(output_path)
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
+            return
+    except Exception as e:
+        print(f"gTTS also failed: {e}")
     raise last_err or edge_tts.exceptions.NoAudioReceived("TTS failed after retries")
 
 
@@ -171,7 +182,7 @@ async def _generate_toned_narration(
         await _tts_with_retry(sent, voice_name, clip_path, r_str, p_str)
         clip_paths.append(clip_path)
         if i < len(sentences) - 1:
-            await asyncio.sleep(0.15)
+            await asyncio.sleep(1.0)
 
     gap_seconds = 0.15
     inputs = []
@@ -271,7 +282,7 @@ async def _generate_dialogue_audio(
         await _tts_with_retry(processed, voice_name, clip_path, r_str, p_str)
         clip_paths.append(clip_path)
         if i < len(lines) - 1:
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(1.0)
 
     timing = []
     current_time = 0.0
