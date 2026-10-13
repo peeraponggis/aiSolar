@@ -1009,6 +1009,70 @@ async def delete_draft(draft_id: str):
     return {"ok": True}
 
 
+# ── Visual templates ──
+
+TEMPLATES_DIR = UPLOAD_DIR / "templates"
+
+
+@app.get("/api/templates")
+async def list_templates():
+    from scripts.templates import list_templates
+    return list_templates()
+
+
+@app.post("/api/templates/render")
+async def render_template(request: Request):
+    from scripts.templates import get_template, render_image_template
+
+    form = await request.form()
+    template_id = form.get("template_id", "")
+    tpl = get_template(template_id)
+    if not tpl:
+        return JSONResponse({"error": "ไม่พบเทมเพลตนี้"}, status_code=404)
+
+    try:
+        fields = json.loads(form.get("fields", "{}"))
+    except Exception:
+        return JSONResponse({"error": "fields ไม่ใช่ JSON ที่ถูกต้อง"}, status_code=400)
+
+    job_id = _uuid.uuid4().hex[:8]
+    job_dir = TEMPLATES_DIR / job_id
+    job_dir.mkdir(parents=True, exist_ok=True)
+
+    photo_paths = {}
+    for p in tpl["photos"]:
+        key = p["key"]
+        upload = form.get(key)
+        if upload is None or not hasattr(upload, "read"):
+            return JSONResponse({"error": f"ขาดรูปภาพ: {p['label']}"}, status_code=400)
+        ext = Path(upload.filename or "photo.jpg").suffix.lower() or ".jpg"
+        if ext not in _MEDIA_TYPES:
+            return JSONResponse({"error": f"ไฟล์ {p['label']} ไม่ใช่รูปภาพที่รองรับ"}, status_code=400)
+        dest = job_dir / f"{key}{ext}"
+        content = await upload.read()
+        with open(dest, "wb") as f:
+            f.write(content)
+        photo_paths[key] = str(dest)
+
+    out_path = str(job_dir / "output.png")
+    try:
+        render_image_template(template_id, photo_paths, fields, out_path)
+    except Exception as e:
+        return JSONResponse({"error": f"สร้างภาพไม่สำเร็จ: {e}"}, status_code=500)
+
+    return {"ok": True, "job_id": job_id, "url": f"/api/templates/image/{job_id}"}
+
+
+@app.get("/api/templates/image/{job_id}")
+async def get_template_image(job_id: str):
+    if "/" in job_id or "\\" in job_id or ".." in job_id:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    path = TEMPLATES_DIR / job_id / "output.png"
+    if not path.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return FileResponse(str(path), media_type="image/png")
+
+
 if __name__ == "__main__":
     import uvicorn
 
