@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import time
 import uuid as _uuid
 from pathlib import Path
 
@@ -802,6 +803,135 @@ async def preview_voice(voice_id: str):
     media = {".wav": "audio/wav", ".mp3": "audio/mpeg", ".m4a": "audio/mp4",
              ".ogg": "audio/ogg", ".flac": "audio/flac"}.get(ext, "audio/wav")
     return FileResponse(ref, media_type=media)
+
+
+# ── Compare all cloned voices ──
+# Loads OpenVoice once and reuses it across every saved profile instead of
+# spawning one subprocess per voice (~40s each) -- the model load and the
+# base-audio tone extraction are identical work regardless of which voice
+# comes next, so batching them cuts an 11-voice comparison from minutes to
+# roughly one model load plus a few seconds per voice.
+
+_compare_jobs: dict[str, dict] = {}
+_COMPARE_TEXT_LIMIT = 150  # keeps every one of the N conversions short
+
+
+def _run_compare_job_sync(job_id: str, jobs: list[tuple[str, str, str]], base_wav: str, tau: float):
+    from scripts.voice_clone import start_clone_batch_process
+
+    job = _compare_jobs[job_id]
+    try:
+        proc = start_clone_batch_process(base_wav, jobs, tau=tau)
+    except Exception as e:
+        job["status"] = "error"
+        job["error"] = str(e)
+        return
+
+    try:
+        for line in proc.stdout:
+            line = line.strip()
+            if line.startswith("VOICE_DONE:"):
+                vid = line.split(":", 1)[1]
+                if vid in job["results"]:
+                    job["results"][vid]["status"] = "done"
+            elif line.startswith("VOICE_FAIL:"):
+                _, vid, err = line.split(":", 2)
+                if vid in job["results"]:
+                    job["results"][vid]["status"] = "error"
+                    job["results"][vid]["error"] = err[:150]
+            elif line == "BATCH_DONE":
+                break
+        proc.wait(timeout=30)
+    except Exception as e:
+        job["status"] = "error"
+        job["error"] = str(e)
+        try:
+            proc.kill()
+        except Exception:
+            pass
+        return
+
+    # Any voice never resolved (crash mid-batch) shouldn't hang the UI forever.
+    for r in job["results"].values():
+        if r["status"] == "pending":
+            r["status"] = "error"
+            r["error"] = "ไม่สำเร็จ (batch หยุดกลางคัน)"
+
+    job["status"] = "done"
+
+
+@app.post("/api/compare-voices")
+async def start_compare_voices(request: Request):
+    body = await request.json()
+    text = (body.get("text") or "").strip()
+    if not text:
+        return JSONResponse({"error": "กรุณาใส่ข้อความ"}, status_code=400)
+    text = text[:_COMPARE_TEXT_LIMIT]
+
+    venv_python = BASE_DIR / ".venv-clone" / "Scripts" / "python.exe"
+    if not venv_python.exists():
+        return JSONResponse({"error": "OpenVoice ยังไม่ได้ติดตั้ง (.venv-clone)"}, status_code=400)
+
+    from scripts.voice_clone import list_voice_profiles, get_reference_path
+    from scripts.generate_audio import (
+        VOICES, _tts_with_retry, _clean_script_for_tts,
+        apply_replacements, load_replacements, FFMPEG,
+    )
+
+    profiles = list_voice_profiles()
+    if not profiles:
+        return JSONResponse({"error": "ไม่มีเสียงโคลนที่บันทึกไว้"}, status_code=400)
+
+    job_id = _uuid.uuid4().hex[:8]
+    compare_dir = UPLOAD_DIR / "compare" / job_id
+    compare_dir.mkdir(parents=True, exist_ok=True)
+
+    results = {}
+    jobs = []
+    for p in profiles:
+        vid = p.get("id", "")
+        ref_path = get_reference_path(vid)
+        if not vid or not ref_path:
+            continue
+        results[vid] = {"id": vid, "name": p.get("name", vid), "status": "pending", "error": None}
+        jobs.append((vid, ref_path, str(compare_dir / f"{vid}.wav")))
+
+    if not jobs:
+        return JSONResponse({"error": "ไม่มีเสียงโคลนที่ใช้ได้"}, status_code=400)
+
+    _compare_jobs[job_id] = {
+        "status": "running", "results": results, "error": None,
+        "created_at": time.time(),
+    }
+
+    processed = apply_replacements(_clean_script_for_tts(text), load_replacements())
+    mp3_path = str(compare_dir / "base.mp3")
+    await _tts_with_retry(processed, VOICES["female"], mp3_path, "+0%", "+0Hz")
+    base_wav = str(compare_dir / "base.wav")
+    import subprocess as _sp
+    _sp.run([FFMPEG, "-y", "-i", mp3_path, "-acodec", "pcm_s16le", "-ar", "48000", base_wav],
+            capture_output=True, timeout=60)
+
+    asyncio.create_task(asyncio.to_thread(_run_compare_job_sync, job_id, jobs, base_wav, 0.3))
+    return {"job_id": job_id, "total": len(jobs)}
+
+
+@app.get("/api/compare-voices/status/{job_id}")
+async def compare_voices_status(job_id: str):
+    job = _compare_jobs.get(job_id)
+    if not job:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return {"status": job["status"], "error": job.get("error"), "results": list(job["results"].values())}
+
+
+@app.get("/api/compare-voices/audio/{job_id}/{voice_id}")
+async def compare_voices_audio(job_id: str, voice_id: str):
+    if any(c in job_id + voice_id for c in ("/", "\\", "..")):
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    path = UPLOAD_DIR / "compare" / job_id / f"{voice_id}.wav"
+    if not path.exists():
+        return JSONResponse({"error": "Not ready"}, status_code=404)
+    return FileResponse(str(path), media_type="audio/wav")
 
 
 @app.post("/api/notification/regenerate")

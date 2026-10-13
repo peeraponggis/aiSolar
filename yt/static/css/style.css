@@ -971,6 +971,13 @@ audio, video { width: 100%; margin-top: 8px; }
 }
 .repl-edit-row input:focus { border-color: var(--accent); outline: none; }
 
+/* ── Compare Voices ── */
+.compare-row { align-items: center; }
+.compare-icon { display: inline-block; width: 18px; }
+.compare-player { flex-shrink: 0; display: flex; align-items: center; }
+.compare-player audio { height: 28px; width: 180px; }
+.compare-err { color: #f44; font-size: 0.78rem; cursor: help; }
+
 /* ── Console Panel ── */
 
 .console-panel {
