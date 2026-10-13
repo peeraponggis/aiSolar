@@ -222,38 +222,48 @@ async def serve_project_media(project_id: str, filename: str):
     return FileResponse(str(path), media_type=types.get(ext, "application/octet-stream"))
 
 
+VIDEO_EXTS = {".mp4", ".mov", ".webm", ".mkv"}
+
+
+def _apply_media_order(project_id: str, order: list[str]):
+    """Renumber media to NN_clip.ext / NN_img.ext — the form render_video globs for."""
+    media_dir = BASE_DIR / "projects" / project_id / "media"
+    staged = []
+    for i, fname in enumerate(order):
+        src = media_dir / fname
+        if not src.exists():
+            continue
+        ext = src.suffix
+        kind = "clip" if ext.lower() in VIDEO_EXTS else "img"
+        tmp = media_dir / f"__reorder_{i:03d}{ext}"
+        src.rename(tmp)
+        staged.append((tmp, media_dir / f"{i:02d}_{kind}{ext}"))
+    for tmp, final in staged:
+        tmp.rename(final)
+
+
 @app.post("/api/project/{project_id}/render")
-async def render_project_video(project_id: str):
+async def render_project_video(project_id: str, request: Request):
     if project_id not in orchestrator.projects:
         return JSONResponse({"error": "Project not found"}, status_code=404)
     status = orchestrator.projects[project_id]
     if status.phase != "media_ready":
         return JSONResponse({"error": "Not ready"}, status_code=400)
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    if body.get("script"):
+        status.script = body["script"]
+    if body.get("media_durations") and status.render_params:
+        status.render_params["media_durations"] = body["media_durations"]
+    if body.get("media_order"):
+        _apply_media_order(project_id, body["media_order"])
+
     asyncio.create_task(orchestrator.render_video(project_id))
     return {"ok": True}
-
-
-@app.post("/api/project/{project_id}/media/swap")
-async def swap_project_media(project_id: str, request: Request):
-    body = await request.json()
-    a, b = body.get("a", ""), body.get("b", "")
-    if not a or not b or a == b:
-        return JSONResponse({"error": "Invalid"}, status_code=400)
-    media_dir = BASE_DIR / "projects" / project_id / "media"
-    path_a, path_b = media_dir / a, media_dir / b
-    if not path_a.exists() or not path_b.exists():
-        return JSONResponse({"error": "Not found"}, status_code=404)
-    prefix_a = a.split("_", 1)[0]
-    prefix_b = b.split("_", 1)[0]
-    suffix_a = a[len(prefix_a):]
-    suffix_b = b[len(prefix_b):]
-    new_a = prefix_b + suffix_a
-    new_b = prefix_a + suffix_b
-    tmp = media_dir / f"_swap_{a}"
-    path_a.rename(tmp)
-    path_b.rename(media_dir / new_b)
-    tmp.rename(media_dir / new_a)
-    return {"ok": True, "a": new_a, "b": new_b}
 
 
 @app.get("/api/download/{project_id}")
