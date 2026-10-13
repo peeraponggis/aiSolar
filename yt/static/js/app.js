@@ -1156,6 +1156,9 @@ async function startGenerate() {
       params.set("media_durations", durations.join(","));
     }
   }
+  if (videoTemplateFields) {
+    params.set("template_fields", JSON.stringify(videoTemplateFields));
+  }
 
   try {
     const resp = await fetch(`/api/generate?${params}`, { method: "POST" });
@@ -2054,14 +2057,54 @@ function _renderTemplateForm() {
       <input type="text" id="${id}" placeholder="${escapeHtml(f.placeholder || "")}"></div>`;
   }).join("");
 
+  const videoOverlayBtn = t.type === "both"
+    ? `<button class="clear-btn" id="tplOverlayBtn" onclick="useAsVideoOverlay()" title="ใช้ซ้อนบนวิดีโอที่กำลังจะสร้าง แทนที่จะสร้างเป็นภาพนิ่ง">ใช้เป็น Overlay วิดีโอ</button>`
+    : "";
+  const videoOverlayNote = t.type === "both"
+    ? `<div class="tpl-overlay-note">* เมื่อใช้เป็น overlay วิดีโอ ไม่ต้องอัปโหลดรูป (ใช้คลิปพื้นหลังที่สร้างแทน) แนะนำปิดซับไตเติ้ล/ข้อความ overlay อื่น เพื่อไม่ให้ซ้อนทับกัน</div>`
+    : "";
+
   body.innerHTML = `
     <div class="tpl-back"><button class="clear-btn" onclick="_renderTemplateGrid()">&larr; เลือกเทมเพลตอื่น</button></div>
     <div class="tpl-form">${photoInputs}${fieldInputs}</div>
+    ${videoOverlayNote}
     <div class="crop-actions">
       <button class="generate-btn" id="tplRenderBtn" onclick="renderTemplateImage()">สร้างภาพ</button>
+      ${videoOverlayBtn}
     </div>
     <div id="tplResult"></div>
   `;
+}
+
+function _readTemplateFields(t) {
+  const fields = {};
+  for (const f of t.fields) {
+    const el = document.getElementById(`tplField_${f.key}`);
+    if (!el) continue;
+    fields[f.key] = f.type === "checkbox" ? el.checked : el.value;
+  }
+  return fields;
+}
+
+let videoTemplateFields = null;
+
+function useAsVideoOverlay() {
+  const t = _selectedTemplate;
+  videoTemplateFields = _readTemplateFields(t);
+  showToast("ตั้งค่า overlay วิดีโอแล้ว — จะใช้ตอนกด \"สร้างคลิป\" ครั้งถัดไป");
+  _updateVideoOverlayBadge();
+  closeTemplates();
+}
+
+function clearVideoOverlay() {
+  videoTemplateFields = null;
+  _updateVideoOverlayBadge();
+}
+
+function _updateVideoOverlayBadge() {
+  const el = document.getElementById("videoOverlayBadge");
+  if (!el) return;
+  el.classList.toggle("hidden", !videoTemplateFields);
 }
 
 function _setTemplatePhoto(key, file) {
@@ -2078,12 +2121,7 @@ async function renderTemplateImage() {
     if (!_templatePhotos[p.key]) return showToast(`กรุณาเลือก: ${p.label}`, true);
   }
 
-  const fields = {};
-  for (const f of t.fields) {
-    const el = document.getElementById(`tplField_${f.key}`);
-    if (!el) continue;
-    fields[f.key] = f.type === "checkbox" ? el.checked : el.value;
-  }
+  const fields = _readTemplateFields(t);
 
   const btn = document.getElementById("tplRenderBtn");
   btn.disabled = true;

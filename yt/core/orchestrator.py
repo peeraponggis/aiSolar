@@ -190,6 +190,10 @@ class Orchestrator:
                     overlay_opts=overlay_opts,
                     media_durations=media_durations,
                 )
+                if overlay_opts.get("template_id") == "social_repost" and overlay_opts.get("template_fields"):
+                    status.log("เพิ่ม overlay เทมเพลตลงวิดีโอ...")
+                    from scripts.create_video import apply_template_overlay
+                    vp = await apply_template_overlay(vp, overlay_opts["template_fields"], aspect_ratio=ratio)
                 video_paths[ratio] = vp
 
             elapsed = time.time() - status.created_at
