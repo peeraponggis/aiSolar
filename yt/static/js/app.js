@@ -1128,7 +1128,7 @@ function pollStatus() {
         updateEta(100);
         showResult(data);
         resetButton();
-        showToast("สร้างคลิปสำเร็จ!");
+        showToast("สร้างคลิปเสร็จแล้ว ค่ะ");
         playDoneSound();
         loadHistory();
       } else if (data.phase === "error") {
