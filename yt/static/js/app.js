@@ -413,7 +413,7 @@ async function scrapeUrl() {
       .map(
         (item, i) => `
       <div class="pexels-item" onclick="addScrapedMedia(${i})" data-scrape-index="${i}">
-        <img src="${item.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+        <img src="/api/url/proxy?url=${encodeURIComponent(item.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
         <span class="pexels-badge">${item.type === "video" ? "VID" : "IMG"}</span>
       </div>`
       )

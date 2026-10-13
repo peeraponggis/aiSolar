@@ -542,6 +542,30 @@ async def scrape_url_images(url: str = Query(..., min_length=1)):
     return items[:40]
 
 
+@app.get("/api/url/proxy")
+async def proxy_image(url: str = Query(...)):
+    import urllib.request
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/131.0.0.0 Safari/537.36"
+                )
+            },
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            content_type = resp.headers.get("Content-Type", "image/jpeg")
+            data = resp.read(5_000_000)
+        from fastapi.responses import Response
+        return Response(content=data, media_type=content_type)
+    except Exception:
+        return JSONResponse({"error": "proxy failed"}, status_code=502)
+
+
 @app.post("/api/url/download")
 async def download_url_media(
     url: str = Query(...),
