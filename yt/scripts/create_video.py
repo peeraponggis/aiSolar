@@ -41,7 +41,7 @@ def _fit_blur_filter(idx: str, W: int, H: int, FPS: int,
     result = (
         f"[{idx}]split[bg{p}][fg{p}];"
         f"[bg{p}]scale={W}:{H}:force_original_aspect_ratio=increase,"
-        f"crop={W}:{H},boxblur=20:5[blr{p}];"
+        f"crop={W}:{H},scale=iw/8:-1,scale={W}:{H}:flags=bilinear[blr{p}];"
         f"[fg{p}]scale={W}:{H}:force_original_aspect_ratio=decrease,"
         f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:color=black@0[fpad{p}];"
         f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,fps={FPS},"
@@ -508,7 +508,7 @@ def _convert_images_to_clips(images: list[str], total_duration: float,
             *_video_enc_args(),
             "-an", clip_path,
         ]
-        result = subprocess.run(cmd, capture_output=True, timeout=60,
+        result = subprocess.run(cmd, capture_output=True, timeout=180,
                                 encoding="utf-8", errors="replace")
         if result.returncode == 0 and os.path.exists(clip_path):
             clips.append(clip_path)
