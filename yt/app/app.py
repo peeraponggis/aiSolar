@@ -215,6 +215,17 @@ async def serve_project_media(project_id: str, filename: str):
     return FileResponse(str(path), media_type=types.get(ext, "application/octet-stream"))
 
 
+@app.post("/api/project/{project_id}/render")
+async def render_project_video(project_id: str):
+    if project_id not in orchestrator.projects:
+        return JSONResponse({"error": "Project not found"}, status_code=404)
+    status = orchestrator.projects[project_id]
+    if status.phase != "media_ready":
+        return JSONResponse({"error": "Not ready"}, status_code=400)
+    asyncio.create_task(orchestrator.render_video(project_id))
+    return {"ok": True}
+
+
 @app.post("/api/project/{project_id}/media/swap")
 async def swap_project_media(project_id: str, request: Request):
     body = await request.json()
