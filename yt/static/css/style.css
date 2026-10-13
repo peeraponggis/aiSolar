@@ -978,6 +978,34 @@ audio, video { width: 100%; margin-top: 8px; }
 .compare-player audio { height: 28px; width: 180px; }
 .compare-err { color: #f44; font-size: 0.78rem; cursor: help; }
 
+/* ── Visual Templates ── */
+.tpl-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.tpl-card {
+  cursor: pointer; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; transition: border-color 0.15s, background 0.15s;
+}
+.tpl-card:hover { border-color: var(--accent); background: var(--surface2); }
+.tpl-card-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+.tpl-card-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.4; }
+.tpl-back { margin-bottom: 10px; }
+.tpl-form { display: flex; flex-direction: column; gap: 12px; }
+.tpl-field { display: flex; flex-direction: column; gap: 4px; }
+.tpl-field label { font-size: 0.82rem; color: var(--text-dim); }
+.tpl-field input[type="text"], .tpl-field textarea, .tpl-field select {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 7px 10px; border-radius: 6px; font-size: 0.88rem; font-family: inherit;
+}
+.tpl-field input[type="color"] { width: 60px; height: 32px; padding: 2px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); }
+.tpl-field input[type="file"] { font-size: 0.82rem; color: var(--text-dim); }
+.tpl-field-checkbox label { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text); }
+.tpl-photo-preview img { max-width: 160px; max-height: 160px; border-radius: 6px; margin-top: 4px; display: block; }
+.tpl-result { margin-top: 16px; text-align: center; }
+.tpl-result img { max-width: 100%; max-height: 60vh; border-radius: 8px; }
+.tpl-download { display: inline-block; margin-top: 10px; text-decoration: none; }
+
 /* ── Console Panel ── */
 
 .console-panel {

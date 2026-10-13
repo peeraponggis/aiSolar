@@ -1977,6 +1977,143 @@ function _pollCompareStatus(jobId, total) {
   }, 1200);
 }
 
+// ── Visual Templates ──
+
+let _templates = [];
+let _selectedTemplate = null;
+let _templatePhotos = {};
+
+async function openTemplates() {
+  try {
+    const resp = await fetch("/api/templates");
+    _templates = await resp.json();
+  } catch { _templates = []; }
+  _selectedTemplate = null;
+  _templatePhotos = {};
+  _renderTemplateGrid();
+  document.getElementById("templatesModal").classList.remove("hidden");
+}
+
+function closeTemplates() {
+  document.getElementById("templatesModal").classList.add("hidden");
+}
+
+function _renderTemplateGrid() {
+  document.getElementById("templatesHeaderTitle").textContent = "เทมเพลตภาพ";
+  const body = document.getElementById("templatesBody");
+  if (!_templates.length) {
+    body.innerHTML = '<p class="no-results">โหลดเทมเพลตไม่สำเร็จ</p>';
+    return;
+  }
+  body.innerHTML = `<div class="tpl-grid">${_templates.map((t) => `
+    <div class="tpl-card" onclick="selectTemplate('${t.id}')">
+      <div class="tpl-card-name">${escapeHtml(t.name)}</div>
+      <div class="tpl-card-desc">${escapeHtml(t.description)}</div>
+    </div>`).join("")}</div>`;
+}
+
+function selectTemplate(id) {
+  _selectedTemplate = _templates.find((t) => t.id === id);
+  if (!_selectedTemplate) return;
+  _templatePhotos = {};
+  document.getElementById("templatesHeaderTitle").textContent = _selectedTemplate.name;
+  _renderTemplateForm();
+}
+
+function _renderTemplateForm() {
+  const t = _selectedTemplate;
+  const body = document.getElementById("templatesBody");
+
+  const photoInputs = t.photos.map((p) => `
+    <div class="tpl-field">
+      <label>${escapeHtml(p.label)}</label>
+      <input type="file" accept="image/*" onchange="_setTemplatePhoto('${p.key}', this.files[0])">
+      <div class="tpl-photo-preview" id="tplPhotoPreview_${p.key}"></div>
+    </div>`).join("");
+
+  const fieldInputs = t.fields.map((f) => {
+    const id = `tplField_${f.key}`;
+    if (f.type === "textarea") {
+      return `<div class="tpl-field"><label>${escapeHtml(f.label)}</label>
+        <textarea id="${id}" placeholder="${escapeHtml(f.placeholder || "")}" rows="2"></textarea></div>`;
+    }
+    if (f.type === "checkbox") {
+      return `<div class="tpl-field tpl-field-checkbox">
+        <label><input type="checkbox" id="${id}" ${f.default ? "checked" : ""}> ${escapeHtml(f.label)}</label></div>`;
+    }
+    if (f.type === "color") {
+      return `<div class="tpl-field"><label>${escapeHtml(f.label)}</label>
+        <input type="color" id="${id}" value="${f.default || "#000000"}"></div>`;
+    }
+    if (f.type === "select") {
+      const opts = (f.options || []).map((o) => `<option value="${o.value}">${escapeHtml(o.label)}</option>`).join("");
+      return `<div class="tpl-field"><label>${escapeHtml(f.label)}</label>
+        <select id="${id}">${opts}</select></div>`;
+    }
+    return `<div class="tpl-field"><label>${escapeHtml(f.label)}</label>
+      <input type="text" id="${id}" placeholder="${escapeHtml(f.placeholder || "")}"></div>`;
+  }).join("");
+
+  body.innerHTML = `
+    <div class="tpl-back"><button class="clear-btn" onclick="_renderTemplateGrid()">&larr; เลือกเทมเพลตอื่น</button></div>
+    <div class="tpl-form">${photoInputs}${fieldInputs}</div>
+    <div class="crop-actions">
+      <button class="generate-btn" id="tplRenderBtn" onclick="renderTemplateImage()">สร้างภาพ</button>
+    </div>
+    <div id="tplResult"></div>
+  `;
+}
+
+function _setTemplatePhoto(key, file) {
+  if (!file) return;
+  _templatePhotos[key] = file;
+  const preview = document.getElementById(`tplPhotoPreview_${key}`);
+  const url = URL.createObjectURL(file);
+  preview.innerHTML = `<img src="${url}" alt="">`;
+}
+
+async function renderTemplateImage() {
+  const t = _selectedTemplate;
+  for (const p of t.photos) {
+    if (!_templatePhotos[p.key]) return showToast(`กรุณาเลือก: ${p.label}`, true);
+  }
+
+  const fields = {};
+  for (const f of t.fields) {
+    const el = document.getElementById(`tplField_${f.key}`);
+    if (!el) continue;
+    fields[f.key] = f.type === "checkbox" ? el.checked : el.value;
+  }
+
+  const btn = document.getElementById("tplRenderBtn");
+  btn.disabled = true;
+  btn.textContent = "กำลังสร้าง...";
+
+  const formData = new FormData();
+  formData.set("template_id", t.id);
+  formData.set("fields", JSON.stringify(fields));
+  for (const p of t.photos) {
+    formData.set(p.key, _templatePhotos[p.key]);
+  }
+
+  try {
+    const resp = await fetch("/api/templates/render", { method: "POST", body: formData });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "สร้างภาพไม่สำเร็จ");
+    const url = data.url + "?t=" + Date.now();
+    document.getElementById("tplResult").innerHTML = `
+      <div class="tpl-result">
+        <img src="${url}" alt="ผลลัพธ์">
+        <a class="generate-btn tpl-download" href="${url}" download="template.png">ดาวน์โหลด</a>
+      </div>`;
+  } catch (e) {
+    showToast(e.message || "สร้างภาพไม่สำเร็จ", true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "สร้างภาพ";
+  }
+}
+
 // ── Help system ──
 
 const HELP_TEXTS = {
