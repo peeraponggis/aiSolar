@@ -1851,7 +1851,7 @@ const HELP_TEXTS = {
   },
   clone: {
     title: "โคลนเสียง",
-    body: "ใช้ AI โคลนน้ำเสียงจากไฟล์เสียงที่อัปโหลด\n\n<b>เลือก Clone Engine:</b>\n\n<b>OpenVoice V2</b> — สร้างเสียง TTS ก่อน แล้วแปลงน้ำเสียง (2 ขั้นตอน)\nใช้ .venv-clone (Python 3.12 + torch)\n\n<b>F5-TTS-THAI</b> — สร้างเสียงจาก reference โดยตรง (1 ขั้นตอน)\nติดตั้ง: pip install git+https://github.com/VYNCX/F5-TTS-THAI.git\nต้องการ GPU + reference clip 2-8 วินาที\n\n<b>วิธีใช้:</b>\n1. เลือก Clone Engine\n2. กด \"+ อัปโหลดเสียง\" เลือกไฟล์เสียงพูดชัดๆ 5-30 วินาที\n3. ตั้งชื่อเสียง แล้วเลือกจาก dropdown\n\n<b>ไม่ใช้</b> = ใช้เสียง TTS ปกติ"
+    body: "ใช้ AI โคลนน้ำเสียงจากไฟล์เสียงที่อัปโหลด\n\n<b>เลือก Clone Engine:</b>\n\n<b>OpenVoice V2</b> — สร้างเสียง TTS ก่อน แล้วแปลงน้ำเสียง (2 ขั้นตอน)\nใช้ .venv-clone (Python 3.12 + torch)\n\n<b>F5-TTS-THAI</b> — สร้างเสียงจาก reference โดยตรง (1 ขั้นตอน)\nใช้ .venv-f5 แยกต่างหาก (เพราะ numpy ชนกับ OpenVoice)\nต้องการ GPU — ระบบจะตัด reference ให้เหลือ 8 วินาทีอัตโนมัติ\n\n<b>ติดตั้ง F5-TTS-THAI:</b>\npython -m venv .venv-f5\n.venv-f5\\Scripts\\python -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124\n.venv-f5\\Scripts\\python -m pip install --only-binary=:all: numpy==1.26.4 scikit-learn==1.6.1\n.venv-f5\\Scripts\\python -m pip install git+https://github.com/VYNCX/F5-TTS-THAI.git\n\n<b>วิธีใช้:</b>\n1. เลือก Clone Engine\n2. กด \"+ อัปโหลดเสียง\" เลือกไฟล์เสียงพูดชัดๆ 5-30 วินาที\n3. ตั้งชื่อเสียง แล้วเลือกจาก dropdown\n\n<b>ไม่ใช้</b> = ใช้เสียง TTS ปกติ"
   },
   persona: {
     title: "บุคลิกตัวละคร",
