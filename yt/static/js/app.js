@@ -930,7 +930,18 @@ async function previewVoice() {
   btn.disabled = true;
   btn.textContent = "กำลังสร้างเสียง...";
   try {
-    const params = new URLSearchParams({ text, voice: selectedVoice, tone: selectedTone, tts_engine: selectedTTSEngine });
+    const params = new URLSearchParams({
+      text,
+      voice: selectedVoice,
+      rate: getRateValue(),
+      pitch: getPitchValue(),
+      tone: selectedTone,
+      tts_engine: selectedTTSEngine,
+    });
+    if (selectedTone === "custom") {
+      params.set("tone_rate", document.getElementById("customToneRate").value || "0");
+      params.set("tone_pitch", document.getElementById("customTonePitch").value || "0");
+    }
     if (cloneVoiceId) {
       params.set("clone_voice_id", cloneVoiceId);
       params.set("clone_tau", document.getElementById("tauSlider")?.value || "30");

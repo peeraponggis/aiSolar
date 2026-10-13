@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import asyncio
 import edge_tts
 from pathlib import Path
@@ -107,11 +108,15 @@ def _calc_sentence_prosody(idx: int, total: int, sent: str,
 
 
 _edge_tts_failures = 0
+_edge_tts_blocked_until = 0.0
+# gTTS ignores voice/rate/pitch/tone, so staying on it degrades every setting.
+# Pause edge-tts briefly after repeated failures, then let it prove itself again.
+EDGE_TTS_COOLDOWN = 120
 
 async def _tts_with_retry(text: str, voice: str, output_path: str,
                           rate: str, pitch: str, max_retries: int = 3,
                           tone: str = "normal", tts_engine: str = "edge-tts"):
-    global _edge_tts_failures
+    global _edge_tts_failures, _edge_tts_blocked_until
     clean = re.sub(r"[.]{3,}", "...", text)
     clean = re.sub(r"[!]{2,}", "!", clean)
     clean = re.sub(r"[?]{2,}", "?", clean)
@@ -135,8 +140,7 @@ async def _tts_with_retry(text: str, voice: str, output_path: str,
             except Exception as e:
                 print(f"{tts_engine} failed: {e}, falling back to edge-tts")
 
-    if _edge_tts_failures < 3:
-        last_err = None
+    if time.monotonic() >= _edge_tts_blocked_until:
         for attempt in range(max_retries):
             try:
                 voice_name = voice
@@ -146,19 +150,26 @@ async def _tts_with_retry(text: str, voice: str, output_path: str,
                 await asyncio.wait_for(communicate.save(output_path), timeout=30)
                 if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
                     _edge_tts_failures = 0
+                    _edge_tts_blocked_until = 0.0
                     return
             except asyncio.TimeoutError:
-                last_err = TimeoutError("edge-tts timed out after 30s")
                 print(f"edge-tts timeout on attempt {attempt + 1}/{max_retries}")
-            except (edge_tts.exceptions.NoAudioReceived, Exception) as e:
-                last_err = e
+            except Exception as e:
+                print(f"edge-tts error on attempt {attempt + 1}/{max_retries}: {e}")
             wait = 2 * (attempt + 1)
             print(f"edge-tts retry {attempt + 1}/{max_retries} (wait {wait}s)")
             await asyncio.sleep(wait)
         _edge_tts_failures += 1
-        print(f"edge-tts failed ({_edge_tts_failures} consecutive), falling back to gTTS")
+        if _edge_tts_failures >= 3:
+            _edge_tts_blocked_until = time.monotonic() + EDGE_TTS_COOLDOWN
+            print(f"edge-tts paused for {EDGE_TTS_COOLDOWN}s after "
+                  f"{_edge_tts_failures} failures — using gTTS meanwhile")
+        else:
+            print(f"edge-tts failed ({_edge_tts_failures} consecutive), falling back to gTTS")
     else:
-        print("edge-tts skipped (service down), using gTTS directly")
+        remaining = int(_edge_tts_blocked_until - time.monotonic())
+        print(f"edge-tts cooling down ({remaining}s left), using gTTS "
+              f"— voice/rate/pitch/tone will not apply")
 
     try:
         from gtts import gTTS as _gTTS

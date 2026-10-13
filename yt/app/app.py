@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 import shutil
 import uuid as _uuid
 from pathlib import Path
@@ -397,11 +398,20 @@ async def trim_video(
 # ── Voice preview endpoint ──
 
 
+def _parse_signed(value: str) -> int:
+    m = re.search(r"[+-]?\d+", value or "")
+    return int(m.group()) if m else 0
+
+
 @app.post("/api/preview-voice")
 async def preview_voice_tts(
     text: str = Query(..., min_length=1),
     voice: str = Query("female"),
+    rate: str = Query("+0%"),
+    pitch: str = Query("+0Hz"),
     tone: str = Query("normal"),
+    tone_rate: int = Query(0),
+    tone_pitch: int = Query(0),
     clone_voice_id: str = Query(""),
     clone_tau: int = Query(30),
     tts_engine: str = Query("edge-tts"),
@@ -418,9 +428,15 @@ async def preview_voice_tts(
         processed = processed[:500]
 
     voice_name = voice if tts_engine != "edge-tts" else VOICES.get(voice, VOICES["female"])
-    preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
-    r_val = preset["base_rate"]
-    p_val = preset["base_pitch"]
+    if tone == "custom":
+        preset = {"base_rate": max(-30, min(30, tone_rate)),
+                  "base_pitch": max(-30, min(30, tone_pitch))}
+    else:
+        preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
+
+    # Match _generate_toned_narration: the sliders are the base, tone adds to it.
+    r_val = max(-50, min(50, _parse_signed(rate) + preset["base_rate"]))
+    p_val = max(-50, min(50, _parse_signed(pitch) + preset["base_pitch"]))
     rate = f"+{r_val}%" if r_val >= 0 else f"{r_val}%"
     pitch = f"+{p_val}Hz" if p_val >= 0 else f"{p_val}Hz"
 
