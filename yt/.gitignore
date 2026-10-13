@@ -5,6 +5,7 @@ projects/*/output/
 projects/*/audio/
 *.mp4
 *.mp3
+!static/sounds/clip_done.mp3
 .venv/
 .venv-clone/
 voices/

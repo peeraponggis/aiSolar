@@ -126,7 +126,7 @@
     <div id="scriptInputContent" class="script-input-content collapsed">
       <div class="script-field">
         <label>บุคลิกตัวละคร <button class="help-btn" onclick="event.stopPropagation();showHelp('persona')">?</button></label>
-        <textarea id="personaInput" rows="3" placeholder="เช่น พี่โค้ด โปรแกรมเมอร์สายฮา พูดจาเป็นกันเอง ชอบเปรียบเทียบกับชีวิตจริง ใช้คำว่า 'จ้า' แทน 'ครับ/ค่ะ'"></textarea>
+        <textarea id="personaInput" rows="3" oninput="onPersonaInput()" placeholder="เช่น พี่โค้ด โปรแกรมเมอร์สายฮา พูดจาเป็นกันเอง ชอบเปรียบเทียบกับชีวิตจริง ใช้คำว่า 'จ้า' แทน 'ครับ/ค่ะ'"></textarea>
       </div>
       <div class="script-field">
         <label>สคริปต์กำหนดเอง <button class="help-btn" onclick="event.stopPropagation();showHelp('script')">?</button> <span class="field-hint">(ถ้าใส่จะข้ามการสร้างสคริปต์อัตโนมัติ)</span></label>

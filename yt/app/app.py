@@ -677,6 +677,27 @@ async def preview_voice(voice_id: str):
     return FileResponse(ref, media_type=media)
 
 
+@app.post("/api/notification/regenerate")
+async def regenerate_notification():
+    from scripts.generate_audio import VOICES, TONE_PRESETS, _tts_with_retry
+
+    text = "สร้างคลิป แล้ว ค้าาาาา"
+    voice_name = VOICES["female"]
+    preset = TONE_PRESETS["cheerful"]
+    rate = f"+{preset['base_rate']}%" if preset["base_rate"] >= 0 else f"{preset['base_rate']}%"
+    pitch = f"+{preset['base_pitch']}Hz" if preset["base_pitch"] >= 0 else f"{preset['base_pitch']}Hz"
+
+    out_dir = BASE_DIR / "static" / "sounds"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = str(out_dir / "clip_done.mp3")
+
+    try:
+        await _tts_with_retry(text, voice_name, out_path, rate, pitch, tone="cheerful")
+        return {"ok": True, "size": os.path.getsize(out_path)}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 if __name__ == "__main__":
     import uvicorn
 

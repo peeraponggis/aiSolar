@@ -156,6 +156,15 @@ function toggleSubtitles(mode) {
   });
 }
 
+const TONE_PERSONAS = {
+  normal:    "ผู้บรรยายทั่วไป พูดชัดเจน น้ำเสียงราบเรียบ เป็นกลาง ให้ข้อมูลตรงไปตรงมา",
+  cheerful:  "คนสนุกสนาน ร่าเริง พูดจามีชีวิตชีวา ชอบใช้คำอุทาน เช่น 'เจ๋งมาก!' 'สุดยอดเลย!' ทำให้ผู้ฟังรู้สึกสนุกตาม",
+  energetic: "คนกระตือรือร้น ตื่นเต้นกับทุกเรื่อง พูดเร็ว มีพลัง ชอบย้ำว่า 'ต้องลอง!' 'พลาดไม่ได้!' สร้างความรู้สึกเร่งด่วน",
+  warm:      "พี่คนสนิท พูดจาอบอุ่น เป็นกันเอง ใช้คำว่า 'นะ' 'จ้า' 'เนอะ' ทำให้รู้สึกเหมือนคุยกับเพื่อน",
+  serious:   "ผู้เชี่ยวชาญมืออาชีพ พูดจริงจัง ใช้ข้อมูลสนับสนุน น่าเชื่อถือ หนักแน่น ไม่ใช้คำสแลง",
+  news:      "ผู้ประกาศข่าว รายงานข้อมูลชัดเจน กระชับ เป็นทางการ ใช้ภาษาสุภาพ มีการสรุปประเด็นสำคัญ",
+};
+
 function selectTone(value) {
   selectedTone = value;
   const customRow = document.getElementById("customToneRow");
@@ -164,6 +173,20 @@ function selectTone(value) {
   } else {
     customRow.classList.add("hidden");
   }
+  const personaInput = document.getElementById("personaInput");
+  if (TONE_PERSONAS[value] && !personaInput._userEdited) {
+    personaInput.value = TONE_PERSONAS[value];
+  }
+}
+
+function onPersonaInput() {
+  const el = document.getElementById("personaInput");
+  el._userEdited = el.value.trim() !== "" && !Object.values(TONE_PERSONAS).includes(el.value.trim());
+}
+
+// Set default persona from initial tone
+if (TONE_PERSONAS[selectedTone]) {
+  document.getElementById("personaInput").value = TONE_PERSONAS[selectedTone];
 }
 
 const DURATION_THRESHOLDS = {
@@ -1011,6 +1034,7 @@ function pollStatus() {
         showResult(data);
         resetButton();
         showToast("สร้างคลิปสำเร็จ!");
+        playDoneSound();
         loadHistory();
       } else if (data.phase === "error") {
         clearInterval(pollTimer);
@@ -1114,6 +1138,14 @@ function showToast(msg, isError = false) {
   toast.textContent = msg;
   toast.className = "toast show" + (isError ? " error" : "");
   setTimeout(() => (toast.className = "toast"), 3000);
+}
+
+function playDoneSound() {
+  try {
+    const audio = new Audio("/static/sounds/clip_done.mp3");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+  } catch {}
 }
 
 async function loadProject(projectId) {
