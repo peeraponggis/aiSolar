@@ -954,6 +954,7 @@ async function previewVoice() {
     if (cloneVoiceId) {
       params.set("clone_voice_id", cloneVoiceId);
       params.set("clone_tau", document.getElementById("tauSlider")?.value || "30");
+      params.set("clone_engine", selectedCloneEngine);
     }
     const resp = await fetch(`/api/preview-voice?${params}`, { method: "POST" });
     if (!resp.ok) throw new Error();
