@@ -924,8 +924,17 @@ async function confirmTrim() {
 // ── Voice Preview ──
 
 async function previewVoice() {
-  const text = document.getElementById("customScriptInput").value.trim();
+  const scriptInput = document.getElementById("customScriptInput");
+  const selStart = scriptInput.selectionStart;
+  const selEnd = scriptInput.selectionEnd;
+  const selected = selEnd > selStart
+    ? scriptInput.value.substring(selStart, selEnd).trim()
+    : "";
+  const text = selected || scriptInput.value.trim();
   if (!text) return showToast("กรุณาใส่สคริปต์ก่อนทดสอบเสียง", true);
+  if (selected) {
+    showToast(`ทดสอบเฉพาะส่วนที่ไฮไลท์ (${selected.length} ตัวอักษร)`);
+  }
   const btn = document.getElementById("previewVoiceBtn");
   btn.disabled = true;
   btn.textContent = "กำลังสร้างเสียง...";
