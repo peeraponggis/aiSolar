@@ -339,29 +339,19 @@ class MossTTSEngine(TTSEngine):
 class F5TTSThaiCloneEngine(CloneEngine):
     name = "f5-tts-thai"
     label = "F5-TTS-THAI"
-    install_hint = "pip install git+https://github.com/VYNCX/F5-TTS-THAI.git"
+    install_hint = (
+        "สร้าง .venv-f5 (Python 3.12) แล้ว "
+        "pip install git+https://github.com/VYNCX/F5-TTS-THAI.git"
+    )
 
     def is_available(self) -> bool:
-        try:
-            import f5_tts  # noqa: F401
-            return True
-        except Exception:
-            return False
+        from scripts.f5_clone import is_f5_available
+        return is_f5_available()
 
     async def clone(self, text, reference_audio, output_path, language="th"):
-        """Generate speech in the style of the reference audio."""
-        def _do_clone():
-            from f5_tts.api import F5TTS
-            tts = F5TTS(model_type="F5-TTS")
-            wav, sr, _ = tts.infer(
-                ref_file=reference_audio,
-                ref_text="",
-                gen_text=text,
-            )
-            import soundfile as sf
-            sf.write(output_path, wav, sr)
-
-        await asyncio.to_thread(_do_clone)
+        """Generate speech in the style of the reference audio (1-step, no base TTS)."""
+        from scripts.f5_clone import clone_with_f5
+        await clone_with_f5(text, reference_audio, output_path)
 
 
 # ---------------------------------------------------------------------------

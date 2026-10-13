@@ -431,8 +431,13 @@ async def generate_audio(
             ref_path = get_reference_path(clone_voice_id)
             if ref_path:
                 output_path = os.path.join(output_dir, "narration.wav")
-                await f5.clone(processed, ref_path, output_path, language="th")
-                return output_path
+                try:
+                    await f5.clone(processed, ref_path, output_path, language="th")
+                    return output_path
+                except Exception as e:
+                    # 4GB VRAM makes OOM a real possibility — an uncloned clip
+                    # beats failing the whole run.
+                    print(f"F5-TTS-THAI failed ({e}), falling back to normal TTS")
 
     if clone_voice_id:
         base_path = os.path.join(output_dir, "base_tts.wav")

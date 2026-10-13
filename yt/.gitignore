@@ -11,3 +11,4 @@ projects/*/audio/
 voices/
 models/
 uploads/
+.venv-f5/
