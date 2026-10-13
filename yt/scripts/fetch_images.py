@@ -5,6 +5,7 @@ import asyncio
 import urllib.request
 import urllib.parse
 from pathlib import Path
+import httpx
 from dotenv import load_dotenv
 
 try:
@@ -15,6 +16,17 @@ except Exception:
 _ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(_ENV_PATH, override=True)
 
+# Same model + plain REST call (API key as query param) that scripts.brainstorm
+# uses successfully. The google.generativeai SDK's genai.configure(api_key=...)
+# was failing every call with 401 ACCESS_TOKEN_TYPE_UNSUPPORTED in this
+# environment (that package is deprecated upstream in favor of google.genai),
+# so every topic silently fell through to the generic "technology/computer/
+# digital" fallback below regardless of what the video was actually about.
+_GEMINI_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/"
+    "models/gemini-3.5-flash:generateContent"
+)
+
 
 def _get_pexels_key() -> str:
     load_dotenv(_ENV_PATH, override=True)
@@ -22,10 +34,10 @@ def _get_pexels_key() -> str:
 
 
 def _get_keywords_from_topic(topic: str, count: int = 4) -> list[str]:
+    api_key = os.getenv("GOOGLE_API_KEY", "")
+    if not api_key:
+        return _fallback_keywords(topic, count)
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel("gemini-3.6-flash")
         prompt = (
             f"Given this YouTube video topic: \"{topic}\"\n"
             f"Return exactly {count} English search keywords for finding relevant stock videos/photos.\n"
@@ -34,18 +46,32 @@ def _get_keywords_from_topic(topic: str, count: int = 4) -> list[str]:
             "Return ONLY a JSON array of strings, nothing else.\n"
             'Example: ["coding laptop", "server room", "artificial intelligence", "technology circuit"]'
         )
-        response = model.generate_content(prompt)
-        text = response.text.strip()
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
+        resp = httpx.post(
+            _GEMINI_URL, params={"key": api_key}, json=payload, timeout=20,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-        return json.loads(text)
+        keywords = json.loads(text)
+        if isinstance(keywords, list) and keywords:
+            return keywords[:count]
+        return _fallback_keywords(topic, count)
     except Exception as e:
         print(f"Keyword generation error: {e}")
-        words = topic.split()
-        fallback = [" ".join(words[:3]), "technology", "computer", "digital"]
-        while len(fallback) < count:
-            fallback.append("modern technology")
-        return fallback[:count]
+        return _fallback_keywords(topic, count)
+
+
+def _fallback_keywords(topic: str, count: int) -> list[str]:
+    """Used only if Gemini is unreachable/unconfigured. Reuses the topic
+    itself rather than generic filler terms (previously "technology",
+    "computer", "digital") that have no connection to the actual video and
+    produced visibly irrelevant background footage.
+    """
+    topic = topic.strip() or "lifestyle"
+    return [topic] * count
 
 
 def _search_pexels_videos(query: str, per_page: int = 1, orientation: str = "portrait") -> list[dict]:
