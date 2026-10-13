@@ -415,6 +415,7 @@ async def preview_voice_tts(
     clone_voice_id: str = Query(""),
     clone_tau: int = Query(30),
     tts_engine: str = Query("edge-tts"),
+    clone_engine: str = Query("openvoice"),
 ):
     from scripts.generate_audio import (
         VOICES, TONE_PRESETS, _clean_script_for_tts,
@@ -443,6 +444,19 @@ async def preview_voice_tts(
     preview_dir = UPLOAD_DIR / "previews"
     preview_dir.mkdir(parents=True, exist_ok=True)
     safe = f"preview_{_uuid.uuid4().hex[:8]}"
+
+    if clone_voice_id and clone_engine == "f5-tts-thai":
+        try:
+            from scripts.voice_clone import get_reference_path
+            from scripts.f5_clone import clone_with_f5, is_f5_available
+            ref_path = get_reference_path(clone_voice_id)
+            if ref_path and is_f5_available():
+                wav_out = str(preview_dir / f"{safe}_cloned.wav")
+                await clone_with_f5(processed, ref_path, wav_out)
+                return FileResponse(wav_out, media_type="audio/wav", filename="preview.wav")
+        except Exception as e:
+            print(f"F5 clone preview failed: {e}")
+
     mp3_output = str(preview_dir / f"{safe}.mp3")
     await _tts_with_retry(processed, voice_name, mp3_output, rate, pitch, tts_engine=tts_engine)
 
