@@ -18,6 +18,8 @@
     <div class="input-group">
       <input type="text" id="topicInput" placeholder="ใส่หัวข้อ เช่น Ollama ใช้ AI ฟรี" autocomplete="off">
       <button id="generateBtn" onclick="startGenerate()">สร้างคลิป</button>
+      <button class="draft-btn" onclick="saveDraft()" title="บันทึกร่าง">💾</button>
+      <button class="draft-btn" onclick="openDrafts()" title="โหลดร่าง">📂</button>
     </div>
 
     <div class="voice-settings">
@@ -349,6 +351,16 @@
     <div class="crop-actions">
       <button class="generate-btn" onclick="saveReplacements()">บันทึก</button>
     </div>
+  </div>
+</div>
+
+<div id="draftsModal" class="help-modal hidden" onclick="if(event.target===this)closeDrafts()">
+  <div class="replacements-content">
+    <div class="help-header">
+      <span>โครงการที่บันทึกไว้</span>
+      <button class="help-close" onclick="closeDrafts()">&times;</button>
+    </div>
+    <div id="draftsList" class="drafts-list"></div>
   </div>
 </div>
 

@@ -1148,6 +1148,111 @@ function playDoneSound() {
   } catch {}
 }
 
+// ── Drafts ──
+
+let _currentDraftId = null;
+
+function _collectFormState() {
+  return {
+    id: _currentDraftId,
+    topic: document.getElementById("topicInput").value.trim(),
+    voice: selectedVoice,
+    tone: selectedTone,
+    subtitles: subtitlesEnabled,
+    persona: document.getElementById("personaInput").value.trim(),
+    customScript: document.getElementById("customScriptInput").value.trim(),
+    bgmFile: bgmFilename,
+    bgmVolume: document.getElementById("bgmVolumeSlider").value,
+    aspectRatios: selectedAspectRatios,
+    mode: selectedMode,
+    voiceB: selectedVoiceB,
+    duration: selectedDuration,
+    cloneVoiceId: cloneVoiceId,
+    cloneTau: document.getElementById("tauSlider").value,
+    toneVar: selectedTone === "custom" ? document.getElementById("customToneVar").value : 0,
+    toneRate: selectedTone === "custom" ? document.getElementById("customToneRate").value : 0,
+    tonePitch: selectedTone === "custom" ? document.getElementById("customTonePitch").value : 0,
+    overlayText: (document.getElementById("overlayTextInput")?.value || "").trim(),
+    overlayFont: document.getElementById("overlayFont")?.value || "",
+    overlayAnimation: document.getElementById("overlayAnimation")?.value || "",
+    mediaFiles: selectedMedia.map(m => m.filename),
+  };
+}
+
+function _restoreFormState(d) {
+  document.getElementById("topicInput").value = d.topic || "";
+  if (d.voice) selectVoice(d.voice);
+  if (d.tone) { document.getElementById("toneSelect").value = d.tone; selectTone(d.tone); }
+  if (d.subtitles !== undefined) toggleSubtitles(d.subtitles ? "on" : "off");
+  if (d.persona) { document.getElementById("personaInput").value = d.persona; document.getElementById("personaInput")._userEdited = true; }
+  if (d.customScript) document.getElementById("customScriptInput").value = d.customScript;
+  if (d.bgmVolume) document.getElementById("bgmVolumeSlider").value = d.bgmVolume;
+  if (d.aspectRatios) {
+    selectedAspectRatios = d.aspectRatios;
+    document.querySelectorAll("[data-ratio]").forEach(b => b.classList.toggle("active", selectedAspectRatios.includes(b.dataset.ratio)));
+  }
+  if (d.mode) { selectedMode = d.mode; document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === d.mode)); }
+  if (d.voiceB) selectVoiceB(d.voiceB);
+  if (d.duration) { selectedDuration = d.duration; document.querySelectorAll("[data-dur]").forEach(b => b.classList.toggle("active", b.dataset.dur === d.duration)); }
+  if (d.cloneTau) document.getElementById("tauSlider").value = d.cloneTau;
+  if (d.overlayText) { const el = document.getElementById("overlayTextInput"); if (el) el.value = d.overlayText; }
+  if (d.overlayFont) { const el = document.getElementById("overlayFont"); if (el) el.value = d.overlayFont; }
+  if (d.overlayAnimation) { const el = document.getElementById("overlayAnimation"); if (el) el.value = d.overlayAnimation; }
+  _currentDraftId = d.id || null;
+}
+
+async function saveDraft() {
+  const state = _collectFormState();
+  if (!state.topic) return showToast("กรุณาใส่หัวข้อก่อนบันทึก", true);
+  try {
+    const resp = await fetch("/api/drafts/save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) });
+    const data = await resp.json();
+    _currentDraftId = data.id;
+    showToast(`บันทึกร่างแล้ว (${data.saved_at})`);
+  } catch { showToast("บันทึกไม่สำเร็จ", true); }
+}
+
+async function openDrafts() {
+  const list = document.getElementById("draftsList");
+  list.innerHTML = '<p class="loading">กำลังโหลด...</p>';
+  document.getElementById("draftsModal").classList.remove("hidden");
+  try {
+    const resp = await fetch("/api/drafts");
+    const drafts = await resp.json();
+    if (!drafts.length) { list.innerHTML = '<p class="no-results">ยังไม่มีร่างที่บันทึกไว้</p>'; return; }
+    const toneNames = { normal: "ปกติ", cheerful: "สนุกสนาน", energetic: "ตื่นเต้น", warm: "อบอุ่น", serious: "จริงจัง", news: "ข่าว", custom: "กำหนดเอง" };
+    list.innerHTML = drafts.map(d => `
+      <div class="draft-item" onclick="loadDraft('${d.id}')">
+        <div class="draft-info">
+          <div class="draft-title">${d.topic || "(ไม่มีหัวข้อ)"}</div>
+          <div class="draft-meta">${d.saved_at} · ${d.mode === "dialogue" ? "สนทนา" : "บรรยาย"} · ${toneNames[d.tone] || d.tone}</div>
+        </div>
+        <button class="draft-delete" onclick="event.stopPropagation();deleteDraft('${d.id}')" title="ลบ">&times;</button>
+      </div>
+    `).join("");
+  } catch { list.innerHTML = '<p class="no-results">โหลดไม่สำเร็จ</p>'; }
+}
+
+function closeDrafts() { document.getElementById("draftsModal").classList.add("hidden"); }
+
+async function loadDraft(id) {
+  try {
+    const resp = await fetch(`/api/drafts/${id}`);
+    const data = await resp.json();
+    _restoreFormState(data);
+    closeDrafts();
+    showToast("โหลดร่างแล้ว");
+  } catch { showToast("โหลดไม่สำเร็จ", true); }
+}
+
+async function deleteDraft(id) {
+  try {
+    await fetch(`/api/drafts/${id}`, { method: "DELETE" });
+    if (_currentDraftId === id) _currentDraftId = null;
+    openDrafts();
+  } catch { showToast("ลบไม่สำเร็จ", true); }
+}
+
 async function loadProject(projectId) {
   try {
     const resp = await fetch(`/api/status/${projectId}`);
