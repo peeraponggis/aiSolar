@@ -999,10 +999,57 @@ function renderReplacements(filter = "") {
   }
   const sorted = entries.sort((a, b) => a[0].localeCompare(b[0]));
   el.innerHTML = sorted.length
-    ? sorted.map(([eng, thai]) =>
-        `<div class="repl-item"><div>${escapeHtml(eng)} <span>&rarr;</span> ${escapeHtml(thai)}</div><button class="repl-remove" onclick="removeReplacement('${eng.replace(/'/g, "\\'")}')">&times;</button></div>`
-      ).join("")
+    ? sorted.map(([eng, thai]) => `<div class="repl-item" data-key="${_escapeAttr(eng)}">
+        <div class="repl-view">${escapeHtml(eng)} <span>&rarr;</span> ${escapeHtml(thai)}</div>
+        <div class="repl-actions">
+          <button class="repl-edit" onclick="startEditReplacement('${eng.replace(/'/g, "\\'")}')" title="แก้ไข">&#9998;</button>
+          <button class="repl-remove" onclick="removeReplacement('${eng.replace(/'/g, "\\'")}')" title="ลบ">&times;</button>
+        </div>
+      </div>`).join("")
     : `<p class="no-results">ไม่พบคำที่ตรงกับ "${escapeHtml(filter.trim())}"</p>`;
+}
+
+function startEditReplacement(key) {
+  const row = document.querySelector(`.repl-item[data-key="${CSS.escape(key)}"]`);
+  if (!row) return;
+  const thai = _replacements[key] || "";
+  row.innerHTML = `
+    <div class="repl-edit-row">
+      <input type="text" class="repl-edit-eng" value="${_escapeAttr(key)}" onkeydown="if(event.key==='Enter')this.closest('.repl-item').querySelector('.repl-save').click(); if(event.key==='Escape')renderReplacements(document.getElementById('replEng').value);">
+      <span>&rarr;</span>
+      <input type="text" class="repl-edit-thai" value="${_escapeAttr(thai)}" onkeydown="if(event.key==='Enter')this.closest('.repl-item').querySelector('.repl-save').click(); if(event.key==='Escape')renderReplacements(document.getElementById('replEng').value);">
+    </div>
+    <div class="repl-actions">
+      <button class="repl-save" onclick="confirmEditReplacement('${key.replace(/'/g, "\\'")}', this)" title="บันทึก">&#10003;</button>
+      <button class="repl-remove" onclick="renderReplacements(document.getElementById('replEng').value)" title="ยกเลิก">&times;</button>
+    </div>`;
+  row.querySelector(".repl-edit-eng").focus();
+}
+
+function confirmEditReplacement(oldKey, btn) {
+  const row = btn.closest(".repl-item");
+  const newEng = row.querySelector(".repl-edit-eng").value.trim();
+  const newThai = row.querySelector(".repl-edit-thai").value.trim();
+  if (!newEng || !newThai) return showToast("กรุณากรอกทั้งคำอังกฤษและคำอ่านไทย", true);
+  if (newEng !== oldKey) delete _replacements[oldKey];
+  _replacements[newEng] = newThai;
+  renderReplacements(document.getElementById("replEng").value);
+}
+
+function exportReplacementsTxt() {
+  const sorted = Object.entries(_replacements).sort((a, b) => a[0].localeCompare(b[0]));
+  if (!sorted.length) return showToast("ไม่มีคำแทนให้ส่งออก", true);
+  const lines = sorted.map(([eng, thai]) => `${eng} -> ${thai}`).join("\n");
+  const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "replacements.txt";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast(`ส่งออก ${sorted.length} คำแล้ว`);
 }
 
 function checkDuplicateReplacement() {
