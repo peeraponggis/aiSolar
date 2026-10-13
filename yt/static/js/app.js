@@ -12,6 +12,9 @@ let selectedVoiceB = "male";
 let selectedTone = "cheerful";
 let selectedAspectRatios = ["9:16"];
 let selectedDuration = "short";
+let selectedTTSEngine = "edge-tts";
+let selectedCloneEngine = "openvoice";
+let ttsEnginesData = null;
 let bgmFilename = "";
 let consoleExpanded = false;
 let logLastTimestamp = 0;
@@ -122,6 +125,71 @@ function selectVoice(voice) {
   document.querySelectorAll("[data-voice]").forEach((b) => {
     b.classList.toggle("active", b.dataset.voice === voice);
   });
+}
+
+async function loadTTSEngines() {
+  try {
+    const resp = await fetch("/api/tts-engines");
+    if (!resp.ok) return;
+    ttsEnginesData = await resp.json();
+    const sel = document.getElementById("ttsEngineSelect");
+    const cloneSel = document.getElementById("cloneEngineSelect");
+    sel.innerHTML = "";
+    cloneSel.innerHTML = "";
+    for (const eng of ttsEnginesData.engines) {
+      const opt = document.createElement("option");
+      opt.value = eng.name;
+      opt.textContent = eng.label + (eng.available ? "" : " (ไม่ได้ติดตั้ง)");
+      opt.disabled = !eng.available;
+      sel.appendChild(opt);
+    }
+    for (const eng of ttsEnginesData.clone_engines) {
+      const opt = document.createElement("option");
+      opt.value = eng.name;
+      opt.textContent = eng.label + (eng.available ? "" : " (ไม่ได้ติดตั้ง)");
+      opt.disabled = !eng.available;
+      cloneSel.appendChild(opt);
+    }
+    sel.value = selectedTTSEngine;
+    cloneSel.value = selectedCloneEngine;
+  } catch {}
+}
+
+function onTTSEngineChange(engineName) {
+  selectedTTSEngine = engineName;
+  if (!ttsEnginesData) return;
+  const eng = ttsEnginesData.engines.find(e => e.name === engineName);
+  if (!eng || !eng.voices.length) return;
+  const container = document.getElementById("voiceToggle");
+  container.innerHTML = "";
+  eng.voices.forEach((v, i) => {
+    const btn = document.createElement("button");
+    btn.className = "voice-btn" + (i === 0 ? " active" : "");
+    btn.dataset.voice = v.id;
+    btn.textContent = v.name;
+    btn.onclick = () => selectVoice(v.id);
+    container.appendChild(btn);
+  });
+  selectedVoice = eng.voices[0].id;
+  if (selectedMode === "dialogue") {
+    const bContainer = document.querySelector("[data-voiceb]")?.parentElement;
+    if (bContainer && eng.voices.length > 1) {
+      bContainer.innerHTML = "";
+      eng.voices.forEach((v, i) => {
+        const btn = document.createElement("button");
+        btn.className = "voice-btn" + ((i === 1 || (eng.voices.length === 1 && i === 0)) ? " active" : "");
+        btn.dataset.voiceb = v.id;
+        btn.textContent = v.name;
+        btn.onclick = () => selectVoiceB(v.id);
+        bContainer.appendChild(btn);
+      });
+      selectedVoiceB = eng.voices.length > 1 ? eng.voices[1].id : eng.voices[0].id;
+    }
+  }
+}
+
+function onCloneEngineChange(engineName) {
+  selectedCloneEngine = engineName;
 }
 
 function getRateValue() {
@@ -862,7 +930,7 @@ async function previewVoice() {
   btn.disabled = true;
   btn.textContent = "กำลังสร้างเสียง...";
   try {
-    const params = new URLSearchParams({ text, voice: selectedVoice, tone: selectedTone });
+    const params = new URLSearchParams({ text, voice: selectedVoice, tone: selectedTone, tts_engine: selectedTTSEngine });
     if (cloneVoiceId) {
       params.set("clone_voice_id", cloneVoiceId);
       params.set("clone_tau", document.getElementById("tauSlider")?.value || "30");
@@ -1000,6 +1068,8 @@ async function startGenerate() {
     overlay_text: (document.getElementById("overlayTextInput").value || "").trim(),
     overlay_font: document.getElementById("overlayFont").value,
     overlay_animation: document.getElementById("overlayAnimation").value,
+    tts_engine: selectedTTSEngine,
+    clone_engine: selectedCloneEngine,
   });
   if (selectedMedia.length) {
     params.set("media_files", selectedMedia.map((m) => m.filename).join(","));
@@ -1383,6 +1453,8 @@ function _collectFormState() {
     overlayFont: document.getElementById("overlayFont")?.value || "",
     overlayAnimation: document.getElementById("overlayAnimation")?.value || "",
     mediaFiles: selectedMedia.map(m => m.filename),
+    ttsEngine: selectedTTSEngine,
+    cloneEngine: selectedCloneEngine,
   };
 }
 
@@ -1405,6 +1477,8 @@ function _restoreFormState(d) {
   if (d.overlayText) { const el = document.getElementById("overlayTextInput"); if (el) el.value = d.overlayText; }
   if (d.overlayFont) { const el = document.getElementById("overlayFont"); if (el) el.value = d.overlayFont; }
   if (d.overlayAnimation) { const el = document.getElementById("overlayAnimation"); if (el) el.value = d.overlayAnimation; }
+  if (d.ttsEngine) { selectedTTSEngine = d.ttsEngine; document.getElementById("ttsEngineSelect").value = d.ttsEngine; onTTSEngineChange(d.ttsEngine); }
+  if (d.cloneEngine) { selectedCloneEngine = d.cloneEngine; document.getElementById("cloneEngineSelect").value = d.cloneEngine; }
   _currentDraftId = d.id || null;
 }
 
@@ -1601,6 +1675,10 @@ async function loadVoiceProfiles() {
 // ── Help system ──
 
 const HELP_TEXTS = {
+  tts_engine: {
+    title: "TTS Engine (ระบบสังเคราะห์เสียง)",
+    body: "เลือกระบบสร้างเสียงพูด:\n\n<b>edge-tts (Microsoft)</b> — เสียงคุณภาพสูง ต้องมีอินเทอร์เน็ต (ค่าเริ่มต้น)\n\n<b>PyThaiTTS (VachanaTTS)</b> — โมเดล VITS ออฟไลน์ มี 4 เสียง\nติดตั้ง: pip install pythaitts\nLicense: Apache 2.0\n\n<b>Piper TTS</b> — ONNX runtime เร็วมาก ต้องดาวน์โหลด voice model\nติดตั้ง: pip install piper-tts\nวาง voice model ไว้ที่ models/piper/\n\n<b>MOSS-TTS Nano</b> — โมเดล 100M พารามิเตอร์ ต้องมี reference clip\nติดตั้ง: git clone + pip install -e .\nต้องการ GPU\n\nengine ที่ยังไม่ได้ติดตั้งจะแสดงเป็นสีเทา"
+  },
   voice: {
     title: "เสียงพูด",
     body: "เลือกเสียง TTS สำหรับบรรยาย\n\n<b>หญิง (เปรมวดี)</b> — เสียง th-TH-PremwadeeNeural\n<b>ชาย (นิวัตน์)</b> — เสียง th-TH-NiwatNeural\n\nถ้าใช้โหมดสนทนา 2 คน เสียงนี้จะเป็น \"เสียง A\" (คนอธิบาย)"
@@ -1642,8 +1720,8 @@ const HELP_TEXTS = {
     body: "ควบคุมความเข้มในการแปลงเสียงให้เหมือนเสียงอ้างอิง\n\n<b>ค่าต่ำ (0.10-0.20)</b> — เสียงชัด คุณภาพดี แต่ยังคล้ายเสียง TTS ต้นทาง\n<b>ค่ากลาง (0.25-0.35)</b> — สมดุลระหว่างความชัดกับความเหมือน (แนะนำ)\n<b>ค่าสูง (0.40-0.80)</b> — เหมือนเสียงอ้างอิงมาก แต่อาจมี artifact\n\n<b>คำแนะนำเสียงอ้างอิง:</b>\n• ยาว 20-30 วินาที (ไม่ต่ำกว่า 10 วินาที)\n• ผู้พูดคนเดียว พูดชัด\n• ไม่มีเสียงรบกวน/เพลงประกอบ\n• ใช้ไฟล์ WAV จะได้คุณภาพดีที่สุด"
   },
   clone: {
-    title: "โคลนเสียง (OpenVoice V2)",
-    body: "ใช้ AI โคลนน้ำเสียงจากไฟล์เสียงที่อัปโหลด\n\n<b>วิธีใช้:</b>\n1. กด \"+ อัปโหลดเสียง\" เลือกไฟล์เสียง (.wav/.mp3/.m4a) ที่มีเสียงพูดชัดๆ ยาว 5-30 วินาที\n2. ตั้งชื่อเสียง แล้วเลือกจาก dropdown\n3. กดสร้างคลิป — ระบบจะ:\n   • สร้างเสียง TTS ปกติก่อน\n   • แปลงน้ำเสียงให้เหมือนเสียงต้นแบบ\n\n<b>ไม่ใช้</b> = ใช้เสียง edge-tts ปกติ (เปรมวดี/นิวัตน์)"
+    title: "โคลนเสียง",
+    body: "ใช้ AI โคลนน้ำเสียงจากไฟล์เสียงที่อัปโหลด\n\n<b>เลือก Clone Engine:</b>\n\n<b>OpenVoice V2</b> — สร้างเสียง TTS ก่อน แล้วแปลงน้ำเสียง (2 ขั้นตอน)\nใช้ .venv-clone (Python 3.12 + torch)\n\n<b>F5-TTS-THAI</b> — สร้างเสียงจาก reference โดยตรง (1 ขั้นตอน)\nติดตั้ง: pip install git+https://github.com/VYNCX/F5-TTS-THAI.git\nต้องการ GPU + reference clip 2-8 วินาที\n\n<b>วิธีใช้:</b>\n1. เลือก Clone Engine\n2. กด \"+ อัปโหลดเสียง\" เลือกไฟล์เสียงพูดชัดๆ 5-30 วินาที\n3. ตั้งชื่อเสียง แล้วเลือกจาก dropdown\n\n<b>ไม่ใช้</b> = ใช้เสียง TTS ปกติ"
   },
   persona: {
     title: "บุคลิกตัวละคร",
@@ -1673,3 +1751,4 @@ document.getElementById("topicInput").addEventListener("keydown", (e) => {
 
 loadHistory();
 loadVoiceProfiles();
+loadTTSEngines();
