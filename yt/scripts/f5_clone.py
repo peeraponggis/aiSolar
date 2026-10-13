@@ -30,10 +30,21 @@ warnings.filterwarnings("ignore")
 try:
     import torch
     from f5_tts.api import F5TTS
+    from cached_path import cached_path
     import soundfile as sf
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    tts = F5TTS(device=device)
+    # The pip package only ships *_train.yaml configs, but their `model:`
+    # section is identical to what F5TTS() reads, so F5TTS_Base_train
+    # doubles as the inference config. Checkpoint/vocab must be pointed at
+    # VIZINTZOR/F5-TTS-THAI explicitly or F5TTS() defaults to the English
+    # SWivid/F5-TTS weights instead.
+    tts = F5TTS(
+        model="F5TTS_Base_train",
+        ckpt_file=str(cached_path("hf://VIZINTZOR/F5-TTS-THAI/model_1000000.pt")),
+        vocab_file=str(cached_path("hf://VIZINTZOR/F5-TTS-THAI/vocab.txt")),
+        device=device,
+    )
     wav, sr, _ = tts.infer(
         ref_file=sys.argv[1],
         ref_text=sys.argv[2],
@@ -44,14 +55,16 @@ try:
         del tts
         torch.cuda.empty_cache()
     print("F5_CLONE_OK")
-except Exception as e:
-    print(f"F5_CLONE_FAIL: {e}")
+except Exception:
+    import traceback
+    print("F5_CLONE_FAIL:")
+    traceback.print_exc()
     sys.exit(1)
 '''
 
 
 MAX_REF_SECONDS = 8
-FFMPEG = str(BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe")
+FFMPEG = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
 
 
 def _trim_reference(reference_audio: str, work_dir: str) -> str:
@@ -82,12 +95,23 @@ def _clone_sync(text: str, reference_audio: str, output_path: str,
     out_dir = os.path.dirname(os.path.abspath(output_path))
     os.makedirs(out_dir, exist_ok=True)
     ref = _trim_reference(reference_audio, out_dir)
+
+    # f5_tts's own audio loading (librosa/soundfile, used when ref_text is
+    # empty and it auto-transcribes) shells out to ffmpeg by name, so it
+    # needs ffmpeg's directory on PATH, not just the explicit path we pass
+    # to _trim_reference above.
+    env = os.environ.copy()
+    ffmpeg_dir = os.path.dirname(FFMPEG) if os.path.exists(FFMPEG) else ""
+    if ffmpeg_dir:
+        env["PATH"] = ffmpeg_dir + os.pathsep + env.get("PATH", "")
+
     try:
         # -I keeps the project directory off sys.path in the child.
         result = subprocess.run(
             [str(F5_VENV_PYTHON), "-I", "-c", _SCRIPT,
              ref, ref_text, text, output_path],
             capture_output=True, text=True, timeout=600, cwd=str(BASE_DIR),
+            env=env,
         )
     except subprocess.TimeoutExpired:
         raise RuntimeError("F5-TTS-THAI timed out after 600s")
@@ -96,7 +120,7 @@ def _clone_sync(text: str, reference_audio: str, output_path: str,
             and os.path.getsize(output_path) > 100:
         return output_path
 
-    raise RuntimeError(f"F5-TTS-THAI failed: {(result.stdout + result.stderr)[-300:]}")
+    raise RuntimeError(f"F5-TTS-THAI failed: {(result.stdout + result.stderr)[-2000:]}")
 
 
 async def clone_with_f5(text: str, reference_audio: str, output_path: str,
