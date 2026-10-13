@@ -453,6 +453,154 @@ async def download_pexels_media(
     return JSONResponse({"error": "Download failed"}, status_code=500)
 
 
+# ── URL scrape endpoints ──
+
+
+@app.get("/api/url/scrape")
+async def scrape_url_images(url: str = Query(..., min_length=1)):
+    import re
+    import urllib.parse
+    import urllib.request
+
+    from bs4 import BeautifulSoup
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/131.0.0.0 Safari/537.36"
+        )
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            html = resp.read(5_000_000).decode("utf-8", errors="replace")
+    except Exception as e:
+        return JSONResponse({"error": f"ไม่สามารถเข้าถึง URL: {e}"}, status_code=400)
+
+    soup = BeautifulSoup(html, "html.parser")
+    seen = set()
+    items = []
+
+    _IMG_EXTS = re.compile(r"\.(jpe?g|png|webp|avif|bmp|tiff?)(\?|$)", re.I)
+    _VID_EXTS = re.compile(r"\.(mp4|webm|mov|avi)(\?|$)", re.I)
+
+    def _add(src: str, media_type: str = "image"):
+        if not src or src.startswith("data:"):
+            return
+        absolute = urllib.parse.urljoin(url, src)
+        if absolute in seen:
+            return
+        seen.add(absolute)
+        low = absolute.lower()
+        parsed_path = urllib.parse.urlparse(absolute).path.lower()
+        if parsed_path.endswith((".svg", ".ico", ".gif")):
+            return
+        if re.search(r"(favicon|icon|logo|sprite|pixel|tracker|badge|button)", low):
+            return
+        if media_type == "image" and not _IMG_EXTS.search(absolute):
+            return
+        if media_type == "video" and not _VID_EXTS.search(absolute):
+            return
+        items.append(
+            {"url": absolute, "thumbnail": absolute, "type": media_type}
+        )
+
+    for meta in soup.find_all("meta", property=re.compile(r"og:image|twitter:image")):
+        _add(meta.get("content"))
+
+    for img in soup.find_all("img"):
+        src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or ""
+        srcset = img.get("srcset") or img.get("data-srcset") or ""
+        if srcset:
+            candidates = [
+                s.strip() for s in srcset.split(",") if s.strip()
+            ]
+            best = sorted(
+                candidates,
+                key=lambda s: int(m.group(1))
+                if (m := re.search(r"(\d+)w", s))
+                else 0,
+                reverse=True,
+            )
+            if best:
+                candidate = best[0].strip().split()[0]
+                if _IMG_EXTS.search(candidate):
+                    src = candidate
+        _add(src)
+
+    for vid in soup.find_all("video"):
+        poster = vid.get("poster")
+        if poster:
+            _add(poster)
+        for source in vid.find_all("source"):
+            _add(source.get("src"), "video")
+        vid_src = vid.get("src")
+        if vid_src:
+            _add(vid_src, "video")
+
+    return items[:40]
+
+
+@app.post("/api/url/download")
+async def download_url_media(
+    url: str = Query(...),
+    media_type: str = Query("image"),
+):
+    import urllib.request
+
+    UPLOAD_DIR.mkdir(exist_ok=True)
+    ext_map = {
+        ".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png",
+        ".webp": ".webp", ".mp4": ".mp4", ".webm": ".webm",
+    }
+    from urllib.parse import urlparse
+
+    path = urlparse(url).path.lower()
+    ext = ".jpg"
+    for k, v in ext_map.items():
+        if k in path:
+            ext = v
+            break
+    if media_type == "video":
+        ext = ".mp4" if ".mp4" in path else ".webm" if ".webm" in path else ".mp4"
+
+    safe_name = f"web_{_uuid.uuid4().hex[:8]}{ext}"
+    out_path = str(UPLOAD_DIR / safe_name)
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/131.0.0.0 Safari/537.36"
+                )
+            },
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            content_type = resp.headers.get("Content-Type", "")
+            if "png" in content_type:
+                ext = ".png"
+            elif "webp" in content_type:
+                ext = ".webp"
+            elif "mp4" in content_type or "video" in content_type:
+                ext = ".mp4"
+            if ext != out_path[-len(ext):]:
+                safe_name = f"web_{_uuid.uuid4().hex[:8]}{ext}"
+                out_path = str(UPLOAD_DIR / safe_name)
+            with open(out_path, "wb") as f:
+                while True:
+                    chunk = resp.read(262144)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+        ftype = "video" if ext in (".mp4", ".webm") else "image"
+        return {"filename": safe_name, "type": ftype, "ok": True}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 # ── Voice clone endpoints ──
 
 

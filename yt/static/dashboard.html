@@ -176,6 +176,13 @@
         </div>
         <div id="pexelsResults" class="pexels-grid"></div>
       </div>
+      <div class="url-scrape-section">
+        <div class="search-row">
+          <input type="text" id="scrapeUrl" placeholder="วาง URL เว็บไซต์เพื่อดึงรูป/คลิป..." onkeydown="if(event.key==='Enter'){event.preventDefault();scrapeUrl()}">
+          <button onclick="scrapeUrl()">ดึงรูป</button>
+        </div>
+        <div id="scrapeResults" class="pexels-grid"></div>
+      </div>
       <div class="upload-area" id="uploadArea"
            ondragover="event.preventDefault();this.classList.add('dragover')"
            ondragleave="this.classList.remove('dragover')"
