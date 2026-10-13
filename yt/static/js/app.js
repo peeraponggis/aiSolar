@@ -988,17 +988,27 @@ function closeReplacements() {
   document.getElementById("replacementsModal").classList.add("hidden");
 }
 
-function renderReplacements() {
+function renderReplacements(filter = "") {
   const el = document.getElementById("replacementsList");
-  const sorted = Object.entries(_replacements).sort((a, b) => a[0].localeCompare(b[0]));
-  el.innerHTML = sorted.map(([eng, thai]) =>
-    `<div class="repl-item"><div>${escapeHtml(eng)} <span>&rarr;</span> ${escapeHtml(thai)}</div><button class="repl-remove" onclick="removeReplacement('${eng.replace(/'/g, "\\'")}')">&times;</button></div>`
-  ).join("");
+  const q = filter.trim().toLowerCase();
+  let entries = Object.entries(_replacements);
+  if (q) {
+    entries = entries.filter(([eng, thai]) =>
+      eng.toLowerCase().includes(q) || thai.toLowerCase().includes(q)
+    );
+  }
+  const sorted = entries.sort((a, b) => a[0].localeCompare(b[0]));
+  el.innerHTML = sorted.length
+    ? sorted.map(([eng, thai]) =>
+        `<div class="repl-item"><div>${escapeHtml(eng)} <span>&rarr;</span> ${escapeHtml(thai)}</div><button class="repl-remove" onclick="removeReplacement('${eng.replace(/'/g, "\\'")}')">&times;</button></div>`
+      ).join("")
+    : `<p class="no-results">ไม่พบคำที่ตรงกับ "${escapeHtml(filter.trim())}"</p>`;
 }
 
 function checkDuplicateReplacement() {
   const eng = document.getElementById("replEng").value.trim();
   const warn = document.getElementById("replDupWarn");
+  renderReplacements(eng);
   if (!eng) { warn.classList.add("hidden"); return; }
   const key = Object.keys(_replacements).find(k => k.toLowerCase() === eng.toLowerCase());
   if (key) {
@@ -1021,7 +1031,7 @@ function addReplacement() {
 
 function removeReplacement(eng) {
   delete _replacements[eng];
-  renderReplacements();
+  renderReplacements(document.getElementById("replEng").value);
 }
 
 async function saveReplacements() {
