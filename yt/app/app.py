@@ -78,6 +78,8 @@ async def generate_video(
     duration_preset: str = Query("short"),
     clone_tau: int = Query(30),
     media_durations: str = Query(""),
+    tts_engine: str = Query("edge-tts"),
+    clone_engine: str = Query("openvoice"),
 ):
     project_id = orchestrator.create_project(topic)
     skip_fetch = False
@@ -120,8 +122,13 @@ async def generate_video(
     valid_presets = {"short", "medium", "long"}
     dur_preset = duration_preset if duration_preset in valid_presets else "short"
     tau_val = max(10, min(80, clone_tau)) / 100.0
+    valid_engines = {"edge-tts", "pythaitts", "piper", "moss-tts"}
+    eng = tts_engine if tts_engine in valid_engines else "edge-tts"
+    valid_clone = {"openvoice", "f5-tts-thai"}
+    cleng = clone_engine if clone_engine in valid_clone else "openvoice"
     vs = VoiceSettings(voice=voice, rate=rate, pitch=pitch, clone_voice_id=clone_voice_id,
-                       tone=tone_val, clone_tau=tau_val)
+                       tone=tone_val, clone_tau=tau_val, tts_engine=eng,
+                       clone_engine=cleng)
     if aspect_ratio == "both":
         ratios = ["9:16", "16:9"]
     elif aspect_ratio in ("9:16", "16:9"):
@@ -387,6 +394,7 @@ async def preview_voice_tts(
     tone: str = Query("normal"),
     clone_voice_id: str = Query(""),
     clone_tau: int = Query(30),
+    tts_engine: str = Query("edge-tts"),
 ):
     from scripts.generate_audio import (
         VOICES, TONE_PRESETS, _clean_script_for_tts,
@@ -399,7 +407,7 @@ async def preview_voice_tts(
     if len(processed) > 500:
         processed = processed[:500]
 
-    voice_name = VOICES.get(voice, VOICES["female"])
+    voice_name = voice if tts_engine != "edge-tts" else VOICES.get(voice, VOICES["female"])
     preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
     r_val = preset["base_rate"]
     p_val = preset["base_pitch"]
@@ -410,7 +418,7 @@ async def preview_voice_tts(
     preview_dir.mkdir(parents=True, exist_ok=True)
     safe = f"preview_{_uuid.uuid4().hex[:8]}"
     mp3_output = str(preview_dir / f"{safe}.mp3")
-    await _tts_with_retry(processed, voice_name, mp3_output, rate, pitch)
+    await _tts_with_retry(processed, voice_name, mp3_output, rate, pitch, tts_engine=tts_engine)
 
     if clone_voice_id:
         try:
@@ -693,6 +701,15 @@ async def download_url_media(
         return {"filename": safe_name, "type": ftype, "ok": True}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+# ── TTS engine endpoints ──
+
+
+@app.get("/api/tts-engines")
+async def get_tts_engines():
+    from scripts.tts_engines import list_engines, list_clone_engines
+    return {"engines": list_engines(), "clone_engines": list_clone_engines()}
 
 
 # ── Voice clone endpoints ──

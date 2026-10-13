@@ -19,6 +19,8 @@ class VoiceSettings:
     clone_voice_id: str = ""
     tone: str = "normal"
     clone_tau: float = 0.3
+    tts_engine: str = "edge-tts"
+    clone_engine: str = "openvoice"
 
 
 class Orchestrator:
@@ -88,14 +90,12 @@ class Orchestrator:
             status.log(f"ได้สคริปต์ {len(script)} ตัวอักษร", "success")
             status.update("script_done", 35, script=script)
 
+            engine_label = vs.tts_engine if vs.tts_engine != "edge-tts" else "edge-tts"
             if mode == "dialogue":
                 vb = voice_b or ("male" if vs.voice == "female" else "female")
-                name_a = "เปรมวดี" if vs.voice == "female" else "นิวัตน์"
-                name_b = "เปรมวดี" if vb == "female" else "นิวัตน์"
-                status.log(f"สร้างเสียงสนทนา A={name_a}, B={name_b}...")
+                status.log(f"สร้างเสียงสนทนา ({engine_label})...")
             else:
-                voice_name = "เปรมวดี" if vs.voice == "female" else "นิวัตน์"
-                status.log(f"สร้างเสียง edge-tts ({voice_name})...")
+                status.log(f"สร้างเสียง ({engine_label}: {vs.voice})...")
             status.update("generating_audio", 50)
             audio_path = await generate_audio(
                 project_id, script,
@@ -103,6 +103,8 @@ class Orchestrator:
                 clone_voice_id=vs.clone_voice_id,
                 mode=mode, voice_b=voice_b, tone=vs.tone,
                 clone_tau=vs.clone_tau,
+                tts_engine=vs.tts_engine,
+                clone_engine=vs.clone_engine,
             )
             if vs.clone_voice_id:
                 status.log("ได้เสียง TTS — กำลังโคลนเสียง (OpenVoice V2)...")

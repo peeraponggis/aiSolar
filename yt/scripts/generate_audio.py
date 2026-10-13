@@ -110,7 +110,7 @@ _edge_tts_failures = 0
 
 async def _tts_with_retry(text: str, voice: str, output_path: str,
                           rate: str, pitch: str, max_retries: int = 3,
-                          tone: str = "normal"):
+                          tone: str = "normal", tts_engine: str = "edge-tts"):
     global _edge_tts_failures
     clean = re.sub(r"[.]{3,}", "...", text)
     clean = re.sub(r"[!]{2,}", "!", clean)
@@ -124,11 +124,25 @@ async def _tts_with_retry(text: str, voice: str, output_path: str,
                        capture_output=True, timeout=10)
         return
 
+    if tts_engine != "edge-tts":
+        from scripts.tts_engines import get_engine
+        engine = get_engine(tts_engine)
+        if engine and engine.is_available():
+            try:
+                await engine.synthesize(clean, voice, output_path, rate, pitch)
+                if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
+                    return
+            except Exception as e:
+                print(f"{tts_engine} failed: {e}, falling back to edge-tts")
+
     if _edge_tts_failures < 3:
         last_err = None
         for attempt in range(max_retries):
             try:
-                communicate = edge_tts.Communicate(clean, voice, rate=rate, pitch=pitch)
+                voice_name = voice
+                if voice in VOICES:
+                    voice_name = VOICES[voice]
+                communicate = edge_tts.Communicate(clean, voice_name, rate=rate, pitch=pitch)
                 await asyncio.wait_for(communicate.save(output_path), timeout=30)
                 if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
                     _edge_tts_failures = 0
@@ -154,12 +168,13 @@ async def _tts_with_retry(text: str, voice: str, output_path: str,
             return
     except Exception as e:
         print(f"gTTS also failed: {e}")
-    raise edge_tts.exceptions.NoAudioReceived("TTS failed (edge-tts + gTTS)")
+    raise edge_tts.exceptions.NoAudioReceived("TTS failed (all engines)")
 
 
 async def _generate_toned_narration(
     project_id: str, text: str, voice_name: str,
     base_rate: str, base_pitch: str, tone: str,
+    tts_engine: str = "edge-tts",
 ) -> str:
     import subprocess
 
@@ -169,12 +184,12 @@ async def _generate_toned_narration(
     output_path = os.path.join(output_dir, "narration.mp3")
 
     if preset["variation"] == 0:
-        await _tts_with_retry(text, voice_name, output_path, base_rate, base_pitch)
+        await _tts_with_retry(text, voice_name, output_path, base_rate, base_pitch, tts_engine=tts_engine)
         return output_path
 
     sentences = _split_sentences(text)
     if len(sentences) <= 1:
-        await _tts_with_retry(text, voice_name, output_path, base_rate, base_pitch)
+        await _tts_with_retry(text, voice_name, output_path, base_rate, base_pitch, tts_engine=tts_engine)
         return output_path
 
     base_r = int(re.search(r'[+-]?\d+', base_rate).group()) if re.search(r'[+-]?\d+', base_rate) else 0
@@ -190,7 +205,7 @@ async def _generate_toned_narration(
         r_str, p_str = _calc_sentence_prosody(i, len(sentences), sent, base_r, base_p, preset)
         clip_path = os.path.join(clips_dir, f"sent_{i:03d}.mp3")
         print(f"  sentence {i+1}/{len(sentences)}: rate={r_str} pitch={p_str}")
-        await _tts_with_retry(sent, voice_name, clip_path, r_str, p_str)
+        await _tts_with_retry(sent, voice_name, clip_path, r_str, p_str, tts_engine=tts_engine)
         clip_paths.append(clip_path)
         if i < len(sentences) - 1:
             await asyncio.sleep(0.3)
@@ -261,6 +276,7 @@ async def _generate_dialogue_audio(
     rate: str, pitch: str,
     replacements: dict,
     tone: str = "normal",
+    tts_engine: str = "edge-tts",
 ) -> str:
     """Generate multi-voice dialogue audio with per-line TTS."""
     output_dir = os.path.join("projects", project_id, "audio")
@@ -290,7 +306,7 @@ async def _generate_dialogue_audio(
             r_str, p_str = _calc_sentence_prosody(i, len(lines), processed, base_r, base_p, preset)
         else:
             r_str, p_str = rate, pitch
-        await _tts_with_retry(processed, voice_name, clip_path, r_str, p_str)
+        await _tts_with_retry(processed, voice_name, clip_path, r_str, p_str, tts_engine=tts_engine)
         clip_paths.append(clip_path)
         if i < len(lines) - 1:
             await asyncio.sleep(0.3)
@@ -366,31 +382,52 @@ async def generate_audio(
     voice_b: str = "",
     tone: str = "normal",
     clone_tau: float = 0.3,
+    tts_engine: str = "edge-tts",
+    clone_engine: str = "openvoice",
 ) -> str:
     replacements = load_replacements()
 
+    voice_name = voice
+    if tts_engine == "edge-tts":
+        voice_name = VOICES.get(voice, VOICES["female"])
+
     if mode == "dialogue":
-        voice_a_name = VOICES.get(voice, VOICES["female"])
-        if not voice_b:
-            voice_b = "male" if voice == "female" else "female"
-        voice_b_name = VOICES.get(voice_b, VOICES["male"])
+        if tts_engine == "edge-tts":
+            voice_a_name = voice_name
+            if not voice_b:
+                voice_b = "male" if voice == "female" else "female"
+            voice_b_name = VOICES.get(voice_b, VOICES["male"])
+        else:
+            voice_a_name = voice
+            voice_b_name = voice_b or voice
         return await _generate_dialogue_audio(
             project_id, script, voice_a_name, voice_b_name,
             rate, pitch, replacements, tone=tone,
+            tts_engine=tts_engine,
         )
 
     processed = _clean_script_for_tts(script)
     processed = apply_replacements(processed, replacements)
 
-    voice_name = VOICES.get(voice, VOICES["female"])
-
     output_dir = os.path.join("projects", project_id, "audio")
     os.makedirs(output_dir, exist_ok=True)
+
+    if clone_voice_id and clone_engine == "f5-tts-thai":
+        from scripts.tts_engines import get_clone_engine
+        f5 = get_clone_engine("f5-tts-thai")
+        if f5 and f5.is_available():
+            from scripts.voice_clone import get_reference_path
+            ref_path = get_reference_path(clone_voice_id)
+            if ref_path:
+                output_path = os.path.join(output_dir, "narration.wav")
+                await f5.clone(processed, ref_path, output_path, language="th")
+                return output_path
 
     if clone_voice_id:
         base_path = os.path.join(output_dir, "base_tts.wav")
         if tone != "normal":
-            await _generate_toned_narration(project_id, processed, voice_name, rate, pitch, tone)
+            await _generate_toned_narration(project_id, processed, voice_name,
+                                            rate, pitch, tone, tts_engine=tts_engine)
             import shutil, subprocess as _sp
             mp3_path = os.path.join(output_dir, "narration.mp3")
             _sp.run([FFMPEG, "-y", "-i", mp3_path, "-acodec", "pcm_s16le",
@@ -398,7 +435,7 @@ async def generate_audio(
                     capture_output=True, timeout=120)
         else:
             mp3_tmp = os.path.join(output_dir, "base_tts_tmp.mp3")
-            await _tts_with_retry(processed, voice_name, mp3_tmp, rate, pitch)
+            await _tts_with_retry(processed, voice_name, mp3_tmp, rate, pitch, tts_engine=tts_engine)
             import subprocess as _sp
             _sp.run([FFMPEG, "-y", "-i", mp3_tmp, "-acodec", "pcm_s16le",
                      "-ar", "48000", base_path],
@@ -415,9 +452,9 @@ async def generate_audio(
     else:
         if tone != "normal":
             output_path = await _generate_toned_narration(
-                project_id, processed, voice_name, rate, pitch, tone)
+                project_id, processed, voice_name, rate, pitch, tone, tts_engine=tts_engine)
         else:
             output_path = os.path.join(output_dir, "narration.mp3")
-            await _tts_with_retry(processed, voice_name, output_path, rate, pitch)
+            await _tts_with_retry(processed, voice_name, output_path, rate, pitch, tts_engine=tts_engine)
 
     return output_path
