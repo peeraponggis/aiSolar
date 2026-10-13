@@ -1005,6 +1005,18 @@ audio, video { width: 100%; margin-top: 8px; }
 .tpl-result { margin-top: 16px; text-align: center; }
 .tpl-result img { max-width: 100%; max-height: 60vh; border-radius: 8px; }
 .tpl-download { display: inline-block; margin-top: 10px; text-decoration: none; }
+.tpl-overlay-note { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; margin-top: 4px; }
+
+.video-overlay-badge {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px; padding: 6px 12px; background: rgba(255,204,51,0.12);
+  border: 1px solid rgba(255,204,51,0.35); border-radius: 6px;
+  font-size: 0.82rem; color: #e0a800;
+}
+.video-overlay-badge button {
+  background: none; border: none; color: inherit; cursor: pointer;
+  font-size: 1rem; padding: 0 4px;
+}
 
 /* ── Console Panel ── */
 

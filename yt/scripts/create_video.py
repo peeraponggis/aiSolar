@@ -813,3 +813,54 @@ def _generate_solid_bg(path: str, size: str = "1080x1920"):
         path,
     ]
     subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace", check=True)
+
+
+async def apply_template_overlay(video_path: str, template_fields: dict, aspect_ratio: str = "9:16") -> str:
+    """Composites the social-repost chrome (headline/channel row/stats/caption)
+    onto an already-rendered video as a final pass, leaving the existing
+    render pipeline above completely untouched. The overlay itself is a
+    transparent PNG from scripts.image_templates (HarfBuzz/FreeType shaped
+    text) rather than FFmpeg's own drawtext, which has the same un-shaped-
+    Thai-text problem Pillow's default text drawing does.
+    """
+    from scripts.image_templates import render_social_repost_overlay
+
+    cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
+    W, H = cfg["w"], cfg["h"]
+
+    overlay_png = video_path.replace(".mp4", "_overlay.png")
+    render_social_repost_overlay(
+        overlay_png, w=W, h=H,
+        headline=template_fields.get("headline", ""),
+        channel_name=template_fields.get("channel_name", ""),
+        verified=bool(template_fields.get("verified")),
+        like_count=template_fields.get("like_count", ""),
+        comment_count=template_fields.get("comment_count", ""),
+        share_count=template_fields.get("share_count", ""),
+        caption=template_fields.get("caption", ""),
+    )
+
+    temp_out = video_path.replace(".mp4", "_withoverlay.mp4")
+    cmd = [
+        FFMPEG, "-y",
+        "-i", video_path,
+        "-i", overlay_png,
+        "-filter_complex", "[0:v][1:v]overlay=0:0:format=auto[v]",
+        "-map", "[v]", "-map", "0:a?",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-c:a", "copy",
+        temp_out,
+    ]
+    result = subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace", timeout=300)
+    if os.path.exists(temp_out) and os.path.getsize(temp_out) > 10000:
+        os.replace(temp_out, video_path)
+    else:
+        err = (result.stderr or "unknown error")[-500:]
+        print(f"Template overlay failed, keeping video without it: {err}")
+        if os.path.exists(temp_out):
+            os.remove(temp_out)
+
+    if os.path.exists(overlay_png):
+        os.remove(overlay_png)
+
+    return video_path

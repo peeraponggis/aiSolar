@@ -82,6 +82,7 @@ async def generate_video(
     media_durations: str = Query(""),
     tts_engine: str = Query("edge-tts"),
     clone_engine: str = Query("openvoice"),
+    template_fields: str = Query(""),
 ):
     project_id = orchestrator.create_project(topic)
     skip_fetch = False
@@ -147,6 +148,14 @@ async def generate_video(
             "overlay_font": overlay_font if overlay_font in valid_fonts else "sarabun",
             "overlay_animation": overlay_animation if overlay_animation in valid_anims else "static",
         }
+    if template_fields.strip():
+        try:
+            parsed_fields = json.loads(template_fields)
+            if isinstance(parsed_fields, dict):
+                overlay_opts["template_id"] = "social_repost"
+                overlay_opts["template_fields"] = parsed_fields
+        except Exception:
+            pass
     dur_list = None
     if media_durations:
         try:

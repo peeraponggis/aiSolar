@@ -293,29 +293,36 @@ def _lerp_color(c1: str, c2: str, t: float) -> tuple[int, int, int]:
 # Every label (channel name, counts, verified badge) is a plain parameter;
 # nothing here is tied to a specific real account.
 # ---------------------------------------------------------------------------
-def render_social_repost(
-    photo_path: str,
-    out_path: str,
-    headline: str = "",
-    channel_name: str = "",
-    verified: bool = False,
-    like_count: str = "",
-    comment_count: str = "",
-    share_count: str = "",
-    caption: str = "",
-    font_name: str = "sarabun",
-    w: int = DEFAULT_W, h: int = DEFAULT_H,
-) -> str:
-    fpath = _font_path(font_name)
-    canvas = Image.new("RGB", (w, h), "#111")
-    content_h = int(h * 0.55)
-    content = _cover_resize(Image.open(photo_path), w, content_h)
-    content_top = int(h * 0.20)
-    canvas.paste(content, (0, content_top))
+def _draw_social_repost_chrome(
+    canvas: Image.Image,
+    fpath: str,
+    w: int, h: int,
+    row_y: int,
+    headline: str, channel_name: str, verified: bool,
+    like_count: str, comment_count: str, share_count: str,
+    caption: str,
+    backing_panels: bool = False,
+):
+    """Draws the headline/channel-row/stats/caption chrome used by both the
+    static image template and the transparent video-overlay variant. `row_y`
+    is where the channel row + stats column start (just below wherever the
+    caller's content -- a photo, or the live video showing through -- ends).
 
+    `backing_panels` paints semi-opaque panels behind the headline and the
+    bottom info area first. The static image template doesn't need this (its
+    canvas already has a solid background); the video overlay is transparent
+    everywhere, so without a panel the text would sit directly over whatever
+    the video happens to show at that moment, including arbitrary bright
+    footage -- unreadable.
+    """
     draw = ImageDraw.Draw(canvas, "RGBA")
 
-    # Headline banner above the content area
+    if backing_panels:
+        if headline.strip():
+            draw.rectangle([0, 0, w, int(h * 0.04) + int(w * 0.06) * 3], fill=(0, 0, 0, 160))
+        if channel_name.strip() or caption.strip() or like_count or comment_count or share_count:
+            draw.rectangle([0, row_y - int(h * 0.01), w, h], fill=(0, 0, 0, 150))
+
     if headline.strip():
         head_size = int(w * 0.06)
         max_text_w = int(w * 0.85)
@@ -327,9 +334,7 @@ def render_social_repost(
             _draw_text(canvas, ((w - tw) / 2, y), line, fpath, head_size, "#ffcc33")
             y += line_h
 
-    # Channel row (avatar circle with initial, name, optional verified mark)
     chan_size = int(w * 0.034)
-    row_y = content_top + content_h + int(h * 0.015)
     if channel_name.strip():
         av_d = int(w * 0.09)
         av_x, av_y = int(w * 0.04), row_y
@@ -374,5 +379,68 @@ def render_social_repost(
                        stroke_width=2, stroke_fill="black")
             y += cap_size + 6
 
+
+def render_social_repost(
+    photo_path: str,
+    out_path: str,
+    headline: str = "",
+    channel_name: str = "",
+    verified: bool = False,
+    like_count: str = "",
+    comment_count: str = "",
+    share_count: str = "",
+    caption: str = "",
+    font_name: str = "sarabun",
+    w: int = DEFAULT_W, h: int = DEFAULT_H,
+) -> str:
+    fpath = _font_path(font_name)
+    canvas = Image.new("RGB", (w, h), "#111")
+    content_h = int(h * 0.55)
+    content = _cover_resize(Image.open(photo_path), w, content_h)
+    content_top = int(h * 0.20)
+    canvas.paste(content, (0, content_top))
+
+    row_y = content_top + content_h + int(h * 0.015)
+    _draw_social_repost_chrome(
+        canvas, fpath, w, h, row_y,
+        headline, channel_name, verified,
+        like_count, comment_count, share_count, caption,
+    )
+
     _save(canvas, out_path)
+    return out_path
+
+
+def render_social_repost_overlay(
+    out_path: str,
+    headline: str = "",
+    channel_name: str = "",
+    verified: bool = False,
+    like_count: str = "",
+    comment_count: str = "",
+    share_count: str = "",
+    caption: str = "",
+    font_name: str = "sarabun",
+    w: int = DEFAULT_W, h: int = DEFAULT_H,
+    content_top_frac: float = 0.20,
+    content_h_frac: float = 0.55,
+) -> str:
+    """Same chrome as render_social_repost, but on a transparent canvas with
+    no baked-in photo -- meant to be composited over a real video via
+    FFmpeg's overlay filter, with `content_top_frac`/`content_h_frac`
+    marking the empty band where the live video shows through.
+    """
+    fpath = _font_path(font_name)
+    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+
+    row_y = int(h * content_top_frac) + int(h * content_h_frac) + int(h * 0.015)
+    _draw_social_repost_chrome(
+        canvas, fpath, w, h, row_y,
+        headline, channel_name, verified,
+        like_count, comment_count, share_count, caption,
+        backing_panels=True,
+    )
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    canvas.save(out_path, "PNG")
     return out_path
