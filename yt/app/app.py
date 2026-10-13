@@ -180,6 +180,39 @@ async def list_projects():
     return orchestrator.list_projects()
 
 
+@app.get("/api/project/{project_id}/media")
+async def list_project_media(project_id: str):
+    media_dir = BASE_DIR / "projects" / project_id / "media"
+    if not media_dir.exists():
+        return []
+    files = sorted(media_dir.iterdir())
+    result = []
+    for f in files:
+        ext = f.suffix.lower()
+        if ext in (".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"):
+            ftype = "image"
+        elif ext in (".mp4", ".mov", ".avi", ".webm"):
+            ftype = "video"
+        else:
+            continue
+        result.append({"filename": f.name, "type": ftype})
+    return result
+
+
+@app.get("/api/project/{project_id}/media/{filename}")
+async def serve_project_media(project_id: str, filename: str):
+    if "/" in filename or "\\" in filename or ".." in filename:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    path = BASE_DIR / "projects" / project_id / "media" / filename
+    if not path.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    ext = path.suffix.lower()
+    types = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+             ".webp": "image/webp", ".avif": "image/avif", ".gif": "image/gif",
+             ".mp4": "video/mp4", ".mov": "video/quicktime", ".webm": "video/webm"}
+    return FileResponse(str(path), media_type=types.get(ext, "application/octet-stream"))
+
+
 @app.get("/api/download/{project_id}")
 async def download_video(project_id: str, ratio: str = Query("")):
     output_dir = BASE_DIR / "projects" / project_id / "output"

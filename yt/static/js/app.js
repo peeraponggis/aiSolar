@@ -1117,7 +1117,8 @@ function showResult(data) {
     }).join("");
   }
 
-  switchTab("script");
+  switchTab("storyboard");
+  buildStoryboard(data);
 }
 
 function switchTab(name) {
@@ -1154,6 +1155,79 @@ function playDoneSound() {
     audio.volume = 0.4;
     audio.play().catch(() => {});
   } catch {}
+}
+
+// ── Storyboard ──
+
+async function buildStoryboard(data) {
+  const container = document.getElementById("storyboardTimeline");
+  if (!data.script || !data.project_id) {
+    container.innerHTML = '<p class="no-results">ไม่มีข้อมูล storyboard</p>';
+    return;
+  }
+
+  const scenes = data.script
+    .split(/\n\s*\n/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  let mediaFiles = [];
+  try {
+    const resp = await fetch(`/api/project/${data.project_id}/media`);
+    if (resp.ok) mediaFiles = await resp.json();
+  } catch {}
+
+  const videoUrl = data.video_paths
+    ? `/api/download/${data.project_id}?ratio=${encodeURIComponent(Object.keys(data.video_paths)[0] || "9:16")}`
+    : data.video_path
+      ? `/api/download/${data.project_id}`
+      : null;
+
+  let html = "";
+
+  if (videoUrl) {
+    html += `<div class="sb-player">
+      <video controls preload="metadata"><source src="${videoUrl}" type="video/mp4"></video>
+    </div>`;
+  }
+
+  html += '<div class="sb-scenes">';
+  const maxScenes = Math.max(scenes.length, mediaFiles.length);
+  for (let i = 0; i < maxScenes; i++) {
+    const media = mediaFiles[i];
+    const text = scenes[i] || "";
+    const sceneNum = i + 1;
+
+    let thumbHtml;
+    if (media) {
+      const src = `/api/project/${data.project_id}/media/${media.filename}`;
+      if (media.type === "video") {
+        thumbHtml = `<video src="${src}" preload="metadata" muted></video>`;
+      } else {
+        thumbHtml = `<img src="${src}" alt="Scene ${sceneNum}" loading="lazy">`;
+      }
+    } else {
+      thumbHtml = '<div class="sb-no-media">No media</div>';
+    }
+
+    const truncated =
+      text.length > 120 ? text.substring(0, 120) + "…" : text;
+
+    html += `<div class="sb-scene">
+      <div class="sb-scene-num">${sceneNum}</div>
+      <div class="sb-thumb">${thumbHtml}</div>
+      <div class="sb-text">${_escapeHtml(truncated)}</div>
+    </div>`;
+  }
+  html += "</div>";
+
+  container.innerHTML = html;
+}
+
+function _escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
 }
 
 // ── Drafts ──
