@@ -1042,7 +1042,16 @@ async function startGenerate() {
   document.getElementById("etaText").textContent = "";
 
   const persona = document.getElementById("personaInput").value.trim();
-  const customScript = document.getElementById("customScriptInput").value.trim();
+  const scriptInput = document.getElementById("customScriptInput");
+  const selStart = scriptInput.selectionStart;
+  const selEnd = scriptInput.selectionEnd;
+  const selected = selEnd > selStart
+    ? scriptInput.value.substring(selStart, selEnd).trim()
+    : "";
+  const customScript = selected || scriptInput.value.trim();
+  if (selected) {
+    showToast(`ใช้เฉพาะส่วนที่ไฮไลท์ (${selected.length} ตัวอักษร)`);
+  }
 
   const bgmVolume = document.getElementById("bgmVolumeSlider").value;
   const params = new URLSearchParams({
@@ -1240,7 +1249,9 @@ function playDoneSound() {
 let _sbProjectId = null;
 let _sbScenes = [];
 let _sbMediaFiles = [];
+let _sbDurations = [];
 let _sbPhase = null;
+let _sbDragIdx = null;
 
 function showStoryboardPreview(data) {
   const section = document.getElementById("resultSection");
@@ -1266,8 +1277,20 @@ async function _startRender() {
   if (btn) { btn.disabled = true; btn.textContent = "กำลังสร้าง..."; }
   _sbPhase = "rendering";
 
+  const body = {};
+  const scriptText = _sbScenes.filter((s) => s.trim()).join("\n\n");
+  if (scriptText) body.script = scriptText;
+  if (_sbDurations.some((d) => d > 0)) body.media_durations = _sbDurations;
+  if (_sbMediaFiles.length) {
+    body.media_order = _sbMediaFiles.filter(Boolean).map((m) => m.filename);
+  }
+
   try {
-    const resp = await fetch(`/api/project/${currentProjectId}/render`, { method: "POST" });
+    const resp = await fetch(`/api/project/${currentProjectId}/render`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
     if (!resp.ok) throw new Error("render start failed");
     pollStatus();
   } catch (e) {
@@ -1295,7 +1318,26 @@ async function buildStoryboard(data) {
     if (resp.ok) _sbMediaFiles = await resp.json();
   } catch {}
 
+  const n = Math.max(_sbScenes.length, _sbMediaFiles.length);
+  _sbDurations = new Array(n).fill(0);
+
   _renderStoryboard(data);
+}
+
+function _sbMismatchWarning() {
+  const nScenes = _sbScenes.filter((s) => s && s.trim()).length;
+  const nMedia = _sbMediaFiles.filter(Boolean).length;
+  if (nScenes === nMedia) return "";
+
+  let msg;
+  if (nMedia > nScenes) {
+    const extra = nMedia - nScenes;
+    msg = `มีสื่อ ${nMedia} ชิ้น แต่สคริปต์มี ${nScenes} ซีน — สื่อ ${extra} ชิ้นท้ายจะไม่มีคำบรรยาย เพิ่มข้อความในซีนท้าย หรือลบสื่อที่เกินออก`;
+  } else {
+    const missing = nScenes - nMedia;
+    msg = `มีสคริปต์ ${nScenes} ซีน แต่สื่อมี ${nMedia} ชิ้น — ขาดสื่ออีก ${missing} ชิ้น ซีนท้ายจะใช้สื่อซ้ำ`;
+  }
+  return `<div class="sb-warning"><span>⚠</span><span>${_escapeHtml(msg)}</span></div>`;
 }
 
 function _renderStoryboard(data) {
@@ -1316,9 +1358,12 @@ function _renderStoryboard(data) {
     </div>`;
   }
 
-  if (_sbPhase === "media_ready") {
+  const editable = _sbPhase === "media_ready";
+
+  if (editable) {
+    html += _sbMismatchWarning();
     html += `<div class="sb-render-bar">
-      <span>คลิกที่รูปเพื่อสลับ media แต่ละ scene</span>
+      <span>ลากที่ ≡ เพื่อสลับลำดับ · คลิกรูปเพื่อเปลี่ยนสื่อ · แก้ข้อความเปลี่ยนเฉพาะซับไตเติ้ล (ไม่เปลี่ยนเสียง)</span>
       <button class="btn primary sb-render-btn" onclick="_startRender()">สร้างวิดีโอ</button>
     </div>`;
   }
@@ -1340,21 +1385,103 @@ function _renderStoryboard(data) {
         thumbContent = `<img src="${src}" alt="Scene ${sceneNum}" loading="lazy">`;
       }
     } else {
-      thumbContent = '<div class="sb-no-media">No media</div>';
+      thumbContent = '<div class="sb-no-media">ไม่มีสื่อ</div>';
     }
 
-    const truncated =
-      text.length > 120 ? text.substring(0, 120) + "…" : text;
+    let bodyHtml;
+    if (editable) {
+      const dur = _sbDurations[i] || 0;
+      bodyHtml = `<textarea class="sb-script-edit" rows="2"
+          placeholder="(ไม่มีข้อความ — สื่อนี้จะแสดงโดยไม่มีซับไตเติ้ล)"
+          oninput="_sbEditScript(${i},this.value)">${_escapeHtml(text)}</textarea>
+        <div class="sb-duration-row">
+          <span>เวลา</span>
+          <input type="number" class="sb-duration-input" min="0" max="60" step="0.5"
+            value="${dur || ""}" placeholder="auto"
+            oninput="_sbEditDuration(${i},this.value)">
+          <span>วินาที${dur ? "" : " (อัตโนมัติ)"}</span>
+        </div>`;
+    } else {
+      const truncated = text.length > 120 ? text.substring(0, 120) + "…" : text;
+      bodyHtml = text
+        ? `<div class="sb-text">${_escapeHtml(truncated)}</div>`
+        : '<div class="sb-extra-label">(ไม่มีข้อความ)</div>';
+    }
 
-    html += `<div class="sb-scene">
+    const dragAttrs = editable
+      ? `draggable="true" ondragstart="_sbDragStart(event,${i})" ondragover="_sbDragOver(event,${i})" ondrop="_sbDrop(event,${i})" ondragend="_sbDragEnd(event)"`
+      : "";
+
+    html += `<div class="sb-scene" ${dragAttrs}>
+      ${editable ? '<div class="sb-drag-handle" title="ลากเพื่อสลับลำดับ">≡</div>' : ""}
       <div class="sb-scene-num">${sceneNum}</div>
-      <div class="sb-thumb sb-thumb-pick" onclick="openMediaPicker(${i},'${fname}')" title="คลิกเพื่อเปลี่ยน media">${thumbContent}</div>
-      <div class="sb-text">${_escapeHtml(truncated)}</div>
+      <div class="sb-thumb" onclick="openMediaPicker(${i},'${fname}')" title="คลิกเพื่อเปลี่ยนสื่อ">${thumbContent}</div>
+      <div class="sb-body">${bodyHtml}</div>
     </div>`;
   }
   html += "</div>";
 
   container.innerHTML = html;
+}
+
+function _sbEditScript(idx, text) {
+  while (_sbScenes.length <= idx) _sbScenes.push("");
+  _sbScenes[idx] = text;
+}
+
+function _sbEditDuration(idx, val) {
+  while (_sbDurations.length <= idx) _sbDurations.push(0);
+  _sbDurations[idx] = parseFloat(val) || 0;
+}
+
+function _sbClearDropMarks() {
+  document.querySelectorAll(".sb-scene").forEach((el) => {
+    el.classList.remove("sb-drop-above", "sb-drop-below", "sb-dragging");
+  });
+}
+
+function _sbDragStart(e, idx) {
+  _sbDragIdx = idx;
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", String(idx));
+  e.currentTarget.classList.add("sb-dragging");
+}
+
+function _sbDragOver(e, idx) {
+  if (_sbDragIdx === null || _sbDragIdx === idx) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".sb-scene").forEach((el) => {
+    el.classList.remove("sb-drop-above", "sb-drop-below");
+  });
+  e.currentTarget.classList.add(idx < _sbDragIdx ? "sb-drop-above" : "sb-drop-below");
+}
+
+function _sbDrop(e, targetIdx) {
+  e.preventDefault();
+  const src = _sbDragIdx;
+  _sbDragIdx = null;
+  _sbClearDropMarks();
+  if (src === null || src === targetIdx) return;
+
+  const n = Math.max(_sbScenes.length, _sbMediaFiles.length, src + 1, targetIdx + 1);
+  while (_sbScenes.length < n) _sbScenes.push("");
+  while (_sbDurations.length < n) _sbDurations.push(0);
+
+  const move = (arr) => {
+    const [item] = arr.splice(src, 1);
+    arr.splice(targetIdx, 0, item);
+  };
+  move(_sbMediaFiles);
+  move(_sbScenes);
+  move(_sbDurations);
+
+  _renderStoryboard(null);
+}
+
+function _sbDragEnd() {
+  _sbDragIdx = null;
+  _sbClearDropMarks();
 }
 
 function openMediaPicker(sceneIdx, currentFilename) {
@@ -1393,26 +1520,18 @@ function openMediaPicker(sceneIdx, currentFilename) {
   document.body.appendChild(overlay);
 }
 
-async function _pickMedia(sceneIdx, currentFname, targetFname, overlay) {
-  if (currentFname === targetFname || !targetFname) return;
-  if (!currentFname) {
-    overlay.remove();
-    return;
-  }
-  try {
-    const resp = await fetch(`/api/project/${_sbProjectId}/media/swap`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ a: currentFname, b: targetFname }),
-    });
-    if (!resp.ok) throw new Error("swap failed");
-    const listResp = await fetch(`/api/project/${_sbProjectId}/media`);
-    if (listResp.ok) _sbMediaFiles = await listResp.json();
-    _renderStoryboard(null);
-  } catch (e) {
-    showToast("สลับ media ไม่สำเร็จ", "error");
-  }
+function _pickMedia(sceneIdx, currentFname, targetFname, overlay) {
   overlay.remove();
+  if (!targetFname || currentFname === targetFname) return;
+
+  const targetIdx = _sbMediaFiles.findIndex((m) => m && m.filename === targetFname);
+  if (targetIdx < 0) return;
+
+  const tmp = _sbMediaFiles[sceneIdx];
+  _sbMediaFiles[sceneIdx] = _sbMediaFiles[targetIdx];
+  _sbMediaFiles[targetIdx] = tmp;
+
+  _renderStoryboard(null);
 }
 
 function _escapeAttr(str) {
