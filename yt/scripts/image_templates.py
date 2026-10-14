@@ -314,70 +314,118 @@ def _draw_social_repost_chrome(
     everywhere, so without a panel the text would sit directly over whatever
     the video happens to show at that moment, including arbitrary bright
     footage -- unreadable.
+
+    The layout was designed for 9:16. When w > h it switches to a landscape
+    layout: sizes scale with the shorter side, and the channel row, caption
+    and stats column are stacked up from the bottom edge (`row_y` is ignored)
+    so nothing lands mid-frame or runs off the bottom.
     """
     draw = ImageDraw.Draw(canvas, "RGBA")
+    landscape = w > h
+    u = min(w, h)  # == w in portrait, so the 9:16 geometry is unchanged
+
+    head_size = int(u * 0.06)
+    head_lines = _wrap_text(headline.strip(), fpath, head_size, int(w * 0.85))[:3] if headline.strip() else []
+    head_line_h = head_size + int(u * 0.015)
+    head_y = int(u * 0.03) if landscape else int(h * 0.04)
+
+    chan_size = int(u * 0.034)
+    av_d = int(u * 0.09)
+    av_x, av_y = int(u * 0.04), row_y
+
+    cap_size = int(u * 0.036)
+    cap_lines = (_wrap_text(caption.strip(), fpath, cap_size, int(w * (0.6 if landscape else 0.8)))[:3]
+                 if caption.strip() else [])
+    cap_y = h - int(h * 0.10) - len(cap_lines) * (cap_size + 6)
+
+    stats = [(icon, count) for icon, count in
+             [("heart", like_count), ("comment", comment_count), ("share", share_count)]
+             if str(count).strip()]
+    stat_size = int(u * 0.032)
+    icon_d = int(u * 0.055)
+    sx = w - int(u * 0.09)
+    sy = row_y
+    stat_pitch = int(h * 0.09)
+
+    if landscape:
+        # Bottom-up: caption sits on the bottom margin, the channel row above
+        # it, and the stats column ends on the same margin at the right.
+        margin = int(u * 0.04)
+        box = lambda size: int(size * 1.32)  # Sarabun ascender+descender
+        bottom = h - margin
+        if cap_lines:
+            cap_y = bottom - (len(cap_lines) - 1) * (cap_size + 6) - box(cap_size)
+            bottom = cap_y - int(u * 0.02)
+        av_y = bottom - av_d
+        info_top = av_y if channel_name.strip() else (cap_y if cap_lines else h)
+
+        stat_size = int(u * 0.03)
+        icon_d = int(u * 0.05)
+        stat_pitch = int(u * 0.115)
+        sx = w - int(u * 0.075)
+        col_h = (len(stats) - 1) * stat_pitch + icon_d + 4 + box(stat_size) if stats else 0
+        sy = h - margin - col_h
 
     if backing_panels:
         if headline.strip():
-            draw.rectangle([0, 0, w, int(h * 0.04) + int(w * 0.06) * 3], fill=(0, 0, 0, 160))
-        if channel_name.strip() or caption.strip() or like_count or comment_count or share_count:
+            if landscape:
+                head_bottom = head_y + (len(head_lines) - 1) * head_line_h + int(head_size * 1.32) + int(u * 0.02)
+            else:
+                head_bottom = int(h * 0.04) + int(w * 0.06) * 3
+            draw.rectangle([0, 0, w, head_bottom], fill=(0, 0, 0, 160))
+        if landscape:
+            # One shape (bottom band + a tab rising behind the stats column)
+            # so the overlap isn't darkened twice.
+            pad = int(u * 0.025)
+            shade = Image.new("L", (w, h), 0)
+            if stats:
+                half = int(u * 0.055)
+                tab = (sx - half, sy - pad, sx + half, h + pad)  # bottom corners off-frame
+                shade.paste(150, tab, _rounded_mask((tab[2] - tab[0], tab[3] - tab[1]), radius=pad))
+            if info_top < h:
+                ImageDraw.Draw(shade).rectangle([0, info_top - pad, w, h], fill=150)
+            layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            layer.putalpha(shade)
+            canvas.alpha_composite(layer)
+        elif channel_name.strip() or caption.strip() or like_count or comment_count or share_count:
             draw.rectangle([0, row_y - int(h * 0.01), w, h], fill=(0, 0, 0, 150))
 
-    if headline.strip():
-        head_size = int(w * 0.06)
-        max_text_w = int(w * 0.85)
-        lines = _wrap_text(headline.strip(), fpath, head_size, max_text_w)[:3]
-        line_h = head_size + int(w * 0.015)
-        y = int(h * 0.04)
-        for line in lines:
-            tw = _measure_text(line, fpath, head_size)
-            _draw_text(canvas, ((w - tw) / 2, y), line, fpath, head_size, "#ffcc33")
-            y += line_h
+    y = head_y
+    for line in head_lines:
+        tw = _measure_text(line, fpath, head_size)
+        _draw_text(canvas, ((w - tw) / 2, y), line, fpath, head_size, "#ffcc33")
+        y += head_line_h
 
-    chan_size = int(w * 0.034)
     if channel_name.strip():
-        av_d = int(w * 0.09)
-        av_x, av_y = int(w * 0.04), row_y
         initial = channel_name.strip()[0].upper()
         draw.ellipse([av_x, av_y, av_x + av_d, av_y + av_d], fill="#555")
         init_size = int(av_d * 0.5)
         iw = _measure_text(initial, fpath, init_size)
         _draw_text(canvas, (av_x + (av_d - iw) / 2, av_y + av_d * 0.15), initial, fpath, init_size, "white")
 
-        name_x = av_x + av_d + int(w * 0.025)
+        name_x = av_x + av_d + int(u * 0.025)
         _draw_text(canvas, (name_x, av_y + av_d * 0.15), channel_name.strip(), fpath, chan_size, "white")
         if verified:
             nw = _measure_text(channel_name.strip(), fpath, chan_size)
-            bd = int(w * 0.03)
-            badge_x = name_x + nw + int(w * 0.015)
+            bd = int(u * 0.03)
+            badge_x = name_x + nw + int(u * 0.015)
             badge_y = av_y + av_d * 0.2
             draw.ellipse([badge_x, badge_y, badge_x + bd, badge_y + bd], fill="#3b9cff")
             _draw_checkmark(draw, badge_x, badge_y, bd, color="white")
 
     # Right-side engagement column: drawn icons (font glyph coverage for
     # heart/speech-bubble/arrow symbols is unreliable with Thai-only fonts)
-    stat_size = int(w * 0.032)
-    stats = [("heart", like_count), ("comment", comment_count), ("share", share_count)]
-    sx = w - int(w * 0.09)
-    sy = row_y
-    icon_d = int(w * 0.055)
     for icon, count in stats:
-        if not str(count).strip():
-            continue
         _draw_stat_icon(draw, icon, sx - icon_d / 2, sy, icon_d)
         ctw = _measure_text(str(count), fpath, stat_size)
         _draw_text(canvas, (sx - ctw / 2, sy + icon_d + 4), str(count), fpath, stat_size, "white")
-        sy += int(h * 0.09)
+        sy += stat_pitch
 
-    if caption.strip():
-        cap_size = int(w * 0.036)
-        max_text_w = int(w * 0.8)
-        lines = _wrap_text(caption.strip(), fpath, cap_size, max_text_w)[:3]
-        y = h - int(h * 0.10) - len(lines) * (cap_size + 6)
-        for line in lines:
-            _draw_text(canvas, (int(w * 0.04), y), line, fpath, cap_size, "white",
-                       stroke_width=2, stroke_fill="black")
-            y += cap_size + 6
+    y = cap_y
+    for line in cap_lines:
+        _draw_text(canvas, (int(u * 0.04), y), line, fpath, cap_size, "white",
+                   stroke_width=2, stroke_fill="black")
+        y += cap_size + 6
 
 
 def render_social_repost(
