@@ -48,7 +48,7 @@ def _get_keywords_from_topic(topic: str, count: int = 4) -> list[str]:
         )
         payload = {"contents": [{"parts": [{"text": prompt}]}]}
         resp = httpx.post(
-            _GEMINI_URL, params={"key": api_key}, json=payload, timeout=20,
+            _GEMINI_URL, headers={"x-goog-api-key": api_key}, json=payload, timeout=20,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -59,8 +59,9 @@ def _get_keywords_from_topic(topic: str, count: int = 4) -> list[str]:
         if isinstance(keywords, list) and keywords:
             return keywords[:count]
         return _fallback_keywords(topic, count)
-    except Exception as e:
-        print(f"Keyword generation error: {e}")
+    except (httpx.HTTPError, ValueError, KeyError, IndexError) as e:
+        detail = f"HTTP {e.response.status_code}" if isinstance(e, httpx.HTTPStatusError) else type(e).__name__
+        print(f"Keyword generation error: {detail}")
         return _fallback_keywords(topic, count)
 
 
@@ -167,8 +168,20 @@ def _download_file(url: str, output_path: str) -> bool:
         return False
 
 
-async def fetch_background_media(project_id: str, topic: str, count: int = 4) -> dict:
-    """Fetch background videos and photos from Pexels.
+def photo_download_url(photo: dict, orientation: str = "portrait") -> str:
+    """Full-resolution original, resized by Pexels' CDN to video size
+    (large2x is only ~1300 px tall and gets visibly upscaled)."""
+    src = photo.get("src", {})
+    original = src.get("original", "")
+    if not original:
+        return src.get("large2x") or src.get("large", "")
+    size = "h=1920" if orientation == "portrait" else "w=1920"
+    return f"{original}?auto=compress&cs=tinysrgb&{size}"
+
+
+async def fetch_background_media(project_id: str, topic: str, count: int = 4,
+                                 orientation: str = "portrait") -> dict:
+    """Fetch background videos (photo fallback) from Pexels, all scenes in parallel.
 
     Returns dict with 'videos' and 'images' lists of local file paths.
     """
@@ -178,43 +191,28 @@ async def fetch_background_media(project_id: str, topic: str, count: int = 4) ->
 
     media_dir = os.path.join("projects", project_id, "media")
     os.makedirs(media_dir, exist_ok=True)
+    keywords = (await asyncio.to_thread(_get_keywords_from_topic, topic, count))[:count]
 
-    keywords = await asyncio.to_thread(_get_keywords_from_topic, topic, count)
-    print(f"Media keywords: {keywords}")
+    async def fetch_one(i: int, kw: str) -> tuple[str, str] | None:
+        # When a keyword repeats (e.g. topic fallback), take the next result
+        # instead of downloading the same clip again.
+        pick = keywords[:i].count(kw)
+        results = await asyncio.to_thread(_search_pexels_videos, kw, pick + 1, orientation)
+        if len(results) > pick:
+            video_url = _pick_best_video_file(results[pick], orientation)
+            out_path = os.path.join(media_dir, f"{i:02d}_clip.mp4")
+            if video_url and await asyncio.to_thread(_download_file, video_url, out_path):
+                return "video", out_path
+        photos = await asyncio.to_thread(_search_pexels_photos, kw, pick + 1, orientation)
+        if len(photos) > pick:
+            out_path = os.path.join(media_dir, f"{i:02d}_img.jpg")
+            img_url = photo_download_url(photos[pick], orientation)
+            if img_url and await asyncio.to_thread(_download_file, img_url, out_path):
+                return "image", out_path
+        return None
 
-    videos = []
-    images = []
-
-    for i, kw in enumerate(keywords[:count]):
-        # Try video first
-        results = await asyncio.to_thread(_search_pexels_videos, kw)
-        if results:
-            video_url = _pick_best_video_file(results[0])
-            if video_url:
-                out_path = os.path.join(media_dir, f"{i:02d}_clip.mp4")
-                ok = await asyncio.to_thread(_download_file, video_url, out_path)
-                if ok:
-                    videos.append(out_path)
-                    print(f"Video downloaded: {kw} -> {out_path}")
-                    continue
-
-        # Fallback to photo
-        photos = await asyncio.to_thread(_search_pexels_photos, kw)
-        if photos:
-            photo = photos[0]
-            img_url = (photo.get("src", {}).get("large2x")
-                       or photo.get("src", {}).get("large", ""))
-            if img_url:
-                out_path = os.path.join(media_dir, f"{i:02d}_img.jpg")
-                ok = await asyncio.to_thread(_download_file, img_url, out_path)
-                if ok:
-                    images.append(out_path)
-                    print(f"Photo downloaded: {kw} -> {out_path}")
-
-    return {"videos": videos, "images": images}
-
-
-# Backward-compatible wrapper
-async def fetch_background_images(project_id: str, topic: str, count: int = 4) -> list[str]:
-    result = await fetch_background_media(project_id, topic, count)
-    return result["images"]
+    found = await asyncio.gather(*(fetch_one(i, kw) for i, kw in enumerate(keywords)))
+    return {
+        "videos": [p for r in found if r and r[0] == "video" for p in [r[1]]],
+        "images": [p for r in found if r and r[0] == "image" for p in [r[1]]],
+    }

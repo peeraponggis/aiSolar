@@ -48,6 +48,39 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 orchestrator = Orchestrator()
 
+# Event-loop tasks are only weakly referenced; keep them alive until done.
+_bg_tasks: set[asyncio.Task] = set()
+
+
+def _spawn(coro) -> asyncio.Task:
+    task = asyncio.create_task(coro)
+    _bg_tasks.add(task)
+    task.add_done_callback(_bg_tasks.discard)
+    return task
+
+
+def _purge_old_files(directory: Path, max_age_s: float):
+    if not directory.exists():
+        return
+    cutoff = time.time() - max_age_s
+    for entry in directory.iterdir():
+        try:
+            if entry.stat().st_mtime < cutoff:
+                if entry.is_dir():
+                    shutil.rmtree(entry, ignore_errors=True)
+                else:
+                    entry.unlink()
+        except OSError:
+            pass
+
+
+_purge_old_files(UPLOAD_DIR / "previews", 24 * 3600)
+_purge_old_files(UPLOAD_DIR / "compare", 24 * 3600)
+
+
+def _safe_name(value: str) -> bool:
+    return bool(value) and not any(c in value for c in ("/", "\\", ".."))
+
 
 @app.get("/")
 async def root():
@@ -80,7 +113,6 @@ async def generate_video(
     duration_preset: str = Query("short"),
     clone_tau: int = Query(30),
     media_durations: str = Query(""),
-    tts_engine: str = Query("edge-tts"),
     clone_engine: str = Query("openvoice"),
     template_fields: str = Query(""),
 ):
@@ -115,9 +147,9 @@ async def generate_video(
             skip_fetch = copied > 0
     valid_tones = {"normal", "cheerful", "serious", "energetic", "warm", "news", "custom"}
     tone_val = tone if tone in valid_tones else "normal"
+    tone_preset = None
     if tone_val == "custom":
-        from scripts.generate_audio import TONE_PRESETS
-        TONE_PRESETS["custom"] = {
+        tone_preset = {
             "base_rate": max(-30, min(30, tone_rate)),
             "base_pitch": max(-30, min(30, tone_pitch)),
             "variation": max(0, min(30, tone_var)),
@@ -125,12 +157,10 @@ async def generate_video(
     valid_presets = {"short", "medium", "long"}
     dur_preset = duration_preset if duration_preset in valid_presets else "short"
     tau_val = max(10, min(80, clone_tau)) / 100.0
-    valid_engines = {"edge-tts", "pythaitts", "piper", "moss-tts"}
-    eng = tts_engine if tts_engine in valid_engines else "edge-tts"
     valid_clone = {"openvoice", "f5-tts-thai"}
     cleng = clone_engine if clone_engine in valid_clone else "openvoice"
     vs = VoiceSettings(voice=voice, rate=rate, pitch=pitch, clone_voice_id=clone_voice_id,
-                       tone=tone_val, clone_tau=tau_val, tts_engine=eng,
+                       tone=tone_val, tone_preset=tone_preset, clone_tau=tau_val,
                        clone_engine=cleng)
     if aspect_ratio == "both":
         ratios = ["9:16", "16:9"]
@@ -141,7 +171,7 @@ async def generate_video(
     gen_mode = mode if mode in ("narration", "dialogue") else "narration"
     overlay_opts = {}
     if overlay_text.strip():
-        valid_fonts = {"sarabun", "kanit", "prompt", "mitr"}
+        valid_fonts = {"sarabun", "kanit"}
         valid_anims = {"static", "fade", "slide_up"}
         overlay_opts = {
             "overlay_text": overlay_text.strip(),
@@ -154,15 +184,15 @@ async def generate_video(
             if isinstance(parsed_fields, dict):
                 overlay_opts["template_id"] = "social_repost"
                 overlay_opts["template_fields"] = parsed_fields
-        except Exception:
-            pass
+        except ValueError:
+            print("Ignoring template_fields: not valid JSON")
     dur_list = None
     if media_durations:
         try:
             dur_list = [float(d) for d in media_durations.split(",") if d.strip()]
         except ValueError:
             dur_list = None
-    asyncio.create_task(
+    _spawn(
         orchestrator.generate(project_id, topic, vs,
                               skip_media_fetch=skip_fetch,
                               subtitles=(subtitles == "on"),
@@ -237,20 +267,22 @@ VIDEO_EXTS = {".mp4", ".mov", ".webm", ".mkv"}
 
 
 def _apply_media_order(project_id: str, order: list[str]):
-    """Renumber media to NN_clip.ext / NN_img.ext — the form render_video globs for."""
+    """Renumber media to NN_clip.ext / NN_img.ext — the form render_video globs for.
+    Files in `order` come first in that order; any others are numbered after
+    them, so two files never share a number."""
     media_dir = BASE_DIR / "projects" / project_id / "media"
+    present = sorted(f.name for f in media_dir.iterdir()
+                     if f.is_file() and re.match(r"\d+_(clip|img)", f.name))
+    ordered = [f for f in order if f in present] + [f for f in present if f not in order]
     staged = []
-    for i, fname in enumerate(order):
+    for i, fname in enumerate(ordered):
         src = media_dir / fname
-        if not src.exists():
-            continue
-        ext = src.suffix
-        kind = "clip" if ext.lower() in VIDEO_EXTS else "img"
-        tmp = media_dir / f"__reorder_{i:03d}{ext}"
-        src.rename(tmp)
-        staged.append((tmp, media_dir / f"{i:02d}_{kind}{ext}"))
+        tmp = media_dir / f"__reorder_{i:03d}{src.suffix}"
+        os.replace(src, tmp)
+        kind = "clip" if src.suffix.lower() in VIDEO_EXTS else "img"
+        staged.append((tmp, media_dir / f"{i:02d}_{kind}{src.suffix}"))
     for tmp, final in staged:
-        tmp.rename(final)
+        os.replace(tmp, final)
 
 
 @app.post("/api/project/{project_id}/render")
@@ -258,22 +290,25 @@ async def render_project_video(project_id: str, request: Request):
     if project_id not in orchestrator.projects:
         return JSONResponse({"error": "Project not found"}, status_code=404)
     status = orchestrator.projects[project_id]
-    if status.phase != "media_ready":
+    # A failed render can be retried: media/audio are already prepared.
+    retryable = status.phase == "error" and status.render_params and status.audio_path
+    if status.phase != "media_ready" and not retryable:
         return JSONResponse({"error": "Not ready"}, status_code=400)
 
     try:
         body = await request.json()
-    except Exception:
+    except ValueError:
         body = {}
 
     if body.get("script"):
         status.script = body["script"]
-    if body.get("media_durations") and status.render_params:
-        status.render_params["media_durations"] = body["media_durations"]
     if body.get("media_order"):
         _apply_media_order(project_id, body["media_order"])
+    if "media_durations" in body and status.render_params:
+        status.render_params["media_durations"] = body["media_durations"] or None
 
-    asyncio.create_task(orchestrator.render_video(project_id))
+    status.update("creating_video", 82, error=None)
+    _spawn(orchestrator.render_video(project_id))
     return {"ok": True}
 
 
@@ -294,10 +329,12 @@ async def download_video(project_id: str, ratio: str = Query("")):
 
 @app.get("/api/audio/{project_id}")
 async def download_audio(project_id: str):
-    path = BASE_DIR / "projects" / project_id / "audio" / "narration.mp3"
-    if not path.exists():
-        return JSONResponse({"error": "Audio not found"}, status_code=404)
-    return FileResponse(str(path), media_type="audio/mpeg", filename="narration.mp3")
+    audio_dir = BASE_DIR / "projects" / project_id / "audio"
+    for name in ("narration.wav", "narration.mp3"):
+        path = audio_dir / name
+        if path.exists():
+            return FileResponse(str(path), media_type=_MEDIA_TYPES[path.suffix], filename=name)
+    return JSONResponse({"error": "Audio not found"}, status_code=404)
 
 
 # ── Upload endpoints ──
@@ -408,9 +445,25 @@ async def trim_video(
 # ── Voice preview endpoint ──
 
 
-def _parse_signed(value: str) -> int:
-    m = re.search(r"[+-]?\d+", value or "")
-    return int(m.group()) if m else 0
+def _to_wav_48k(src: str, dst: str):
+    import subprocess
+    from scripts.generate_audio import FFMPEG
+    subprocess.run([FFMPEG, "-y", "-i", src, "-c:a", "pcm_s16le", "-ar", "48000", dst],
+                   capture_output=True, timeout=60)
+
+
+def _send_and_delete(path: str, *cleanup: str) -> FileResponse:
+    from starlette.background import BackgroundTask
+
+    def remove_all():
+        for p in (path, *cleanup):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+    media = _MEDIA_TYPES.get(Path(path).suffix, "application/octet-stream")
+    return FileResponse(path, media_type=media, filename="preview" + Path(path).suffix,
+                        background=BackgroundTask(remove_all))
 
 
 @app.post("/api/preview-voice")
@@ -424,75 +477,56 @@ async def preview_voice_tts(
     tone_pitch: int = Query(0),
     clone_voice_id: str = Query(""),
     clone_tau: int = Query(30),
-    tts_engine: str = Query("edge-tts"),
     clone_engine: str = Query("openvoice"),
 ):
     from scripts.generate_audio import (
-        VOICES, TONE_PRESETS, _clean_script_for_tts,
-        apply_replacements, load_replacements, _tts_with_retry,
+        VOICES, TONE_PRESETS, _clean_script_for_tts, _parse_signed, _fmt_rate, _fmt_pitch,
+        _polish_audio, apply_replacements, load_replacements, _tts_with_retry,
     )
 
-    processed = _clean_script_for_tts(text)
-    replacements = load_replacements()
-    processed = apply_replacements(processed, replacements)
-    if len(processed) > 500:
-        processed = processed[:500]
-
-    voice_name = voice if tts_engine != "edge-tts" else VOICES.get(voice, VOICES["female"])
+    processed = apply_replacements(_clean_script_for_tts(text), load_replacements())[:500]
     if tone == "custom":
         preset = {"base_rate": max(-30, min(30, tone_rate)),
                   "base_pitch": max(-30, min(30, tone_pitch))}
     else:
         preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
-
-    # Match _generate_toned_narration: the sliders are the base, tone adds to it.
-    r_val = max(-50, min(50, _parse_signed(rate) + preset["base_rate"]))
-    p_val = max(-50, min(50, _parse_signed(pitch) + preset["base_pitch"]))
-    rate = f"+{r_val}%" if r_val >= 0 else f"{r_val}%"
-    pitch = f"+{p_val}Hz" if p_val >= 0 else f"{p_val}Hz"
+    # Same as generate_audio: the sliders are the base, the tone adds to it.
+    rate = _fmt_rate(_parse_signed(rate) + preset["base_rate"])
+    pitch = _fmt_pitch(_parse_signed(pitch) + preset["base_pitch"])
 
     preview_dir = UPLOAD_DIR / "previews"
     preview_dir.mkdir(parents=True, exist_ok=True)
-    safe = f"preview_{_uuid.uuid4().hex[:8]}"
+    safe = str(preview_dir / f"preview_{_uuid.uuid4().hex[:8]}")
 
     if clone_voice_id and clone_engine == "f5-tts-thai":
-        try:
-            from scripts.voice_clone import get_reference_path
-            from scripts.f5_clone import clone_with_f5, is_f5_available
-            ref_path = get_reference_path(clone_voice_id)
-            if ref_path and is_f5_available():
-                wav_out = str(preview_dir / f"{safe}_cloned.wav")
-                await clone_with_f5(processed, ref_path, wav_out)
-                return FileResponse(wav_out, media_type="audio/wav", filename="preview.wav")
-        except Exception as e:
-            print(f"F5 clone preview failed: {e}")
+        from scripts.voice_clone import get_reference_path
+        from scripts.f5_clone import clone_with_f5, is_f5_available
+        ref_path = get_reference_path(clone_voice_id)
+        if ref_path and is_f5_available():
+            try:
+                await clone_with_f5(processed, ref_path, f"{safe}_f5.wav")
+                await asyncio.to_thread(_polish_audio, f"{safe}_f5.wav")
+                return _send_and_delete(f"{safe}_f5.wav")
+            except RuntimeError as e:
+                print(f"F5 clone preview failed, using OpenVoice: {str(e)[-300:]}")
 
-    mp3_output = str(preview_dir / f"{safe}.mp3")
-    await _tts_with_retry(processed, voice_name, mp3_output, rate, pitch, tts_engine=tts_engine)
+    mp3 = f"{safe}.mp3"
+    await _tts_with_retry(processed, VOICES.get(voice, VOICES["female"]), mp3, rate, pitch)
 
     if clone_voice_id:
-        try:
-            from scripts.voice_clone import clone_voice, get_reference_path
-            from scripts.generate_audio import FFMPEG
-            ref_path = get_reference_path(clone_voice_id)
-            if ref_path:
-                import subprocess as _sp
-                wav_base = str(preview_dir / f"{safe}_base.wav")
-                _sp.run([
-                    FFMPEG, "-y", "-i", mp3_output,
-                    "-acodec", "pcm_s16le", "-ar", "48000", wav_base,
-                ], capture_output=True, timeout=60)
-                wav_out = str(preview_dir / f"{safe}_cloned.wav")
-                tau = max(10, min(80, clone_tau)) / 100.0
-                await clone_voice(wav_base, ref_path, wav_out, tau=tau)
-                for tmp in (mp3_output, wav_base):
-                    if os.path.exists(tmp):
-                        os.remove(tmp)
-                return FileResponse(wav_out, media_type="audio/wav", filename="preview.wav")
-        except Exception as e:
-            print(f"Voice clone preview failed: {e}")
+        from scripts.voice_clone import clone_voice, get_reference_path
+        ref_path = get_reference_path(clone_voice_id)
+        if ref_path:
+            base = f"{safe}_base.wav"
+            await asyncio.to_thread(_to_wav_48k, mp3, base)
+            cloned = f"{safe}_cloned.wav"
+            tau = max(10, min(80, clone_tau)) / 100.0
+            if await clone_voice(base, ref_path, cloned, tau=tau):
+                await asyncio.to_thread(_polish_audio, cloned)
+                return _send_and_delete(cloned, mp3, base)
+            os.remove(base)
 
-    return FileResponse(mp3_output, media_type="audio/mpeg", filename="preview.mp3")
+    return _send_and_delete(mp3)
 
 
 # ── Replacements endpoints ──
@@ -511,7 +545,6 @@ async def save_replacements(request: Request):
         return JSONResponse({"error": "Expected JSON object"}, status_code=400)
     config_dir = BASE_DIR / "config"
     config_dir.mkdir(exist_ok=True)
-    import json
     with open(config_dir / "replacements.json", "w", encoding="utf-8") as f:
         json.dump(body, f, ensure_ascii=False, indent=2)
     return {"ok": True, "count": len(body)}
@@ -530,6 +563,7 @@ async def search_pexels(
         _pick_best_video_file,
         _search_pexels_photos,
         _search_pexels_videos,
+        photo_download_url,
     )
 
     orient = orientation if orientation in ("portrait", "landscape") else "portrait"
@@ -552,7 +586,7 @@ async def search_pexels(
         items = []
         for p in results:
             src = p.get("src", {})
-            dl_url = src.get("large2x") or src.get("large", "")
+            dl_url = photo_download_url(p, orient)
             thumb = src.get("medium") or src.get("small", "")
             if dl_url:
                 items.append({
@@ -584,25 +618,30 @@ async def download_pexels_media(
 # ── URL scrape endpoints ──
 
 
+_BROWSER_UA = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/131.0.0.0 Safari/537.36"
+    )
+}
+
+
+def _http_get(url: str, timeout: int, limit: int) -> tuple[bytes, str]:
+    import urllib.request
+    req = urllib.request.Request(url, headers=_BROWSER_UA)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read(limit), resp.headers.get("Content-Type", "")
+
+
 @app.get("/api/url/scrape")
 async def scrape_url_images(url: str = Query(..., min_length=1)):
-    import re
     import urllib.parse
-    import urllib.request
-
     from bs4 import BeautifulSoup
 
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/131.0.0.0 Safari/537.36"
-        )
-    }
     try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            html = resp.read(5_000_000).decode("utf-8", errors="replace")
+        raw, _ = await asyncio.to_thread(_http_get, url, 15, 5_000_000)
+        html = raw.decode("utf-8", errors="replace")
     except Exception as e:
         return JSONResponse({"error": f"ไม่สามารถเข้าถึง URL: {e}"}, status_code=400)
 
@@ -672,82 +711,48 @@ async def scrape_url_images(url: str = Query(..., min_length=1)):
 
 @app.get("/api/url/proxy")
 async def proxy_image(url: str = Query(...)):
-    import urllib.request
-
+    from fastapi.responses import Response
     try:
-        req = urllib.request.Request(
-            url,
-            headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/131.0.0.0 Safari/537.36"
-                )
-            },
-        )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            content_type = resp.headers.get("Content-Type", "image/jpeg")
-            data = resp.read(5_000_000)
-        from fastapi.responses import Response
-        return Response(content=data, media_type=content_type)
+        data, content_type = await asyncio.to_thread(_http_get, url, 10, 5_000_000)
+        return Response(content=data, media_type=content_type or "image/jpeg")
     except Exception:
         return JSONResponse({"error": "proxy failed"}, status_code=502)
 
 
-@app.post("/api/url/download")
-async def download_url_media(
-    url: str = Query(...),
-    media_type: str = Query("image"),
-):
+def _download_url_sync(url: str, media_type: str) -> tuple[str, str]:
     import urllib.request
-
-    UPLOAD_DIR.mkdir(exist_ok=True)
-    ext_map = {
-        ".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png",
-        ".webp": ".webp", ".mp4": ".mp4", ".webm": ".webm",
-    }
     from urllib.parse import urlparse
 
     path = urlparse(url).path.lower()
     ext = ".jpg"
-    for k, v in ext_map.items():
+    for k, v in ((".jpeg", ".jpg"), (".jpg", ".jpg"), (".png", ".png"), (".webp", ".webp"),
+                 (".mp4", ".mp4"), (".webm", ".webm")):
         if k in path:
             ext = v
             break
-    if media_type == "video":
-        ext = ".mp4" if ".mp4" in path else ".webm" if ".webm" in path else ".mp4"
+    if media_type == "video" and ext not in (".mp4", ".webm"):
+        ext = ".mp4"
 
-    safe_name = f"web_{_uuid.uuid4().hex[:8]}{ext}"
-    out_path = str(UPLOAD_DIR / safe_name)
+    req = urllib.request.Request(url, headers=_BROWSER_UA)
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        content_type = resp.headers.get("Content-Type", "")
+        if "png" in content_type:
+            ext = ".png"
+        elif "webp" in content_type:
+            ext = ".webp"
+        elif "mp4" in content_type or "video" in content_type:
+            ext = ".mp4"
+        safe_name = f"web_{_uuid.uuid4().hex[:8]}{ext}"
+        with open(UPLOAD_DIR / safe_name, "wb") as f:
+            shutil.copyfileobj(resp, f, 262144)
+    return safe_name, "video" if ext in (".mp4", ".webm") else "image"
+
+
+@app.post("/api/url/download")
+async def download_url_media(url: str = Query(...), media_type: str = Query("image")):
+    UPLOAD_DIR.mkdir(exist_ok=True)
     try:
-        req = urllib.request.Request(
-            url,
-            headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/131.0.0.0 Safari/537.36"
-                )
-            },
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            content_type = resp.headers.get("Content-Type", "")
-            if "png" in content_type:
-                ext = ".png"
-            elif "webp" in content_type:
-                ext = ".webp"
-            elif "mp4" in content_type or "video" in content_type:
-                ext = ".mp4"
-            if ext != out_path[-len(ext):]:
-                safe_name = f"web_{_uuid.uuid4().hex[:8]}{ext}"
-                out_path = str(UPLOAD_DIR / safe_name)
-            with open(out_path, "wb") as f:
-                while True:
-                    chunk = resp.read(262144)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-        ftype = "video" if ext in (".mp4", ".webm") else "image"
+        safe_name, ftype = await asyncio.to_thread(_download_url_sync, url, media_type)
         return {"filename": safe_name, "type": ftype, "ok": True}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
@@ -756,10 +761,10 @@ async def download_url_media(
 # ── TTS engine endpoints ──
 
 
-@app.get("/api/tts-engines")
-async def get_tts_engines():
-    from scripts.tts_engines import list_engines, list_clone_engines
-    return {"engines": list_engines(), "clone_engines": list_clone_engines()}
+@app.get("/api/clone-engines")
+async def get_clone_engines():
+    from scripts.tts_engines import list_clone_engines
+    return list_clone_engines()
 
 
 # ── Voice clone endpoints ──
@@ -823,9 +828,11 @@ async def preview_voice(voice_id: str):
 
 _compare_jobs: dict[str, dict] = {}
 _COMPARE_TEXT_LIMIT = 150  # keeps every one of the N conversions short
+_COMPARE_JOB_TTL = 3600
 
 
 def _run_compare_job_sync(job_id: str, jobs: list[tuple[str, str, str]], base_wav: str, tau: float):
+    import threading
     from scripts.voice_clone import start_clone_batch_process
 
     job = _compare_jobs[job_id]
@@ -836,6 +843,9 @@ def _run_compare_job_sync(job_id: str, jobs: list[tuple[str, str, str]], base_wa
         job["error"] = str(e)
         return
 
+    # A hung child would otherwise leave the job "running" forever.
+    watchdog = threading.Timer(120 + 60 * len(jobs), proc.kill)
+    watchdog.start()
     try:
         for line in proc.stdout:
             line = line.strip()
@@ -854,11 +864,10 @@ def _run_compare_job_sync(job_id: str, jobs: list[tuple[str, str, str]], base_wa
     except Exception as e:
         job["status"] = "error"
         job["error"] = str(e)
-        try:
-            proc.kill()
-        except Exception:
-            pass
+        proc.kill()
         return
+    finally:
+        watchdog.cancel()
 
     # Any voice never resolved (crash mid-batch) shouldn't hang the UI forever.
     for r in job["results"].values():
@@ -884,12 +893,20 @@ async def start_compare_voices(request: Request):
     from scripts.voice_clone import list_voice_profiles, get_reference_path
     from scripts.generate_audio import (
         VOICES, _tts_with_retry, _clean_script_for_tts,
-        apply_replacements, load_replacements, FFMPEG,
+        apply_replacements, load_replacements,
     )
 
     profiles = list_voice_profiles()
     if not profiles:
         return JSONResponse({"error": "ไม่มีเสียงโคลนที่บันทึกไว้"}, status_code=400)
+
+    selected_ids = body.get("voice_ids")
+    tau = max(0.1, min(0.8, float(body.get("tau", 0.3))))
+
+    cutoff = time.time() - _COMPARE_JOB_TTL
+    for old_id in [k for k, j in _compare_jobs.items()
+                   if j["status"] != "running" and j["created_at"] < cutoff]:
+        del _compare_jobs[old_id]
 
     job_id = _uuid.uuid4().hex[:8]
     compare_dir = UPLOAD_DIR / "compare" / job_id
@@ -899,6 +916,8 @@ async def start_compare_voices(request: Request):
     jobs = []
     for p in profiles:
         vid = p.get("id", "")
+        if selected_ids and vid not in selected_ids:
+            continue
         ref_path = get_reference_path(vid)
         if not vid or not ref_path:
             continue
@@ -917,11 +936,9 @@ async def start_compare_voices(request: Request):
     mp3_path = str(compare_dir / "base.mp3")
     await _tts_with_retry(processed, VOICES["female"], mp3_path, "+0%", "+0Hz")
     base_wav = str(compare_dir / "base.wav")
-    import subprocess as _sp
-    _sp.run([FFMPEG, "-y", "-i", mp3_path, "-acodec", "pcm_s16le", "-ar", "48000", base_wav],
-            capture_output=True, timeout=60)
+    await asyncio.to_thread(_to_wav_48k, mp3_path, base_wav)
 
-    asyncio.create_task(asyncio.to_thread(_run_compare_job_sync, job_id, jobs, base_wav, 0.3))
+    _spawn(asyncio.to_thread(_run_compare_job_sync, job_id, jobs, base_wav, tau))
     return {"job_id": job_id, "total": len(jobs)}
 
 
@@ -943,25 +960,13 @@ async def compare_voices_audio(job_id: str, voice_id: str):
     return FileResponse(str(path), media_type="audio/wav")
 
 
-@app.post("/api/notification/regenerate")
-async def regenerate_notification():
-    from scripts.generate_audio import VOICES, TONE_PRESETS, _tts_with_retry
-
-    text = "สร้างคลิป แล้ว ค้าาาาา"
-    voice_name = VOICES["female"]
-    preset = TONE_PRESETS["cheerful"]
-    rate = f"+{preset['base_rate']}%" if preset["base_rate"] >= 0 else f"{preset['base_rate']}%"
-    pitch = f"+{preset['base_pitch']}Hz" if preset["base_pitch"] >= 0 else f"{preset['base_pitch']}Hz"
-
-    out_dir = BASE_DIR / "static" / "sounds"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = str(out_dir / "clip_done.mp3")
-
-    try:
-        await _tts_with_retry(text, voice_name, out_path, rate, pitch, tone="cheerful")
-        return {"ok": True, "size": os.path.getsize(out_path)}
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+@app.delete("/api/compare-voices/clear")
+async def clear_compare_voices():
+    for job_id, job in list(_compare_jobs.items()):
+        if job["status"] != "running":
+            shutil.rmtree(UPLOAD_DIR / "compare" / job_id, ignore_errors=True)
+            del _compare_jobs[job_id]
+    return {"ok": True}
 
 
 DRAFTS_DIR = BASE_DIR / "drafts"
@@ -1065,7 +1070,7 @@ async def render_template(request: Request):
 
     out_path = str(job_dir / "output.png")
     try:
-        render_image_template(template_id, photo_paths, fields, out_path)
+        await asyncio.to_thread(render_image_template, template_id, photo_paths, fields, out_path)
     except Exception as e:
         return JSONResponse({"error": f"สร้างภาพไม่สำเร็จ: {e}"}, status_code=500)
 
@@ -1085,4 +1090,5 @@ async def get_template_image(job_id: str):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.app:app", host="127.0.0.1", port=5000, reload=True)
+    uvicorn.run("app.app:app", host="127.0.0.1", port=5000, reload=True,
+                reload_dirs=["app", "core", "scripts"])

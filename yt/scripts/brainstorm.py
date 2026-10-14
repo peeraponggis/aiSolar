@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 from dotenv import load_dotenv
 from pathlib import Path
@@ -17,14 +18,23 @@ async def generate_brainstorm(topic: str, duration_preset: str = "short") -> str
     if not _GEMINI_KEY:
         print("No GOOGLE_API_KEY, skipping brainstorm")
         return None
-    try:
-        return await _brainstorm_call(topic, duration_preset)
-    except httpx.TimeoutException:
-        print("Brainstorm timed out (20s), skipping")
-        return None
-    except Exception as e:
-        print(f"Brainstorm error: {e}")
-        return None
+    for attempt in range(2):
+        try:
+            return await _brainstorm_call(topic, duration_preset)
+        except httpx.TimeoutException:
+            print("Brainstorm timed out (20s), skipping")
+            return None
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code
+            if code in (429, 500, 503) and attempt == 0:
+                await asyncio.sleep(3)
+                continue
+            print(f"Brainstorm error: Gemini HTTP {code}")
+            return None
+        except (httpx.HTTPError, KeyError, IndexError) as e:
+            print(f"Brainstorm error: {type(e).__name__}")
+            return None
+    return None
 
 
 async def _brainstorm_call(topic: str, duration_preset: str = "short") -> str:
@@ -52,9 +62,10 @@ Format: Keep it concise, {style}"""
 
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     async with httpx.AsyncClient(timeout=20) as client:
+        # Key in a header, not the URL, so it never appears in error messages.
         resp = await client.post(
             _GEMINI_URL,
-            params={"key": _GEMINI_KEY},
+            headers={"x-goog-api-key": _GEMINI_KEY},
             json=payload,
         )
         resp.raise_for_status()

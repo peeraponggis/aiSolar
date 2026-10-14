@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 import uuid
 import shutil
 import subprocess
@@ -31,19 +30,6 @@ def list_voice_profiles() -> list[dict]:
     return profiles
 
 
-def get_voice_profile(voice_id: str) -> dict | None:
-    meta_path = VOICES_DIR / voice_id / "metadata.json"
-    if not meta_path.exists():
-        return None
-    try:
-        with open(meta_path, "r", encoding="utf-8") as f:
-            meta = json.load(f)
-        meta["id"] = voice_id
-        return meta
-    except Exception:
-        return None
-
-
 def get_reference_path(voice_id: str) -> str | None:
     profile_dir = VOICES_DIR / voice_id
     for ext in (".wav", ".mp3", ".m4a", ".ogg", ".flac"):
@@ -72,9 +58,8 @@ def save_voice_profile(audio_bytes: bytes, filename: str, name: str) -> dict:
     if ext == ".wav":
         raw_path.rename(ref_path)
     else:
-        ffmpeg_bin = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
-        result = subprocess.run(
-            [ffmpeg_bin, "-y", "-i", str(raw_path), "-ar", "48000", "-ac", "1", str(ref_path)],
+        subprocess.run(
+            [FFMPEG_BIN, "-y", "-i", str(raw_path), "-ar", "48000", "-ac", "1", str(ref_path)],
             capture_output=True, timeout=60,
         )
         if ref_path.exists() and ref_path.stat().st_size > 100:
@@ -115,17 +100,33 @@ def _get_audio_duration(path: str) -> float:
         return 0.0
 
 
+FFMPEG_BIN = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
+
+
+def _child_env() -> dict:
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PATH"] = os.path.dirname(FFMPEG_BIN) + os.pathsep + env.get("PATH", "")
+    return env
+
+
+def _se_cache_dir(reference_audio_path: str) -> str:
+    """Reference speaker embeddings are cached beside the voice profile, so
+    a profile is analysed once instead of on every clone."""
+    return os.path.join(os.path.dirname(reference_audio_path), "se_cache")
+
+
 async def clone_voice(
     base_audio_path: str,
     reference_audio_path: str,
     output_path: str,
-    device: str = "auto",
     tau: float = 0.3,
-) -> str:
+) -> bool:
+    """Convert base_audio_path to the reference speaker's voice. Returns False
+    (and writes nothing) if cloning failed, so the caller can fall back."""
     import asyncio
     return await asyncio.to_thread(
-        _clone_voice_sync, base_audio_path, reference_audio_path, output_path,
-        device, tau,
+        _clone_voice_sync, base_audio_path, reference_audio_path, output_path, tau,
     )
 
 
@@ -133,103 +134,70 @@ def _clone_voice_sync(
     base_audio_path: str,
     reference_audio_path: str,
     output_path: str,
-    device: str = "auto",
     tau: float = 0.3,
-) -> str:
-    ffmpeg_bin = str(BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe") if (BASE_DIR / "tools" / "ffmpeg" / "ffmpeg.exe").exists() else "ffmpeg"
+) -> bool:
+    work_dir = os.path.join(os.path.dirname(os.path.abspath(output_path)), "se_tmp")
     script = f'''
 import sys, os, shutil, subprocess
 sys.path.insert(0, r"{BASE_DIR}")
-os.environ["PATH"] = r"F:\\LocalAI\\tools\\ffmpeg" + os.pathsep + os.environ.get("PATH", "")
-
 import torch
-if "{device}" == "auto":
-    dev = "cuda" if torch.cuda.is_available() else "cpu"
-else:
-    dev = "{device}"
-
+dev = "cuda" if torch.cuda.is_available() else "cpu"
 try:
     from openvoice.api import ToneColorConverter
     from openvoice import se_extractor
 
-    ckpt_path = os.environ.get(
-        "OPENVOICE_CKPT",
-        r"{BASE_DIR / "models" / "openvoice" / "checkpoints_v2"}",
-    )
-
-    converter = ToneColorConverter(
-        os.path.join(ckpt_path, "converter", "config.json"),
-        device=dev,
-    )
+    ckpt_path = os.environ.get("OPENVOICE_CKPT", r"{BASE_DIR / "models" / "openvoice" / "checkpoints_v2"}")
+    converter = ToneColorConverter(os.path.join(ckpt_path, "converter", "config.json"), device=dev)
     converter.watermark_model = None
     converter.load_ckpt(os.path.join(ckpt_path, "converter", "checkpoint.pth"))
 
-    source_se, _ = se_extractor.get_se(
-        r"{base_audio_path}", converter, vad=False
-    )
-    try:
-        target_se, _ = se_extractor.get_se(
-            r"{reference_audio_path}", converter, vad=True
-        )
-    except AssertionError:
-        target_se, _ = se_extractor.get_se(
-            r"{reference_audio_path}", converter, vad=False
-        )
+    def get_se(path, target_dir):
+        try:
+            return se_extractor.get_se(path, converter, target_dir=target_dir, vad=True)[0]
+        except AssertionError:
+            return se_extractor.get_se(path, converter, target_dir=target_dir, vad=False)[0]
 
-    converter.convert(
-        audio_src_path=r"{base_audio_path}",
-        src_se=source_se,
-        tgt_se=target_se,
-        output_path=r"{output_path}",
-        tau={tau},
-    )
+    source_se = get_se(r"{base_audio_path}", r"{work_dir}")
+    target_se = get_se(r"{reference_audio_path}", r"{_se_cache_dir(reference_audio_path)}")
 
-    # Resample from 22050 Hz to 48000 Hz for final video quality
-    resampled = r"{output_path}".replace(".wav", "_48k.wav")
-    subprocess.run([
-        r"{ffmpeg_bin}", "-y",
-        "-i", r"{output_path}",
-        "-ar", "48000", "-acodec", "pcm_s16le",
-        resampled,
-    ], capture_output=True, timeout=60)
-    if os.path.exists(resampled) and os.path.getsize(resampled) > 100:
-        shutil.move(resampled, r"{output_path}")
-
+    raw_out = r"{output_path}".replace(".wav", "_22k.wav")
+    converter.convert(audio_src_path=r"{base_audio_path}", src_se=source_se,
+                      tgt_se=target_se, output_path=raw_out, tau={tau})
+    subprocess.run([r"{FFMPEG_BIN}", "-y", "-i", raw_out, "-ar", "48000",
+                    "-acodec", "pcm_s16le", r"{output_path}"], capture_output=True, timeout=120)
+    os.remove(raw_out)
     if dev == "cuda":
         del converter
         torch.cuda.empty_cache()
-
-    print("CLONE_OK")
+    print("CLONE_OK" if os.path.getsize(r"{output_path}") > 100 else "CLONE_FAIL: empty output")
 except Exception as e:
     print(f"CLONE_FAIL: {{e}}")
-    shutil.copy2(r"{base_audio_path}", r"{output_path}")
-    print("FALLBACK_OK")
+finally:
+    shutil.rmtree(r"{work_dir}", ignore_errors=True)
 '''
+    try:
+        audio_seconds = _get_audio_duration(base_audio_path)
+    except Exception:
+        audio_seconds = 60
+    timeout = int(min(900, 120 + 3 * audio_seconds))
     try:
         result = subprocess.run(
             [VENV_PYTHON, "-c", script],
-            capture_output=True, text=True, timeout=120,
-            cwd=str(BASE_DIR),
+            capture_output=True, encoding="utf-8", errors="replace",
+            timeout=timeout, cwd=str(BASE_DIR), env=_child_env(),
         )
-        output = result.stdout + result.stderr
-        if "CLONE_OK" in result.stdout:
-            print("Voice cloning succeeded (subprocess)")
-        elif "FALLBACK_OK" in result.stdout:
-            print(f"Voice cloning fell back to original: {output[:200]}")
-        else:
-            print(f"Voice cloning subprocess error: {output[:300]}")
-            shutil.copy2(base_audio_path, output_path)
-    except Exception as e:
-        print(f"Voice cloning subprocess failed: {e}")
-        shutil.copy2(base_audio_path, output_path)
-
-    return output_path
+    except subprocess.TimeoutExpired:
+        print(f"Voice cloning timed out after {timeout}s")
+        return False
+    if "CLONE_OK" in (result.stdout or "") and os.path.exists(output_path):
+        return True
+    print(f"Voice cloning failed: {((result.stdout or '') + (result.stderr or ''))[-400:]}")
+    return False
 
 
 _BATCH_SCRIPT = r'''
 import sys, os, json, shutil, subprocess
 sys.path.insert(0, r"{base_dir}")
-os.environ["PATH"] = r"{ffmpeg_dir}" + os.pathsep + os.environ.get("PATH", "")
 
 import torch
 from openvoice.api import ToneColorConverter
@@ -242,20 +210,23 @@ converter = ToneColorConverter(os.path.join(ckpt_path, "converter", "config.json
 converter.watermark_model = None
 converter.load_ckpt(os.path.join(ckpt_path, "converter", "checkpoint.pth"))
 
+def get_se(path, target_dir):
+    try:
+        return se_extractor.get_se(path, converter, target_dir=target_dir, vad=True)[0]
+    except AssertionError:
+        return se_extractor.get_se(path, converter, target_dir=target_dir, vad=False)[0]
+
 base_audio_path = r"{base_audio_path}"
 # Extracted once and reused for every voice below -- this is the whole point
 # of batching: model load + source-tone extraction dominate the per-call
 # cost, and both are identical across voices when the test text is fixed.
-source_se, _ = se_extractor.get_se(base_audio_path, converter, vad=False)
+source_se = get_se(base_audio_path, os.path.join(os.path.dirname(base_audio_path), "se_tmp"))
 
 jobs = json.loads(sys.stdin.read())  # [[voice_id, ref_path, out_path], ...]
 
 for voice_id, ref_path, out_path in jobs:
     try:
-        try:
-            target_se, _ = se_extractor.get_se(ref_path, converter, vad=True)
-        except AssertionError:
-            target_se, _ = se_extractor.get_se(ref_path, converter, vad=False)
+        target_se = get_se(ref_path, os.path.join(os.path.dirname(ref_path), "se_cache"))
         converter.convert(
             audio_src_path=base_audio_path,
             src_se=source_se,
@@ -291,11 +262,9 @@ def start_clone_batch_process(
     "VOICE_DONE:{id}" / "VOICE_FAIL:{id}:{err}" per voice as it finishes, then
     "BATCH_DONE" -- read line-by-line from stdout for live progress.
     """
-    ffmpeg_bin = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
     script = _BATCH_SCRIPT.format(
         base_dir=str(BASE_DIR),
-        ffmpeg_dir=os.path.dirname(ffmpeg_bin),
-        ffmpeg_bin=ffmpeg_bin,
+        ffmpeg_bin=FFMPEG_BIN,
         ckpt_path=str(BASE_DIR / "models" / "openvoice" / "checkpoints_v2"),
         base_audio_path=base_audio_path,
         tau=tau,
@@ -303,7 +272,8 @@ def start_clone_batch_process(
     proc = subprocess.Popen(
         [VENV_PYTHON, "-c", script],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        text=True, cwd=str(BASE_DIR), bufsize=1,
+        encoding="utf-8", errors="replace", cwd=str(BASE_DIR), bufsize=1,
+        env=_child_env(),
     )
     proc.stdin.write(json.dumps(jobs))
     proc.stdin.close()

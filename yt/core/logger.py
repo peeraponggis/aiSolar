@@ -16,6 +16,7 @@ class ProjectStatus:
     video_path: str | None = None
     video_paths: dict | None = None
     render_params: dict | None = None
+    voice_settings: dict | None = None
     created_at: float = field(default_factory=time.time)
     updated_at: float = field(default_factory=time.time)
     logs: list = field(default_factory=list, repr=False)
@@ -44,6 +45,7 @@ class ProjectStatus:
             "video_path": self.video_path,
             "video_paths": self.video_paths,
             "render_params": self.render_params,
+            "voice_settings": self.voice_settings,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
@@ -51,8 +53,10 @@ class ProjectStatus:
     def _save_to_disk(self):
         path = os.path.join("projects", self.project_id, "status.json")
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
 
     @classmethod
     def from_dict(cls, d: dict) -> "ProjectStatus":
@@ -67,6 +71,7 @@ class ProjectStatus:
             video_path=d.get("video_path"),
             video_paths=d.get("video_paths"),
             render_params=d.get("render_params"),
+            voice_settings=d.get("voice_settings"),
             created_at=d.get("created_at", 0),
             updated_at=d.get("updated_at", 0),
         )
