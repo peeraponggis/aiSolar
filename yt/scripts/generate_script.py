@@ -1,6 +1,7 @@
-import json
 import os
+import re
 from pathlib import Path
+from typing import Callable
 import httpx
 from dotenv import load_dotenv
 from scripts.brainstorm import generate_brainstorm
@@ -19,7 +20,6 @@ DURATION_PRESETS = {
         "media_count": 4,
         "char_warn": 400,
         "char_over": 480,
-        "timeout": 600,
     },
     "medium": {
         "label_th": "ปานกลาง 2-3 นาที",
@@ -28,7 +28,6 @@ DURATION_PRESETS = {
         "media_count": 8,
         "char_warn": 960,
         "char_over": 1440,
-        "timeout": 900,
     },
     "long": {
         "label_th": "ยาว 3-5 นาที",
@@ -37,19 +36,47 @@ DURATION_PRESETS = {
         "media_count": 12,
         "char_warn": 1440,
         "char_over": 2400,
-        "timeout": 1200,
     },
 }
 
 
 async def ollama_generate(prompt: str, model: str | None = None) -> str:
+    # keep_alive=0 unloads the model right away so the 4 GB GPU is free for
+    # the voice-clone step that follows.
     async with httpx.AsyncClient(timeout=300) as client:
         resp = await client.post(
             f"{OLLAMA_API}/api/generate",
-            json={"model": model or OLLAMA_MODEL, "prompt": prompt, "stream": False},
+            json={"model": model or OLLAMA_MODEL, "prompt": prompt,
+                  "stream": False, "keep_alive": 0},
         )
         resp.raise_for_status()
         return resp.json()["response"]
+
+
+def _spoken_length(script: str) -> int:
+    text = re.sub(r"\[.*?\]", "", script)
+    text = re.sub(r"^[AB]\s*[:：]", "", text, flags=re.M)
+    return len(re.sub(r"\s+", "", text))
+
+
+async def _shorten_if_too_long(script: str, preset: dict, mode: str,
+                               log: Callable | None) -> str:
+    length = _spoken_length(script)
+    if length <= preset["char_over"]:
+        return script
+    if log:
+        log(f"สคริปต์ยาว {length} ตัวอักษร (เกิน {preset['char_over']}) — กำลังย่อให้พอดีเวลา", "warning")
+    keep_format = ("คงรูปแบบ A:/B: ทุกบรรทัด" if mode == "dialogue"
+                   else "คงหัวข้อในวงเล็บ [ ] ทุกส่วนไว้เหมือนเดิม")
+    prompt = (
+        f"ย่อสคริปต์ด้านล่างให้เหลือเนื้อหาพูดไม่เกิน {preset['char_warn']} ตัวอักษร "
+        f"(สำหรับวิดีโอ {preset['duration_text']}) โดยเก็บประเด็นสำคัญ ตัวเลข และ CTA ตอนจบไว้ "
+        f"{keep_format} ตอบเฉพาะสคริปต์ภาษาไทยที่ย่อแล้วเท่านั้น\n\n{script}"
+    )
+    shorter = (await ollama_generate(prompt)).strip()
+    if shorter and _spoken_length(shorter) < length:
+        return shorter
+    return script
 
 
 def _get_section_template(duration_preset: str, polite_particle: str) -> str:
@@ -90,7 +117,8 @@ def _get_section_template(duration_preset: str, polite_particle: str) -> str:
 async def generate_script(project_id: str, topic: str, voice: str = "female",
                           persona: str = "", custom_script: str = "",
                           mode: str = "narration",
-                          duration_preset: str = "short") -> str:
+                          duration_preset: str = "short",
+                          log: Callable | None = None) -> str:
     if custom_script.strip():
         script = custom_script.strip()
         project_dir = os.path.join("projects", project_id)
@@ -103,6 +131,8 @@ async def generate_script(project_id: str, topic: str, voice: str = "female",
     brainstorm_context = await generate_brainstorm(topic, duration_preset=duration_preset)
     if not brainstorm_context:
         brainstorm_context = f"Topic: {topic}"
+        if log:
+            log("Gemini ไม่ตอบ — ให้ Ollama เขียนสคริปต์จากหัวข้ออย่างเดียว", "warning")
 
     polite_particle = "ค่ะ" if voice == "female" else "ครับ"
 
@@ -169,6 +199,7 @@ A: ได้ 39 โทเค็นต่อวินาที สร้างข
 - ย้ำอีกครั้ง: ห้ามใช้ภาษาจีนเด็ดขาด ตอบภาษาไทยเท่านั้น"""
 
     script = await ollama_generate(prompt)
+    script = await _shorten_if_too_long(script, preset, mode, log)
 
     if mode != "dialogue":
         wrong_particle = "ครับ" if voice == "female" else "ค่ะ"

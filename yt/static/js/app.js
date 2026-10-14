@@ -3,18 +3,13 @@ let pollTimer = null;
 let selectedVoice = "female";
 let subtitlesEnabled = true;
 let selectedMedia = [];
-let mediaExpanded = true;
 let cloneVoiceId = "";
-let scriptExpanded = false;
-let bgmExpanded = false;
 let selectedMode = "narration";
 let selectedVoiceB = "male";
 let selectedTone = "cheerful";
 let selectedAspectRatios = ["9:16"];
 let selectedDuration = "short";
-let selectedTTSEngine = "edge-tts";
 let selectedCloneEngine = "openvoice";
-let ttsEnginesData = null;
 let bgmFilename = "";
 let consoleExpanded = false;
 let logLastTimestamp = 0;
@@ -24,13 +19,12 @@ let unseenLogCount = 0;
 
 const PHASE_LABELS = {
   pending: "รอเริ่ม...",
-  brainstorming: "กำลังระดมสมอง (Gemini)...",
+  brainstorming: "กำลังระดมสมอง + เขียนสคริปต์...",
   script_done: "ได้สคริปต์แล้ว",
-  generating_audio: "กำลังสร้างเสียง (edge-tts)...",
+  generating_audio: "กำลังสร้างเสียง...",
   audio_done: "ได้เสียงแล้ว",
-  cloning_voice: "กำลังโคลนเสียง (OpenVoice)...",
-  creating_video: "กำลังสร้างวิดีโอ + ซับไตเติ้ล (FFmpeg)...",
-  media_ready: "จัดเรียง media แล้วกดสร้างวิดีโอ",
+  creating_video: "กำลังเตรียมสื่อ / สร้างวิดีโอ...",
+  media_ready: "พร้อมแล้ว — ตรวจ Storyboard แล้วกดสร้างวิดีโอ",
   done: "เสร็จสิ้น!",
   error: "เกิดข้อผิดพลาด",
 };
@@ -127,69 +121,34 @@ function selectVoice(voice) {
   });
 }
 
-async function loadTTSEngines() {
+async function loadCloneEngines() {
   try {
-    const resp = await fetch("/api/tts-engines");
+    const resp = await fetch("/api/clone-engines");
     if (!resp.ok) return;
-    ttsEnginesData = await resp.json();
-    const sel = document.getElementById("ttsEngineSelect");
-    const cloneSel = document.getElementById("cloneEngineSelect");
+    const engines = await resp.json();
+    const sel = document.getElementById("cloneEngineSelect");
     sel.innerHTML = "";
-    cloneSel.innerHTML = "";
-    for (const eng of ttsEnginesData.engines) {
+    for (const eng of engines) {
       const opt = document.createElement("option");
       opt.value = eng.name;
       opt.textContent = eng.label + (eng.available ? "" : " (ไม่ได้ติดตั้ง)");
       opt.disabled = !eng.available;
       sel.appendChild(opt);
     }
-    for (const eng of ttsEnginesData.clone_engines) {
-      const opt = document.createElement("option");
-      opt.value = eng.name;
-      opt.textContent = eng.label + (eng.available ? "" : " (ไม่ได้ติดตั้ง)");
-      opt.disabled = !eng.available;
-      cloneSel.appendChild(opt);
-    }
-    sel.value = selectedTTSEngine;
-    cloneSel.value = selectedCloneEngine;
+    sel.value = selectedCloneEngine;
   } catch {}
-}
-
-function onTTSEngineChange(engineName) {
-  selectedTTSEngine = engineName;
-  if (!ttsEnginesData) return;
-  const eng = ttsEnginesData.engines.find(e => e.name === engineName);
-  if (!eng || !eng.voices.length) return;
-  const container = document.getElementById("voiceToggle");
-  container.innerHTML = "";
-  eng.voices.forEach((v, i) => {
-    const btn = document.createElement("button");
-    btn.className = "voice-btn" + (i === 0 ? " active" : "");
-    btn.dataset.voice = v.id;
-    btn.textContent = v.name;
-    btn.onclick = () => selectVoice(v.id);
-    container.appendChild(btn);
-  });
-  selectedVoice = eng.voices[0].id;
-  if (selectedMode === "dialogue") {
-    const bContainer = document.querySelector("[data-voiceb]")?.parentElement;
-    if (bContainer && eng.voices.length > 1) {
-      bContainer.innerHTML = "";
-      eng.voices.forEach((v, i) => {
-        const btn = document.createElement("button");
-        btn.className = "voice-btn" + ((i === 1 || (eng.voices.length === 1 && i === 0)) ? " active" : "");
-        btn.dataset.voiceb = v.id;
-        btn.textContent = v.name;
-        btn.onclick = () => selectVoiceB(v.id);
-        bContainer.appendChild(btn);
-      });
-      selectedVoiceB = eng.voices.length > 1 ? eng.voices[1].id : eng.voices[0].id;
-    }
-  }
 }
 
 function onCloneEngineChange(engineName) {
   selectedCloneEngine = engineName;
+  _updateCloneDependentRows();
+}
+
+// F5 speaks straight from the reference voice, so base-TTS rate/pitch don't apply.
+function _updateCloneDependentRows() {
+  const f5 = Boolean(cloneVoiceId) && selectedCloneEngine === "f5-tts-thai";
+  document.getElementById("rateRow").classList.toggle("hidden", f5);
+  document.getElementById("pitchRow").classList.toggle("hidden", f5);
 }
 
 function getRateValue() {
@@ -300,21 +259,7 @@ function selectVoiceB(voice) {
   });
 }
 
-// ── Script & Persona ──
-
-function toggleScriptSection() {
-  scriptExpanded = !scriptExpanded;
-  document.getElementById("scriptInputContent").classList.toggle("collapsed", !scriptExpanded);
-  document.getElementById("scriptToggle").innerHTML = scriptExpanded ? "&#9650;" : "&#9660;";
-}
-
-// ── BGM management ──
-
-function toggleBgmSection() {
-  bgmExpanded = !bgmExpanded;
-  document.getElementById("bgmContent").classList.toggle("collapsed", !bgmExpanded);
-  document.getElementById("bgmToggle").innerHTML = bgmExpanded ? "&#9650;" : "&#9660;";
-}
+// ── Script counter ──
 
 function updateScriptCounter() {
   const el = document.getElementById("scriptCounter");
@@ -357,14 +302,8 @@ function updateMediaAspectRatio() {
 }
 
 function switchVideoRatio(projectId, ratio, btn) {
-  const url = `/api/download/${projectId}?ratio=${encodeURIComponent(ratio)}`;
-  const player = document.getElementById("videoPlayer");
-  player.src = url;
-  if (ratio === "16:9") {
-    player.width = 480; player.height = 270;
-  } else {
-    player.width = 270; player.height = 480;
-  }
+  document.getElementById("videoPlayer").src =
+    `/api/download/${projectId}?ratio=${encodeURIComponent(ratio)}`;
   document.querySelectorAll(".ratio-tab").forEach(t => t.classList.remove("active"));
   btn.classList.add("active");
 }
@@ -409,12 +348,6 @@ async function removeBgm() {
 }
 
 // ── Media management ──
-
-function toggleMediaSection() {
-  mediaExpanded = !mediaExpanded;
-  document.getElementById("mediaContent").classList.toggle("collapsed", !mediaExpanded);
-  document.getElementById("mediaToggle").innerHTML = mediaExpanded ? "&#9650;" : "&#9660;";
-}
 
 async function searchPexels() {
   const query = document.getElementById("pexelsQuery").value.trim();
@@ -945,7 +878,6 @@ async function previewVoice() {
       rate: getRateValue(),
       pitch: getPitchValue(),
       tone: selectedTone,
-      tts_engine: selectedTTSEngine,
     });
     if (selectedTone === "custom") {
       params.set("tone_rate", document.getElementById("customToneRate").value || "0");
@@ -1108,8 +1040,9 @@ async function startGenerate() {
   btn.disabled = true;
   btn.textContent = "กำลังสร้าง...";
 
-  document.getElementById("progressSection").classList.remove("hidden");
-  document.getElementById("resultSection").classList.add("hidden");
+  // The previous clip stays visible (dimmed) until the new one is ready.
+  document.getElementById("resultSection").classList.add("stale");
+  _showWorkSection("progressSection", `กำลังสร้าง: ${topic}`);
   updateProgress(0, "pending");
 
   generateStartTime = Date.now();
@@ -1146,7 +1079,6 @@ async function startGenerate() {
     overlay_text: (document.getElementById("overlayTextInput").value || "").trim(),
     overlay_font: document.getElementById("overlayFont").value,
     overlay_animation: document.getElementById("overlayAnimation").value,
-    tts_engine: selectedTTSEngine,
     clone_engine: selectedCloneEngine,
   });
   if (selectedMedia.length) {
@@ -1193,9 +1125,12 @@ function pollStatus() {
         setTimeout(pollLogs, 500);
         updateEta(0);
         showStoryboardPreview(data);
-        showToast("จัดเรียง media แล้วกด สร้างวิดีโอ");
+        resetButton();
+        loadHistory();
+        showToast("ตรวจ Storyboard แล้วกด สร้างวิดีโอ");
       } else if (data.phase === "done") {
         clearInterval(pollTimer);
+        pollTimer = null;
         setTimeout(pollLogs, 500);
         updateEta(100);
         showResult(data);
@@ -1205,10 +1140,13 @@ function pollStatus() {
         loadHistory();
       } else if (data.phase === "error") {
         clearInterval(pollTimer);
+        pollTimer = null;
         setTimeout(pollLogs, 500);
         updateEta(0);
-        showToast(data.error || "เกิดข้อผิดพลาด", true);
+        showToast((data.error || "เกิดข้อผิดพลาด").split("\n").filter(Boolean).pop(), true);
         resetButton();
+        loadHistory();
+        if (data.render_params && data.audio_path) showStoryboardPreview(data);
       }
     } catch (e) {
       /* retry silently */
@@ -1223,18 +1161,42 @@ function updateProgress(percent, phase) {
     PHASE_LABELS[phase] || phase;
 }
 
-function showResult(data) {
-  const section = document.getElementById("resultSection");
-  section.classList.remove("hidden");
-  document.getElementById("progressSection").classList.remove("hidden");
+// Bring a right-hand panel into view (matters in the one-column layout,
+// where it sits below all the settings).
+function _showWorkSection(id, title) {
+  document.getElementById("emptyState").classList.add("hidden");
+  const el = document.getElementById(id);
+  el.classList.remove("hidden");
+  if (title) document.getElementById("progressTitle").textContent = title;
+  const top = el.getBoundingClientRect().top;
+  if (top < 0 || top > window.innerHeight * 0.6) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
 
-  if (data.script) {
-    document.getElementById("scriptContent").textContent = data.script;
+function _fillCommonResult(data) {
+  const section = document.getElementById("resultSection");
+  section.classList.remove("stale");
+  document.getElementById("progressSection").classList.remove("hidden");
+  document.getElementById("progressTitle").textContent = data.topic || "สถานะ";
+  updateProgress(data.progress, data.phase);
+
+  document.getElementById("scriptContent").textContent = data.script || "";
+  document.getElementById("audioPlayer").src = data.audio_path ? `/api/audio/${data.project_id}` : "";
+
+  const vsInfoEl = document.getElementById("voiceSettingsInfo");
+  const vs = data.voice_settings;
+  if (vs) {
+    let label = vs.clone_name ? `${vs.clone_name} (${vs.clone_engine})` : `${vs.voice} (edge-tts)`;
+    if (vs.tone && vs.tone !== "normal") label += ` | ${vs.tone}`;
+    vsInfoEl.textContent = label;
   }
-  if (data.audio_path) {
-    document.getElementById("audioPlayer").src =
-      `/api/audio/${data.project_id}`;
-  }
+  vsInfoEl.classList.toggle("hidden", !vs);
+}
+
+function showResult(data) {
+  _fillCommonResult(data);
+  document.querySelector('.tab[data-tab="video"]').classList.remove("hidden");
 
   const ratioTabsEl = document.getElementById("ratioTabs");
   const dlContainer = document.getElementById("downloadBtns");
@@ -1250,14 +1212,8 @@ function showResult(data) {
 
   if (ratios.length) {
     const firstRatio = ratios[0];
-    const videoUrl = `/api/download/${data.project_id}?ratio=${encodeURIComponent(firstRatio)}`;
-    const player = document.getElementById("videoPlayer");
-    player.src = videoUrl;
-    if (firstRatio === "16:9") {
-      player.width = 480; player.height = 270;
-    } else {
-      player.width = 270; player.height = 480;
-    }
+    document.getElementById("videoPlayer").src =
+      `/api/download/${data.project_id}?ratio=${encodeURIComponent(firstRatio)}&t=${data.updated_at || ""}`;
 
     if (ratios.length > 1) {
       ratioTabsEl.classList.remove("hidden");
@@ -1276,23 +1232,26 @@ function showResult(data) {
     }).join("");
   }
 
-  switchTab("storyboard");
+  _sbPhase = "done";
   buildStoryboard(data);
+  switchTab("video");
+  _showWorkSection("resultSection");
 }
 
 function switchTab(name) {
-  document
-    .querySelectorAll(".tab")
-    .forEach((t) => t.classList.remove("active"));
-  document
-    .querySelectorAll(".tab-content")
-    .forEach((c) => c.classList.remove("active"));
-  document
-    .querySelector(`.tab-content#tab-${name}`)
-    ?.classList.add("active");
-  document
-    .querySelector(`.tab[onclick*="${name}"]`)
-    ?.classList.add("active");
+  document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
+  document.querySelectorAll(".tab-content").forEach((c) => c.classList.toggle("active", c.id === `tab-${name}`));
+}
+
+function newClip() {
+  document.getElementById("topicInput").value = "";
+  document.getElementById("customScriptInput").value = "";
+  updateScriptCounter();
+  if (selectedMedia.length) clearAllMedia();
+  currentProjectId = null;
+  document.getElementById("setupPanel").scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.getElementById("topicInput").focus();
 }
 
 function resetButton() {
@@ -1326,21 +1285,14 @@ let _sbPhase = null;
 let _sbDragIdx = null;
 
 function showStoryboardPreview(data) {
-  const section = document.getElementById("resultSection");
-  section.classList.remove("hidden");
-  document.getElementById("progressSection").classList.remove("hidden");
-
-  if (data.script) {
-    document.getElementById("scriptContent").textContent = data.script;
-  }
-  if (data.audio_path) {
-    document.getElementById("audioPlayer").src =
-      `/api/audio/${data.project_id}`;
-  }
-
+  currentProjectId = data.project_id;
+  _fillCommonResult(data);
+  // No finished video yet: the Video tab would be empty.
+  document.querySelector('.tab[data-tab="video"]').classList.add("hidden");
   _sbPhase = "media_ready";
   switchTab("storyboard");
   buildStoryboard(data);
+  _showWorkSection("resultSection");
 }
 
 async function _startRender() {
@@ -1352,10 +1304,15 @@ async function _startRender() {
   const body = {};
   const scriptText = _sbScenes.filter((s) => s.trim()).join("\n\n");
   if (scriptText) body.script = scriptText;
-  if (_sbDurations.some((d) => d > 0)) body.media_durations = _sbDurations;
-  if (_sbMediaFiles.length) {
-    body.media_order = _sbMediaFiles.filter(Boolean).map((m) => m.filename);
-  }
+  // Rows can be text-only after dragging; keep order and durations paired.
+  const order = [], durations = [];
+  _sbMediaFiles.forEach((m, i) => {
+    if (!m) return;
+    order.push(m.filename);
+    durations.push(_sbDurations[i] || 0);
+  });
+  if (order.length) body.media_order = order;
+  body.media_durations = durations.some((d) => d > 0) ? durations : null;
 
   try {
     const resp = await fetch(`/api/project/${currentProjectId}/render`, {
@@ -1364,6 +1321,8 @@ async function _startRender() {
       body: JSON.stringify(body),
     });
     if (!resp.ok) throw new Error("render start failed");
+    generateStartTime = Date.now();
+    _showWorkSection("progressSection");
     pollStatus();
   } catch (e) {
     showToast("เริ่มสร้างวิดีโอไม่ได้", true);
@@ -1393,7 +1352,7 @@ async function buildStoryboard(data) {
   const n = Math.max(_sbScenes.length, _sbMediaFiles.length);
   _sbDurations = new Array(n).fill(0);
 
-  _renderStoryboard(data);
+  _renderStoryboard();
 }
 
 function _sbMismatchWarning() {
@@ -1409,27 +1368,13 @@ function _sbMismatchWarning() {
     const missing = nScenes - nMedia;
     msg = `มีสคริปต์ ${nScenes} ซีน แต่สื่อมี ${nMedia} ชิ้น — ขาดสื่ออีก ${missing} ชิ้น ซีนท้ายจะใช้สื่อซ้ำ`;
   }
-  return `<div class="sb-warning"><span>⚠</span><span>${_escapeHtml(msg)}</span></div>`;
+  return `<div class="sb-warning"><span>⚠</span><span>${escapeHtml(msg)}</span></div>`;
 }
 
-function _renderStoryboard(data) {
+function _renderStoryboard() {
   const container = document.getElementById("storyboardTimeline");
   const pid = _sbProjectId;
-
-  const videoUrl = data && data.video_paths
-    ? `/api/download/${pid}?ratio=${encodeURIComponent(Object.keys(data.video_paths)[0] || "9:16")}`
-    : data && data.video_path
-      ? `/api/download/${pid}`
-      : null;
-
   let html = "";
-
-  if (videoUrl) {
-    html += `<div class="sb-player">
-      <video controls preload="metadata"><source src="${videoUrl}" type="video/mp4"></video>
-    </div>`;
-  }
-
   const editable = _sbPhase === "media_ready";
 
   if (editable) {
@@ -1465,7 +1410,7 @@ function _renderStoryboard(data) {
       const dur = _sbDurations[i] || 0;
       bodyHtml = `<textarea class="sb-script-edit" rows="2"
           placeholder="(ไม่มีข้อความ — สื่อนี้จะแสดงโดยไม่มีซับไตเติ้ล)"
-          oninput="_sbEditScript(${i},this.value)">${_escapeHtml(text)}</textarea>
+          oninput="_sbEditScript(${i},this.value)">${escapeHtml(text)}</textarea>
         <div class="sb-duration-row">
           <span>เวลา</span>
           <input type="number" class="sb-duration-input" min="0" max="60" step="0.5"
@@ -1476,7 +1421,7 @@ function _renderStoryboard(data) {
     } else {
       const truncated = text.length > 120 ? text.substring(0, 120) + "…" : text;
       bodyHtml = text
-        ? `<div class="sb-text">${_escapeHtml(truncated)}</div>`
+        ? `<div class="sb-text">${escapeHtml(truncated)}</div>`
         : '<div class="sb-extra-label">(ไม่มีข้อความ)</div>';
     }
 
@@ -1548,7 +1493,7 @@ function _sbDrop(e, targetIdx) {
   move(_sbScenes);
   move(_sbDurations);
 
-  _renderStoryboard(null);
+  _renderStoryboard();
 }
 
 function _sbDragEnd() {
@@ -1573,7 +1518,7 @@ function openMediaPicker(sceneIdx, currentFilename) {
       ? `<video src="${src}" preload="metadata" muted></video>`
       : `<img src="${src}" loading="lazy">`;
     grid += `<div class="sb-pick-item${active}" data-fname="${_escapeAttr(m.filename)}">
-      ${tag}<span>${_escapeHtml(m.filename)}</span>
+      ${tag}<span>${escapeHtml(m.filename)}</span>
     </div>`;
   }
 
@@ -1603,18 +1548,13 @@ function _pickMedia(sceneIdx, currentFname, targetFname, overlay) {
   _sbMediaFiles[sceneIdx] = _sbMediaFiles[targetIdx];
   _sbMediaFiles[targetIdx] = tmp;
 
-  _renderStoryboard(null);
+  _renderStoryboard();
 }
 
 function _escapeAttr(str) {
   return str.replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 }
 
-function _escapeHtml(str) {
-  const d = document.createElement("div");
-  d.textContent = str;
-  return d.innerHTML;
-}
 
 // ── Drafts ──
 
@@ -1644,7 +1584,6 @@ function _collectFormState() {
     overlayFont: document.getElementById("overlayFont")?.value || "",
     overlayAnimation: document.getElementById("overlayAnimation")?.value || "",
     mediaFiles: selectedMedia.map(m => m.filename),
-    ttsEngine: selectedTTSEngine,
     cloneEngine: selectedCloneEngine,
   };
 }
@@ -1652,24 +1591,39 @@ function _collectFormState() {
 function _restoreFormState(d) {
   document.getElementById("topicInput").value = d.topic || "";
   if (d.voice) selectVoice(d.voice);
-  if (d.tone) { document.getElementById("toneSelect").value = d.tone; selectTone(d.tone); }
+  if (d.tone) {
+    document.getElementById("toneSelect").value = d.tone;
+    selectTone(d.tone);
+    if (d.tone === "custom") {
+      document.getElementById("customToneVar").value = d.toneVar ?? 10;
+      document.getElementById("customToneRate").value = d.toneRate ?? 0;
+      document.getElementById("customTonePitch").value = d.tonePitch ?? 0;
+    }
+  }
   if (d.subtitles !== undefined) toggleSubtitles(d.subtitles ? "on" : "off");
   if (d.persona) { document.getElementById("personaInput").value = d.persona; document.getElementById("personaInput")._userEdited = true; }
-  if (d.customScript) document.getElementById("customScriptInput").value = d.customScript;
-  if (d.bgmVolume) document.getElementById("bgmVolumeSlider").value = d.bgmVolume;
+  document.getElementById("customScriptInput").value = d.customScript || "";
+  updateScriptCounter();
+  if (d.customScript || d.persona) document.getElementById("scriptCard").open = true;
+  if (d.bgmVolume) { document.getElementById("bgmVolumeSlider").value = d.bgmVolume; updateBgmVolumeLabel(); }
   if (d.aspectRatios) {
     selectedAspectRatios = d.aspectRatios;
     document.querySelectorAll("[data-ratio]").forEach(b => b.classList.toggle("active", selectedAspectRatios.includes(b.dataset.ratio)));
+    updateMediaAspectRatio();
   }
-  if (d.mode) { selectedMode = d.mode; document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === d.mode)); }
+  if (d.mode) selectMode(d.mode);
   if (d.voiceB) selectVoiceB(d.voiceB);
-  if (d.duration) { selectedDuration = d.duration; document.querySelectorAll("[data-dur]").forEach(b => b.classList.toggle("active", b.dataset.dur === d.duration)); }
-  if (d.cloneTau) document.getElementById("tauSlider").value = d.cloneTau;
-  if (d.overlayText) { const el = document.getElementById("overlayTextInput"); if (el) el.value = d.overlayText; }
-  if (d.overlayFont) { const el = document.getElementById("overlayFont"); if (el) el.value = d.overlayFont; }
-  if (d.overlayAnimation) { const el = document.getElementById("overlayAnimation"); if (el) el.value = d.overlayAnimation; }
-  if (d.ttsEngine) { selectedTTSEngine = d.ttsEngine; document.getElementById("ttsEngineSelect").value = d.ttsEngine; onTTSEngineChange(d.ttsEngine); }
+  if (d.duration) selectDuration(d.duration);
+  if (d.cloneTau) { document.getElementById("tauSlider").value = d.cloneTau; updateTauLabel(); }
   if (d.cloneEngine) { selectedCloneEngine = d.cloneEngine; document.getElementById("cloneEngineSelect").value = d.cloneEngine; }
+  const cloneSel = document.getElementById("cloneVoiceSelect");
+  const hasVoice = [...cloneSel.options].some((o) => o.value === (d.cloneVoiceId || ""));
+  cloneSel.value = hasVoice ? (d.cloneVoiceId || "") : "";
+  selectCloneVoice(cloneSel.value);
+  document.getElementById("overlayTextInput").value = d.overlayText || "";
+  const fontSel = document.getElementById("overlayFont");
+  fontSel.value = [...fontSel.options].some((o) => o.value === d.overlayFont) ? d.overlayFont : "sarabun";
+  if (d.overlayAnimation) document.getElementById("overlayAnimation").value = d.overlayAnimation;
   _currentDraftId = d.id || null;
 }
 
@@ -1725,43 +1679,54 @@ async function deleteDraft(id) {
   } catch { showToast("ลบไม่สำเร็จ", true); }
 }
 
+function _canOpenStoryboard(p) {
+  return p.phase === "media_ready" || (p.phase === "error" && p.render_params && p.audio_path);
+}
+
 async function loadProject(projectId) {
   try {
     const resp = await fetch(`/api/status/${projectId}`);
     const data = await resp.json();
     currentProjectId = projectId;
-
-    updateProgress(data.progress, data.phase);
-    document.getElementById("progressSection").classList.remove("hidden");
-
+    generateStartTime = null;
     if (data.phase === "done") {
       showResult(data);
+    } else if (_canOpenStoryboard(data)) {
+      showStoryboardPreview(data);
+    } else if (!["error", "done"].includes(data.phase)) {
+      _showWorkSection("progressSection", data.topic);
+      updateProgress(data.progress, data.phase);
+      pollStatus();
     }
   } catch (e) {
     showToast("โหลดโปรเจคไม่ได้", true);
   }
 }
 
+const HISTORY_PAGE = 20;
+let _historyLimit = HISTORY_PAGE;
+
+function showMoreHistory() {
+  _historyLimit += HISTORY_PAGE;
+  loadHistory();
+}
+
 async function loadHistory() {
   try {
     const resp = await fetch("/api/projects");
-    const projects = await resp.json();
-    const list = document.getElementById("historyList");
-    list.innerHTML = projects
-      .reverse()
-      .map(
-        (p) => `
-      <div class="history-item ${p.phase === "done" ? "clickable" : ""}">
-        <span class="topic" ${p.phase === "done" ? `onclick="loadProject('${p.project_id}')"` : ""}>${escapeHtml(p.topic)}</span>
-        <span class="status ${p.phase}">${
-          PHASE_LABELS[p.phase] || p.phase
-        }</span>
-        ${p.phase === "done" ? `<button class="rebuild-btn" onclick="event.stopPropagation();rebuildProject('${p.project_id}')" title="นำมาสร้างใหม่">&#8635;</button>` : ""}
-      </div>`
-      )
-      .join("");
+    const projects = (await resp.json()).sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    document.getElementById("historyList").innerHTML = projects.slice(0, _historyLimit).map((p) => {
+      const openable = p.phase === "done" || _canOpenStoryboard(p) || !["error", "done"].includes(p.phase);
+      const statusLabel = _canOpenStoryboard(p) && p.phase === "error" ? "ล้มเหลว — กดเพื่อลองใหม่" : (PHASE_LABELS[p.phase] || p.phase);
+      return `<div class="history-item ${openable ? "clickable" : ""}" ${openable ? `onclick="loadProject('${p.project_id}')"` : ""}>
+        <span class="topic">${escapeHtml(p.topic)}</span>
+        <span class="status ${p.phase}">${statusLabel}</span>
+        <button class="rebuild-btn" onclick="event.stopPropagation();rebuildProject('${p.project_id}')" title="ใช้หัวข้อ/สคริปต์นี้สร้างใหม่">&#8635;</button>
+      </div>`;
+    }).join("");
+    document.getElementById("historyMoreBtn").classList.toggle("hidden", projects.length <= _historyLimit);
   } catch (e) {
-    /* silent */
+    /* history is non-critical */
   }
 }
 
@@ -1775,10 +1740,11 @@ async function rebuildProject(projectId) {
     }
     document.getElementById("topicInput").value = data.topic || "";
     if (data.script) {
-      if (!scriptExpanded) toggleScriptSection();
+      document.getElementById("scriptCard").open = true;
       document.getElementById("customScriptInput").value = data.script;
       updateScriptCounter();
     }
+    document.getElementById("setupPanel").scrollTo({ top: 0, behavior: "smooth" });
     window.scrollTo({ top: 0, behavior: "smooth" });
     showToast("โหลดโปรเจคเก่าแล้ว — แก้ไขแล้วกด สร้างคลิป");
   } catch (e) {
@@ -1790,19 +1756,17 @@ async function rebuildProject(projectId) {
 
 function selectCloneVoice(voiceId) {
   cloneVoiceId = voiceId;
-  const info = document.getElementById("cloneVoiceInfo");
-  const tauRow = document.getElementById("cloneTauRow");
+  for (const id of ["cloneVoiceInfo", "cloneTauRow", "cloneEngineSelect"]) {
+    document.getElementById(id).classList.toggle("hidden", !voiceId);
+  }
   if (voiceId) {
-    info.classList.remove("hidden");
-    tauRow.classList.remove("hidden");
     const sel = document.getElementById("cloneVoiceSelect");
-    const opt = sel.options[sel.selectedIndex];
-    document.getElementById("cloneVoiceName").textContent = opt.text;
+    document.getElementById("cloneVoiceName").textContent = sel.options[sel.selectedIndex].text;
     document.getElementById("clonePreview").src = `/api/voices/${voiceId}/preview`;
   } else {
-    info.classList.add("hidden");
-    tauRow.classList.add("hidden");
+    document.getElementById("clonePreview").removeAttribute("src");
   }
+  _updateCloneDependentRows();
 }
 
 async function uploadVoiceFile(fileList) {
@@ -1840,9 +1804,8 @@ async function removeCloneVoice() {
     await fetch(`/api/voices/${cloneVoiceId}`, { method: "DELETE" });
     showToast("ลบเสียงสำเร็จ");
   } catch {}
-  cloneVoiceId = "";
   document.getElementById("cloneVoiceSelect").value = "";
-  document.getElementById("cloneVoiceInfo").classList.add("hidden");
+  selectCloneVoice("");
   loadVoiceProfiles();
 }
 
@@ -1860,6 +1823,7 @@ async function loadVoiceProfiles() {
       sel.appendChild(opt);
     }
     if (current) sel.value = current;
+    document.querySelectorAll(".compare-open-btn").forEach((b) => b.classList.toggle("hidden", !voices.length));
   } catch {}
 }
 
@@ -1875,6 +1839,9 @@ async function openCompareVoices() {
   } catch { _compareVoices = []; }
 
   document.getElementById("compareProgress").classList.add("hidden");
+  const tau = document.getElementById("tauSlider").value;
+  document.getElementById("compareTauSlider").value = tau;
+  document.getElementById("compareTauVal").textContent = (tau / 100).toFixed(2);
   const btn = document.getElementById("compareStartBtn");
   btn.disabled = false;
   btn.textContent = "เริ่มเทียบ";
@@ -1883,7 +1850,7 @@ async function openCompareVoices() {
     document.getElementById("compareVoicesList").innerHTML =
       '<p class="no-results">ยังไม่มีเสียงโคลนที่บันทึกไว้ — อัปโหลดเสียงก่อน</p>';
   } else {
-    _renderCompareList(_compareVoices.map((v) => ({ id: v.id, name: v.name, status: "idle" })));
+    _renderCompareList(_compareVoices.map((v) => ({ id: v.id, name: v.name, status: "idle" })), true);
   }
   document.getElementById("compareVoicesModal").classList.remove("hidden");
 }
@@ -1893,21 +1860,45 @@ function closeCompareVoices() {
   if (_comparePollTimer) { clearInterval(_comparePollTimer); _comparePollTimer = null; }
 }
 
-function _renderCompareList(results) {
+function _renderCompareList(results, showCheckbox) {
   const el = document.getElementById("compareVoicesList");
   const icons = { idle: "&#9676;", pending: "&#8987;", done: "&#9989;", error: "&#10060;" };
-  el.innerHTML = results.map((r) => {
+  let html = "";
+  if (showCheckbox) {
+    html += `<div class="compare-select-all">
+      <label><input type="checkbox" id="compareSelectAll" onchange="toggleCompareAll(this.checked)"> เลือกทั้งหมด</label>
+    </div>`;
+  }
+  html += results.map((r) => {
     const icon = icons[r.status] || icons.idle;
     const player = r.status === "done" && r._jobId
       ? `<audio controls preload="none" src="/api/compare-voices/audio/${r._jobId}/${r.id}"></audio>`
       : r.status === "error"
         ? `<span class="compare-err" title="${escapeHtml(r.error || "")}">ไม่สำเร็จ</span>`
         : "";
+    const checkbox = showCheckbox
+      ? `<input type="checkbox" class="compare-check" data-voice-id="${r.id}">`
+      : "";
     return `<div class="repl-item compare-row">
-      <div class="repl-view"><span class="compare-icon">${icon}</span> ${escapeHtml(r.name)}</div>
+      <div class="repl-view">${checkbox}<span class="compare-icon">${icon}</span> ${escapeHtml(r.name)}</div>
       <div class="compare-player">${player}</div>
     </div>`;
   }).join("");
+  el.innerHTML = html;
+}
+
+function toggleCompareAll(checked) {
+  document.querySelectorAll(".compare-check").forEach((cb) => { cb.checked = checked; });
+}
+
+async function clearCompareAudio() {
+  document.querySelectorAll(".compare-player audio").forEach((a) => {
+    a.pause(); a.removeAttribute("src"); a.load();
+  });
+  if (_comparePollTimer) { clearInterval(_comparePollTimer); _comparePollTimer = null; }
+  try { await fetch("/api/compare-voices/clear", { method: "DELETE" }); } catch {}
+  _renderCompareList(_compareVoices.map((v) => ({ id: v.id, name: v.name, status: "idle" })), true);
+  showToast("เคลียเสียงเทียบแล้ว");
 }
 
 async function startCompareVoices() {
@@ -1915,18 +1906,22 @@ async function startCompareVoices() {
   if (!text) return showToast("กรุณาใส่ข้อความทดสอบ", true);
   if (!_compareVoices.length) return;
 
+  const selected = Array.from(document.querySelectorAll(".compare-check:checked"))
+    .map((cb) => cb.dataset.voiceId);
+  if (!selected.length) return showToast("กรุณาเลือกเสียงอย่างน้อย 1 รายการ", true);
+
   const btn = document.getElementById("compareStartBtn");
   btn.disabled = true;
   btn.textContent = "กำลังเริ่ม...";
   const progress = document.getElementById("compareProgress");
   progress.classList.remove("hidden");
-  progress.textContent = "กำลังโหลดโมเดล OpenVoice (ครั้งเดียว) แล้วเทียบทีละเสียง...";
+  progress.textContent = `กำลังโหลดโมเดล OpenVoice แล้วเทียบ ${selected.length} เสียง...`;
 
   try {
     const resp = await fetch("/api/compare-voices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, voice_ids: selected, tau: parseFloat(document.getElementById("compareTauSlider").value) / 100 }),
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || "เริ่มเทียบเสียงไม่สำเร็จ");
@@ -2155,10 +2150,6 @@ async function renderTemplateImage() {
 // ── Help system ──
 
 const HELP_TEXTS = {
-  tts_engine: {
-    title: "TTS Engine (ระบบสังเคราะห์เสียง)",
-    body: "เลือกระบบสร้างเสียงพูด:\n\n<b>edge-tts (Microsoft)</b> — เสียงคุณภาพสูง ต้องมีอินเทอร์เน็ต (ค่าเริ่มต้น)\n\n<b>PyThaiTTS (VachanaTTS)</b> — โมเดล VITS ออฟไลน์ มี 4 เสียง\nติดตั้ง: pip install pythaitts\nLicense: Apache 2.0\n\n<b>Piper TTS</b> — ONNX runtime เร็วมาก ต้องดาวน์โหลด voice model\nติดตั้ง: pip install piper-tts\nวาง voice model ไว้ที่ models/piper/\n\n<b>MOSS-TTS Nano</b> — โมเดล 100M พารามิเตอร์ ต้องมี reference clip\nติดตั้ง: git clone + pip install -e .\nต้องการ GPU\n\nengine ที่ยังไม่ได้ติดตั้งจะแสดงเป็นสีเทา"
-  },
   voice: {
     title: "เสียงพูด",
     body: "เลือกเสียง TTS สำหรับบรรยาย\n\n<b>หญิง (เปรมวดี)</b> — เสียง th-TH-PremwadeeNeural\n<b>ชาย (นิวัตน์)</b> — เสียง th-TH-NiwatNeural\n\nถ้าใช้โหมดสนทนา 2 คน เสียงนี้จะเป็น \"เสียง A\" (คนอธิบาย)"
@@ -2201,7 +2192,7 @@ const HELP_TEXTS = {
   },
   clone: {
     title: "โคลนเสียง",
-    body: "ใช้ AI โคลนน้ำเสียงจากไฟล์เสียงที่อัปโหลด\n\n<b>เลือก Clone Engine:</b>\n\n<b>OpenVoice V2</b> — สร้างเสียง TTS ก่อน แล้วแปลงน้ำเสียง (2 ขั้นตอน)\nใช้ .venv-clone (Python 3.12 + torch)\n\n<b>F5-TTS-THAI</b> — สร้างเสียงจาก reference โดยตรง (1 ขั้นตอน)\nใช้ .venv-f5 แยกต่างหาก (เพราะ numpy ชนกับ OpenVoice)\nต้องการ GPU — ระบบจะตัด reference ให้เหลือ 8 วินาทีอัตโนมัติ\n\n<b>ติดตั้ง F5-TTS-THAI:</b>\npython -m venv .venv-f5\n.venv-f5\\Scripts\\python -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124\n.venv-f5\\Scripts\\python -m pip install --only-binary=:all: numpy==1.26.4 scikit-learn==1.6.1\n.venv-f5\\Scripts\\python -m pip install git+https://github.com/VYNCX/F5-TTS-THAI.git\n.venv-f5\\Scripts\\python -m pip install pyarrow==17.0.0 datasets==2.21.0\n.venv-f5\\Scripts\\python -m pip uninstall -y torchcodec\n(สองบรรทัดสุดท้ายแก้ conflict ภายในแพ็กเกจ F5 เอง — pyarrow ใหม่ต้องการ numpy 2, torchcodec ชน DLL กับ torch 2.6)\n\n<b>วิธีใช้:</b>\n1. เลือก Clone Engine\n2. กด \"+ อัปโหลดเสียง\" เลือกไฟล์เสียงพูดชัดๆ 5-30 วินาที\n3. ตั้งชื่อเสียง แล้วเลือกจาก dropdown\n\n<b>ไม่ใช้</b> = ใช้เสียง TTS ปกติ"
+    body: "ใช้ AI โคลนน้ำเสียงจากไฟล์เสียงที่อัปโหลด\n\n<b>เลือก Clone Engine:</b>\n\n<b>OpenVoice V2</b> — สร้างเสียง TTS ก่อน แล้วแปลงน้ำเสียง (2 ขั้นตอน)\nใช้ .venv-clone (Python 3.12 + torch)\n\n<b>F5-TTS-THAI</b> — สร้างเสียงจาก reference โดยตรง (1 ขั้นตอน)\nใช้ .venv-f5 แยกต่างหาก (เพราะ numpy ชนกับ OpenVoice)\nต้องการ GPU — ระบบจะตัด reference ให้เหลือ 8 วินาที และจำคำถอดเสียงไว้ใช้ซ้ำ (ครั้งแรกจะช้ากว่า)\nความเร็ว/ระดับเสียงไม่มีผลกับ F5 จึงถูกซ่อนไว้\n\n<b>ติดตั้ง F5-TTS-THAI:</b>\npython -m venv .venv-f5\n.venv-f5\\Scripts\\python -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124\n.venv-f5\\Scripts\\python -m pip install --only-binary=:all: numpy==1.26.4 scikit-learn==1.6.1\n.venv-f5\\Scripts\\python -m pip install git+https://github.com/VYNCX/F5-TTS-THAI.git\n.venv-f5\\Scripts\\python -m pip install pyarrow==17.0.0 datasets==2.21.0\n.venv-f5\\Scripts\\python -m pip uninstall -y torchcodec\n(สองบรรทัดสุดท้ายแก้ conflict ภายในแพ็กเกจ F5 เอง — pyarrow ใหม่ต้องการ numpy 2, torchcodec ชน DLL กับ torch 2.6)\n\n<b>วิธีใช้:</b>\n1. เลือก Clone Engine\n2. กด \"+ อัปโหลดเสียง\" เลือกไฟล์เสียงพูดชัดๆ 5-30 วินาที\n3. ตั้งชื่อเสียง แล้วเลือกจาก dropdown\n\n<b>เทียบเสียง</b> = ฟังทุกเสียงที่เลือกด้วยข้อความเดียวกัน (ใช้ OpenVoice)\n<b>เคลียเสียง</b> = ลบไฟล์เสียงทดสอบออกจากดิสก์\n\n<b>ไม่ใช้</b> = ใช้เสียง TTS ปกติ"
   },
   persona: {
     title: "บุคลิกตัวละคร",
@@ -2231,4 +2222,4 @@ document.getElementById("topicInput").addEventListener("keydown", (e) => {
 
 loadHistory();
 loadVoiceProfiles();
-loadTTSEngines();
+loadCloneEngines();

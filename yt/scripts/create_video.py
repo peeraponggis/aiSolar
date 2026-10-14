@@ -1,9 +1,14 @@
+import asyncio
+import json
 import os
 import random
 import re
 import subprocess
 from pathlib import Path
+from typing import Callable
+
 from dotenv import load_dotenv
+
 from scripts.utils import get_audio_duration
 
 _ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
@@ -12,12 +17,11 @@ load_dotenv(_ENV_PATH)
 FFMPEG = os.getenv("FFMPEG_PATH", "F:/LocalAI/tools/ffmpeg/ffmpeg.exe")
 FONT_PATH = os.getenv("FONT_PATH", "F:/LocalAI/tools/fonts/Sarabun-Regular.ttf")
 FONTS_DIR = os.path.dirname(FONT_PATH)
+SUB_FONT = os.getenv("SUB_FONT", "Kanit")
 
 FONT_MAP = {
     "sarabun": os.path.join(FONTS_DIR, "Sarabun-Regular.ttf"),
     "kanit": os.path.join(FONTS_DIR, "Kanit-Regular.ttf"),
-    "prompt": os.path.join(FONTS_DIR, "Prompt-Regular.ttf"),
-    "mitr": os.path.join(FONTS_DIR, "Mitr-Regular.ttf"),
 }
 
 XFADE_DUR = 0.5
@@ -33,49 +37,89 @@ TRANSITIONS = [
 ]
 _ENHANCE = "eq=contrast=1.05:brightness=0.02:saturation=1.1,unsharp=3:3:0.5:3:3:0.0"
 
+LOUDNESS = "I=-14:TP=-1.5:LRA=11"
 
-def _fit_blur_filter(idx: str, W: int, H: int, FPS: int,
-                     prefix: str = "", out_label: str = "",
-                     still_frames: int = 0) -> str:
-    """Scale to fit + blurred background fill (no stretching/cropping).
+ASPECT_CONFIGS = {
+    "9:16": {
+        "w": 1080, "h": 1920, "fps": 30, "audio_br": "192k",
+        "pre_w": 1920, "pre_h": 3412,
+        "sub_fs": 66, "sub_margin": 260, "sub_max_chars": 26,
+        "overlay_fs": 36,
+    },
+    "16:9": {
+        "w": 1920, "h": 1080, "fps": 30, "audio_br": "192k",
+        "pre_w": 3412, "pre_h": 1920,
+        "sub_fs": 52, "sub_margin": 90, "sub_max_chars": 55,
+        "overlay_fs": 32,
+    },
+}
 
-    still_frames: when >0, use loop filter instead of expecting -stream_loop.
-    Processes the heavy filter chain once, then repeats the output frame.
-    """
-    p = prefix or idx.replace(":", "").replace("[", "").replace("]", "")
-    result = (
-        f"[{idx}]split[bg{p}][fg{p}];"
-        f"[bg{p}]scale={W}:{H}:force_original_aspect_ratio=increase,"
-        f"crop={W}:{H},scale=iw/8:-1,scale={W}:{H}:flags=bilinear[blr{p}];"
-        f"[fg{p}]scale={W}:{H}:force_original_aspect_ratio=decrease,"
-        f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:color=black@0[fpad{p}];"
-    )
-    if still_frames > 0:
-        result += (
-            f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,"
-            f"format=yuv420p,{_ENHANCE},"
-            f"loop={still_frames}:1:0,fps={FPS}"
-        )
-    else:
-        result += (
-            f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,fps={FPS},"
-            f"format=yuv420p,{_ENHANCE}"
-        )
-    if out_label:
-        result += f"[{out_label}]"
-    return result
+
+# ── Encoder ──
+
+_nvenc_ok: bool | None = None
+
+
+def _check_nvenc() -> bool:
+    """NVENC needs a driver new enough for this FFmpeg build; probe once with
+    a real encode and fall back to x264 if it fails."""
+    global _nvenc_ok
+    if _nvenc_ok is None:
+        try:
+            r = subprocess.run(
+                [FFMPEG, "-y", "-f", "lavfi", "-i", "color=s=256x256:d=0.2",
+                 "-c:v", "h264_nvenc", "-f", "null", "-"],
+                capture_output=True, timeout=20,
+            )
+            _nvenc_ok = r.returncode == 0
+        except Exception:
+            _nvenc_ok = False
+        print(f"Video encoder: {'h264_nvenc (GPU)' if _nvenc_ok else 'libx264 (CPU) — NVENC unavailable'}")
+    return _nvenc_ok
+
+
+def _video_enc_args() -> list[str]:
+    color = ["-color_range", "tv", "-colorspace", "bt709",
+             "-color_primaries", "bt709", "-color_trc", "bt709"]
+    if _check_nvenc():
+        return ["-c:v", "h264_nvenc", "-preset", "p5", "-tune", "hq",
+                "-rc", "vbr", "-cq", "21", "-b:v", "0",
+                "-profile:v", "high", "-pix_fmt", "yuv420p", *color]
+    return ["-c:v", "libx264", "-preset", "faster", "-crf", "20",
+            "-profile:v", "high", "-pix_fmt", "yuv420p", *color]
+
+
+def encoder_label() -> str:
+    return "GPU (NVENC)" if _check_nvenc() else "CPU (x264)"
+
+
+# ── Helpers ──
+
+def _ff_path(path: str) -> str:
+    """Path usable as a filter option value (relative when possible, so the
+    Windows drive colon never needs escaping)."""
+    try:
+        path = os.path.relpath(path)
+    except ValueError:
+        pass
+    path = path.replace("\\", "/")
+    return "'" + path.replace(":", "\\:").replace("'", "\\'") + "'"
+
+
+def _run(cmd: list[str], timeout: int) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, timeout=timeout,
+                          encoding="utf-8", errors="replace")
 
 
 def _get_video_stream_duration(path: str) -> float:
-    import json as _json
     ffprobe = os.path.join(os.path.dirname(FFMPEG), "ffprobe.exe")
     r = subprocess.run(
         [ffprobe, "-v", "quiet", "-select_streams", "v:0",
          "-show_entries", "stream=duration", "-of", "json", path],
-        capture_output=True, text=True, timeout=10)
+        capture_output=True, text=True, timeout=30)
     try:
-        return float(_json.loads(r.stdout)["streams"][0]["duration"])
-    except Exception:
+        return float(json.loads(r.stdout)["streams"][0]["duration"])
+    except (ValueError, KeyError, IndexError, TypeError):
         return 0.0
 
 
@@ -84,94 +128,142 @@ def _extract_media_order(path: str) -> int:
     return int(m.group(1)) if m else 999
 
 
-def _compute_segment_durations(
-    n: int, total_duration: float, fade: float,
-    custom_durations: list[float] | None = None,
-) -> list[float]:
+def _compute_segment_durations(n: int, total_duration: float, fade: float,
+                               custom_durations: list[float] | None = None) -> list[float]:
     if not custom_durations or len(custom_durations) != n:
         if n == 1:
             return [total_duration]
-        uniform = (total_duration + (n - 1) * fade) / n
-        return [uniform] * n
-
-    has_custom = [(i, d) for i, d in enumerate(custom_durations) if d > 0]
-    auto_indices = [i for i, d in enumerate(custom_durations) if d <= 0]
-    fixed_total = sum(d for _, d in has_custom)
-    overlap = (n - 1) * fade
-    remaining = total_duration + overlap - fixed_total
-    if auto_indices:
-        auto_dur = max(2.0, remaining / len(auto_indices))
-    else:
-        auto_dur = 0
-    result = []
-    for i in range(n):
-        if custom_durations[i] > 0:
-            result.append(custom_durations[i])
-        else:
-            result.append(auto_dur)
-    return result
+        return [(total_duration + (n - 1) * fade) / n] * n
+    auto_count = sum(1 for d in custom_durations if not d or d <= 0)
+    fixed_total = sum(d for d in custom_durations if d and d > 0)
+    remaining = total_duration + (n - 1) * fade - fixed_total
+    auto_dur = max(2.0, remaining / auto_count) if auto_count else 0
+    return [d if d and d > 0 else auto_dur for d in custom_durations]
 
 
-ASPECT_CONFIGS = {
-    "9:16": {
-        "w": 1080, "h": 1920, "fps": 30,
-        "audio_br": "192k",
-        "pre_w": 1920, "pre_h": 3412,
-        "sub_fs": 42, "sub_y": "h-250",
-        "sub_max_chars": 35,
-        "overlay_fs": 36,
-    },
-    "16:9": {
-        "w": 1920, "h": 1080, "fps": 30,
-        "audio_br": "256k",
-        "pre_w": 3412, "pre_h": 1920,
-        "sub_fs": 38, "sub_y": "h-250",
-        "sub_max_chars": 65,
-        "overlay_fs": 32,
-    },
-}
+# ── Subtitles (ASS via libass: HarfBuzz-shaped Thai, one filter for all cues) ──
 
-_nvenc_ok = None
+_THAI_COMBINING = set("\u0E31" + "".join(chr(c) for c in range(0x0E34, 0x0E3B))
+                      + "".join(chr(c) for c in range(0x0E47, 0x0E4F)))
+_THAI_LEADING = set("\u0E40\u0E41\u0E42\u0E43\u0E44")
 
 
-def _check_nvenc() -> bool:
-    global _nvenc_ok
-    if _nvenc_ok is not None:
-        return _nvenc_ok
-    try:
-        r = subprocess.run(
-            [FFMPEG, "-y", "-f", "lavfi", "-i", "color=s=64x64:d=0.1",
-             "-c:v", "h264_nvenc", "-frames:v", "1", "-f", "null", "-"],
-            capture_output=True, timeout=10,
-        )
-        _nvenc_ok = r.returncode == 0
-    except Exception:
-        _nvenc_ok = False
-    if not _nvenc_ok:
-        print("NVENC not available, using libx264")
-    return _nvenc_ok
+def _can_break_before(text: str, i: int) -> bool:
+    return 0 < i < len(text) and text[i] not in _THAI_COMBINING \
+        and text[i - 1] not in _THAI_LEADING
 
 
-def _video_enc_args() -> list[str]:
-    if _check_nvenc():
-        return ["-c:v", "h264_nvenc", "-preset", "p5", "-rc", "vbr", "-cq", "20",
-                "-profile:v", "high", "-level", "4.1", "-pix_fmt", "yuv420p"]
-    return ["-c:v", "libx264", "-preset", "medium", "-crf", "20",
-            "-profile:v", "high", "-level", "4.1", "-pix_fmt", "yuv420p"]
-
-
-def _parse_script_sections(script: str) -> list[str]:
-    lines = []
-    for line in script.strip().split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-        cleaned = re.sub(r"\[.*?\]", "", line).strip()
-        cleaned = re.sub(r"^[—\-–]+\s*", "", cleaned).strip()
-        if cleaned and len(cleaned) > 5:
-            lines.append(cleaned)
+def _wrap_line(text: str, max_chars: int) -> list[str]:
+    """Greedy wrap: prefer spaces; otherwise break between Thai character
+    clusters (never before a vowel/tone mark or after a leading vowel)."""
+    lines, rest = [], text.strip()
+    while len(rest) > max_chars:
+        cut = rest.rfind(" ", 0, max_chars + 1)
+        if cut <= max_chars // 3:
+            # Slightly long is better than splitting a phrase mid-way.
+            cut = rest.find(" ", max_chars, int(max_chars * 1.2) + 1)
+        if cut <= 0:
+            # No dictionary: a leading vowel always starts a new syllable,
+            # so breaking right before one rarely splits a word.
+            window = range(max_chars, max(1, max_chars // 2), -1)
+            cut = next((i for i in window if rest[i] in _THAI_LEADING), 0)
+        if cut <= 0:
+            cut = max_chars
+            while cut > 1 and not _can_break_before(rest, cut):
+                cut -= 1
+        lines.append(rest[:cut].strip())
+        rest = rest[cut:].strip()
+    if rest:
+        lines.append(rest)
     return lines
 
+
+def _proportional(entries: list[dict], start: float, end: float) -> list[dict]:
+    total = sum(len(e["text"]) for e in entries) or 1
+    t, out = start, []
+    for e in entries:
+        d = (end - start) * len(e["text"]) / total
+        out.append({**e, "start": t, "end": t + d})
+        t += d
+    return out
+
+
+def _load_timings(project_dir: str, script: str, duration: float) -> list[dict]:
+    """Per-sentence subtitle cues. Times come from the TTS segments
+    (audio/timings.json); text comes from the current script, so storyboard
+    edits still show up. If the edit changed the sentence count, the edited
+    text is spread proportionally over the speech."""
+    from scripts.generate_audio import _clean_script_for_tts, _split_sentences, parse_dialogue
+
+    timing = []
+    for name in ("timings.json", "dialogue_timing.json"):
+        path = os.path.join(project_dir, "audio", name)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                timing = json.load(f)
+            break
+
+    if timing and "speaker" in timing[0]:
+        entries = [{"text": d["text"], "speaker": d["speaker"]} for d in parse_dialogue(script)]
+    else:
+        entries = [{"text": s} for s in _split_sentences(_clean_script_for_tts(script))]
+    entries = [e for e in entries if e["text"].strip()]
+
+    if timing and len(entries) == len(timing):
+        return [{**e, "start": t["start"], "end": t["end"]} for e, t in zip(entries, timing)]
+    if timing and entries:
+        return _proportional(entries, timing[0]["start"], timing[-1]["end"])
+    if entries:
+        return _proportional(entries, 0.0, duration)
+    return []
+
+
+def _ass_time(t: float) -> str:
+    cs = int(round(max(0.0, t) * 100))
+    h, cs = divmod(cs, 360000)
+    m, cs = divmod(cs, 6000)
+    s, cs = divmod(cs, 100)
+    return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
+
+
+def _ass_text(text: str) -> str:
+    return text.replace("\\", "/").replace("{", "(").replace("}", ")")
+
+
+def _write_ass(timing: list[dict], cfg: dict, path: str):
+    W, H = cfg["w"], cfg["h"]
+    fs, margin = cfg["sub_fs"], cfg["sub_margin"]
+    style = ("Style: {name},{font},{fs},{color},&H000000FF,&H00000000,&H64000000,"
+             "0,0,0,0,100,100,0,0,1,4,1,2,60,60,{margin},1")
+    lines = [
+        "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {W}", f"PlayResY: {H}",
+        "WrapStyle: 2", "ScaledBorderAndShadow: yes", "",
+        "[V4+ Styles]",
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, "
+        "BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, "
+        "BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
+        style.format(name="A", font=SUB_FONT, fs=fs, color="&H00FFFFFF", margin=margin),
+        style.format(name="B", font=SUB_FONT, fs=fs, color="&H0000D7FF", margin=margin),
+        "", "[Events]",
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
+    ]
+    for entry in timing:
+        wrapped = _wrap_line(entry["text"], cfg["sub_max_chars"])
+        cues = [wrapped[i:i + 2] for i in range(0, len(wrapped), 2)]
+        start, end = float(entry["start"]), float(entry["end"])
+        total_chars = sum(len("".join(c)) for c in cues) or 1
+        t = start
+        for cue in cues:
+            cue_end = t + (end - start) * len("".join(cue)) / total_chars
+            text = "\\N".join(_ass_text(c) for c in cue)
+            lines.append(f"Dialogue: 0,{_ass_time(t)},{_ass_time(cue_end)},"
+                         f"{entry.get('speaker', 'A')},,0,0,0,,{text}")
+            t = cue_end
+    with open(path, "w", encoding="utf-8-sig") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+# ── drawtext overlays (FFmpeg's drawtext shapes text with HarfBuzz) ──
 
 def _escape_drawtext(text: str) -> str:
     text = text.replace("\\", "\\\\")
@@ -179,192 +271,293 @@ def _escape_drawtext(text: str) -> str:
     text = text.replace('"', "\u201d")
     text = text.replace(":", "\\:")
     text = text.replace(";", "\\;")
-    text = text.replace("%", "%%%%")
     return text
 
 
-def _wrap_text(text: str, max_chars: int, max_lines: int = 2) -> list[str]:
-    if len(text) <= max_chars:
-        return [text]
-    lines: list[str] = []
-    remaining = text
-    for i in range(max_lines):
-        if not remaining:
-            break
-        if i == max_lines - 1 or len(remaining) <= max_chars:
-            if len(remaining) > max_chars:
-                remaining = remaining[:max_chars]
-            lines.append(remaining)
-            remaining = ""
-            break
-        break_at = max_chars
-        space_pos = remaining.rfind(" ", max(0, max_chars // 2), max_chars + 1)
-        if space_pos > 0:
-            break_at = space_pos
-        lines.append(remaining[:break_at].rstrip())
-        remaining = remaining[break_at:].lstrip()
-    return lines
-
-
-def _build_subtitle_filter(sections: list[str], total_duration: float,
-                           fontsize: int = 42, y_expr: str = "h-200",
-                           max_chars: int = 35) -> str:
-    if not sections:
-        return ""
-    segment_dur = total_duration / len(sections)
-    font_path = FONT_PATH.replace("\\", "/").replace(":", "\\:")
-    line_height = int(fontsize * 1.5)
-    filters = []
-    for i, text in enumerate(sections):
-        lines = _wrap_text(text, max_chars)
-        start = i * segment_dur
-        end = start + segment_dur
-        num_lines = len(lines)
-        for j, line_text in enumerate(lines):
-            escaped = _escape_drawtext(line_text)
-            y_offset = (num_lines - 1 - j) * line_height
-            y = y_expr if y_offset == 0 else f"{y_expr}-{y_offset}"
-            f = (
-                f"drawtext=fontfile='{font_path}'"
-                f":text='{escaped}'"
-                f":expansion=none"
-                f":fontsize={fontsize}"
-                f":fontcolor=white"
-                f":borderw=3"
-                f":bordercolor=black"
-                f":x=(w-text_w)/2"
-                f":y={y}"
-                f":enable='between(t\\,{start:.2f}\\,{end:.2f})'"
-            )
-            filters.append(f)
-    return ",".join(filters)
-
-
-SPEAKER_COLORS = {"A": "white", "B": "#FFD700"}
-
-
-def _build_dialogue_subtitle_filter(
-    timing: list[dict], fontsize: int = 42, y_expr: str = "h-200",
-    max_chars: int = 35,
-) -> str:
-    if not timing:
-        return ""
-    font_path = FONT_PATH.replace("\\", "/").replace(":", "\\:")
-    line_height = int(fontsize * 1.5)
-    filters = []
-    for entry in timing:
-        text = entry["text"]
-        lines = _wrap_text(text, max_chars)
-        speaker = entry.get("speaker", "A")
-        color = SPEAKER_COLORS.get(speaker, "white")
-        start = entry["start"]
-        end = entry["end"]
-        num_lines = len(lines)
-        for j, line_text in enumerate(lines):
-            escaped = _escape_drawtext(line_text)
-            y_offset = (num_lines - 1 - j) * line_height
-            y = y_expr if y_offset == 0 else f"{y_expr}-{y_offset}"
-            f = (
-                f"drawtext=fontfile='{font_path}'"
-                f":text='{escaped}'"
-                f":expansion=none"
-                f":fontsize={fontsize}"
-                f":fontcolor={color}"
-                f":borderw=3"
-                f":bordercolor=black"
-                f":x=(w-text_w)/2"
-                f":y={y}"
-                f":enable='between(t\\,{start:.2f}\\,{end:.2f})'"
-            )
-            filters.append(f)
-    return ",".join(filters)
-
-
-def _resolve_font(font_name: str) -> str:
-    path = FONT_MAP.get(font_name, FONT_PATH)
-    if not os.path.exists(path):
-        path = FONT_PATH
+def _drawtext_font(path: str) -> str:
     return path.replace("\\", "/").replace(":", "\\:")
 
 
-def _build_overlay_text_filter(text: str, fontsize: int,
-                               font_name: str, animation: str,
-                               duration: float) -> str:
+def _build_overlay_text_filter(text: str, fontsize: int, font_name: str,
+                               animation: str, duration: float) -> str:
     if not text.strip():
         return ""
-    font_path = _resolve_font(font_name)
-    escaped = _escape_drawtext(text.strip())
-    y_pos = "h-350"
-
+    font_path = FONT_MAP.get(font_name, FONT_PATH)
+    if not os.path.exists(font_path):
+        font_path = FONT_PATH
     base = (
-        f"drawtext=fontfile='{font_path}'"
-        f":text='{escaped}'"
-        f":expansion=none"
-        f":fontsize={fontsize}"
-        f":fontcolor=white"
-        f":borderw=2"
-        f":bordercolor=black@0.8"
-        f":x=(w-text_w)/2"
+        f"drawtext=fontfile='{_drawtext_font(font_path)}'"
+        f":text='{_escape_drawtext(text.strip())}'"
+        f":expansion=none:fontsize={fontsize}:fontcolor=white"
+        f":borderw=2:bordercolor=black@0.8:x=(w-text_w)/2"
     )
-
+    y_pos = "h-350"
     if animation == "fade":
-        fade_dur = max(0.5, duration * 0.08)
-        base += (
-            f":y={y_pos}"
-            f":alpha='if(lt(t\\,{fade_dur:.2f})\\,t/{fade_dur:.2f}\\,"
-            f"if(gt(t\\,{duration - fade_dur:.2f})\\,({duration:.2f}-t)/{fade_dur:.2f}\\,1))'"
+        fd = max(0.5, duration * 0.08)
+        return base + (
+            f":y={y_pos}:alpha='if(lt(t\\,{fd:.2f})\\,t/{fd:.2f}\\,"
+            f"if(gt(t\\,{duration - fd:.2f})\\,({duration:.2f}-t)/{fd:.2f}\\,1))'"
         )
-    elif animation == "slide_up":
-        slide_dur = max(0.5, duration * 0.06)
-        base += (
-            f":y='if(lt(t\\,{slide_dur:.2f})\\,h-((h-350)*t/{slide_dur:.2f})\\,{y_pos})'"
-        )
-    else:
-        base += f":y={y_pos}"
-
-    return base
+    if animation == "slide_up":
+        sd = max(0.5, duration * 0.06)
+        return base + f":y='if(lt(t\\,{sd:.2f})\\,h-((h-350)*t/{sd:.2f})\\,{y_pos})'"
+    return base + f":y={y_pos}"
 
 
 def _build_watermark_filter(fontsize: int) -> str:
-    font_path = FONT_PATH.replace("\\", "/").replace(":", "\\:")
-    escaped = _escape_drawtext("Created by Lungpee0945@gmail.com")
     return (
-        f"drawtext=fontfile='{font_path}'"
-        f":text='{escaped}'"
-        f":expansion=none"
-        f":fontsize={fontsize}"
-        f":fontcolor=#000080"
-        f":borderw=1"
-        f":bordercolor=white@0.5"
-        f":x=w-text_w-20"
-        f":y=20"
+        f"drawtext=fontfile='{_drawtext_font(FONT_PATH)}'"
+        f":text='{_escape_drawtext('Created by Lungpee0945@gmail.com')}'"
+        f":expansion=none:fontsize={fontsize}:fontcolor=#000080"
+        f":borderw=1:bordercolor=white@0.5:x=w-text_w-20:y=20"
     )
 
 
-def _mix_with_bgm(narration_path: str, bgm_path: str, output_path: str,
-                  volume: float = 0.2, duration: float = 0) -> str:
-    if not duration:
-        duration = get_audio_duration(narration_path)
-    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    fade_start = max(0, duration - 2)
-    cmd = [
-        FFMPEG, "-y",
-        "-i", narration_path,
-        "-stream_loop", "-1", "-i", bgm_path,
-        "-filter_complex",
-        f"[0:a]acompressor=threshold=-20dB:ratio=3:attack=5:release=50[voice];"
-        f"[1:a]volume={volume:.2f},afade=t=out:st={fade_start:.2f}:d=2[bgm];"
-        f"[voice][bgm]amix=inputs=2:duration=first:normalize=0,"
-        f"loudnorm=I=-16:LRA=11:TP=-1.5[aout]",
-        "-map", "[aout]",
-        "-c:a", "libmp3lame", "-q:a", "2",
-        output_path,
+# ── Audio: one mix + one two-pass loudness normalisation ──
+
+def _audio_graph(has_bgm: bool, bgm_volume: float, duration: float) -> str:
+    voice = "[0:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo"
+    if not has_bgm:
+        return voice + "[mix]"
+    fade_start = max(0.0, duration - 2)
+    return (
+        f"{voice},asplit=2[v][vsc];"
+        f"[1:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,"
+        f"volume={bgm_volume:.2f},afade=t=out:st={fade_start:.2f}:d=2[bgm];"
+        f"[bgm][vsc]sidechaincompress=threshold=0.05:ratio=8:attack=20:release=300[duck];"
+        f"[v][duck]amix=inputs=2:duration=first:normalize=0[mix]"
+    )
+
+
+def _finite(value) -> bool:
+    try:
+        return abs(float(value)) != float("inf")
+    except (TypeError, ValueError):
+        return False
+
+
+def _prepare_final_audio(audio_path: str, bgm_path: str, bgm_volume: float,
+                         duration: float, out_wav: str) -> str:
+    """Voice (+ ducked BGM) normalised to -14 LUFS / -1.5 dBTP in two passes,
+    so the only lossy step left is the AAC encode in the final mux."""
+    has_bgm = bool(bgm_path) and os.path.exists(bgm_path)
+    inputs = ["-i", audio_path] + (["-stream_loop", "-1", "-i", bgm_path] if has_bgm else [])
+    graph = _audio_graph(has_bgm, bgm_volume, duration)
+
+    measure = _run([FFMPEG, "-hide_banner", "-y", *inputs, "-filter_complex",
+                    f"{graph};[mix]loudnorm={LOUDNESS}:print_format=json[out]",
+                    "-map", "[out]", "-f", "null", "-"], timeout=300)
+    m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", measure.stderr or "", re.S)
+    s = json.loads(m.group(0)) if m else {}
+    if s and all(_finite(s.get(k)) for k in ("input_i", "input_tp", "input_lra", "input_thresh")):
+        norm = (f"loudnorm={LOUDNESS}:measured_I={s['input_i']}:measured_TP={s['input_tp']}"
+                f":measured_LRA={s['input_lra']}:measured_thresh={s['input_thresh']}"
+                f":offset={s['target_offset']}:linear=true")
+    else:
+        norm = f"loudnorm={LOUDNESS}"
+    result = _run([FFMPEG, "-y", *inputs, "-filter_complex",
+                   f"{graph};[mix]{norm},aresample=48000[out]",
+                   "-map", "[out]", "-c:a", "pcm_s16le", out_wav], timeout=300)
+    if result.returncode != 0 or not os.path.exists(out_wav):
+        raise RuntimeError(f"Audio mix failed: {(result.stderr or '')[-500:]}")
+    return out_wav
+
+
+# ── Video graphs ──
+
+def _fit_blur(idx: str, W: int, H: int, FPS: int, p: str, still_frames: int = 0) -> str:
+    """Scale to fit over a blurred fill of the same frame (no stretching/cropping).
+    For stills (still_frames > 0) the chain runs once and the frame is looped."""
+    chain = (
+        f"[{idx}]split[bg{p}][fg{p}];"
+        f"[bg{p}]scale={W}:{H}:force_original_aspect_ratio=increase,"
+        f"crop={W}:{H},scale=iw/8:-1,scale={W}:{H}:flags=bilinear[blr{p}];"
+        f"[fg{p}]scale={W}:{H}:force_original_aspect_ratio=decrease:flags=lanczos,"
+        f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:color=black@0[fpad{p}];"
+        f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,scale=out_range=tv,format=yuv420p,{_ENHANCE}"
+    )
+    if still_frames > 0:
+        return chain + f",loop={still_frames}:1:0,fps={FPS}"
+    return chain + f",fps={FPS}"
+
+
+def _xfade_chain(labels: list[str], seg_durs: list[float], out: str) -> list[str]:
+    if len(labels) == 1:
+        return [f"[{labels[0]}]null[{out}]"]
+    parts, prev, cumulative = [], labels[0], seg_durs[0]
+    for i in range(len(labels) - 1):
+        offset = cumulative - XFADE_DUR
+        cumulative += seg_durs[i + 1] - XFADE_DUR
+        label = f"xf{i}" if i < len(labels) - 2 else out
+        parts.append(f"[{prev}][{labels[i + 1]}]xfade=transition={random.choice(TRANSITIONS)}"
+                     f":duration={XFADE_DUR:.2f}:offset={offset:.2f}[{label}]")
+        prev = label
+    return parts
+
+
+def _sequence_graph(sources: list[tuple[str, str]], seg_durs: list[float],
+                    cfg: dict) -> tuple[list[str], list[str]]:
+    """Clips and stills, in storyboard order, blur-fitted and crossfaded → [base]."""
+    W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
+    inputs, parts, labels = [], [], []
+    for i, (path, kind) in enumerate(sources):
+        if kind == "image":
+            inputs += ["-i", path]
+            frames = int((seg_durs[i] + 1) * FPS)
+            parts.append(_fit_blur(f"{i}:v", W, H, FPS, f"m{i}", still_frames=frames)
+                         + f",trim=duration={seg_durs[i]:.3f},setpts=PTS-STARTPTS[c{i}]")
+        else:
+            inputs += ["-stream_loop", "-1", "-i", path]
+            parts.append(_fit_blur(f"{i}:v", W, H, FPS, f"m{i}")
+                         + f",trim=duration={seg_durs[i]:.3f},setpts=PTS-STARTPTS[c{i}]")
+        labels.append(f"c{i}")
+    return inputs, parts + _xfade_chain(labels, seg_durs, "base")
+
+
+def _kenburns_graph(images: list[str], seg_durs: list[float],
+                    cfg: dict) -> tuple[list[str], list[str]]:
+    """Stills with slow zoom/pan. zoompan runs at ~1.8x output size and is
+    then downscaled, so its whole-pixel steps don't show as jitter."""
+    W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
+    PW, PH = cfg["pre_w"], cfg["pre_h"]
+    moves = [
+        ("min(zoom+0.0008\\,1.15)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),
+        ("if(lte(on\\,1)\\,1.15\\,max(zoom-0.0008\\,1.0))", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),
+        ("min(zoom+0.0008\\,1.15)", "0", "ih-ih/zoom"),
+        ("min(zoom+0.0008\\,1.15)", "iw-iw/zoom", "0"),
     ]
-    result = subprocess.run(cmd, capture_output=True, timeout=120,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        print(f"BGM mix failed: {(result.stderr or '')[-300:]}")
-        return narration_path
+    inputs, parts, labels = [], [], []
+    for i, img in enumerate(images):
+        inputs += ["-i", img]
+        z, x, y = moves[i % 4]
+        frames = int(seg_durs[i] * FPS) + 1
+        p = f"k{i}"
+        parts.append(
+            f"[{i}:v]split[bg{p}][fg{p}];"
+            f"[bg{p}]scale={PW}:{PH}:force_original_aspect_ratio=increase,crop={PW}:{PH},"
+            f"scale=iw/8:-1,scale={PW}:{PH}:flags=bilinear[blr{p}];"
+            f"[fg{p}]scale={PW}:{PH}:force_original_aspect_ratio=decrease:flags=lanczos,"
+            f"pad={PW}:{PH}:(ow-iw)/2:(oh-ih)/2:color=black@0[fpad{p}];"
+            f"[blr{p}][fpad{p}]overlay=0:0,setsar=1,"
+            f"zoompan=z='{z}':x='{x}':y='{y}':d={frames}:s={PW}x{PH}:fps={FPS},"
+            f"scale={W}:{H}:flags=lanczos:out_range=tv,format=yuv420p,{_ENHANCE},"
+            f"trim=duration={seg_durs[i]:.3f},setpts=PTS-STARTPTS[c{i}]"
+        )
+        labels.append(f"c{i}")
+    return inputs, parts + _xfade_chain(labels, seg_durs, "base")
+
+
+def _render(inputs: list[str], parts: list[str], finish: list[str], extra_inputs: list[str],
+            audio_wav: str, output_path: str, duration: float, cfg: dict) -> None:
+    n_inputs = inputs.count("-i") + extra_inputs.count("-i")
+    graph = parts + [f"[base]{','.join(finish)}[vout]" if finish else "[base]null[vout]"]
+    timeout = int(max(600, duration * 20))
+    for attempt in range(2):
+        cmd = [FFMPEG, "-y", *inputs, *extra_inputs, "-i", audio_wav,
+               "-filter_complex", ";".join(graph),
+               "-map", "[vout]", "-map", f"{n_inputs}:a",
+               *_video_enc_args(),
+               "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
+               "-t", f"{duration + 0.3:.2f}", "-movflags", "+faststart",
+               output_path]
+        result = _run(cmd, timeout)
+        if result.returncode == 0:
+            return
+        global _nvenc_ok
+        if attempt == 0 and _nvenc_ok and "nvenc" in (result.stderr or "").lower():
+            print("NVENC encode failed mid-render, retrying with libx264")
+            _nvenc_ok = False
+            continue
+        if os.path.exists(output_path) and _get_video_stream_duration(output_path) >= duration * 0.95:
+            return
+        raise RuntimeError(f"FFmpeg render failed: {(result.stderr or 'unknown error')[-1000:]}")
+
+
+def _apply_overlay_input(finish: list[str], extra_inputs: list[str], png: str, index: int):
+    """Template chrome PNG overlaid inside the main graph (no second encode)."""
+    extra_inputs += ["-i", png]
+    current = ",".join(finish) if finish else "null"
+    finish.clear()
+    finish.append(f"{current}[pre];[pre][{index}:v]overlay=0:0:format=auto,"
+                  f"scale=out_range=tv,format=yuv420p")
+
+
+def _create_video_sync(project_id: str, audio_path: str, script: str,
+                       background_videos: list[str], background_images: list[str],
+                       subtitles: bool, bgm_path: str, bgm_volume: float,
+                       aspect_ratio: str, overlay_opts: dict,
+                       media_durations: list[float] | None,
+                       log: Callable | None) -> str:
+    cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
+    W, H = cfg["w"], cfg["h"]
+    tag = aspect_ratio.replace(":", "x")
+    project_dir = os.path.join("projects", project_id)
+    output_dir = os.path.join(project_dir, "output")
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f"final_{tag}.mp4")
+
+    if log:
+        log(f"เข้ารหัสวิดีโอด้วย {encoder_label()}")
+    duration = get_audio_duration(audio_path)
+    final_audio = _prepare_final_audio(
+        audio_path, bgm_path, bgm_volume, duration,
+        os.path.join(project_dir, "audio", f"final_mix_{tag}.wav"))
+
+    finish: list[str] = []
+    if subtitles:
+        timing = _load_timings(project_dir, script, duration)
+        if timing:
+            ass_path = os.path.join(output_dir, f"subs_{tag}.ass")
+            _write_ass(timing, cfg, ass_path)
+            finish.append(f"subtitles=filename={_ff_path(ass_path)}:fontsdir={_ff_path(FONTS_DIR)}")
+    if overlay_opts.get("overlay_text"):
+        finish.append(_build_overlay_text_filter(
+            overlay_opts["overlay_text"], cfg["overlay_fs"],
+            overlay_opts.get("overlay_font", "sarabun"),
+            overlay_opts.get("overlay_animation", "static"), duration))
+    finish.append(_build_watermark_filter(cfg["overlay_fs"] // 2))
+
+    videos = [v for v in background_videos if os.path.exists(v)]
+    images = [i for i in background_images if os.path.exists(i)]
+    sources = sorted([(v, "video") for v in videos] + [(i, "image") for i in images],
+                     key=lambda s: _extract_media_order(s[0]))
+    stills_only = bool(sources) and not videos
+    if not sources:
+        bg = os.path.join("assets", "templates", "default_bg.jpg")
+        sources = [(bg, "image")]
+        media_durations = None
+    seg_durs = _compute_segment_durations(len(sources), duration, XFADE_DUR, media_durations)
+
+    extra_inputs: list[str] = []
+    n_media = len(sources)
+    if overlay_opts.get("template_id") == "social_repost" and overlay_opts.get("template_fields"):
+        from scripts.image_templates import render_social_repost_overlay
+        fields = overlay_opts["template_fields"]
+        png = os.path.join(output_dir, f"template_{tag}_overlay.png")
+        render_social_repost_overlay(
+            png, w=W, h=H,
+            headline=fields.get("headline", ""),
+            channel_name=fields.get("channel_name", ""),
+            verified=bool(fields.get("verified")),
+            like_count=fields.get("like_count", ""),
+            comment_count=fields.get("comment_count", ""),
+            share_count=fields.get("share_count", ""),
+            caption=fields.get("caption", ""),
+        )
+        _apply_overlay_input(finish, extra_inputs, png, n_media)
+
+    if stills_only:
+        inputs, parts = _kenburns_graph([p for p, _ in sources], seg_durs, cfg)
+        try:
+            _render(inputs, parts, finish, extra_inputs, final_audio, output_path, duration, cfg)
+            return output_path
+        except RuntimeError as e:
+            print(f"Ken Burns render failed, using static slideshow: {str(e)[-300:]}")
+            if log:
+                log("Ken Burns ล้มเหลว — ใช้สไลด์โชว์แบบนิ่งแทน", "warning")
+
+    inputs, parts = _sequence_graph(sources, seg_durs, cfg)
+    _render(inputs, parts, finish, extra_inputs, final_audio, output_path, duration, cfg)
     return output_path
 
 
@@ -374,493 +567,12 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
                        subtitles: bool = True,
                        bgm_path: str = "", bgm_volume: float = 0.2,
                        aspect_ratio: str = "9:16",
-                       mode: str = "narration",
                        overlay_opts: dict | None = None,
-                       media_durations: list[float] | None = None) -> str:
-    cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
-    W, H = cfg["w"], cfg["h"]
-
-    project_dir = os.path.join("projects", project_id)
-    output_dir = os.path.join(project_dir, "output")
-    os.makedirs(output_dir, exist_ok=True)
-    ratio_tag = aspect_ratio.replace(":", "x")
-    output_path = os.path.join(output_dir, f"final_{ratio_tag}.mp4")
-
-    duration = get_audio_duration(audio_path)
-
-    if bgm_path and os.path.exists(bgm_path):
-        mixed_path = os.path.join(project_dir, "audio", "mixed.mp3")
-        audio_path = _mix_with_bgm(audio_path, bgm_path, mixed_path,
-                                    volume=bgm_volume, duration=duration)
-
-    subtitle_filter = ""
-    max_chars = cfg.get("sub_max_chars", 35)
-    if subtitles:
-        timing_path = os.path.join(project_dir, "audio", "dialogue_timing.json")
-        if mode == "dialogue" and os.path.exists(timing_path):
-            import json
-            with open(timing_path, "r", encoding="utf-8") as f:
-                timing = json.load(f)
-            subtitle_filter = _build_dialogue_subtitle_filter(
-                timing, fontsize=cfg["sub_fs"], y_expr=cfg["sub_y"],
-                max_chars=max_chars)
-        elif script:
-            sections = _parse_script_sections(script)
-            subtitle_filter = _build_subtitle_filter(
-                sections, duration,
-                fontsize=cfg["sub_fs"], y_expr=cfg["sub_y"],
-                max_chars=max_chars)
-
-    overlay_filter = ""
-    opts = overlay_opts or {}
-    overlay_fs = cfg.get("overlay_fs", 36)
-    if opts.get("overlay_text"):
-        overlay_filter = _build_overlay_text_filter(
-            opts["overlay_text"], overlay_fs,
-            opts.get("overlay_font", "sarabun"),
-            opts.get("overlay_animation", "static"),
-            duration)
-    watermark_filter = _build_watermark_filter(overlay_fs // 2)
-
-    extra_filters = ",".join(f for f in [overlay_filter, watermark_filter] if f)
-    if extra_filters:
-        subtitle_filter = (subtitle_filter + "," + extra_filters) if subtitle_filter else extra_filters
-
-    videos = [v for v in (background_videos or []) if os.path.exists(v)]
-    images = [img for img in (background_images or []) if os.path.exists(img)]
-    durations = media_durations
-
-    if images and videos:
-        converted = _convert_images_to_clips(images, duration, len(videos), cfg)
-        ordered = []
-        dur_map = {}
-        all_sources = list(background_videos or []) + list(background_images or [])
-        if durations and len(durations) == len(all_sources):
-            for src, d in zip(all_sources, durations):
-                dur_map[_extract_media_order(src)] = d
-        for v in videos:
-            ordered.append((_extract_media_order(v), v))
-        for img, conv in zip(images, converted):
-            ordered.append((_extract_media_order(img), conv))
-        ordered.sort(key=lambda x: x[0])
-        all_clips = [clip for _, clip in ordered]
-        sorted_durs = [dur_map.get(k) for k, _ in ordered] if dur_map else None
-        return _create_video_with_clips(
-            all_clips, audio_path, output_path, duration, subtitle_filter, cfg,
-            clip_durations=sorted_durs,
-        )
-
-    if videos:
-        return _create_video_with_clips(
-            videos, audio_path, output_path, duration, subtitle_filter, cfg,
-            clip_durations=durations,
-        )
-
-    if images:
-        return _create_video_with_images(
-            images, audio_path, output_path, duration, subtitle_filter, cfg,
-            img_durations=durations,
-        )
-
-    bg_path = os.path.join(project_dir, f"background_{ratio_tag}.jpg")
-    if not os.path.exists(bg_path):
-        bg_path = os.path.join("assets", "templates", "default_bg.jpg")
-    if not os.path.exists(bg_path):
-        bg_path = os.path.join(project_dir, f"background_{ratio_tag}.jpg")
-        _generate_gradient_bg(bg_path, f"{W}x{H}")
-
-    frames = int((duration + 2) * cfg['fps'])
-    vf_parts = [
-        f"scale={W}:{H}:force_original_aspect_ratio=decrease",
-        f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2",
-        "format=yuv420p",
-        _ENHANCE,
-        f"loop={frames}:1:0",
-        f"fps={cfg['fps']}",
-    ]
-    if subtitle_filter:
-        vf_parts.append(subtitle_filter)
-
-    cmd = [
-        FFMPEG, "-y",
-        "-i", bg_path,
-        "-i", audio_path,
-        "-vf", ",".join(vf_parts),
-        *_video_enc_args(),
-        "-af", "loudnorm=I=-16:LRA=11:TP=-1.5",
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
-        "-t", f"{duration + 0.5:.2f}",
-        "-movflags", "+faststart",
-        output_path,
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, timeout=300,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
-            return output_path
-        err = (result.stderr or "unknown error")[-1000:]
-        raise RuntimeError(f"FFmpeg error: {err}")
-
-    return output_path
-
-
-def _convert_images_to_clips(images: list[str], total_duration: float,
-                             num_videos: int, cfg: dict) -> list[str]:
-    """Convert images to short video clips so they can be mixed with video clips."""
-    W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
-    total_segments = num_videos + len(images)
-    seg_dur = total_duration / total_segments
-    clips = []
-    for i, img in enumerate(images):
-        out_dir = os.path.dirname(img)
-        clip_path = os.path.join(out_dir, f"img_clip_{i:02d}.mp4")
-        frames = int((seg_dur + 2) * FPS)
-        fit_f = _fit_blur_filter("0:v", W, H, FPS, prefix=f"s{i}", out_label="vout",
-                                  still_frames=frames)
-        cmd = [
-            FFMPEG, "-y",
-            "-i", img,
-            "-filter_complex", fit_f,
-            "-map", "[vout]",
-            *_video_enc_args(),
-            "-t", f"{seg_dur + 1:.2f}",
-            "-an", clip_path,
-        ]
-        result = subprocess.run(cmd, capture_output=True, timeout=60,
-                                encoding="utf-8", errors="replace")
-        if result.returncode == 0 and os.path.exists(clip_path):
-            clips.append(clip_path)
-    return clips
-
-
-def _create_video_with_clips(clips: list[str], audio_path: str,
-                             output_path: str, duration: float,
-                             subtitle_filter: str, cfg: dict,
-                             clip_durations: list[float] | None = None) -> str:
-    W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
-    n = len(clips)
-    fade = XFADE_DUR
-
-    seg_durs = _compute_segment_durations(n, duration, fade, clip_durations)
-
-    filter_parts = []
-    if n == 1:
-        fit_f = _fit_blur_filter("0:v", W, H, FPS, prefix="m0", out_label="mf0")
-        filter_parts.append(fit_f)
-        filter_parts.append(
-            f"[mf0]trim=duration={seg_durs[0]:.2f},setpts=PTS-STARTPTS[merged]"
-        )
-    else:
-        for i in range(n):
-            sd = seg_durs[i]
-            fit_f = _fit_blur_filter(f"{i}:v", W, H, FPS, prefix=f"m{i}", out_label=f"mf{i}")
-            filter_parts.append(fit_f)
-            filter_parts.append(
-                f"[mf{i}]setpts=PTS-STARTPTS,"
-                f"trim=duration={sd:.2f},setpts=PTS-STARTPTS[c{i}]"
-            )
-        prev = "c0"
-        cumulative = seg_durs[0]
-        for i in range(n - 1):
-            offset = cumulative - fade
-            cumulative += seg_durs[i + 1] - fade
-            out_label = f"x{i}" if i < n - 2 else "xfinal"
-            trans = random.choice(TRANSITIONS)
-            filter_parts.append(
-                f"[{prev}][c{i+1}]xfade=transition={trans}:duration={fade:.2f}"
-                f":offset={offset:.2f}[{out_label}]"
-            )
-            prev = out_label
-        filter_parts.append("[xfinal]format=yuv420p[merged]")
-
-    if subtitle_filter:
-        filter_parts.append(f"[merged]{subtitle_filter}[vout]")
-        final_map = "[vout]"
-    else:
-        final_map = "[merged]"
-
-    filter_parts.append(
-        f"[{n}:a]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
+                       media_durations: list[float] | None = None,
+                       log: Callable | None = None) -> str:
+    return await asyncio.to_thread(
+        _create_video_sync, project_id, audio_path, script,
+        background_videos or [], background_images or [],
+        subtitles, bgm_path, bgm_volume, aspect_ratio, overlay_opts or {},
+        media_durations, log,
     )
-
-    cmd = [FFMPEG, "-y"]
-    for clip in clips:
-        cmd.extend(["-stream_loop", "-1", "-i", clip])
-    cmd.extend(["-i", audio_path])
-
-    cmd.extend([
-        "-filter_complex", ";".join(filter_parts),
-        "-map", final_map,
-        "-map", "[aout]",
-        *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
-        "-t", f"{duration + 0.5:.2f}",
-        "-movflags", "+faststart",
-        output_path,
-    ])
-
-    result = subprocess.run(cmd, capture_output=True, timeout=600,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
-            video_dur = _get_video_stream_duration(output_path)
-            if video_dur >= duration * 0.8:
-                return output_path
-            print(f"Partial output (video={video_dur:.1f}s vs {duration:.1f}s expected), retrying without subtitles")
-            os.remove(output_path)
-        err = (result.stderr or "unknown error")[-500:]
-        print(f"Video clips concat failed: {err}")
-        print("Falling back to image slideshow or gradient")
-        raise RuntimeError(f"FFmpeg clips error: {err}")
-
-    return output_path
-
-
-def _create_video_with_images(images: list[str], audio_path: str,
-                              output_path: str, duration: float,
-                              subtitle_filter: str, cfg: dict,
-                              img_durations: list[float] | None = None) -> str:
-    W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
-    pre_w, pre_h = cfg["pre_w"], cfg["pre_h"]
-    n = len(images)
-    fade = XFADE_DUR
-
-    seg_durs = _compute_segment_durations(n, duration, fade, img_durations)
-
-    filter_parts = []
-    for i in range(n):
-        direction = i % 4
-        if direction == 0:
-            zoom = "min(zoom+0.0008\\,1.15)"
-            x = "iw/2-(iw/zoom/2)"
-            y = "ih/2-(ih/zoom/2)"
-        elif direction == 1:
-            zoom = "if(eq(on\\,1)\\,1.15\\,max(zoom-0.0008\\,1.0))"
-            x = "iw/2-(iw/zoom/2)"
-            y = "ih/2-(ih/zoom/2)"
-        elif direction == 2:
-            zoom = "min(zoom+0.0008\\,1.15)"
-            x = "0"
-            y = "ih-ih/zoom"
-        else:
-            zoom = "min(zoom+0.0008\\,1.15)"
-            x = "iw-iw/zoom"
-            y = "0"
-
-        frames = int(seg_durs[i] * FPS)
-        filter_parts.append(
-            f"[{i}:v]scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
-            f"crop={pre_w}:{pre_h},"
-            f"zoompan=z='{zoom}'"
-            f":x='{x}':y='{y}'"
-            f":d={frames}:s={W}x{H}:fps={FPS},"
-            f"format=yuv420p,{_ENHANCE}[v{i}]"
-        )
-
-    if n == 1:
-        final_label = "vconcat"
-        filter_parts.append(f"[v0]null[{final_label}]")
-    else:
-        prev = "v0"
-        cumulative = seg_durs[0]
-        for i in range(n - 1):
-            offset = cumulative - fade
-            cumulative += seg_durs[i + 1] - fade
-            out_label = f"xi{i}" if i < n - 2 else "vcxfade"
-            trans = random.choice(TRANSITIONS)
-            filter_parts.append(
-                f"[{prev}][v{i+1}]xfade=transition={trans}:duration={fade:.2f}"
-                f":offset={offset:.2f}[{out_label}]"
-            )
-            prev = out_label
-        filter_parts.append("[vcxfade]format=yuv420p[vconcat]")
-
-    if subtitle_filter:
-        filter_parts.append(f"[vconcat]{subtitle_filter}[vout]")
-        final_map = "[vout]"
-    else:
-        final_map = "[vconcat]"
-
-    filter_parts.append(
-        f"[{n}:a]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
-    )
-
-    cmd = [FFMPEG, "-y"]
-    for img in images:
-        cmd.extend(["-i", img])
-    cmd.extend(["-i", audio_path])
-
-    cmd.extend([
-        "-filter_complex", ";".join(filter_parts),
-        "-map", final_map,
-        "-map", "[aout]",
-        *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
-        "-t", f"{duration + 0.5:.2f}",
-        "-movflags", "+faststart",
-        output_path,
-    ])
-
-    result = subprocess.run(cmd, capture_output=True, timeout=600,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
-            return output_path
-        print("Ken Burns failed, falling back to simple slideshow")
-        return _create_simple_slideshow(images, audio_path, output_path,
-                                        duration, subtitle_filter, cfg)
-
-    return output_path
-
-
-def _create_simple_slideshow(images: list[str], audio_path: str,
-                             output_path: str, duration: float,
-                             subtitle_filter: str, cfg: dict) -> str:
-    W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
-    n = len(images)
-
-    if n >= 2:
-        fade = XFADE_DUR
-        seg_dur = (duration + (n - 1) * fade) / n
-    else:
-        seg_dur = duration
-
-    cmd = [FFMPEG, "-y"]
-    for img in images:
-        cmd.extend(["-i", img])
-    cmd.extend(["-i", audio_path])
-
-    filter_parts = []
-    for i in range(n):
-        frames = int((seg_dur + 2) * FPS)
-        fit_f = _fit_blur_filter(f"{i}:v", W, H, FPS, prefix=f"fb{i}", out_label=f"s{i}",
-                                  still_frames=frames)
-        filter_parts.append(fit_f)
-
-    if n == 1:
-        filter_parts.append(f"[s0]null[slideshow]")
-    else:
-        prev = "s0"
-        for i in range(n - 1):
-            offset = (i + 1) * (seg_dur - fade)
-            out_label = f"ss{i}" if i < n - 2 else "ssxfade"
-            trans = random.choice(TRANSITIONS)
-            filter_parts.append(
-                f"[{prev}][s{i+1}]xfade=transition={trans}:duration={fade:.2f}"
-                f":offset={offset:.2f}[{out_label}]"
-            )
-            prev = out_label
-        filter_parts.append("[ssxfade]format=yuv420p[slideshow]")
-
-    if subtitle_filter:
-        filter_parts.append(f"[slideshow]{subtitle_filter}[vout]")
-        final_map = "[vout]"
-    else:
-        final_map = "[slideshow]"
-
-    filter_parts.append(
-        f"[{n}:a]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
-    )
-
-    cmd.extend([
-        "-filter_complex", ";".join(filter_parts),
-        "-map", final_map,
-        "-map", "[aout]",
-        *_video_enc_args(),
-        "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
-        "-t", f"{duration + 0.5:.2f}",
-        "-movflags", "+faststart",
-        output_path,
-    ])
-
-    result = subprocess.run(cmd, capture_output=True, timeout=600,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
-            return output_path
-        err = (result.stderr or "unknown error")[-1000:]
-        raise RuntimeError(f"FFmpeg slideshow error: {err}")
-
-    return output_path
-
-
-def _generate_gradient_bg(path: str, size: str = "1080x1920"):
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    h = size.split("x")[1]
-    cmd = [
-        FFMPEG, "-y",
-        "-f", "lavfi", "-i",
-        (
-            f"gradients=s={size}:c0=#0f0c29:c1=#302b63:c2=#24243e"
-            f":x0=0:y0=0:x1=0:y1={h}:duration=1:speed=0"
-        ),
-        "-frames:v", "1",
-        path,
-    ]
-    result = subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        _generate_solid_bg(path, size)
-
-
-def _generate_solid_bg(path: str, size: str = "1080x1920"):
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    cmd = [
-        FFMPEG, "-y",
-        "-f", "lavfi", "-i",
-        f"color=c=0x0f0c29:s={size}:d=1",
-        "-frames:v", "1",
-        path,
-    ]
-    subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace", check=True)
-
-
-async def apply_template_overlay(video_path: str, template_fields: dict, aspect_ratio: str = "9:16") -> str:
-    """Composites the social-repost chrome (headline/channel row/stats/caption)
-    onto an already-rendered video as a final pass, leaving the existing
-    render pipeline above completely untouched. The overlay itself is a
-    transparent PNG from scripts.image_templates (HarfBuzz/FreeType shaped
-    text) rather than FFmpeg's own drawtext, which has the same un-shaped-
-    Thai-text problem Pillow's default text drawing does.
-    """
-    from scripts.image_templates import render_social_repost_overlay
-
-    cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
-    W, H = cfg["w"], cfg["h"]
-
-    overlay_png = video_path.replace(".mp4", "_overlay.png")
-    render_social_repost_overlay(
-        overlay_png, w=W, h=H,
-        headline=template_fields.get("headline", ""),
-        channel_name=template_fields.get("channel_name", ""),
-        verified=bool(template_fields.get("verified")),
-        like_count=template_fields.get("like_count", ""),
-        comment_count=template_fields.get("comment_count", ""),
-        share_count=template_fields.get("share_count", ""),
-        caption=template_fields.get("caption", ""),
-    )
-
-    temp_out = video_path.replace(".mp4", "_withoverlay.mp4")
-    cmd = [
-        FFMPEG, "-y",
-        "-i", video_path,
-        "-i", overlay_png,
-        "-filter_complex", "[0:v][1:v]overlay=0:0:format=auto[v]",
-        "-map", "[v]", "-map", "0:a?",
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
-        "-c:a", "copy",
-        temp_out,
-    ]
-    result = subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace", timeout=300)
-    if os.path.exists(temp_out) and os.path.getsize(temp_out) > 10000:
-        os.replace(temp_out, video_path)
-    else:
-        err = (result.stderr or "unknown error")[-500:]
-        print(f"Template overlay failed, keeping video without it: {err}")
-        if os.path.exists(temp_out):
-            os.remove(temp_out)
-
-    if os.path.exists(overlay_png):
-        os.remove(overlay_png)
-
-    return video_path
