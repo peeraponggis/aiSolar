@@ -17,10 +17,12 @@ import json
 import logging
 import os
 import queue
+import re
 import threading
 import tkinter as tk
 
 import safety
+import settings as _settings
 from app_log import setup_logging
 from avatar import AvatarWindow
 from hotkey import hotkey_thread
@@ -42,6 +44,84 @@ MAX_TOOL_TURNS = 8       # กันลูปเรียกเครื่อ�
                          # จริงมักต้องลองหลายโฟลเดอร์กว่าจะเจอ 5 รอบไม่พอ)
 MUTEX_NAME = "Local\\LungpeeAgent.single"
 
+# ---------------------------------------------------------------------------
+# Goal 1: ป้องกันคำสั่ง destructive (ลบ/delete/remove/erase) ชั้นที่ 1 — pre-screen
+# ---------------------------------------------------------------------------
+_DESTRUCTIVE_RE = re.compile(
+    r"(?:ลบ(?:ออก|ทิ้ง|ไฟล์|โฟลเดอร์|ทั้งหมด)?"
+    r"|เอาออก"
+    r"|ล้าง(?:ออก|ทิ้ง|ข้อมูล)?"
+    r"|ทำลาย(?:ไฟล์)?"
+    r"|(?<!\w)delete(?!\w)"
+    r"|(?<!\w)remove(?!\w)"
+    r"|(?<!\w)erase(?!\w)"
+    r"|(?<!\w)del\s"
+    r"|(?<!\w)rm\s)",
+    re.IGNORECASE,
+)
+_DESTRUCTIVE_WARN = (
+    "ขอโทษครับ ลุงพีไม่ลบไฟล์หรือโฟลเดอร์ให้ได้ "
+    "เพื่อความปลอดภัยของข้อมูลคุณ "
+    "กรุณาลบด้วยตัวเองผ่าน File Explorer หรือ PowerShell โดยตรงนะครับ"
+)
+
+# Goal 4a — trigger สำหรับ "จำไว้ว่า..." บันทึก notes แบบ instant
+_REMEMBER_RE = re.compile(r"จำ(?:ไว้)?ว่า\s+(.+)", re.IGNORECASE)
+
+# ---------------------------------------------------------------------------
+# Goal 3a: แก้คำที่ Whisper STT ถอดเสียงผิดบ่อย + ตัด prefix ที่เรียกชื่อลุงพี
+# ---------------------------------------------------------------------------
+_STT_CORRECTIONS = {
+    "ลงพี่": "ลุงพี", "ลงคี่": "ลุงพี", "หลุงพี": "ลุงพี", "ลุ้งพี่": "ลุงพี",
+    "ไลน": "line", "ไล้น": "line", "ไล้": "line",
+    "ฟรีแคด": "freecad", "ฟรีกา": "freecad",
+    "โน้ตแพด": "notepad", "โน๊ตแพ็ด": "notepad",
+    "เอ็กเซล": "excel", "เอ็กเซ็ล": "excel",
+    "เวิร์ด": "word", "เวิด": "word",
+    "โพเวอร์เชล": "powershell", "พาวเวอร์เชลล์": "powershell",
+    "วิชวล สตูดิโอ": "visual studio code", "วีเอส โค้ด": "vscode",
+}
+_ADDRESS_RE = re.compile(r"^(?:ลุงพี|คุณลุงพี|พี่ลุงพี)\s*[,:\s]+", re.IGNORECASE)
+
+
+def normalize_command(text: str) -> str:
+    """แก้คำเพี้ยนจาก STT และตัดคำเรียกชื่อนำหน้าออก"""
+    for wrong, right in _STT_CORRECTIONS.items():
+        text = text.replace(wrong, right)
+    return _ADDRESS_RE.sub("", text).strip()
+
+
+# ---------------------------------------------------------------------------
+# Goal 3b: hint โมเดลว่าควรใช้ tool ไหน — ช่วย 4B model เลือก tool ได้แม่นขึ้น
+# ---------------------------------------------------------------------------
+_TOOL_HINTS = [
+    (re.compile(r"(?:หา|ค้น(?:หา)?|find|search)\s*(?:ไฟล์|โฟลเดอร์|file|folder)", re.I),
+     "เครื่องมือที่ควรใช้: find_file"),
+    (re.compile(r"(?:เปิด|เรียก|launch|open)\s+\S+", re.I),
+     "เครื่องมือที่ควรใช้: launch_app"),
+    (re.compile(r"(?:อ่าน|read|แสดงเนื้อหา)\s*(?:ไฟล์|file)", re.I),
+     "เครื่องมือที่ควรใช้: read_file"),
+    (re.compile(r"(?:ดูรายการ|list|ls\b|dir\b)\s*(?:ใน|ที่|in|at)?\s*\S+", re.I),
+     "เครื่องมือที่ควรใช้: list_dir"),
+    (re.compile(r"(?:เขียน|สร้าง|บันทึก)\s*(?:ไฟล์|file)|write\s+file", re.I),
+     "เครื่องมือที่ควรใช้: write_file"),
+    (re.compile(r"(?:คลิก|กดปุ่ม|click|press\s+button)", re.I),
+     "เครื่องมือที่ควรใช้: list_ui_controls แล้ว click_control"),
+    (re.compile(r"(?:พิมพ์ลง|พิมพ์ใส่|type\s+into|type\s+in)", re.I),
+     "เครื่องมือที่ควรใช้: list_ui_controls แล้ว type_text"),
+    (re.compile(r"(?:แปล|translate)\s*(?:ไฟล์|file)", re.I),
+     "เครื่องมือที่ควรใช้: translate_file"),
+    (re.compile(r"(?:รัน|รันคำสั่ง|execute|run)\s*(?:คำสั่ง|command|script)?", re.I),
+     "เครื่องมือที่ควรใช้: run_shell"),
+]
+
+
+def _get_tool_hint(text: str):
+    for pat, hint in _TOOL_HINTS:
+        if pat.search(text):
+            return hint
+    return None
+
 
 def acquire_single_instance():
     """กันเปิดซ้อนหลายชุด (ไม่งั้นจะได้คีย์ลัด/ไอคอนถาดระบบซ้อนกันหลายตัว คีย์ลัดใช้ได้แค่ตัวแรกที่เปิด
@@ -59,18 +139,20 @@ SYSTEM_PROMPT = (
     "(ถ้าผู้ใช้ถามเป็นภาษาอังกฤษให้ตอบเป็นภาษาอังกฤษ) พูดจากันเองเป็นมิตรเหมือนญาติผู้ใหญ่ที่สนิทกัน "
     "ตอบกระชับ ไม่ต้องยาวเกินจำเป็น เพราะคำตอบจะถูกอ่านออกเสียงให้ฟัง "
     "ห้ามใช้คำว่า \"แซ่บๆ\" ให้ใช้ \"OK ครับ\" แทน "
-    "ถ้าผู้ใช้ขอให้ทำอะไรบนคอมพิวเตอร์ (เปิดโปรแกรม, รันคำสั่ง, อ่าน/เขียน/ลบไฟล์, แปลไฟล์, กด/คลิก/"
+    "ถ้าผู้ใช้ขอให้ทำอะไรบนคอมพิวเตอร์ (เปิดโปรแกรม, รันคำสั่ง, อ่าน/เขียนไฟล์, แปลไฟล์, กด/คลิก/"
     "พิมพ์อะไรในหน้าต่างโปรแกรมอื่น) ห้ามตอบว่า \"จะทำให้\"/\"เสร็จแล้ว\" เฉยๆ โดยไม่เรียกเครื่องมือจริง "
     "ต้องเรียกเครื่องมือที่มีให้เสมอทีละอย่าง แล้วรอดูผลจากเครื่องมือก่อนค่อยตอบ เช่นถ้าผู้ใช้ขอให้กดปุ่ม "
     "ต้องเรียก list_ui_controls ก่อนเพื่อดูชื่อปุ่มจริง แล้วเรียก click_control ตามชื่อที่เจอจริง ห้ามเดาชื่อเอง "
-    "ถ้าผู้ใช้ขอให้หาไฟล์/โฟลเดอร์ ให้เรียก find_file ทันทีก่อนถามกลับเสมอ ห้ามถามชื่อโฟลเดอร์ก่อน /no_think"
+    "ถ้าผู้ใช้ขอให้หาไฟล์/โฟลเดอร์ ให้เรียก find_file ทันทีก่อนถามกลับเสมอ ห้ามถามชื่อโฟลเดอร์ก่อน "
+    "ห้ามเรียก delete_file โดยเด็ดขาดทุกกรณี ถึงแม้ผู้ใช้จะขอให้ลบไฟล์/โฟลเดอร์ "
+    "ด้วยคำว่า ลบ/ลบออก/ลบทิ้ง/เอาออก/ล้าง/remove/delete/erase ก็ตาม "
+    "ให้แจ้งผู้ใช้ว่าลุงพีไม่มีสิทธิ์ลบไฟล์ และให้ผู้ใช้ลบเองแทน /no_think"
 )
 
-st = {"model": "", "voice": "นิวัฒน์ (ชาย)", "rate": "ปกติ", "history": []}
-# ใช้เสียงออฟไลน์ (SAPI) เป็นค่าเริ่มต้น ไม่ใช่ edge-tts: ทดสอบมาตลอดเซสชันนี้ (ทั้งใน Local
-# Translator และลุงพี) พบว่า edge-tts เชื่อมต่อไม่ติดบ่อยในเครื่อง/เน็ตนี้ ต้องลองซ้ำ 5 ครั้งก่อน
-# fallback มาเสียงออฟไลน์ ทำให้รอ 5-10+ วินาทีก่อนได้ยินเสียงทุกครั้ง - สำหรับผู้ช่วยเสียงแบบโต้ตอบ
-# สด ความเร็ว (~0.2 วินาที) สำคัญกว่าความเป็นธรรมชาติของเสียง edge-tts
+# โหลด settings ที่ persist ข้ามเซสชัน (voice, rate, model, notes) — Goal 4a
+st = _settings.load()
+st["model"] = ""      # model ตั้งค่าตอน connect_model() เสมอ ไม่ใช้ค่าเก่า
+st["history"] = []    # history รีเซ็ตทุกครั้ง (privacy)
 avatar = None       # ตั้งค่าจริงใน main() หลังสร้าง Tk root แล้ว (ดู avatar.py)
 text_popup = None   # ตั้งค่าจริงใน main() เช่นกัน (ดู text_input.py)
 
@@ -118,12 +200,12 @@ def speak(text):
     pipeline.finish()
 
 
-_stream_speak = {"on": False, "buf": "", "started": False}
+_stream_speak = {"on": False, "buf": "", "started": False, "first_chunk": True}
 
 
 def stream_speak_begin():
     pipeline.stop()
-    _stream_speak.update(on=True, buf="", started=False)
+    _stream_speak.update(on=True, buf="", started=False, first_chunk=True)
     _ui(lambda: avatar.show("🗣️ กำลังพูด..."))
 
 
@@ -142,8 +224,11 @@ def stream_speak_piece(piece):
     if not _stream_speak["on"]:
         return
     _stream_speak["buf"] += piece
-    sents, _stream_speak["buf"] = pop_sentences(_stream_speak["buf"])
+    # Goal 2a: ประโยคแรกรอแค่ 15 ตัวอักษร (ลดจาก 60) เพื่อเริ่มพูดได้เร็วขึ้น
+    min_len = 15 if _stream_speak["first_chunk"] else 60
+    sents, _stream_speak["buf"] = pop_sentences(_stream_speak["buf"], min_len=min_len)
     for s in sents:
+        _stream_speak["first_chunk"] = False
         _stream_feed(s)
 
 
@@ -192,17 +277,55 @@ def _parse_tool_args(raw):
 
 
 def handle_command(text):
-    log.info("คำถาม/คำสั่ง: %s", text)
+    log.info("คำถาม/คำสั่ง (raw): %s", text)
     if not st["model"]:
         log.warning("ยังไม่ได้เชื่อมต่อโมเดล - ข้ามคำถามนี้")
         speak("ขอโทษครับ ยังเชื่อมต่อโมเดลไม่ได้"); return
+
+    # Goal 4a — "จำไว้ว่า..." บันทึก notes แบบ instant โดยไม่ส่งโมเดล
+    m_remember = _REMEMBER_RE.search(text)
+    if m_remember:
+        st["notes"] = m_remember.group(1).strip()
+        _settings.save(st)
+        speak(f"จำไว้แล้วครับว่า {st['notes']}")
+        return
+
+    # Goal 1 — ชั้น 1: pre-screen destructive intent ก่อนส่งโมเดล (ไม่เสีย inference ฟรี)
+    if _DESTRUCTIVE_RE.search(text):
+        log.info("pre-screen: destructive intent ตรวจพบใน %r", text[:80])
+        _ui(lambda: avatar.show("⚠️ ปฏิเสธ"))
+        speak(_DESTRUCTIVE_WARN)
+        return
+
+    # Goal 3a — normalize: แก้ STT error + ตัด prefix ชื่อ
+    text = normalize_command(text)
+    log.info("คำถาม/คำสั่ง (normalized): %s", text)
+
+    # Goal 3b — tool hint: ช่วยโมเดลเลือก tool ถูกต้อง (hint ไม่บันทึกใน history)
+    hint = _get_tool_hint(text)
+    model_text = f"[{hint}]\n{text}" if hint else text
+    if hint:
+        log.info("tool hint: %s", hint)
+
+    # Goal 4a — inject notes ที่ผู้ใช้ขอให้จำ ถ้ามี
+    notes = st.get("notes", "").strip()
+    system_prompt = (
+        SYSTEM_PROMPT + f"\nข้อมูลที่ผู้ใช้ขอให้จำ: {notes}" if notes else SYSTEM_PROMPT
+    )
+
     _ui(lambda: avatar.show("🤔 กำลังคิด..."))
     st["history"].append({"role": "user", "content": text})
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + st["history"][-MAX_HISTORY_TURNS * 2:]
+    messages = [{"role": "system", "content": system_prompt}] + st["history"][-MAX_HISTORY_TURNS * 2:]
+    # แทนที่ user message สุดท้ายด้วยเวอร์ชันที่มี hint (ไม่กระทบ history)
+    if hint:
+        messages[-1] = {"role": "user", "content": model_text}
+
+    # Goal 4b — ติดตาม tool calls ที่เคยเรียกแล้วเพื่อป้องกัน infinite loop
+    _seen_calls: set = set()
 
     for _ in range(MAX_TOOL_TURNS):
         buf = []
-        stream_speak_begin()   # เริ่มพูดได้ทันทีตั้งแต่ประโยคแรกของรอบนี้ ไม่ต้องรอทั้งคำตอบ/tool call เสร็จก่อน
+        stream_speak_begin()   # เริ่มพูดได้ทันทีตั้งแต่ประโยคแรกของรอบนี้
         try:
             gen = stream_chat(st["model"], messages, temperature=0.4, tools=TOOLS)
             result = {"tool_calls": [], "stats": {}}
@@ -227,14 +350,13 @@ def handle_command(text):
             answer = content or "ขอโทษครับ ผมตอบไม่ได้ตอนนี้"
             prev = [m["content"] for m in st["history"] if m["role"] == "assistant"]
             if prev and prev[-1] == answer:
-                # โมเดลเล็กติดลูปลอกคำตอบเดิมจากประวัติซ้ำทุกคำถาม - ล้างประวัติให้เริ่มใหม่
                 log.warning("โมเดลตอบซ้ำคำตอบก่อนหน้าเป๊ะ - ล้างประวัติสนทนา")
                 st["history"].clear()
             else:
                 st["history"].append({"role": "assistant", "content": answer})
             log.info("คำตอบ: %s", answer)
             if not content:
-                speak(answer)   # ไม่มีข้อความถูกพูดระหว่างสตรีมเลย (buf ว่าง) - พูดข้อความสำรองแทน
+                speak(answer)
             return
 
         _ui(lambda: avatar.show("🔧 กำลังทำงาน..."))
@@ -243,7 +365,16 @@ def handle_command(text):
             fn_info = tc.get("function", {})
             name = fn_info.get("name", "")
             args = _parse_tool_args(fn_info.get("arguments"))
-            tool_result = execute_tool(name, args)
+
+            # Goal 4b — ตรวจ duplicate tool call (same tool + same args = model ติดลูป)
+            call_key = (name, json.dumps(args, sort_keys=True, ensure_ascii=False))
+            if call_key in _seen_calls:
+                log.warning("โมเดลเรียกเครื่องมือซ้ำ %s args=%s — ฉีกลูป", name, args)
+                tool_result = {"ok": False, "error": "เครื่องมือนี้ถูกเรียกซ้ำด้วย arguments เดิม กรุณาลองวิธีอื่น"}
+            else:
+                _seen_calls.add(call_key)
+                tool_result = execute_tool(name, args)
+
             tool_msg = {"role": "tool", "content": json.dumps(tool_result, ensure_ascii=False)}
             if tc.get("id"):
                 tool_msg["tool_call_id"] = tc["id"]

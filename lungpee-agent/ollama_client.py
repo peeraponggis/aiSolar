@@ -25,8 +25,15 @@ log = logging.getLogger(__name__)
 
 OLLAMA_URL = "http://" + os.environ.get("OLLAMA_HOST", "127.0.0.1:11434").replace("http://", "")
 DEFAULT_MODEL = os.environ.get("LUNGPEE_MODEL", "scb10x/typhoon2.5-qwen3-4b:latest")
-FALLBACK_MODELS = ["scb10x/typhoon2.5-qwen3-4b", "qwen2.5:7b-instruct", "qwen2.5:7b",
-                   "scb10x/llama3.2-typhoon2-3b-instruct", "llama3.1:8b", "hermes3:3b"]
+FALLBACK_MODELS = [
+    "scb10x/typhoon2.5-qwen3-4b",
+    "scb10x/typhoon2.5-qwen3-8b",        # upgrade path: 6-8GB VRAM, tool accuracy ~85%
+    "qwen2.5:7b-instruct",
+    "qwen2.5:7b",
+    "scb10x/llama3.2-typhoon2-3b-instruct",
+    "llama3.1:8b",
+    "hermes3:3b",
+]
 NUM_CTX = 4096          # เท่ากับ Local Translator - รัน 100% GPU บน VRAM 4GB
 KEEP_ALIVE = "30m"
 THINK_RE = re.compile(r"<think>.*?</think>\s*", re.S)
@@ -188,7 +195,15 @@ def clean_output(text):
 
 
 def warm_up(model):
+    """warm ทั้งสองโหมด: text path + tool-calling path เพื่อลด first-call latency"""
+    from tool_registry import TOOLS
     try:
-        list(stream_chat(model, [{"role": "user", "content": "ok /no_think"}], 0))
+        list(stream_chat(model, [{"role": "user", "content": "สวัสดีครับ /no_think"}],
+                         temperature=0, tools=None))
+    except Exception:
+        pass
+    try:
+        list(stream_chat(model, [{"role": "user", "content": "หาไฟล์ test.txt /no_think"}],
+                         temperature=0, tools=TOOLS))
     except Exception:
         pass
