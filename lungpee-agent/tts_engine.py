@@ -79,7 +79,7 @@ def sapi_synthesize(text, voice_name, rate, out_wav):
     return out_wav
 
 
-def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", max_retries=5):
+def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", max_retries=2):
     """สังเคราะห์เสียงเป็นไฟล์ mp3 คืน path; วนลองซ้ำเพราะ edge-tts ล้มเหลวชั่วคราวบ่อย"""
     import asyncio
     import edge_tts

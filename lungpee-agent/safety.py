@@ -13,6 +13,7 @@ RISK_TIER: "A" รันได้เลย, "B" รันได้แต่บ�
 import ctypes
 import logging
 import os
+import re
 
 from tools.files import _normalize_path
 
@@ -39,6 +40,15 @@ ALLOWED_APPS = {
     "chrome", "google chrome", "edge", "msedge", "code", "vscode", "visual studio code",
     "line", "ไลน์", "freecad", "freecad 1.1",
 }
+
+# เครื่องมือที่ปิดถาวร — ไม่มีทาง execute ได้แม้แต่หลัง confirm
+HARD_BLOCKED_TOOLS = frozenset({"delete_file"})
+
+# คำสั่ง PowerShell ที่ลบ/ทำลายข้อมูล — run_shell ที่มีคำเหล่านี้ถูกปฏิเสธก่อนถึง confirm dialog
+_DESTRUCTIVE_SHELL_RE = re.compile(
+    r"\b(remove-item|rm\b|del\b|rd\b|rmdir|erase|format\b|clear-content)\b",
+    re.IGNORECASE,
+)
 
 MB_YESNO, MB_ICONWARNING, MB_TOPMOST = 0x4, 0x30, 0x40000
 IDYES = 6
@@ -68,6 +78,28 @@ def _describe(tool_name, args):
 
 def check(tool_name, args):
     """ตรวจสิทธิ์ + ขอ confirm ถ้าจำเป็น คืน (allowed: bool, reason: str|None)"""
+
+    # ชั้น 1: hard block — ปฏิเสธทันทีโดยไม่แสดง dialog เลย
+    if tool_name in HARD_BLOCKED_TOOLS:
+        reason = (
+            "ลุงพีไม่สามารถลบไฟล์ได้ครับ เพื่อความปลอดภัยของข้อมูล "
+            "กรุณาลบด้วยตัวเองผ่าน File Explorer หรือ PowerShell โดยตรงนะครับ"
+        )
+        log.warning("BLOCKED (hard): %s args=%s", tool_name, args)
+        return False, reason
+
+    # ชั้น 2: run_shell ที่มีคำสั่งลบ — ปฏิเสธก่อนถึง confirm
+    if tool_name == "run_shell":
+        cmd = args.get("command", "")
+        m = _DESTRUCTIVE_SHELL_RE.search(cmd)
+        if m:
+            reason = (
+                f"ลุงพีปฏิเสธคำสั่งนี้เพราะมีคำสั่งลบข้อมูล ({m.group()}) "
+                "กรุณารันคำสั่งนี้ด้วยตัวเองใน PowerShell โดยตรงครับ"
+            )
+            log.warning("BLOCKED (destructive shell): %s", cmd[:120])
+            return False, reason
+
     tier = RISK_TIER.get(tool_name, "C")   # เครื่องมือที่ไม่รู้จัก = ถือว่าเสี่ยงสูงสุดไว้ก่อน
 
     if tool_name == "launch_app":
