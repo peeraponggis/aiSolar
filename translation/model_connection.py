@@ -12,7 +12,7 @@ model_connection.py - เชื่อมต่อ/สลับเส้นทา
 import logging
 import threading
 
-from engine import BACKEND, ensure_ollama, pick_model, warm_up
+from engine import BACKEND, ensure_ollama, pick_model, resolve_api_key, warm_up
 
 log = logging.getLogger(__name__)
 
@@ -35,12 +35,12 @@ class ModelConnection:
 
     def api_configured(self):
         a = self.settings.get("api") or {}
-        return bool(a.get("base") and a.get("key") and a.get("model"))
+        return bool(a.get("base") and resolve_api_key(a) and a.get("model"))
 
     def use_backend(self, mode):
         """สลับเส้นทางที่ใช้จริง: 'local' หรือ 'api'"""
         a = self.settings.get("api") or {}
-        BACKEND.update(mode=mode, base=a.get("base", ""), key=a.get("key", ""), model=a.get("model", ""))
+        BACKEND.update(mode=mode, base=a.get("base", ""), key=resolve_api_key(a), model=a.get("model", ""))
         self.st["backend"] = mode
         if mode == "api":
             self.st["model"] = a.get("model", "")   # ให้ปุ่มแปล/ถามผ่านการตรวจ "มีโมเดล" (chat_stream ใช้ BACKEND['model'] เอง)

@@ -17,7 +17,7 @@ import webbrowser
 from tkinter import ttk
 
 from engine import (
-    API_PRESETS, DEFAULT_MODEL, clean_output, find_ollama_exe, list_models,
+    API_PRESETS, DEFAULT_MODEL, clean_output, env_key, find_ollama_exe, list_models,
     list_models_openai, pull_model, stream_chat_openai,
 )
 
@@ -61,16 +61,27 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
         note_var.set(p["note"])
         link.config(text=("สมัคร/ขอคีย์: " + p["signup"]) if p["signup"] else "")
         link.bind("<Button-1>", lambda e, u=p["signup"]: webbrowser.open(u) if u else None)
+        if p.get("key_env"):
+            if preset_var.get() != a.get("preset"):
+                key_var.set("")   # ไม่ส่งคีย์ของผู้ให้บริการเดิมไปยังผู้ให้บริการนี้
+            found = bool(env_key(p["key_env"]))
+            msg_var.set(f"เว้นช่อง API key ว่างไว้ได้ · พบคีย์ในตัวแปร {p['key_env']} ✓" if found
+                        else f"ไม่พบตัวแปร {p['key_env']} — ตั้งใน PowerShell: [Environment]::SetEnvironmentVariable('{p['key_env']}', 'คีย์', 'User') หรือกรอกคีย์ในช่องด้านบน")
+        else:
+            msg_var.set("")
     preset_cb.bind("<<ComboboxSelected>>", apply_preset); apply_preset()
 
+    def current_key():
+        return key_var.get().strip() or env_key(API_PRESETS[preset_var.get()].get("key_env"))
+
     def load_models():
-        if not (base_var.get().strip() and key_var.get().strip()):
+        if not (base_var.get().strip() and current_key()):
             msg_var.set("ใส่ Base URL และ API key ก่อน"); return
         msg_var.set("กำลังโหลดรายการโมเดล ...")
 
         def job():
             try:
-                ids = list_models_openai(base_var.get().strip(), key_var.get().strip())
+                ids = list_models_openai(base_var.get().strip(), current_key())
                 dlg.after(0, lambda: (mcb.configure(values=ids), msg_var.set(f"โหลดได้ {len(ids)} โมเดล เลือกจากรายการได้")))
             except Exception as e:
                 log.warning("โหลดรายการโมเดลจาก %s ไม่ได้", base_var.get().strip(), exc_info=True)
@@ -79,7 +90,7 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
     ttk.Button(body, text="โหลดรายการโมเดล", command=load_models).grid(row=9, column=2, sticky="w", padx=(6, 0))
 
     def test_api():
-        b, k, m = base_var.get().strip(), key_var.get().strip(), model_v.get().strip()
+        b, k, m = base_var.get().strip(), current_key(), model_v.get().strip()
         if not (b and k and m):
             msg_var.set("ใส่ Base URL, API key และโมเดลให้ครบก่อน"); return
         msg_var.set("กำลังทดสอบ ...")
@@ -145,7 +156,7 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
     ttk.Button(bf, text="ทดสอบการเชื่อมต่อ", command=test_api).pack(side="left", padx=(0, 8))
     ttk.Button(bf, text="บันทึกและใช้งาน", style="Big.TButton", command=save).pack(side="left", padx=(0, 8))
     ttk.Button(bf, text="ยกเลิก", command=dlg.destroy).pack(side="left")
-    ttk.Label(body, text="คีย์ถูกเก็บใน settings.json ข้างโปรแกรม (ไม่ส่งไปที่อื่นนอกจากผู้ให้บริการที่เลือก)", font=small_font, foreground="#777").grid(row=13, column=0, columnspan=3, sticky="w", pady=(8, 0))
+    ttk.Label(body, text="คีย์ที่กรอกถูกเก็บใน settings.json ข้างโปรแกรม (ไม่ส่งไปที่อื่นนอกจากผู้ให้บริการที่เลือก) · เว้นว่างได้ถ้าผู้ให้บริการอ่านคีย์จากตัวแปร Windows", font=small_font, foreground="#777").grid(row=13, column=0, columnspan=3, sticky="w", pady=(8, 0))
     bf.grid_configure(row=19)   # แถวปุ่มบันทึกอยู่ล่างสุด ใต้ส่วนโมเดลในเครื่อง
     dlg.update_idletasks()
     dlg.geometry(f"+{root.winfo_rootx() + 80}+{root.winfo_rooty() + 80}")

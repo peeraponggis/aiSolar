@@ -326,6 +326,14 @@ API_PRESETS = {
         "models": ["typhoon-v2.5-30b-a3b-instruct"],
         "signup": "https://opentyphoon.ai",
         "note": "โมเดล Typhoon ปรับจูนภาษาไทยโดย SCB10X สมัครแล้วสร้าง API key ในหน้า API Keys (คีย์ขึ้นต้น sk-) · ก.ย. 2026 มีโมเดลแชทตัวเดียวคือ typhoon-v2.5-30b-a3b-instruct (v2.1 ถูกปลดแล้ว) กด 'โหลดรายการโมเดล' เพื่อดูตัวล่าสุด"},
+    "KKU gen.ai (มข.)": {
+        "base": "https://gen.ai.kku.ac.th/okmd/api/v1",
+        "models": ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gpt-5.4-mini", "deepseek-v4-flash", "claude-sonnet-5", "qwen3.7-plus"],
+        "signup": "",
+        "key_env": "KKU_API_KEY",
+        "note": "เกตเวย์ AI ของ มข. (ตัวเดียวกับ AI-Bridge-Launcher) ใช้คีย์จากตัวแปร KKU_API_KEY ของ Windows อัตโนมัติ ไม่ต้องกรอก "
+                "และไม่บันทึกคีย์ลงไฟล์ · แปลเร็วสุด: gemini-3.1-flash-lite (~1 วินาที) · คุณภาพสูง: claude-sonnet-5 / gpt-5.4-mini · "
+                "เลี่ยง qwen3.6-flash (คิดยาวเงียบๆ ช้า ~8 วินาทีและเปลืองเครดิต)"},
     "OpenRouter (หลายโมเดล มีแบบฟรี)": {
         "base": "https://openrouter.ai/api/v1",
         "models": ["google/gemma-4-26b-a4b-it:free", "google/gemma-4-31b-it:free", "qwen/qwen3.8-27b:free", "qwen/qwen3-30b-a3b-instruct-2507", "qwen/qwen3-235b-a22b-2507"],
@@ -349,6 +357,26 @@ API_PRESETS = {
     "กำหนดเอง (OpenAI-compatible)": {"base": "", "models": [], "signup": "", "note": "ใส่ Base URL ที่ลงท้ายด้วย /v1 ของบริการที่รองรับรูปแบบ OpenAI"},
 }
 BACKEND = {"mode": "local", "base": "", "key": "", "model": ""}   # โหมดที่ใช้งานอยู่จริง (ตั้งโดย GUI)
+
+
+def env_key(name):
+    """อ่านคีย์จากตัวแปรผู้ใช้ของ Windows (โปรแกรมที่เปิดก่อนตั้งค่าตัวแปรจะไม่เห็นใน os.environ จึงอ่าน registry สำรอง)"""
+    if not name:
+        return ""
+    if os.environ.get(name):
+        return os.environ[name]
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+            return winreg.QueryValueEx(k, name)[0] or ""
+    except OSError:
+        return ""
+
+
+def resolve_api_key(api):
+    """คีย์ที่กรอกเองมาก่อน ถ้าเว้นว่างและผู้ให้บริการกำหนด key_env ไว้ ให้ใช้คีย์จากตัวแปร Windows นั้น"""
+    api = api or {}
+    return api.get("key") or env_key(API_PRESETS.get(api.get("preset"), {}).get("key_env"))
 
 
 def list_models_openai(base, key, timeout=15):
