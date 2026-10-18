@@ -642,6 +642,81 @@ def kku_proxy(handler, method, sub, body=None):
             handler.wfile.flush()
 
 
+# ============================================================
+# IMAGE GENERATION — เรียก image_runner.py (สคริปต์เดียวกับ AI-Bridge-Launcher) ด้วย python ของเครื่อง
+# ============================================================
+IMAGE_DIR = Path(os.environ.get("LOCAL_IMAGE_DIR") or r"F:\LocalAI\clip_bank\img")
+IMAGE_RUNNER = os.environ.get("LUNGPEE_IMAGE_RUNNER", r"F:\LocalAI\gateway\image_runner.py")
+IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
+_image_jobs = {}
+
+
+def _image_python():
+    # python ตัวที่มี torch/CUDA — ไม่ใช้ตัวแรกใน PATH เพราะ WindowsApps\python.exe อาจเป็นแค่ตัวเปิด Store
+    import shutil
+    for cand in (os.environ.get("LUNGPEE_IMAGE_PYTHON"),
+                 os.path.expandvars(r"%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe"),
+                 os.path.expandvars(r"%LOCALAPPDATA%\Python\bin\python.exe")):
+        if cand and os.path.isfile(cand):
+            return cand
+    return shutil.which("python") or "python"
+
+
+def _run_image_job(job_id, req):
+    import subprocess
+    job = _image_jobs[job_id]
+    job["status"] = "running"
+    try:
+        proc = subprocess.Popen([_image_python(), IMAGE_RUNNER, json.dumps(req, ensure_ascii=False)],
+                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, cwd=os.path.dirname(IMAGE_RUNNER),
+                                env=dict(os.environ, PYTHONIOENCODING="utf-8"),
+                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        for raw in proc.stdout:
+            try:
+                d = json.loads(raw.decode("utf-8", "replace"))
+            except ValueError:
+                continue
+            if d.get("type") == "progress":
+                job.update(stage=d.get("stage", ""), frac=d.get("frac", 0))
+            elif d.get("type") == "result":   # ใส่ seconds พร้อม status เพราะหน้าแชทอาจถามผลก่อนโปรเซสจบ
+                job.update(seconds=round(time.time() - job["started"], 1), result=d, frac=1.0, stage="เสร็จ")
+                job["status"] = "done"
+            elif d.get("type") == "error":
+                job.update(seconds=round(time.time() - job["started"], 1), error=d.get("message", ""))
+                job["status"] = "error"
+        proc.wait()
+        if job["status"] == "running":
+            job.update(status="error", error=f"ตัวสร้างภาพหยุดทำงาน (exit {proc.returncode})")
+    except Exception as e:
+        job.update(status="error", error=str(e))
+    job.setdefault("seconds", round(time.time() - job["started"], 1))
+    print(time.strftime("%Y-%m-%d %H:%M:%S"), "image job", job_id, job["status"], job.get("seconds"), "s")
+
+
+def start_image_job(req):
+    job_id = hashlib.md5(f"{time.time()}{req}".encode()).hexdigest()[:12]
+    _image_jobs[job_id] = {"id": job_id, "status": "queued", "stage": "เริ่มงาน", "frac": 0.0,
+                           "started": time.time(), "prompt": req.get("prompt", "")}
+    for old in sorted(_image_jobs, key=lambda k: _image_jobs[k]["started"])[:-50]:
+        _image_jobs.pop(old, None)
+    threading.Thread(target=_run_image_job, args=(job_id, req), daemon=True).start()
+    return job_id
+
+
+def list_images(limit=24):
+    files = [p for p in IMAGE_DIR.glob("*") if p.suffix.lower() in IMAGE_EXTS]
+    files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return [{"name": p.name, "mtime": int(p.stat().st_mtime)} for p in files[:limit]]
+
+
+def serve_image(handler, name):
+    p = IMAGE_DIR / os.path.basename(name or "")   # basename: กันการขอไฟล์นอกโฟลเดอร์ภาพ
+    if p.suffix.lower() not in IMAGE_EXTS or not p.is_file():
+        _send_error(handler, "not found", 404); return
+    ctype = {".png": "image/png", ".webp": "image/webp"}.get(p.suffix.lower(), "image/jpeg")
+    _send_bytes(handler, p.read_bytes(), ctype)
+
+
 class GatewayHandler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -661,6 +736,16 @@ class GatewayHandler(BaseHTTPRequestHandler):
 
             elif u.path == "/api/version":
                 _send_json(self, version_info())
+
+            elif u.path == "/api/image/job":
+                job = _image_jobs.get((q.get("id") or [""])[0])
+                _send_json(self, job) if job else _send_error(self, "unknown job", 404)
+
+            elif u.path == "/api/image/file":
+                serve_image(self, (q.get("name") or [""])[0])
+
+            elif u.path == "/api/image/list":
+                _send_json(self, {"dir": str(IMAGE_DIR), "images": list_images(int((q.get("limit") or ["24"])[0]))})
 
             # Health
             elif u.path == "/health":
@@ -758,6 +843,15 @@ class GatewayHandler(BaseHTTPRequestHandler):
         try:
             if u.path.startswith("/api/kku/"):
                 kku_proxy(self, "POST", u.path[len("/api/kku"):], json.dumps(data).encode("utf-8"))
+
+            elif u.path == "/api/image":
+                # ใช้ GPU/เครดิตของผู้ใช้ -> รับเฉพาะหน้าแชทของ gateway เอง
+                if not _same_origin(self):
+                    _send_error(self, "forbidden origin", 403)
+                elif not (data.get("prompt") or "").strip():
+                    _send_error(self, "missing prompt", 400)
+                else:
+                    _send_json(self, {"id": start_image_job(data)})
 
             elif u.path == "/api/shutdown":
                 # ปุ่ม "ออกจากโปรแกรม" ในหน้าแชท — รับเฉพาะหน้าของ gateway เอง กันเว็บอื่นสั่งปิด

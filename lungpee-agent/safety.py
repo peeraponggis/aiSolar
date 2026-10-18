@@ -20,6 +20,7 @@ from tools.files import _normalize_path
 log = logging.getLogger(__name__)
 
 RISK_TIER = {
+    "generate_image": "A",   # สร้างไฟล์ภาพใหม่ในคลังภาพเท่านั้น ไม่แตะไฟล์เดิม
     "launch_app": "A",
     "list_dir": "A",
     "find_file": "A",

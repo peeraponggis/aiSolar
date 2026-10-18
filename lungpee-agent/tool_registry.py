@@ -8,9 +8,23 @@ parameter + ตาราง dispatch เรียกฟังก์ชันจ�
 เริ่ม Phase 2: โมเดลขนาดเล็ก (4B) แม่นยำน้อยลงถ้าต้องเลือกจากเครื่องมือเยอะ/คลุมเครือพร้อมกัน
 """
 from tools import apps, files, shell, ui_automation
+from tools import image as image_tool
 from tools import translate as translate_tool
 
 TOOLS = [
+    {"type": "function", "function": {
+        "name": "generate_image",
+        "description": (
+            "วาดรูป/สร้างภาพใหม่จากคำอธิบาย แล้วเปิดภาพให้ผู้ใช้ดู "
+            "ใช้เมื่อผู้ใช้พูดว่า: วาดรูป, วาดภาพ, สร้างภาพ, สร้างรูป, ขอรูป, draw, generate image "
+            "ใช้เวลาประมาณ 1-2 นาที"
+        ),
+        "parameters": {"type": "object", "properties": {
+            "prompt": {"type": "string", "description": "คำอธิบายภาพตามที่ผู้ใช้พูด (ภาษาไทยได้) ไม่ต้องใส่คำว่าวาดรูป"},
+            "shape": {"type": "string", "enum": ["auto", "square", "portrait", "landscape"],
+                      "description": "ใช้ auto เสมอ ยกเว้นผู้ใช้พูดว่าแนวตั้ง (portrait) หรือแนวนอน (landscape)"},
+        }, "required": ["prompt"]},
+    }},
     {"type": "function", "function": {
         "name": "launch_app",
         "description": (
@@ -120,6 +134,10 @@ def _launch_app(args, ctx):
     return apps.launch_app(args.get("name", ""))
 
 
+def _generate_image(args, ctx):
+    return image_tool.generate_image(args.get("prompt", ""), args.get("shape") or "auto")
+
+
 def _run_shell(args, ctx):
     return shell.run_shell(args.get("command", ""))
 
@@ -162,6 +180,7 @@ def _type_text(args, ctx):
 
 
 DISPATCH = {
+    "generate_image": _generate_image,
     "launch_app": _launch_app,
     "run_shell": _run_shell,
     "list_dir": _list_dir,
