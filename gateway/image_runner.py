@@ -11,16 +11,12 @@
 {"type":"result", ...ผลจากสคริปต์} หรือ {"type":"error","message":...}
 """
 import json
-import msvcrt
 import os
 import sys
-import time
-import urllib.request
 from pathlib import Path
 
 SCRIPTS = Path(os.environ.get("AIBRIDGE_SCRIPTS", r"F:\enterprise\aipass-auto-router\scripts"))
 OUT_DIR = Path(os.environ.get("LOCAL_IMAGE_DIR") or r"F:\LocalAI\clip_bank\img")
-OLLAMA = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 # engine -> (ระบบ, โมเดล, โหมด) ตรงกับตัวเลือกใน AI-Bridge-Launcher
 ENGINES = {
     "flux": ("local", "flux2-klein", "quality"),
@@ -38,40 +34,6 @@ def emit(obj):
     sys.stdout.flush()
 
 
-def gpu_lock():
-    """GPU 4 GB รับงานสร้างภาพได้ทีละงาน — ล็อกไฟล์ร่วมกันระหว่าง gateway กับ Agent (ปลดเองเมื่อโปรเซสจบ)"""
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    f = open(OUT_DIR / ".lungpee-image.lock", "a+")
-    waited = False
-    while True:
-        try:
-            f.seek(0)
-            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
-            return f
-        except OSError:
-            if not waited:
-                emit({"type": "progress", "stage": "รองานสร้างภาพก่อนหน้าให้เสร็จ", "frac": 0.02})
-                waited = True
-            time.sleep(1)
-
-
-def free_ollama_vram():
-    """ปล่อยโมเดลแชทออกจาก GPU ก่อนวาด (FLUX ต้องใช้ ~2.1 GB จาก 4 GB) — โมเดลจะโหลดกลับเองเมื่อมีคนถามครั้งถัดไป"""
-    try:
-        with urllib.request.urlopen(OLLAMA + "/api/ps", timeout=5) as r:
-            loaded = [m["name"] for m in json.loads(r.read()).get("models", [])]
-    except Exception:
-        return []
-    for name in loaded:
-        try:
-            body = json.dumps({"model": name, "keep_alive": 0}).encode()
-            urllib.request.urlopen(urllib.request.Request(OLLAMA + "/api/generate", data=body,
-                                   headers={"Content-Type": "application/json"}), timeout=30).read()
-        except Exception:
-            pass
-    return loaded
-
-
 def run(req):
     prompt = (req.get("prompt") or "").strip()
     if not prompt:
@@ -83,23 +45,17 @@ def run(req):
     import local_image   # import เบา: torch โหลดตอนเรียก generate เท่านั้น
     if shape == "auto":
         shape = local_image.detect_shape(prompt) or "square"
-    lock = gpu_lock()
-    try:
-        if kind == "gemini":
-            import gemini_image
-            emit({"type": "progress", "stage": f"รอ {model} สร้างภาพ", "frac": 0.2})
-            res = gemini_image.generate(prompt, model, GEMINI_ASPECT[shape])
-            res.update(count=len(res["paths"]), shape=shape, engine="gemini")
-            return res
-        unloaded = free_ollama_vram()
-        if unloaded:
-            emit({"type": "progress", "stage": "ปล่อยโมเดลแชทออกจาก GPU ชั่วคราว", "frac": 0.05})
-        res = local_image.generate(prompt, mode, shape, count, model=model,
-                                   progress=lambda stage, frac: emit({"type": "progress", "stage": stage, "frac": frac}))
-        res.update(engine="local", unloaded_chat_models=unloaded)
+    if kind == "gemini":   # วาดบนคลาวด์ ไม่ใช้ GPU ในเครื่อง จึงไม่ต้องเข้าคิว
+        import gemini_image
+        emit({"type": "progress", "stage": f"รอ {model} สร้างภาพ", "frac": 0.2})
+        res = gemini_image.generate(prompt, model, GEMINI_ASPECT[shape])
+        res.update(count=len(res["paths"]), shape=shape, engine="gemini")
         return res
-    finally:
-        lock.close()
+    # คิว GPU ข้ามโปรแกรม (Launcher/ลุงพี AI/Agent) และการปล่อย VRAM ของ Ollama อยู่ใน local_image.generate แล้ว
+    res = local_image.generate(prompt, mode, shape, count, model=model,
+                               progress=lambda stage, frac: emit({"type": "progress", "stage": stage, "frac": frac}))
+    res.update(engine="local")
+    return res
 
 
 def main():

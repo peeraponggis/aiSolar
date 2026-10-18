@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """ข้อมูลเวอร์ชันของโปรแกรม — ปรับด้วย F:\\LocalAI\\bump_version.py ทุกครั้งที่แก้ไข (อย่าแก้ตัวเลขด้วยมือ)"""
 APP_NAME = "ลุงพี AI Gateway"
-VERSION = "1.3.1"
+VERSION = "1.3.2"
 CREATED = "2026-09-27"
 UPDATED = "2026-10-18"
 AUTHOR = "ลุงพี"
 CHANGELOG = [  # ใหม่สุดอยู่บน: (เวอร์ชัน, วันที่, สรุป)
+    ("1.3.2", "2026-10-18", "image_runner ใช้คิว GPU ใน local_image.py ร่วมกับ AI-Bridge-Launcher"),
     ("1.3.1", "2026-10-18", "แก้เวลาสร้างภาพแสดง undefined"),
     ("1.3.0", "2026-10-18", "สร้างภาพ (/api/image) ด้วยระบบเดียวกับ AI-Bridge-Launcher เก็บภาพที่ clip_bank\\img"),
     ("1.2.0", "2026-10-18", "เพิ่มเส้นทาง KKU gen.ai (/api/kku/v1) และ /api/version"),
