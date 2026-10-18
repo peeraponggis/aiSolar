@@ -5,7 +5,8 @@
     python bump_version.py --show
 
 โปรแกรม: translator (Local Translator) · agent (ลุงพี Agent) · gateway (ลุงพี AI Gateway) · chat (หน้าแชทลุงพี AI)
-         · launcher (AI-Bridge-Launcher: VERSION.json + CHANGELOG.md)
+         · launcher (AI-Bridge-Launcher) · yt (YT Shorts) — สองตัวนี้แก้ VERSION.json + CHANGELOG.md
+         · multitools (Multi Tools)
 patch = แก้บั๊ก/ปรับเล็กน้อย · minor = เพิ่มความสามารถ · major = เปลี่ยนใหญ่ที่เข้ากันไม่ได้กับของเดิม
 """
 import datetime
@@ -21,6 +22,8 @@ TARGETS = {
     "gateway": ROOT / "gateway" / "app_version.py",
     "chat": Path(r"C:\Users\Lenovo\LungPeeAI\_internal\ui\chat.html"),
     "launcher": Path(r"F:\enterprise\aipass-auto-router\VERSION.json"),   # + CHANGELOG.md ข้างกัน
+    "yt": ROOT / "yt" / "VERSION.json",                                    # + CHANGELOG.md ข้างกัน
+    "multitools": ROOT / "multi-tools" / "app_version.py",
 }
 TH_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
 
@@ -68,8 +71,11 @@ def bump(target, level, note):
         text = json.dumps(info, ensure_ascii=False, indent=2) + "\n"
         log_path = path.with_name("CHANGELOG.md")
         log_text = read(log_path)
-        section = f"## {new} — {thai_date(today)}\n- {note}\n\n"
         i = log_text.find("\n## ")
+        first = log_text[i + 1:log_text.find("\n", i + 1)] if i >= 0 else ""
+        v_prefix = "v" if first.startswith("## v") else ""                   # ตามรูปแบบหัวข้อเดิมของแต่ละโปรเจกต์
+        by = f" · โดย {info.get('author', 'ลุงพี')}" if "· โดย" in first else ""
+        section = f"## {v_prefix}{new} — {thai_date(today)}{by}\n- {note}\n\n"
         log_text = log_text[:i + 1] + section + log_text[i + 1:] if i >= 0 else log_text.rstrip() + "\n\n" + section
         log_path.write_bytes(log_text.encode("utf-8"))
     elif path.suffix == ".py":

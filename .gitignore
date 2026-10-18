@@ -50,3 +50,6 @@ temp/
 # PyInstaller work folders
 translation/build/
 gateway/build/
+
+# Multi Tools is its own git repo
+multi-tools/
