@@ -20,8 +20,31 @@ log = logging.getLogger(__name__)
 FROZEN = bool(getattr(sys, "frozen", False))          # รันจาก exe ที่สร้างด้วย PyInstaller
 BASE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # ---- เสียงอ่าน: ใช้ของโปรเจกต์ yt (edge-tts + replacements.json + โคลนเสียง OpenVoice)
-YT_DIR = os.path.normpath(os.path.join(BASE, "..", "yt"))
+def _find_yt_dir():
+    """หาโฟลเดอร์ yt ให้เจอเสมอ ไม่ว่ารันเป็น .py หรือ .exe (PyInstaller) หรือ HDD เปลี่ยนไดรฟ์
+    เพราะตอนแพ็กเป็น exe, BASE = โฟลเดอร์ exe (…/dist/LocalTranslator) ทำให้ ../yt ผิด
+    ตรวจหลายตำแหน่ง แล้วเลือกตัวแรกที่มี config/replacements.json จริง"""
+    cands = []
+    env = os.environ.get("LOCALAI_YT_DIR")
+    if env:
+        cands.append(env)
+    for up in range(1, 6):   # ../yt, ../../yt, … เผื่อ exe ซ้อนหลายชั้น
+        cands.append(os.path.normpath(os.path.join(BASE, *([".."] * up), "yt")))
+    this_drive = os.path.splitdrive(os.path.abspath(__file__))[0] or "F:"
+    for drive in (this_drive, "F:", "E:", "D:", "G:", "H:"):
+        cands.append(os.path.join(drive, os.sep, "LocalAI", "yt"))
+    for c in cands:
+        try:
+            if os.path.isfile(os.path.join(c, "config", "replacements.json")):
+                return c
+        except Exception:
+            pass
+    return cands[1] if len(cands) > 1 else os.path.normpath(os.path.join(BASE, "..", "yt"))
+
+
+YT_DIR = _find_yt_dir()
 REPLACEMENTS_FILE = os.path.join(YT_DIR, "config", "replacements.json")
+log.info("YT_DIR = %s | replacements = %s", YT_DIR, REPLACEMENTS_FILE)
 TTS_TMP = os.path.join(os.environ.get("TEMP", BASE), "thai-translator-tts")
 TTS_VOICES = {  # ชื่อที่แสดง -> (ชื่อเสียง edge-tts หรือ sapi:ชื่อเสียง Windows, ภาษา)
     "เปรมวดี (หญิง)": ("th-TH-PremwadeeNeural", "th"),
@@ -70,6 +93,51 @@ def list_clone_profiles():
         return []
 
 
+def _enhance_sapi_wav(path, target_sr=24000):
+    """ปรับคุณภาพเสียงในเครื่อง (Pattara ออก 16kHz เสียงเบา/พร่า):
+    upsample -> 24kHz, high-shelf EQ (+5dB ย่านแหลมให้ชัดขึ้น), แล้ว normalize ความดัง (ดังขึ้นสม่ำเสมอ)
+    ถ้าทำไม่สำเร็จคืนไฟล์เดิมไว้เหมือนเดิม (เสียงต้องออกเสมอ สำคัญกว่าความคมชัด)"""
+    try:
+        import math
+        import numpy as np
+        from scipy.io import wavfile
+        from scipy.signal import lfilter, resample_poly
+
+        sr, x = wavfile.read(path)
+        x = x.astype(np.float32)
+        x = x / 32768.0 if x.size and np.max(np.abs(x)) > 1.5 else x
+        if x.ndim > 1:
+            x = x.mean(axis=1)
+        if x.size < 10:
+            return path
+        if sr != target_sr:                                   # 16000 -> 24000 (ให้หัว EQ มีที่หายใจ + เข้ากับ neural)
+            g = math.gcd(int(sr), target_sr)
+            x = resample_poly(x, target_sr // g, int(sr) // g)
+            sr = target_sr
+        # high-shelf +5dB ที่ ~3kHz (RBJ biquad) ดึงย่านแหลมที่หายไปจากการสังเคราะห์ 16kHz กลับมาบ้าง
+        f0, gain_db, S = 3000.0, 5.0, 0.8
+        A = 10 ** (gain_db / 40.0)
+        w0 = 2 * math.pi * f0 / sr
+        cw, sw = math.cos(w0), math.sin(w0)
+        alpha = sw / 2.0 * math.sqrt((A + 1 / A) * (1 / S - 1) + 2)
+        sa = 2 * math.sqrt(A) * alpha
+        b0 = A * ((A + 1) + (A - 1) * cw + sa)
+        b1 = -2 * A * ((A - 1) + (A + 1) * cw)
+        b2 = A * ((A + 1) + (A - 1) * cw - sa)
+        a0 = (A + 1) - (A - 1) * cw + sa
+        a1 = 2 * ((A - 1) - (A + 1) * cw)
+        a2 = (A + 1) - (A - 1) * cw - sa
+        x = lfilter([b0 / a0, b1 / a0, b2 / a0], [1.0, a1 / a0, a2 / a0], x).astype(np.float32)
+        # normalize ความดัง: ดัน RMS ขึ้นไป ~0.13 แล้ว soft-limit (tanh) กันแตก -> ดังขึ้นชัดเจน ไม่คลิป
+        rms = float(np.sqrt(np.mean(x ** 2))) + 1e-9
+        x = x * min(0.13 / rms, 8.0)
+        x = np.tanh(x) * 0.97
+        wavfile.write(path, sr, np.clip(x, -1.0, 1.0).astype(np.float32).__mul__(32767).astype(np.int16))
+    except Exception:
+        log.debug("ปรับปรุงเสียงในเครื่องไม่สำเร็จ ใช้ไฟล์เดิม", exc_info=True)
+    return path
+
+
 def sapi_synthesize(text, voice_name, rate, out_wav):
     """เสียงในเครื่องของ Windows (OneCore เช่น Microsoft Pattara) ผ่าน WinRT ใน PowerShell: ออฟไลน์ เร็วมาก (~0.2 วินาที)
     แต่ธรรมชาติน้อยกว่าเสียง Neural ของ edge-tts"""
@@ -94,7 +162,7 @@ def sapi_synthesize(text, voice_name, rate, out_wav):
                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if not (os.path.exists(out_wav) and os.path.getsize(out_wav) > 100):
         raise RuntimeError(f"เสียง {voice_name} ในเครื่องไม่ทำงาน")
-    return out_wav
+    return _enhance_sapi_wav(out_wav)
 
 
 def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_retries=5, deadline=None):

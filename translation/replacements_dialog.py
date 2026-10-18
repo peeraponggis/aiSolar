@@ -32,6 +32,32 @@ def save_replacements(data):
     os.replace(tmp, REPLACEMENTS_FILE)
 
 
+def parse_replacements_file(path):
+    """อ่านไฟล์คำแทนเป็น dict {eng: thai}
+    - .json: ต้องเป็น object {"Google": "กู-เกิล", ...}
+    - .txt/อื่นๆ: บรรทัดละคู่ คั่นด้วย ' -> ', ' => ', tab หรือ ',' (ข้ามบรรทัดว่าง/ขึ้นต้น #)"""
+    with open(path, "r", encoding="utf-8-sig") as f:
+        raw = f.read()
+    if path.lower().endswith(".json"):
+        obj = json.loads(raw)
+        if not isinstance(obj, dict):
+            raise ValueError("JSON ต้องเป็น object {คำอังกฤษ: คำอ่านไทย}")
+        return {str(k).strip(): str(v).strip() for k, v in obj.items() if str(k).strip() and str(v).strip()}
+    out = {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        for sep in ("->", "=>", "\t", ",", "="):
+            if sep in line:
+                en, th = line.split(sep, 1)
+                en, th = en.strip(), th.strip()
+                if en and th:
+                    out[en] = th
+                break
+    return out
+
+
 def open_replacements_dialog(root, fam, small_font, st):
     data = load_replacements()
     dlg = tk.Toplevel(root); dlg.title("คำแทนภาษาอังกฤษ (English → Thai phonetic)")
@@ -134,9 +160,35 @@ def open_replacements_dialog(root, fam, small_font, st):
             msg_var.set("บันทึกไม่สำเร็จ: " + str(e)[:160]); return
         refresh(); en_var.set(""); th_var.set(""); msg_var.set(f"ลบ: {en}")
 
+    def do_import():
+        """นำเข้า/รวมคำแทนจากไฟล์ภายนอก - รองรับ .json ({eng: thai}) และ .txt (บรรทัดละ 'eng -> thai',
+        'eng\\tthai' หรือ 'eng,thai') แล้ว merge เข้าดิกชันนารีปัจจุบัน ของเดิมที่ซ้ำจะถูกทับด้วยค่าใหม่"""
+        from tkinter import filedialog
+        path = filedialog.askopenfilename(
+            parent=dlg, title="นำเข้าไฟล์คำแทนภาษาอังกฤษ",
+            initialdir=os.path.dirname(REPLACEMENTS_FILE),
+            filetypes=[("ไฟล์คำแทน", "*.json *.txt"), ("JSON", "*.json"), ("ข้อความ", "*.txt"), ("ทั้งหมด", "*.*")])
+        if not path:
+            return
+        try:
+            imported = parse_replacements_file(path)
+        except Exception as e:
+            log.warning("นำเข้าไฟล์คำแทนไม่ได้ (%s)", path, exc_info=True)
+            msg_var.set("อ่านไฟล์ไม่สำเร็จ: " + str(e)[:160]); return
+        if not imported:
+            msg_var.set("ไม่พบคำแทนในไฟล์ (รูปแบบ: eng -> thai)"); return
+        added = sum(1 for k, v in imported.items() if data.get(k) != v)
+        data.update(imported)
+        try:
+            save_replacements(data)
+        except Exception as e:
+            msg_var.set("บันทึกไม่สำเร็จ: " + str(e)[:160]); return
+        refresh(); msg_var.set(f"นำเข้า {len(imported)} คำ (เพิ่ม/อัปเดต {added}) จาก {os.path.basename(path)}")
+
     btns = ttk.Frame(body); btns.pack(fill="x", pady=(4, 0))
     suggest_btn = ttk.Button(btns, text="✨ ให้ AI แนะนำคำอ่าน", command=do_suggest); suggest_btn.pack(side="left")
     ttk.Button(btns, text="+ เพิ่ม/บันทึก", command=do_add).pack(side="left", padx=(8, 0))
+    ttk.Button(btns, text="📥 นำเข้าไฟล์", command=do_import).pack(side="left", padx=(8, 0))
     ttk.Button(btns, text="ลบรายการที่เลือก", command=do_delete).pack(side="left", padx=(8, 0))
     ttk.Button(btns, text="ปิด", command=dlg.destroy).pack(side="right")
     dlg.update_idletasks()
