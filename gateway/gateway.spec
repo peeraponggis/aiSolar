@@ -17,7 +17,8 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name='gateway',
-    console=True,
+    console=False,               # ไม่มีหน้าต่าง terminal; ข้อความ print ไปที่ gateway.log ข้าง exe
+
     icon=r'C:\Users\Lenovo\LungPeeAI\lungpee.ico',
 )
 coll = COLLECT(exe, a.binaries, a.datas, name='gateway')

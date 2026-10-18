@@ -24,6 +24,7 @@ import tkinter as tk
 import safety
 import settings as _settings
 from app_log import setup_logging
+from app_version import APP_NAME, AUTHOR, UPDATED, VERSION, about_text, thai_date
 from avatar import AvatarWindow
 from hotkey import hotkey_thread
 from text_input import TextInputPopup
@@ -431,7 +432,7 @@ def main():
         except Exception:
             pass
         return
-    log.info("ลุงพี agent (Phase 3: พูดคุยทั่วไป + เรียกเครื่องมือ + คลิก/พิมพ์ในโปรแกรมอื่น) เริ่มทำงาน")
+    log.info("%s เริ่มทำงาน", about_text())
     q = queue.Queue()
     voice = VoiceInput(q)
 
@@ -471,12 +472,14 @@ def main():
         root.after(0, root.quit)
 
     menu = pystray.Menu(
+        pystray.MenuItem(f"{APP_NAME} v{VERSION} · ปรับปรุง {thai_date(UPDATED)} · โดย {AUTHOR}", None, enabled=False),
+        pystray.Menu.SEPARATOR,
         pystray.MenuItem("พูดคุยกับลุงพี (หรือกด Ctrl+Alt+L)", on_toggle),
         pystray.MenuItem("พิมพ์ถามแทน", on_type_instead),
         pystray.MenuItem("เชื่อมต่อโมเดลใหม่", on_reconnect),
         pystray.MenuItem("ออกจากโปรแกรม", on_quit),
     )
-    icon = pystray.Icon("lungpee-agent", image, "ลุงพี", menu)
+    icon = pystray.Icon("lungpee-agent", image, f"ลุงพี v{VERSION}", menu)
     threading.Thread(target=icon.run, daemon=True).start()
     root.mainloop()
 

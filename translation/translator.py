@@ -36,6 +36,7 @@ log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------- โมดูลย่อย (แยกจาก translator.py)
 from app_log import setup_logging
+from app_version import about_text
 from autostart import autostart_enabled, set_autostart as _set_autostart
 from flow_layout import Flow
 from clipboard_hotkey import ClipboardHotkey
@@ -177,7 +178,8 @@ def run_gui(minimized=False):
     status_var = tk.StringVar(value="กำลังเชื่อมต่อ Ollama ...")
     status_bar.add(ttk.Label(status_bar, textvariable=status_var, font=small_font, foreground="#444"), padx=(0, 20))
     hotkey_var = tk.StringVar(value="")
-    status_bar.add(ttk.Label(status_bar, textvariable=hotkey_var, font=small_font, foreground="#0E6B5B"))
+    status_bar.add(ttk.Label(status_bar, textvariable=hotkey_var, font=small_font, foreground="#0E6B5B"), padx=(0, 20))
+    status_bar.add(ttk.Label(status_bar, text=about_text(), font=small_font, foreground="#888"))
 
     def set_status(msg):
         status_var.set(msg)
@@ -533,6 +535,7 @@ def run_gui(minimized=False):
 # ---------------------------------------------------------------- main
 if __name__ == "__main__":
     setup_logging()
+    log.info(about_text())
     ap = argparse.ArgumentParser(description="Local Translator (Ollama)")
     ap.add_argument("--cli", action="store_true", help="แปลใน console แทนหน้าต่าง")
     ap.add_argument("--level", choices=LEVEL_ORDER, default="general")
