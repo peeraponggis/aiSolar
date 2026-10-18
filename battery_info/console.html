@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Battery Console · ThinkPad P16s</title>
+<style>
+:root{
+  --bg:#0d0d12;--card:#16161f;--card2:#1c1c28;--border:#242436;
+  --text:#e2e2f0;--muted:#6a6a88;--muted2:#9898b8;
+  --green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;
+  --blue:#38bdf8;--cyan:#11d8e8;--purple:#a855f7;
+  --titlebar-h:36px;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
+
+/* ── TITLEBAR (drag region in Edge app mode) ── */
+#titlebar{
+  height:var(--titlebar-h);background:#0a0a14;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 10px;
+  -webkit-app-region:drag;user-select:none;flex-shrink:0;
+}
+#titlebar .ico{font-size:16px}
+#titlebar .ttl{font-size:12px;font-weight:600;color:var(--cyan);flex:1}
+#titlebar .badge{
+  font-size:10px;padding:1px 7px;border-radius:10px;
+  background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)
+}
+#titlebar .badge.offline{background:rgba(239,68,68,.12);color:var(--red);border-color:rgba(239,68,68,.3)}
+#titlebar button{
+  -webkit-app-region:no-drag;background:none;border:none;
+  color:var(--muted);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px
+}
+#titlebar button:hover{background:var(--card2);color:var(--text)}
+#titlebar .lang-g{-webkit-app-region:no-drag;display:flex;gap:3px}
+#titlebar .lang-g button{font-size:11px;padding:1px 8px;border-radius:10px;border:1px solid var(--border)}
+#titlebar .lang-g button.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
+
+/* ── LAYOUT ── */
+#wrap{display:flex;flex-direction:column;height:calc(100vh - var(--titlebar-h));overflow:hidden}
+
+/* ── BATTERY STRIP ── */
+#batt-strip{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 12px;background:#11111a;border-bottom:1px solid var(--border);flex-shrink:0
+}
+.bs-icon{font-size:18px}
+.bs-pct{font-size:18px;font-weight:700;min-width:44px}
+.bs-bar-wrap{flex:1;height:8px;background:#1e1e30;border-radius:4px;overflow:hidden}
+.bs-bar{height:100%;border-radius:4px;transition:width .6s,background .4s}
+.bs-info{font-size:11px;color:var(--muted2);text-align:right;min-width:140px;line-height:1.5}
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.s-pill .dot{width:6px;height:6px;border-radius:50%;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.pill-ch{background:rgba(234,179,8,.12);color:var(--yellow)}.pill-ch .dot{background:var(--yellow)}
+.pill-fl{background:rgba(34,197,94,.12);color:var(--green)}.pill-fl .dot{background:var(--green)}
+.pill-dc{background:rgba(56,189,248,.08);color:var(--blue)}.pill-dc .dot{background:var(--blue);animation:none}
+.pill-lo{background:rgba(239,68,68,.12);color:var(--red)}.pill-lo .dot{background:var(--red)}
+
+/* ── ALERT BANNER ── */
+#alert{
+  display:none;padding:8px 12px;text-align:center;font-size:12px;font-weight:700;
+  color:var(--red);background:rgba(239,68,68,.12);border-bottom:1px solid rgba(239,68,68,.3);
+  animation:blink 1s infinite;flex-shrink:0;cursor:pointer
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ── TOOLBAR ── */
+#toolbar{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;
+  background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0
+}
+#toolbar .lbl{font-size:11px;color:var(--muted);font-weight:600;flex:1}
+#search{background:var(--card2);border:1px solid var(--border);color:var(--text);
+  padding:3px 8px;border-radius:6px;font-size:11px;width:130px}
+#search::placeholder{color:var(--muted)}
+#toolbar select,#toolbar input[type=number]{
+  background:var(--card2);border:1px solid var(--border);color:var(--text);
+  padding:2px 5px;border-radius:5px;font-size:11px;cursor:pointer
+}
+#toolbar button{background:var(--card2);border:1px solid var(--border);color:var(--muted2);
+  padding:3px 8px;border-radius:6px;font-size:11px;cursor:pointer}
+#toolbar button:hover{color:var(--text);background:var(--border)}
+#toolbar button.active{background:rgba(17,216,232,.1);color:var(--cyan);border-color:var(--cyan)}
+
+/* ── SETTINGS PANEL ── */
+#settings-panel{
+  display:none;background:#0f0f1c;border-bottom:1px solid var(--border);
+  padding:10px 14px;flex-shrink:0
+}
+#settings-panel.open{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.sp-group{display:flex;align-items:center;gap:6px;font-size:11px}
+.sp-group label{color:var(--muted2);white-space:nowrap}
+.sp-group input{background:var(--card2);border:1px solid var(--border);color:var(--text);
+  padding:3px 6px;border-radius:5px;font-size:11px;width:54px;text-align:center}
+.sp-group span{color:var(--muted);font-size:10px}
+.sp-save{background:var(--cyan);color:#000;border:none;padding:4px 12px;
+  border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
+
+/* ── PROCESS TABLE ── */
+#proc-wrap{flex:1;overflow-y:auto;overflow-x:hidden}
+#proc-wrap::-webkit-scrollbar{width:5px}
+#proc-wrap::-webkit-scrollbar-track{background:var(--bg)}
+#proc-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{
+  position:sticky;top:0;background:#0e0e1a;border-bottom:1px solid var(--border);
+  padding:5px 8px;text-align:left;font-weight:600;color:var(--muted2);
+  font-size:10px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none
+}
+thead th:hover{color:var(--text)}
+thead th.sorted{color:var(--cyan)}
+tbody tr{border-bottom:1px solid rgba(36,36,54,.7);transition:background .15s}
+tbody tr:hover{background:var(--card2)}
+tbody tr.idle-warn{background:rgba(239,68,68,.05)}
+tbody tr.idle-warn:hover{background:rgba(239,68,68,.09)}
+td{padding:5px 8px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}
+.td-name{max-width:140px}
+.td-title{max-width:180px;color:var(--muted2);font-size:10.5px}
+.proc-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.cpu-bar{display:inline-block;height:5px;border-radius:3px;vertical-align:middle;margin-left:4px;min-width:2px;max-width:50px}
+.idle-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;
+  background:rgba(239,68,68,.15);color:var(--red);animation:blink 1.2s infinite
+}
+.idle-ok{color:var(--muted);font-size:10px}
+
+/* ── FOOTER ── */
+#footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 12px;background:#0a0a14;border-top:1px solid var(--border);
+  font-size:10px;color:var(--muted);flex-shrink:0
+}
+#footer .dot-ok{color:var(--green)}
+#footer .dot-err{color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div id="titlebar">
+  <span class="ico">🔋</span>
+  <span class="ttl" id="t-ttl">Battery Console · ThinkPad P16s Gen 2</span>
+  <div class="lang-g">
+    <button class="active" onclick="setLang('th')">ไทย</button>
+    <button onclick="setLang('en')">EN</button>
+  </div>
+  <span id="srv-badge" class="badge offline">Connecting…</span>
+  <button onclick="toggleSettings()" id="btn-cfg" title="Settings">⚙</button>
+</div>
+
+<div id="wrap">
+
+  <!-- BATTERY STRIP -->
+  <div id="batt-strip">
+    <span class="bs-icon" id="bs-ico">🔋</span>
+    <span class="bs-pct" id="bs-pct">—%</span>
+    <div class="bs-bar-wrap">
+      <div class="bs-bar" id="bs-bar" style="width:0%;background:var(--blue)"></div>
+    </div>
+    <div class="bs-info">
+      <div id="bs-pill" class="s-pill pill-dc"><span class="dot"></span><span id="bs-status">—</span></div><br>
+      <span id="bs-detail">สุขภาพ 85.3% · 407/1,000 รอบ</span>
+    </div>
+  </div>
+
+  <!-- LOW BATTERY ALERT -->
+  <div id="low-batt-alert" style="display:none;padding:9px 12px;text-align:center;font-size:13px;font-weight:700;
+    color:#fff;background:linear-gradient(90deg,#7f1d1d,#991b1b);border-bottom:2px solid #ef4444;
+    animation:blink .8s infinite;flex-shrink:0;cursor:pointer" onclick="dismissLowBatt()">
+    <span id="t-low-batt">⚡ แบตเตอรี่เหลือน้อย! กรุณาเสียบชาร์จโดยด่วน</span>
+  </div>
+
+  <!-- IDLE PROCESS ALERT -->
+  <div id="alert" onclick="dismissAlert()">
+    <span id="t-alert">⚠️ มีโปรแกรมไม่ได้ใช้งานนานเกินกำหนด — คลิกเพื่อปิด</span>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <span class="lbl" id="t-proc-lbl">โปรแกรมที่ทำงาน (<span id="proc-count">0</span>)</span>
+    <input id="search" type="search" placeholder="ค้นหา…" oninput="filterProcs()">
+    <select id="sort-sel" onchange="sortBy=this.value;renderTable()">
+      <option value="mem" id="t-sort-mem">RAM ↓</option>
+      <option value="cpu">CPU ↓</option>
+      <option value="idle" id="t-sort-idle">Idle ↓</option>
+      <option value="name">ชื่อ</option>
+    </select>
+    <span id="t-refresh-lbl" style="font-size:11px;color:var(--muted)">รีเฟรช</span>
+    <select id="ref-sel" onchange="setRefresh(+this.value)">
+      <option value="5">5s</option>
+      <option value="10" selected>10s</option>
+      <option value="30">30s</option>
+      <option value="60">1m</option>
+    </select>
+    <button onclick="fetchNow()" title="Refresh now">⟳</button>
+    <button id="btn-set" onclick="toggleSettings()" class="">⚙ <span id="t-set-lbl">ตั้งค่า</span></button>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div id="settings-panel">
+    <div class="sp-group">
+      <label id="t-sp-idle">ไม่ใช้งานนาน</label>
+      <input type="number" id="sp-idle" value="30" min="1" max="480">
+      <span id="t-sp-min">นาที</span>
+    </div>
+    <div class="sp-group">
+      <label id="t-sp-cpu">CPU ≤</label>
+      <input type="number" id="sp-cpu" value="2" min="0" max="20" step="0.5">
+      <span>%</span>
+      <span id="t-sp-cpu-hint" style="color:var(--muted);font-size:10px"> = นับว่าไม่ใช้งาน</span>
+    </div>
+    <button class="sp-save" onclick="saveSettings()" id="t-sp-save">บันทึก</button>
+  </div>
+
+  <!-- PROCESS TABLE -->
+  <div id="proc-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:140px" onclick="setSortCol('name')" id="th-name">ชื่อ</th>
+          <th style="width:175px" id="th-title">Title</th>
+          <th style="width:56px" onclick="setSortCol('cpu')" id="th-cpu">CPU%</th>
+          <th style="width:58px" onclick="setSortCol('mem')" id="th-mem">RAM</th>
+          <th style="width:52px" onclick="setSortCol('runtime')" id="th-run">เวลา</th>
+          <th style="width:68px" onclick="setSortCol('idle')" id="th-idle">ไม่ใช้งาน</th>
+        </tr>
+      </thead>
+      <tbody id="proc-body">
+        <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">กำลังเชื่อมต่อ server…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer">
+    <span><span id="footer-dot" class="dot-err">●</span> <span id="footer-status">ไม่ได้เชื่อมต่อ server</span></span>
+    <span id="footer-ts">—</span>
+    <span id="t-footer-hint" style="font-size:9.5px;color:var(--muted)">localhost:8765</span>
+  </div>
+
+</div><!-- #wrap -->
+
+<script>
+const API = 'http://localhost:8765';
+let lang = 'th', sortBy = 'mem', allProcs = [], alertDismissed = false;
+let refreshTimer = null, alertPlayed = new Set();
+let lowBattDismissed = false, lowBattPlayed = false;
+const LOW_BATT_PCT = 20;
+
+// ── LANG ─────────────────────────────────────────────────────
+const T = {
+  th:{
+    ttl:'Battery Console · ThinkPad P16s Gen 2',
+    procLbl:'โปรแกรมที่ทำงาน',
+    refreshLbl:'รีเฟรช',
+    setLbl:'ตั้งค่า',
+    spIdle:'ไม่ใช้งานนาน',spMin:'นาที',spCpu:'CPU ≤',spCpuHint:' = นับว่าไม่ใช้งาน',spSave:'บันทึก',
+    thName:'ชื่อ',thTitle:'หัวข้อ',thCpu:'CPU%',thMem:'RAM',thRun:'เวลา',thIdle:'ไม่ใช้งาน',
+    sortMem:'RAM ↓',sortIdle:'Idle ↓',
+    statusCharging:p=>`กำลังชาร์จ ${p}%`,statusFull:'ชาร์จเต็ม ✓',
+    statusDC:p=>`ใช้งาน ${p}%`,statusLow:p=>`แบตต่ำ! ${p}%`,
+    bsDetail:'สุขภาพ 85.3% · 407/1,000 รอบ',
+    srvOk:'เชื่อมต่อแล้ว',srvErr:'ไม่ได้เชื่อมต่อ server',
+    alert:n=>`⚠️ ${n} โปรแกรมไม่ได้ใช้งานนาน — ควรปิดเพื่อประหยัดแบต`,
+    idleUnit:m=>m<60?`${m}m`:`${Math.floor(m/60)}h${m%60?m%60+'m':''}`,
+    runtimeUnit:m=>m<60?`${m}m`:`${Math.floor(m/60)}h${m%60?m%60+'m':''}`,
+    updateAt:t=>`อัปเดต ${t}`,connectingTxt:'กำลังเชื่อมต่อ…',
+    footerHint:'localhost:8765',dismissed:'คลิกเพื่อดูอีกครั้ง'
+  },
+  en:{
+    ttl:'Battery Console · ThinkPad P16s Gen 2',
+    procLbl:'Running Programs',
+    refreshLbl:'Refresh',
+    setLbl:'Settings',
+    spIdle:'Idle after',spMin:'min',spCpu:'CPU ≤',spCpuHint:' = idle',spSave:'Save',
+    thName:'Name',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'Runtime',thIdle:'Idle',
+    sortMem:'RAM ↓',sortIdle:'Idle ↓',
+    statusCharging:p=>`Charging ${p}%`,statusFull:'Fully Charged ✓',
+    statusDC:p=>`Discharging ${p}%`,statusLow:p=>`Low! ${p}%`,
+    bsDetail:'Health 85.3% · 407/1,000 cycles',
+    srvOk:'Connected',srvErr:'Server offline',
+    alert:n=>`⚠️ ${n} program${n>1?'s':''} idle — consider closing to save battery`,
+    idleUnit:m=>m<60?`${m}m`:`${Math.floor(m/60)}h${m%60?m%60+'m':''}`,
+    runtimeUnit:m=>m<60?`${m}m`:`${Math.floor(m/60)}h${m%60?m%60+'m':''}`,
+    updateAt:t=>`Updated ${t}`,connectingTxt:'Connecting…',
+    footerHint:'localhost:8765',dismissed:'click to show again'
+  }
+};
+
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-g button').forEach((b,i)=>b.classList.toggle('active',(i===0&&l==='th')||(i===1&&l==='en')));
+  const t=T[l];
+  setText('t-ttl',t.ttl);setText('t-proc-lbl',t.procLbl);
+  setText('t-refresh-lbl',t.refreshLbl);setText('t-set-lbl',t.setLbl);
+  setText('t-sp-idle',t.spIdle);setText('t-sp-min',t.spMin);
+  setText('t-sp-cpu',t.spCpu);setText('t-sp-cpu-hint',t.spCpuHint);setText('t-sp-save',t.spSave);
+  setText('th-name',t.thName);setText('th-title',t.thTitle);
+  setText('th-cpu',t.thCpu);setText('th-mem',t.thMem);
+  setText('th-run',t.thRun);setText('th-idle',t.thIdle);
+  setText('bs-detail',t.bsDetail);
+  setText('t-footer-hint',t.footerHint);
+  const sel=document.getElementById('sort-sel');
+  sel.options[0].text=t.sortMem;sel.options[2].text=t.sortIdle;
+  renderBattery(window._lastBatt);
+  renderTable();
+}
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+
+// ── BATTERY ──────────────────────────────────────────────────
+function renderBattery(b){
+  window._lastBatt=b;
+  if(!b)return;
+  const t=T[lang];
+  const pct=b.level, plug=b.charging, full=pct>=100&&plug, low=pct<=20&&!plug;
+  document.getElementById('bs-pct').textContent=pct+'%';
+  const bar=document.getElementById('bs-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=full?'var(--green)':plug?'var(--yellow)':low?'var(--red)':'var(--blue)';
+  const pill=document.getElementById('bs-pill');
+  const cls=full?'pill-fl':plug?'pill-ch':low?'pill-lo':'pill-dc';
+  pill.className='s-pill '+cls;
+  const stTxt=full?t.statusFull:plug?t.statusCharging(pct):low?t.statusLow(pct):t.statusDC(pct);
+  document.getElementById('bs-status').textContent=stTxt;
+  document.getElementById('bs-ico').textContent=full?'🟢':plug?'⚡':'🔋';
+}
+
+// ── TABLE ─────────────────────────────────────────────────────
+function filterProcs(){
+  const q=document.getElementById('search').value.toLowerCase();
+  return q?allProcs.filter(p=>p.name.toLowerCase().includes(q)||p.title.toLowerCase().includes(q)):allProcs;
+}
+function setSortCol(col){sortBy=col;document.getElementById('sort-sel').value=col;renderTable()}
+
+function renderTable(){
+  const t=T[lang];
+  let procs=[...filterProcs()];
+  procs.sort((a,b)=>{
+    if(sortBy==='cpu')   return b.cpu-a.cpu;
+    if(sortBy==='mem')   return b.memMB-a.memMB;
+    if(sortBy==='idle')  return b.idleMin-a.idleMin;
+    if(sortBy==='runtime') return b.runtimeMin-a.runtimeMin;
+    return a.name.localeCompare(b.name);
+  });
+  document.getElementById('proc-count').textContent=procs.length;
+
+  const tbody=document.getElementById('proc-body');
+  if(!procs.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">—</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=procs.map(p=>{
+    const cpuColor=p.cpu>50?'var(--red)':p.cpu>20?'var(--orange)':p.cpu>5?'var(--yellow)':'var(--green)';
+    const cpuBarW=Math.min(50,p.cpu*1.5)+'px';
+    const memStr=p.memMB>=1024?`${(p.memMB/1024).toFixed(1)}G`:`${p.memMB}M`;
+    const runStr=t.runtimeUnit(p.runtimeMin);
+    const idleCell=p.isIdle
+      ?`<span class="idle-badge">⚠ ${t.idleUnit(p.idleMin)}</span>`
+      :p.idleMin>0?`<span class="idle-ok">${t.idleUnit(p.idleMin)}</span>`
+      :`<span class="idle-ok">—</span>`;
+    const dotColor=p.cpu>10?'var(--orange)':p.isIdle?'var(--red)':'var(--green)';
+    return `<tr class="${p.isIdle?'idle-warn':''}">
+      <td class="td-name"><span class="proc-dot" style="background:${dotColor}"></span>${p.name}</td>
+      <td class="td-title">${p.title||'—'}</td>
+      <td><span style="color:${cpuColor};font-weight:600">${p.cpu.toFixed(1)}</span>
+          <span class="cpu-bar" style="width:${cpuBarW};background:${cpuColor}"></span></td>
+      <td style="color:var(--muted2)">${memStr}</td>
+      <td style="color:var(--muted)">${runStr}</td>
+      <td>${idleCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ALERT ─────────────────────────────────────────────────────
+function showAlert(idleCount){
+  const t=T[lang];
+  const ab=document.getElementById('alert');
+  if(idleCount>0&&!alertDismissed){
+    ab.style.display='block';
+    document.getElementById('t-alert').textContent=t.alert(idleCount);
+    // Play chime for newly idle procs
+    const idleProcs=allProcs.filter(p=>p.isIdle);
+    idleProcs.forEach(p=>{
+      if(!alertPlayed.has(p.pid)){alertPlayed.add(p.pid);playChime()}
+    });
+    // Clean stale pids from alertPlayed
+    const livePids=new Set(allProcs.map(p=>p.pid));
+    alertPlayed.forEach(pid=>{ if(!livePids.has(pid))alertPlayed.delete(pid) });
+  } else {
+    ab.style.display='none';
+  }
+}
+function dismissAlert(){
+  alertDismissed=true;
+  document.getElementById('alert').style.display='none';
+}
+function dismissLowBatt(){
+  lowBattDismissed=true;
+  document.getElementById('low-batt-alert').style.display='none';
+}
+function checkLowBattery(batt){
+  if(!batt) return;
+  const pct=batt.level, plug=batt.charging;
+  const lb=document.getElementById('low-batt-alert');
+  if(pct<=LOW_BATT_PCT && !plug && !lowBattDismissed){
+    lb.style.display='block';
+    document.getElementById('t-low-batt').textContent=
+      lang==='th'
+        ?`⚡ แบตเตอรี่เหลือ ${pct}%! กรุณาเสียบชาร์จโดยด่วน`
+        :`⚡ Battery low at ${pct}%! Please plug in charger immediately`;
+    if(!lowBattPlayed){ lowBattPlayed=true; playLowBattChime(); }
+  } else {
+    lb.style.display='none';
+    if(plug || pct>LOW_BATT_PCT){ lowBattDismissed=false; lowBattPlayed=false; }
+  }
+}
+function playLowBattChime(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[880,.0],[660,.22],[440,.44],[880,.7],[660,.92],[440,1.14]].forEach(([f,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='square';o.frequency.value=f;
+      g.gain.setValueAtTime(.2,ctx.currentTime+d);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.18);
+      o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.2);
+    });
+  }catch(e){}
+}
+
+function playChime(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[440,.0],[350,.22],[300,.44]].forEach(([f,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sawtooth';o.frequency.value=f;
+      g.gain.setValueAtTime(.18,ctx.currentTime+d);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.2);
+      o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.25);
+    });
+  }catch(e){}
+}
+
+// ── FETCH ─────────────────────────────────────────────────────
+async function fetchNow(){
+  try{
+    const r=await fetch(API+'/api/status',{cache:'no-store'});
+    const d=await r.json();
+    allProcs=d.processes||[];
+
+    // Battery from server
+    if(d.battery) renderBattery(d.battery);
+    // Try Battery API override
+    if('getBattery' in navigator){
+      navigator.getBattery().then(b=>{
+        renderBattery({level:Math.round(b.level*100),charging:b.charging});
+      }).catch(()=>{});
+    }
+
+    renderTable();
+    showAlert(d.idleCount||0);
+    checkLowBattery(d.battery);
+
+    // Sync settings
+    if(d.settings){
+      document.getElementById('sp-idle').value=d.settings.idleMinutes||30;
+      document.getElementById('sp-cpu').value=d.settings.cpuThreshold||2;
+    }
+
+    // Status
+    setOnline(true, d.timestamp);
+  }catch(e){
+    setOnline(false,'');
+  }
+}
+
+function setOnline(ok, ts){
+  const badge=document.getElementById('srv-badge');
+  const dot=document.getElementById('footer-dot');
+  const st=document.getElementById('footer-status');
+  const fts=document.getElementById('footer-ts');
+  const t=T[lang];
+  badge.textContent=ok?t.srvOk:'Connecting…';
+  badge.className='badge'+(ok?'':' offline');
+  dot.className=ok?'dot-ok':'dot-err';
+  st.textContent=ok?t.srvOk:t.srvErr;
+  fts.textContent=ok?t.updateAt(ts):'';
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+function toggleSettings(){
+  const p=document.getElementById('settings-panel');
+  const btn=document.getElementById('btn-set');
+  p.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+async function saveSettings(){
+  const idle=+document.getElementById('sp-idle').value;
+  const cpu=+document.getElementById('sp-cpu').value;
+  try{
+    await fetch(API+'/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({idleMinutes:idle,cpuThreshold:cpu})});
+    alertPlayed.clear();alertDismissed=false;
+    fetchNow();
+  }catch(e){}
+}
+
+// ── REFRESH TIMER ─────────────────────────────────────────────
+function setRefresh(sec){
+  clearInterval(refreshTimer);
+  if(sec>0) refreshTimer=setInterval(fetchNow,sec*1000);
+}
+
+// ── BATTERY API (real-time) ───────────────────────────────────
+if('getBattery' in navigator){
+  navigator.getBattery().then(b=>{
+    renderBattery({level:Math.round(b.level*100),charging:b.charging});
+    b.addEventListener('chargingchange',()=>renderBattery({level:Math.round(b.level*100),charging:b.charging}));
+    b.addEventListener('levelchange',()=>renderBattery({level:Math.round(b.level*100),charging:b.charging}));
+  }).catch(()=>{});
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+fetchNow();
+setRefresh(10);
+</script>
+</body>
+</html>

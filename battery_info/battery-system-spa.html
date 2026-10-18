@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>System & Internet Dashboard</title>
+<style>
+:root{
+  --bg:#0d0d12;--card:#16161f;--card2:#1e1e2a;--border:#252535;
+  --text:#e8e8f0;--muted:#6b6b88;--muted2:#9999b3;
+  --green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;
+  --blue:#38bdf8;--cyan:#11d8e8;--purple:#a855f7;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f4f4f8;--card:#fff;--card2:#eef0f5;--border:#dcdce6;
+  --text:#1a1a24;--muted:#8a8aa0;--muted2:#55556e;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+#header{background:linear-gradient(135deg,#0a0a14,#12122a);border-bottom:1px solid var(--border);padding:12px 20px}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #header{background:linear-gradient(135deg,#e8ecf7,#dfe4f5)}}
+.hdr-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hdr-icon{font-size:26px}
+.hdr-titles{flex:1;min-width:140px}
+.hdr-titles h1{font-size:14px;font-weight:700;color:var(--cyan)}
+.hdr-titles .sub{font-size:10px;color:var(--muted2);margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lang-btn{background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:20px;cursor:pointer;font-size:11px}
+.lang-btn.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
+#srv-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+#srv-badge.ok{background:rgba(34,197,94,.12);color:var(--green);border-color:rgba(34,197,94,.3)}
+.ref-wrap{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.ref-wrap select{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:2px 4px;border-radius:5px;font-size:10px}
+#tab-bar{display:flex;background:#0a0a14;border-bottom:1px solid var(--border)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #tab-bar{background:#e4e8f4}}
+.tab-btn{flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;user-select:none}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(17,216,232,.05)}
+.alert-strip{display:none;padding:8px 20px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
+#alert-full{background:linear-gradient(90deg,rgba(34,197,94,.18),rgba(34,197,94,.05));color:var(--green);border-bottom:1px solid var(--green)}
+#alert-low{background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fff;border-bottom:2px solid var(--red)}
+.panel{display:none;padding:16px 20px 30px}
+.panel.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--acc,transparent)}
+.c-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.big{font-size:28px;font-weight:700}
+.sub{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.6}
+.row{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0}
+.row span:first-child{color:var(--muted)}
+.ring{display:flex;align-items:center;gap:12px}
+.ring svg{flex:0 0 66px}
+.ring svg text{font-size:12px;font-weight:700;fill:var(--text)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;margin-top:5px}
+.pill .dot{width:7px;height:7px;border-radius:50%}
+.p-charge{background:rgba(234,179,8,.15);color:var(--yellow)}.p-charge .dot{background:var(--yellow)}
+.p-full{background:rgba(34,197,94,.15);color:var(--green)}.p-full .dot{background:var(--green)}
+.p-dc{background:rgba(56,189,248,.12);color:var(--blue)}.p-dc .dot{background:var(--blue)}
+.p-low{background:rgba(239,68,68,.15);color:var(--red)}.p-low .dot{background:var(--red)}
+.btn{background:var(--cyan);color:#000;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+svg.spark{width:100%;height:40px;margin-top:6px}
+#sum{border-left:4px solid var(--sum-c,var(--muted));margin-bottom:12px}
+#sum h3{font-size:15px;color:var(--sum-c,var(--text));margin-bottom:6px}
+.si{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.si .ic{flex:0 0 18px;text-align:center}
+.si .fx{color:var(--muted2);font-size:11px}
+.lv-ok{color:var(--green)}.lv-warn{color:var(--yellow)}.lv-bad{color:var(--red)}.lv-info{color:var(--muted2)}
+.note{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6}
+table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}
+th,td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:left}
+th{color:var(--muted2);font-size:10px;text-transform:uppercase}
+footer{text-align:center;color:var(--muted);font-size:10px;padding:14px;margin-top:auto;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="hdr-top">
+    <div class="hdr-icon">🖥️</div>
+    <div class="hdr-titles">
+      <h1 id="x-title">แดชบอร์ดระบบและอินเทอร์เน็ต</h1>
+      <div class="sub" id="x-dev">—</div>
+    </div>
+    <div class="hdr-right">
+      <button class="lang-btn active" onclick="setLang('th')">ไทย</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <span id="srv-badge">—</span>
+      <div class="ref-wrap"><span id="x-ref">รีเฟรช</span>
+        <select id="ref-sel" onchange="setRefresh(+this.value)">
+          <option value="5">5s</option><option value="10" selected>10s</option>
+          <option value="30">30s</option><option value="60">1m</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-bar">
+  <div class="tab-btn active" onclick="tab('batt')" id="b-batt">🔋 <span data-x="t1">แบตเตอรี่</span></div>
+  <div class="tab-btn" onclick="tab('net')" id="b-net">🌐 <span data-x="t2">อินเทอร์เน็ต</span></div>
+  <div class="tab-btn" onclick="tab('dev')" id="b-dev">💻 <span data-x="t3">อุปกรณ์</span></div>
+</div>
+
+<div id="alert-full" class="alert-strip" onclick="this.style.display='none'"><span data-x="aFull">🔔 แบตเตอรี่ชาร์จเต็มแล้ว! ถอดสายชาร์จเพื่อยืดอายุแบตเตอรี่</span></div>
+<div id="alert-low" class="alert-strip" onclick="lowDismiss=true;this.style.display='none'"><span data-x="aLow">⚡ แบตเตอรี่เหลือน้อย! กรุณาเสียบชาร์จ</span></div>
+
+<!-- BATTERY -->
+<div class="panel active" id="p-batt">
+  <div class="cards">
+    <div class="card" style="--acc:var(--blue)">
+      <div class="c-lbl" data-x="charge">สถานะการชาร์จ</div>
+      <div class="ring">
+        <svg viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="28" fill="none" stroke="#1e1e30" stroke-width="8"/>
+          <circle id="arc" cx="35" cy="35" r="28" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round" stroke-dasharray="175.9" stroke-dashoffset="175.9" transform="rotate(-90 35 35)" style="transition:.8s"/>
+          <text x="35" y="39" text-anchor="middle" id="arc-t">—</text>
+        </svg>
+        <div>
+          <div id="b-pill" class="pill p-dc"><span class="dot"></span><span id="b-st">—</span></div>
+          <div class="sub" id="b-sub">—</div>
+          <div class="sub" id="b-eta" style="color:var(--blue)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="--acc:var(--purple)">
+      <div class="c-lbl" data-x="bInfo">ข้อมูลแบตเตอรี่</div>
+      <div class="row"><span data-x="bLevel">ระดับแบต</span><span id="b-lvl">—</span></div>
+      <div class="row"><span data-x="bState">สถานะ</span><span id="b-state">—</span></div>
+      <div class="row"><span data-x="bFull">เวลาชาร์จเต็ม</span><span id="b-full">—</span></div>
+      <div class="row"><span data-x="bEmpty">เวลาใช้งานเหลือ</span><span id="b-empty">—</span></div>
+      <div class="note" data-x="bNote">* สุขภาพแบตและรอบชาร์จอ่านได้เฉพาะเมื่อเปิดผ่านเซิร์ฟเวอร์ในเครื่อง</div>
+    </div>
+  </div>
+  <div class="card" id="srv-batt" style="--acc:var(--green);margin-top:12px;display:none">
+    <div class="c-lbl" data-x="srvFull">ข้อมูลเพิ่มเติมจากเซิร์ฟเวอร์ในเครื่อง</div>
+    <div class="row"><span data-x="health">สุขภาพแบต</span><span id="s-health">—</span></div>
+    <div class="row"><span data-x="cycles">รอบชาร์จ</span><span id="s-cycles">—</span></div>
+    <div class="row"><span data-x="temp">อุณหภูมิ CPU</span><span id="s-temp">—</span></div>
+    <div class="row"><span data-x="procs">โปรแกรมทำงาน</span><span id="s-procs">—</span></div>
+  </div>
+</div>
+
+<!-- INTERNET -->
+<div class="panel" id="p-net">
+  <div class="card" id="sum">
+    <div class="c-lbl" data-x="sumT">สรุปสถานะการทำงาน</div>
+    <h3 id="sum-h">—</h3>
+    <div id="sum-l"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="btn" id="sp-btn" onclick="speedTest()">▶ <span data-x="runSpeed">ทดสอบความเร็ว</span></button>
+    <span class="sub" id="sp-last" style="margin-left:auto">—</span>
+  </div>
+  <div class="cards">
+    <div class="card" style="--acc:var(--cyan)">
+      <div class="c-lbl" data-x="down">ดาวน์โหลด</div><div class="big" id="n-down">—</div><div class="sub">Mbps</div>
+      <svg class="spark" id="sk-down" viewBox="0 0 260 40" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="card" style="--acc:var(--purple)">
+      <div class="c-lbl" data-x="up">อัปโหลด</div><div class="big" id="n-up">—</div><div class="sub">Mbps</div>
+      <svg class="spark" id="sk-up" viewBox="0 0 260 40" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="card" style="--acc:var(--yellow)">
+      <div class="c-lbl" data-x="lat">หน่วงเวลา (Latency)</div><div class="big" id="n-lat">—</div><div class="sub" id="n-lat-sub">ms</div>
+      <svg class="spark" id="sk-lat" viewBox="0 0 260 40" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="card" style="--acc:var(--blue)">
+      <div class="c-lbl" data-x="conn">การเชื่อมต่อ</div>
+      <div class="row"><span data-x="status">สถานะ</span><span id="n-online">—</span></div>
+      <div class="row"><span data-x="type">ประเภท</span><span id="n-type">—</span></div>
+      <div class="row"><span data-x="est">ประมาณการ</span><span id="n-est">—</span></div>
+      <div class="row"><span data-x="rtt">RTT</span><span id="n-rtt">—</span></div>
+      <div class="row"><span data-x="pip">IP สาธารณะ</span><span id="n-pip">—</span></div>
+    </div>
+  </div>
+  <div class="card" id="srv-net" style="--acc:var(--green);margin-top:12px;display:none">
+    <div class="c-lbl" data-x="srvNet">รายละเอียดเครือข่ายจากเซิร์ฟเวอร์ในเครื่อง</div>
+    <div class="row"><span data-x="adapter">อแดปเตอร์</span><span id="s-adapter">—</span></div>
+    <div class="row"><span data-x="lip">IP ภายใน</span><span id="s-lip">—</span></div>
+    <div class="row"><span data-x="gw">Gateway</span><span id="s-gw">—</span></div>
+    <div class="row"><span data-x="wifi">Wi-Fi</span><span id="s-wifi">—</span></div>
+    <table id="s-ping"><thead><tr><th data-x="tgt">ปลายทาง</th><th>Avg</th><th>Jitter</th><th data-x="loss">Loss</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<!-- DEVICE -->
+<div class="panel" id="p-dev">
+  <div class="cards">
+    <div class="card" style="--acc:var(--cyan)">
+      <div class="c-lbl" data-x="hw">ฮาร์ดแวร์</div>
+      <div class="row"><span data-x="cores">CPU (เธรด)</span><span id="d-cores">—</span></div>
+      <div class="row"><span data-x="mem">หน่วยความจำ</span><span id="d-mem">—</span></div>
+      <div class="row"><span data-x="plat">แพลตฟอร์ม</span><span id="d-plat">—</span></div>
+      <div class="row"><span data-x="touch">จุดสัมผัส</span><span id="d-touch">—</span></div>
+    </div>
+    <div class="card" style="--acc:var(--purple)">
+      <div class="c-lbl" data-x="disp">จอแสดงผล</div>
+      <div class="row"><span data-x="res">ความละเอียด</span><span id="d-res">—</span></div>
+      <div class="row"><span data-x="avail">พื้นที่ใช้ได้</span><span id="d-avail">—</span></div>
+      <div class="row"><span data-x="depth">ความลึกสี</span><span id="d-depth">—</span></div>
+      <div class="row"><span data-x="dpr">อัตราส่วนพิกเซล</span><span id="d-dpr">—</span></div>
+    </div>
+    <div class="card" style="--acc:var(--orange)">
+      <div class="c-lbl" data-x="soft">ซอฟต์แวร์</div>
+      <div class="row"><span data-x="browser">เบราว์เซอร์</span><span id="d-browser">—</span></div>
+      <div class="row"><span data-x="lang">ภาษา</span><span id="d-lang">—</span></div>
+      <div class="row"><span data-x="tz">เขตเวลา</span><span id="d-tz">—</span></div>
+      <div class="row"><span data-x="storage">ที่เก็บเบราว์เซอร์</span><span id="d-storage">—</span></div>
+    </div>
+  </div>
+  <div class="note" data-x="devNote" style="padding:0 2px">* ข้อมูลโปรแกรมที่ทำงาน การใช้ CPU/RAM และอุณหภูมิ ต้องเปิดผ่านเซิร์ฟเวอร์ในเครื่อง (ไฟล์ SPA นี้แสดงได้เฉพาะข้อมูลที่เบราว์เซอร์เข้าถึงได้)</div>
+</div>
+
+<footer id="x-footer">System & Internet Dashboard · v1.0.0 · โดย ลุงพี</footer>
+
+<script>
+const API='http://localhost:8765';
+let lang='th', activeTab='batt', timer=null, battObj=null;
+let lastSpeed=null, speedBusy=false, hist={down:[],up:[],lat:[]};
+let fullPlayed=false, lowPlayed=false, lowDismiss=false, publicIp=null, serverOn=false;
+
+const X={
+ th:{title:'แดชบอร์ดระบบและอินเทอร์เน็ต',ref:'รีเฟรช',t1:'แบตเตอรี่',t2:'อินเทอร์เน็ต',t3:'อุปกรณ์',
+  charge:'สถานะการชาร์จ',bInfo:'ข้อมูลแบตเตอรี่',bLevel:'ระดับแบต',bState:'สถานะ',bFull:'เวลาชาร์จเต็ม',bEmpty:'เวลาใช้งานเหลือ',
+  bNote:'* สุขภาพแบตและรอบชาร์จอ่านได้เฉพาะเมื่อเปิดผ่านเซิร์ฟเวอร์ในเครื่อง',
+  srvFull:'ข้อมูลเพิ่มเติมจากเซิร์ฟเวอร์ในเครื่อง',health:'สุขภาพแบต',cycles:'รอบชาร์จ',temp:'อุณหภูมิ CPU',procs:'โปรแกรมทำงาน',
+  charging:p=>`กำลังชาร์จ ${p}%`,full:'ชาร์จเต็มแล้ว ✓',dc:p=>`กำลังใช้งาน ${p}%`,low:p=>`แบตต่ำ! ${p}%`,noBatt:'ไม่พบข้อมูลแบตเตอรี่ในเบราว์เซอร์นี้',
+  subPlug:p=>p>=100?'เสียบปลั๊ก · เต็มแล้ว':`เสียบปลั๊ก · ${p}%`,subDc:p=>`ใช้แบต · เหลือ ${p}%`,
+  etaF:m=>m>0?`ชาร์จเต็มใน ~${m} นาที`:'',etaE:m=>m>0?`ใช้ได้อีก ~${m} นาที`:'',
+  aFull:'🔔 แบตเตอรี่ชาร์จเต็มแล้ว! ถอดสายชาร์จเพื่อยืดอายุแบตเตอรี่',aLow:p=>`⚡ แบตเตอรี่เหลือ ${p}%! กรุณาเสียบชาร์จ`,
+  sumT:'สรุปสถานะการทำงาน',runSpeed:'ทดสอบความเร็ว',down:'ดาวน์โหลด',up:'อัปโหลด',lat:'หน่วงเวลา (Latency)',
+  conn:'การเชื่อมต่อ',status:'สถานะ',type:'ประเภท',est:'ประมาณการ',rtt:'RTT',pip:'IP สาธารณะ',
+  online:'ออนไลน์',offline:'ออฟไลน์',busy:'กำลังทดสอบ…',fail:'ทดสอบไม่สำเร็จ',none:'ยังไม่เคยทดสอบ',lastT:t=>`ทดสอบล่าสุด ${t}`,
+  srvNet:'รายละเอียดเครือข่ายจากเซิร์ฟเวอร์ในเครื่อง',adapter:'อแดปเตอร์',lip:'IP ภายใน',gw:'Gateway',wifi:'Wi-Fi',tgt:'ปลายทาง',loss:'Loss',
+  hw:'ฮาร์ดแวร์',cores:'CPU (เธรด)',mem:'หน่วยความจำ',plat:'แพลตฟอร์ม',touch:'จุดสัมผัส',
+  disp:'จอแสดงผล',res:'ความละเอียด',avail:'พื้นที่ใช้ได้',depth:'ความลึกสี',dpr:'อัตราส่วนพิกเซล',
+  soft:'ซอฟต์แวร์',browser:'เบราว์เซอร์',language:'ภาษา',lang:'ภาษา',tz:'เขตเวลา',storage:'ที่เก็บเบราว์เซอร์',
+  devNote:'* ข้อมูลโปรแกรมที่ทำงาน การใช้ CPU/RAM และอุณหภูมิ ต้องเปิดผ่านเซิร์ฟเวอร์ในเครื่อง (ไฟล์ SPA นี้แสดงได้เฉพาะข้อมูลที่เบราว์เซอร์เข้าถึงได้)',
+  srvOk:'เชื่อมต่อเซิร์ฟเวอร์',srvNo:'โหมดพกพา (ไม่มีเซิร์ฟเวอร์)',
+  hAll:'ระบบทั้งหมดทำงานปกติ',hWarn:'มีบางจุดควรดูแล',hBad:'พบปัญหาที่ควรแก้ไข',unknown:'ไม่ทราบ',
+  footer:'System & Internet Dashboard · v1.0.0 · โดย ลุงพี'},
+ en:{title:'System & Internet Dashboard',ref:'Refresh',t1:'Battery',t2:'Internet',t3:'Device',
+  charge:'Charge Status',bInfo:'Battery Info',bLevel:'Level',bState:'State',bFull:'Time to full',bEmpty:'Time remaining',
+  bNote:'* Battery health and cycle count are only available when opened through the local server.',
+  srvFull:'Extra data from local server',health:'Battery health',cycles:'Charge cycles',temp:'CPU temp',procs:'Running programs',
+  charging:p=>`Charging ${p}%`,full:'Fully charged ✓',dc:p=>`On battery ${p}%`,low:p=>`Low battery! ${p}%`,noBatt:'Battery API not available in this browser',
+  subPlug:p=>p>=100?'Plugged in · Full':`Plugged in · ${p}%`,subDc:p=>`On battery · ${p}% left`,
+  etaF:m=>m>0?`~${m} min to full`:'',etaE:m=>m>0?`~${m} min remaining`:'',
+  aFull:'🔔 Battery fully charged! Unplug the charger to extend lifespan.',aLow:p=>`⚡ Battery at ${p}%! Please plug in.`,
+  sumT:'Overall status',runSpeed:'Run speed test',down:'Download',up:'Upload',lat:'Latency',
+  conn:'Connection',status:'Status',type:'Type',est:'Estimated',rtt:'RTT',pip:'Public IP',
+  online:'Online',offline:'Offline',busy:'Testing…',fail:'Test failed',none:'No test yet',lastT:t=>`Last test ${t}`,
+  srvNet:'Network detail from local server',adapter:'Adapter',lip:'Local IP',gw:'Gateway',wifi:'Wi-Fi',tgt:'Target',loss:'Loss',
+  hw:'Hardware',cores:'CPU (threads)',mem:'Memory',plat:'Platform',touch:'Touch points',
+  disp:'Display',res:'Resolution',avail:'Available',depth:'Color depth',dpr:'Pixel ratio',
+  soft:'Software',browser:'Browser',language:'Language',lang:'Language',tz:'Time zone',storage:'Browser storage',
+  devNote:'* Running programs, CPU/RAM usage and temperature need the local server. This SPA shows only what the browser can read.',
+  srvOk:'Server connected',srvNo:'Portable mode (no server)',
+  hAll:'All systems normal',hWarn:'A few things to watch',hBad:'Issues need attention',unknown:'Unknown',
+  footer:'System & Internet Dashboard · v1.0.0 · by LungPee'}
+};
+
+const $=id=>document.getElementById(id);
+const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function setLang(l){
+  lang=l; document.documentElement.lang=l;
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&l==='th')||(i===1&&l==='en')));
+  const t=X[l];
+  set('x-title',t.title); set('x-ref',t.ref); set('x-footer',t.footer);
+  document.querySelectorAll('[data-x]').forEach(el=>{ if(typeof t[el.dataset.x]==='string') el.textContent=t[el.dataset.x]; });
+  $('srv-badge').textContent = serverOn?t.srvOk:t.srvNo;
+  if(battObj) renderBatt(battObj);
+  renderNet(); renderSpeed(); renderSummary(); renderDevice();
+}
+
+function tab(name){
+  activeTab=name;
+  ['batt','net','dev'].forEach(k=>{ $('p-'+k).classList.toggle('active',k===name); $('b-'+k).classList.toggle('active',k===name); });
+}
+
+function chime(freqs,type){
+  try{const c=new(window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+      o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.22,c.currentTime+i*.2);
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.2+.18);o.start(c.currentTime+i*.2);o.stop(c.currentTime+i*.2+.2);});
+  }catch(e){}
+}
+
+function renderBatt(b){
+  const t=X[lang], pct=Math.round(b.level*100), plug=b.charging;
+  const full=pct>=100&&plug, low=pct<=20&&!plug;
+  const circ=2*Math.PI*28, arc=$('arc');
+  arc.setAttribute('stroke-dashoffset',(circ-pct/100*circ).toFixed(1));
+  const col=full?'var(--green)':plug?'var(--yellow)':low?'var(--red)':'var(--blue)';
+  arc.setAttribute('stroke',col); set('arc-t',pct+'%');
+  $('b-pill').className='pill '+(full?'p-full':plug?'p-charge':low?'p-low':'p-dc');
+  set('b-st',full?t.full:plug?t.charging(pct):low?t.low(pct):t.dc(pct));
+  set('b-sub',plug?t.subPlug(pct):t.subDc(pct));
+  set('b-lvl',pct+'%'); set('b-state',plug?(full?t.full:t.charging(pct)):t.dc(pct));
+  const cf=b.chargingTime&&isFinite(b.chargingTime)?Math.round(b.chargingTime/60):0;
+  const ce=b.dischargingTime&&isFinite(b.dischargingTime)?Math.round(b.dischargingTime/60):0;
+  set('b-full',plug&&cf>0?cf+' '+(lang==='th'?'นาที':'min'):'—');
+  set('b-empty',!plug&&ce>0?ce+' '+(lang==='th'?'นาที':'min'):'—');
+  const eta=$('b-eta'); eta.textContent=plug?t.etaF(cf):t.etaE(ce); eta.style.color=plug?'var(--yellow)':'var(--blue)';
+  $('alert-full').style.display=full?'block':'none';
+  if(full&&!fullPlayed){chime([523,659,784,1047],'sine');fullPlayed=true} if(!full)fullPlayed=false;
+  const al=$('alert-low');
+  if(low&&!lowDismiss){al.style.display='block'; $('alert-low').querySelector('span').textContent=t.aLow(pct); if(!lowPlayed){chime([880,660,440,880,660,440],'square');lowPlayed=true}}
+  else{al.style.display='none'; if(!low)lowPlayed=false;}
+}
+function noBatt(){ set('b-st',X[lang].noBatt); set('arc-t','—'); }
+
+function spark(id,arr,color){
+  const el=$(id); if(!el)return; if(arr.length<2){el.innerHTML='';return;}
+  const mn=Math.min(...arr),mx=Math.max(...arr),sp=(mx-mn)||1;
+  el.innerHTML=`<polyline points="${arr.map((v,i)=>`${(i/(arr.length-1)*260).toFixed(1)},${(38-((v-mn)/sp)*34).toFixed(1)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+}
+
+async function measureDown(){
+  const streams=4,bytes=5000000,t0=performance.now();
+  const sz=await Promise.all(Array.from({length:streams},(_,i)=>fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}&n=${i}${Date.now()}`,{cache:'no-store'}).then(r=>r.arrayBuffer()).then(b=>b.byteLength)));
+  return +(sz.reduce((a,b)=>a+b,0)*8/((performance.now()-t0)/1000)/1e6).toFixed(2);
+}
+async function measureUp(){
+  const streams=3,bytes=2000000,t0=performance.now();
+  await Promise.all(Array.from({length:streams},()=>fetch('https://speed.cloudflare.com/__up',{method:'POST',body:new Uint8Array(bytes),cache:'no-store'})));
+  return +(streams*bytes*8/((performance.now()-t0)/1000)/1e6).toFixed(2);
+}
+async function speedTest(){
+  if(speedBusy)return; speedBusy=true; $('sp-btn').disabled=true; set('sp-last',X[lang].busy);
+  try{ const d=await measureDown(), u=await measureUp(); lastSpeed={down:d,up:u,at:new Date()};
+    hist.down.push(d); hist.up.push(u); if(hist.down.length>40){hist.down.shift();hist.up.shift();}
+  }catch(e){ lastSpeed={error:true,at:new Date()}; }
+  speedBusy=false; $('sp-btn').disabled=false; renderSpeed(); renderSummary();
+}
+function spdCol(v){return v>=50?'var(--green)':v>=10?'var(--yellow)':'var(--red)';}
+function renderSpeed(){
+  const t=X[lang];
+  if(!lastSpeed){set('sp-last',t.none);return;}
+  if(lastSpeed.error){set('sp-last',t.fail);return;}
+  const d=$('n-down'),u=$('n-up'); d.textContent=lastSpeed.down; d.style.color=spdCol(lastSpeed.down);
+  u.textContent=lastSpeed.up; u.style.color=spdCol(lastSpeed.up);
+  set('sp-last',t.lastT(lastSpeed.at.toLocaleTimeString(lang==='th'?'th-TH':'en-US')));
+  spark('sk-down',hist.down,'#22d3ee'); spark('sk-up',hist.up,'#a855f7');
+}
+
+// Latency: time an opaque fetch round-trip (no ICMP in browser).
+async function measureLatency(){
+  const url='https://www.cloudflare.com/cdn-cgi/trace?_='+Date.now();
+  const t0=performance.now();
+  try{ await fetch(url,{cache:'no-store'}); return Math.round(performance.now()-t0); }catch(e){ return null; }
+}
+
+async function renderNet(){
+  const t=X[lang], on=navigator.onLine;
+  set('n-online',on?t.online:t.offline); $('n-online').style.color=on?'var(--green)':'var(--red)';
+  const c=navigator.connection||navigator.webkitConnection;
+  set('n-type',c&&c.effectiveType?c.effectiveType.toUpperCase():t.unknown);
+  set('n-est',c&&c.downlink?c.downlink+' Mbps':'—');
+  set('n-rtt',c&&c.rtt?c.rtt+' ms':'—');
+  set('n-pip',publicIp||'—');
+}
+
+async function refreshLatency(){
+  const ms=await measureLatency();
+  const el=$('n-lat');
+  if(ms==null){ el.textContent='—'; el.style.color='var(--red)'; return; }
+  el.textContent=ms; el.style.color=ms<80?'var(--green)':ms<160?'var(--yellow)':'var(--red)';
+  hist.lat.push(ms); if(hist.lat.length>40)hist.lat.shift(); spark('sk-lat',hist.lat,'#eab308');
+}
+
+function renderSummary(){
+  const t=X[lang], items=[]; let bad=0,warn=0;
+  const add=(lv,txt,fx)=>{items.push({lv,txt,fx});if(lv==='bad')bad++;else if(lv==='warn')warn++;};
+  const ic={ok:'✅',warn:'⚠️',bad:'⛔',info:'ℹ️'};
+  if(lastSpeed&&!lastSpeed.error){
+    const lv=lastSpeed.down>=50?'ok':lastSpeed.down>=10?'warn':'bad';
+    add(lv,(lang==='th'?`ดาวน์โหลด ${lastSpeed.down} · อัปโหลด ${lastSpeed.up} Mbps`:`Download ${lastSpeed.down} · Upload ${lastSpeed.up} Mbps`),
+      lv==='ok'?'':(lang==='th'?'ความเร็วต่ำ ลองเข้าใกล้เราเตอร์หรือทดสอบซ้ำ':'Low speed — move closer to router or retest'));
+  } else add('info',(lang==='th'?'กดปุ่มทดสอบความเร็วเพื่อวัด Download/Upload':'Press the speed test button to measure'),'');
+  const lat=hist.lat[hist.lat.length-1];
+  if(lat!=null){
+    const lv=lat<80?'ok':lat<160?'warn':'bad';
+    add(lv,(lang==='th'?`หน่วงเวลา ${lat} ms`:`Latency ${lat} ms`),lv==='ok'?'':(lang==='th'?'หน่วงสูง เกม/วิดีโอคอลอาจสะดุด':'High latency — calls/games may lag'));
+  }
+  if(!navigator.onLine) add('bad',(lang==='th'?'ไม่ได้เชื่อมต่ออินเทอร์เน็ต':'No internet connection'),(lang==='th'?'ตรวจสอบ Wi-Fi หรือสาย LAN':'Check Wi-Fi or LAN cable'));
+  const head=bad>0?t.hBad:warn>0?t.hWarn:t.hAll, col=bad>0?'var(--red)':warn>0?'var(--yellow)':'var(--green)';
+  $('sum').style.setProperty('--sum-c',col); set('sum-h',head);
+  $('sum-l').innerHTML=items.map(it=>`<div class="si"><span class="ic">${ic[it.lv]}</span><div><div class="lv-${it.lv}">${esc(it.txt)}</div>${it.fx?`<div class="fx">${esc(it.fx)}</div>`:''}</div></div>`).join('');
+}
+
+function renderDevice(){
+  const t=X[lang];
+  set('d-cores',navigator.hardwareConcurrency||t.unknown);
+  set('d-mem',navigator.deviceMemory?navigator.deviceMemory+' GB'+(lang==='th'?' (โดยประมาณ)':' (approx)'):t.unknown);
+  set('d-plat',navigator.platform||t.unknown);
+  set('d-touch',navigator.maxTouchPoints||0);
+  set('d-res',screen.width+' × '+screen.height);
+  set('d-avail',screen.availWidth+' × '+screen.availHeight);
+  set('d-depth',screen.colorDepth+'-bit');
+  set('d-dpr',(window.devicePixelRatio||1).toFixed(2)+'×');
+  const ua=navigator.userAgent; let br='—';
+  if(/Edg\//.test(ua))br='Microsoft Edge';else if(/OPR\//.test(ua))br='Opera';else if(/Chrome\//.test(ua))br='Chrome';
+  else if(/Firefox\//.test(ua))br='Firefox';else if(/Safari\//.test(ua))br='Safari';
+  const m=ua.match(/(Edg|Chrome|Firefox|Version)\/(\d+)/); set('d-browser',br+(m?' '+m[2]:''));
+  set('d-lang',(navigator.languages||[navigator.language]).slice(0,2).join(', '));
+  set('d-tz',Intl.DateTimeFormat().resolvedOptions().timeZone||t.unknown);
+  if(navigator.storage&&navigator.storage.estimate){
+    navigator.storage.estimate().then(e=>{ set('d-storage',(e.usage/1048576).toFixed(0)+' / '+(e.quota/1048576).toFixed(0)+' MB'); }).catch(()=>set('d-storage',t.unknown));
+  } else set('d-storage',t.unknown);
+}
+
+// Optional: if a local server is running, show full process/thermal/network data.
+async function pollServer(){
+  try{
+    const st=await fetch(API+'/api/status',{cache:'no-store'}).then(r=>r.json());
+    serverOn=true; $('srv-badge').textContent=X[lang].srvOk; $('srv-badge').className='ok';
+    $('srv-batt').style.display='block';
+    if(st.battery){ set('s-health',st.battery.healthPct+'%'); set('s-cycles',st.battery.cycles+' / '+st.battery.cycleRated); }
+    if(st.thermal){ set('s-temp',st.thermal.tempC+'°C · load '+st.thermal.cpuLoad+'%'); }
+    set('s-procs',(st.processes?st.processes.length:0)+(st.idleCount?` · idle ${st.idleCount}`:''));
+    const net=await fetch(API+'/api/net',{cache:'no-store'}).then(r=>r.json());
+    $('srv-net').style.display='block';
+    set('s-adapter',net.adapter||'—'); set('s-lip',net.localIp||'—'); set('s-gw',net.gateway||'—');
+    set('s-wifi',net.wifi?`${net.wifi.ssid} · ${net.wifi.signal}`:'—');
+    if(net.publicIp) publicIp=net.publicIp;
+    $('s-ping').querySelector('tbody').innerHTML=(net.pings||[]).map(p=>`<tr><td>${esc(p.target)}</td><td>${p.avg??'—'} ms</td><td>${p.jitter??'—'}</td><td style="color:${p.loss>0?'var(--red)':'var(--green)'}">${p.loss}%</td></tr>`).join('');
+  }catch(e){
+    serverOn=false; $('srv-badge').textContent=X[lang].srvNo; $('srv-badge').className='';
+    $('srv-batt').style.display='none'; $('srv-net').style.display='none';
+  }
+}
+
+async function fetchPublicIp(){
+  if(publicIp) return;
+  try{ publicIp=(await fetch('https://api.ipify.org?format=json',{cache:'no-store'}).then(r=>r.json())).ip; renderNet(); }catch(e){}
+}
+
+function cycle(){
+  if(battObj) renderBatt(battObj);
+  renderNet(); renderDevice(); pollServer();
+  if(activeTab==='net') refreshLatency();
+}
+function setRefresh(sec){ clearInterval(timer); timer=setInterval(cycle,sec*1000); }
+
+// INIT
+setLang('th'); renderDevice();
+if('getBattery' in navigator){
+  navigator.getBattery().then(b=>{ battObj=b; renderBatt(b);
+    ['chargingchange','levelchange','chargingtimechange','dischargingtimechange'].forEach(ev=>b.addEventListener(ev,()=>renderBatt(b)));
+  }).catch(noBatt);
+} else noBatt();
+window.addEventListener('online',()=>{renderNet();renderSummary();});
+window.addEventListener('offline',()=>{renderNet();renderSummary();});
+fetchPublicIp(); refreshLatency(); pollServer(); renderSummary();
+setRefresh(10);
+</script>
+</body>
+</html>
