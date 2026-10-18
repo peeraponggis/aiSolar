@@ -569,6 +569,67 @@ def serve_static(handler, path):
 # ============================================================
 # HTTP HANDLER
 # ============================================================
+# ============================================================
+# KKU gen.ai (มข.) — OpenAI-compatible, คีย์อยู่ฝั่ง server เท่านั้น
+# ============================================================
+KKU_BASE = os.environ.get("KKU_API_BASE", "https://gen.ai.kku.ac.th/okmd/api/v1").rstrip("/")
+KKU_PATHS = {("GET", "/v1/models"), ("POST", "/v1/chat/completions")}
+SAME_ORIGINS = {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
+
+
+def _kku_key():
+    # อ่านจาก registry สำรอง เพราะ gateway ที่เปิดก่อนตั้งตัวแปรจะไม่เห็นใน os.environ
+    key = os.environ.get("KKU_API_KEY")
+    if key:
+        return key
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+            return winreg.QueryValueEx(k, "KKU_API_KEY")[0] or ""
+    except OSError:
+        return ""
+
+
+def _same_origin(handler):
+    # ปลายทางนี้ใช้เครดิต KKU ของผู้ใช้ -> รับเฉพาะหน้าแชทของ gateway เอง (หรือโปรแกรมในเครื่องที่ไม่มี Origin)
+    origin = handler.headers.get("Origin")
+    if origin and origin not in SAME_ORIGINS:
+        return False
+    return handler.headers.get("Sec-Fetch-Site") != "cross-site"
+
+
+def kku_proxy(handler, method, sub, body=None):
+    if not _same_origin(handler):
+        _send_error(handler, "forbidden origin", 403); return
+    key = _kku_key()
+    if sub == "/status":
+        _send_json(handler, {"available": bool(key), "base": KKU_BASE}); return
+    if (method, sub) not in KKU_PATHS:
+        _send_error(handler, "not allowed", 404); return
+    if not key:
+        _send_error(handler, "ยังไม่ได้ตั้งตัวแปร KKU_API_KEY ของ Windows", 503); return
+    req = urllib.request.Request(KKU_BASE + sub[len("/v1"):], data=body, method=method, headers={
+        "Authorization": "Bearer " + key, "Content-Type": "application/json",
+        "Accept": handler.headers.get("Accept") or "*/*"})
+    try:
+        resp = urllib.request.urlopen(req, timeout=300)
+    except urllib.error.HTTPError as e:
+        _send_bytes(handler, e.read(), e.headers.get("Content-Type") or "application/json", e.code); return
+    except urllib.error.URLError as e:
+        _send_error(handler, f"เชื่อมต่อ KKU ไม่ได้: {e.reason}", 502); return
+    with resp:
+        handler.send_response(resp.status)
+        handler.send_header("Content-Type", resp.headers.get("Content-Type") or "application/json")
+        handler.send_header("Cache-Control", "no-cache")
+        handler.end_headers()
+        while True:   # ส่งต่อทีละก้อนทันทีที่ได้ เพื่อให้ SSE สตรีมถึงหน้าแชทแบบเรียลไทม์
+            chunk = resp.read1(8192)
+            if not chunk:
+                break
+            handler.wfile.write(chunk)
+            handler.wfile.flush()
+
+
 class GatewayHandler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -583,8 +644,11 @@ class GatewayHandler(BaseHTTPRequestHandler):
         q = parse_qs(u.query)
         
         try:
+            if u.path.startswith("/api/kku/"):
+                kku_proxy(self, "GET", u.path[len("/api/kku"):])
+
             # Health
-            if u.path == "/health":
+            elif u.path == "/health":
                 _send_bytes(self, b"ok", "text/plain")
             
             # Ollama Proxy
@@ -677,8 +741,11 @@ class GatewayHandler(BaseHTTPRequestHandler):
             data = {}
         
         try:
+            if u.path.startswith("/api/kku/"):
+                kku_proxy(self, "POST", u.path[len("/api/kku"):], json.dumps(data).encode("utf-8"))
+
             # Ollama Proxy
-            if u.path in ("/api/chat", "/api/generate", "/api/embeddings", "/api/pull"):
+            elif u.path in ("/api/chat", "/api/generate", "/api/embeddings", "/api/pull"):
                 if u.path == "/api/chat" and "stream" not in data:
                     data["stream"] = False
                 ollama_data = ollama_request("POST", u.path, data, timeout=300)
