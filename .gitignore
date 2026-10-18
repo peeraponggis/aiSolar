@@ -47,3 +47,6 @@ tools/ffmpeg/
 tmp/
 temp/
 *.tmp
+# PyInstaller work folders
+translation/build/
+gateway/build/
