@@ -40,6 +40,18 @@ from urllib.parse import urlparse, parse_qs, unquote
 
 import edge_tts
 
+from app_version import about_text, info as version_info
+
+if sys.stdout is None or sys.stderr is None:
+    # build แบบไม่มีหน้าต่าง console: เก็บข้อความ print ลงไฟล์ข้าง exe แทน (หมุนไฟล์เมื่อเกิน 2 MB)
+    _log_path = Path(sys.executable).with_name("gateway.log")
+    try:
+        if _log_path.exists() and _log_path.stat().st_size > 2_000_000:
+            _log_path.replace(_log_path.with_name("gateway.log.1"))
+        sys.stdout = sys.stderr = open(_log_path, "a", encoding="utf-8", buffering=1)
+    except OSError:
+        pass
+
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception:
@@ -647,6 +659,9 @@ class GatewayHandler(BaseHTTPRequestHandler):
             if u.path.startswith("/api/kku/"):
                 kku_proxy(self, "GET", u.path[len("/api/kku"):])
 
+            elif u.path == "/api/version":
+                _send_json(self, version_info())
+
             # Health
             elif u.path == "/health":
                 _send_bytes(self, b"ok", "text/plain")
@@ -744,6 +759,15 @@ class GatewayHandler(BaseHTTPRequestHandler):
             if u.path.startswith("/api/kku/"):
                 kku_proxy(self, "POST", u.path[len("/api/kku"):], json.dumps(data).encode("utf-8"))
 
+            elif u.path == "/api/shutdown":
+                # ปุ่ม "ออกจากโปรแกรม" ในหน้าแชท — รับเฉพาะหน้าของ gateway เอง กันเว็บอื่นสั่งปิด
+                if not _same_origin(self):
+                    _send_error(self, "forbidden origin", 403)
+                else:
+                    _send_json(self, {"ok": True})
+                    print(time.strftime("%Y-%m-%d %H:%M:%S"), "shutdown requested from chat UI")
+                    threading.Thread(target=self.server.shutdown, daemon=True).start()
+
             # Ollama Proxy
             elif u.path in ("/api/chat", "/api/generate", "/api/embeddings", "/api/pull"):
                 if u.path == "/api/chat" and "stream" not in data:
@@ -805,8 +829,11 @@ class GatewayHandler(BaseHTTPRequestHandler):
 # MAIN
 # ============================================================
 if __name__ == "__main__":
+    print(time.strftime("%Y-%m-%d %H:%M:%S"), about_text())
     print(f"LocalAI Unified Gateway on http://{HOST}:{PORT}")
     print("Endpoints:")
+    print("  /api/kku/v1/* -> KKU gen.ai (key from KKU_API_KEY)")
+    print("  /api/version, /api/shutdown -> version info / exit (same-origin only)")
     print("  /api/chat, /api/generate, /api/embeddings, /api/tags, /api/pull -> Ollama")
     print("  /api/tts, /api/voices -> Edge TTS")
     print("  /api/rag/search, /api/rag/status, /api/rag/reindex -> RAG")
