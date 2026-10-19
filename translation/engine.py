@@ -139,27 +139,43 @@ def build_qa_messages(src_text, src_lang, translation, dst_lang, history, questi
     msgs.append({"role": "user", "content": question})
     return msgs
 
-LANGS = {"th": "Thai", "en": "English"}
-THAI_RE = re.compile(r"[฀-๿]")
+LANGS = {"th": "Thai", "en": "English", "lo": "Lao"}
+LANG_LABELS = {"th": "ไทย", "en": "อังกฤษ", "lo": "ลาว"}
+THAI_RE = re.compile(r"[\u0E00-\u0E7F]")
+LAO_RE = re.compile(r"[\u0E80-\u0EFF]")
 THINK_RE = re.compile(r"<think>.*?</think>\s*", re.S)
 
 
 def detect_lang(text):
-    """ตรวจภาษาต้นทางจากสัดส่วนอักษรไทย"""
+    """ตรวจภาษาต้นทางจากสัดส่วนอักษร: ลาว (U+0E80-0EFF) > ไทย > อังกฤษ"""
     letters = [c for c in text if c.isalpha()]
     if not letters:
         return "th"
+    lao = sum(1 for c in letters if LAO_RE.match(c))
+    if lao / len(letters) > 0.3:
+        return "lo"
     thai = sum(1 for c in letters if THAI_RE.match(c))
     return "th" if thai / len(letters) > 0.3 else "en"
 
 
+def default_dst(src):
+    """ปลายทางเริ่มต้นเมื่อไม่ได้บังคับทิศทาง: ไทย→อังกฤษ, อังกฤษ→ไทย, ลาว→ไทย"""
+    return "en" if src == "th" else "th"
+
+
+def needs_online(src, dst):
+    """ทิศทางที่โมเดล 4B ในเครื่องทำไม่ได้ (ทดสอบ 19 ต.ค. 2569: Typhoon/Qwen 4-7B เขียนลาวผิดเพี้ยน) -> ควรใช้ API ออนไลน์"""
+    return dst == "lo"
+
+
 # ---------------------------------------------------------------- glossary
 def load_glossary():
-    """อ่าน glossary.txt -> list ของ (level หรือ None, term_th, term_en)"""
+    """อ่าน glossary.txt -> list ของ (level หรือ None, คำไทย, คำแปล, ภาษาของคำแปล "en"/"lo")
+    หัวข้อ [lao] = คู่ ไทย => ລາວ ใช้กับทุกระดับ; หัวข้อระดับอื่น/[all] กลับเป็นคู่ ไทย => อังกฤษ"""
     entries = []
     if not os.path.exists(GLOSSARY_FILE):
         return entries
-    level = None
+    level, pair = None, "en"
     with open(GLOSSARY_FILE, "r", encoding="utf-8-sig") as f:
         for raw in f:
             line = raw.strip()
@@ -167,28 +183,38 @@ def load_glossary():
                 continue
             m = re.match(r"^\[(\w+)\]$", line)
             if m:
-                level = m.group(1).lower()
-                level = None if level in ("all", "global") else level
+                tag = m.group(1).lower()
+                if tag in ("lao", "lo"):
+                    level, pair = None, "lo"
+                else:
+                    level, pair = (None if tag in ("all", "global") else tag), "en"
                 continue
             if "=>" not in line:
                 continue
             a, b = [s.strip() for s in line.split("=>", 1)]
             if a and b:
-                entries.append((level, a, b))
+                entries.append((level, a, b, pair))
     return entries
 
 
-def glossary_for(text, src, level, entries):
-    """คืนเฉพาะคำศัพท์ที่ปรากฏในข้อความ เพื่อให้ prompt สั้น"""
+def glossary_for(text, src, level, entries, dst=None):
+    """คืนเฉพาะคำศัพท์ที่ปรากฏในข้อความ เพื่อให้ prompt สั้น (เลือกคู่ภาษาให้ตรงกับ src/dst)"""
+    dst = dst or default_dst(src)
+    pair = "lo" if "lo" in (src, dst) else "en"
     low = text.lower()
     hits = []
-    for lv, th, en in entries:
+    for e in entries:
+        lv, th, other = e[0], e[1], e[2]
+        if (e[3] if len(e) > 3 else "en") != pair:
+            continue
         if lv and lv != level:
             continue
         if src == "th" and th in text:
-            hits.append((th, en))
-        elif src == "en" and en.lower() in low:
-            hits.append((en, th))
+            hits.append((th, other))
+        elif src == "en" and pair == "en" and other.lower() in low:
+            hits.append((other, th))
+        elif src == "lo" and other in text:
+            hits.append((other, th))
     return hits[:40]
 
 
@@ -205,6 +231,16 @@ def build_messages(text, src, dst, level, glossary_hits, variant=False):
         "- Do not translate proper names, URLs, emails, code, or product model numbers.\n"
         "- If a sentence is already in the target language, keep it as is.\n"
     )
+    if dst == "lo":
+        sys_prompt += (
+            "- The target language is Lao (ພາສາລາວ), the official language of Laos. Write the output in LAO SCRIPT ONLY "
+            "(Unicode block U+0E80-U+0EFF: ກ ຂ ຄ ງ ຈ ສ ຊ ຍ ດ ຕ ຖ ທ ນ ບ ປ ຜ ຝ ພ ຟ ມ ຢ ຣ ລ ວ ຫ ອ ຮ ...). "
+            "Thai script (ก ข ค ... U+0E00-U+0E7F) is a DIFFERENT writing system and must never appear in the output. "
+            "Use natural modern Lao vocabulary and spelling as used in Vientiane (e.g. ບໍ່ not ไม่, ເຮັດ not ทำ, ເຈົ້າ as the polite particle), "
+            "not Thai words transliterated into Lao letters.\n"
+        )
+    elif src == "lo":
+        sys_prompt += "- The source text is Lao (ພາສາລາວ), not Thai; read it as Lao even though the scripts look similar.\n"
     if glossary_hits:
         sys_prompt += "Use this terminology exactly:\n" + "\n".join(f"- {a} => {b}" for a, b in glossary_hits) + "\n"
     if variant:
@@ -444,10 +480,12 @@ def pull_model(name, progress_cb=None):
     return True
 
 
-def chat_stream(model, messages, temperature, stop_event=None):
-    """ตัวเลือกเส้นทาง: โมเดลในเครื่อง (Ollama) หรือ API ออนไลน์ ตาม BACKEND ที่ GUI ตั้งไว้"""
-    if BACKEND["mode"] == "api":
-        return (yield from stream_chat_openai(BACKEND["base"], BACKEND["key"], BACKEND["model"], messages, temperature, stop_event))
+def chat_stream(model, messages, temperature, stop_event=None, backend=None):
+    """ตัวเลือกเส้นทาง: โมเดลในเครื่อง (Ollama) หรือ API ออนไลน์ ตาม BACKEND ที่ GUI ตั้งไว้
+    backend = dict รูปแบบเดียวกับ BACKEND เพื่อบังคับเส้นทางเฉพาะงานนี้ (เช่น ไทย→ลาว ต้องใช้ API)"""
+    b = backend or BACKEND
+    if b["mode"] == "api":
+        return (yield from stream_chat_openai(b["base"], b["key"], b["model"], messages, temperature, stop_event))
     return (yield from stream_chat(model, messages, temperature, stop_event))
 
 
@@ -471,21 +509,51 @@ def warm_up(model):
 
 
 # ---------------------------------------------------------------- CLI
+def api_backend(settings):
+    """คืน dict เส้นทาง API ออนไลน์จาก settings['api'] (รูปแบบเดียวกับ BACKEND) หรือ None ถ้ายังไม่ได้ตั้งค่าครบ"""
+    a = (settings or {}).get("api") or {}
+    key = resolve_api_key(a)
+    if a.get("base") and key and a.get("model"):
+        return {"mode": "api", "base": a["base"], "key": key, "model": a["model"]}
+    return None
+
+
+def load_settings_file():
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
 def run_cli(args):
-    models = ensure_ollama()   # เปิด Ollama ให้เองถ้ายังไม่ทำงาน (เหมือนโหมดหน้าต่าง)
-    if models is None:
-        print("เชื่อมต่อ Ollama ไม่ได้ที่", OLLAMA_URL, "- ติดตั้ง Ollama จาก https://ollama.com/download แล้วลองใหม่", file=sys.stderr)
-        return 2
-    model = args.model or pick_model(models)
+    for stream in (sys.stdout, sys.stderr):   # console ไทย (cp874) พิมพ์อักษรลาวไม่ได้ - บังคับ UTF-8 กันโปรแกรมล้มใน --cli
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     text = args.text or sys.stdin.read()
     src = args.src or detect_lang(text)
-    dst = args.to or ("en" if src == "th" else "th")
-    hits = glossary_for(text, src, args.level, load_glossary())
+    dst = args.to or default_dst(src)
+    api = api_backend(load_settings_file())
+    use_api = bool(api) and (needs_online(src, dst) or args.model == "api")
+    if use_api:   # ไทย/อังกฤษ→ลาว: ใช้ผู้ให้บริการออนไลน์ก่อนเสมอ (หรือบังคับด้วย --model api)
+        model = api["model"]
+        gen_fn = lambda msgs, temp: stream_chat_openai(api["base"], api["key"], api["model"], msgs, temp)
+        print(f"[ใช้ผู้ให้บริการออนไลน์ {api['base']}]", file=sys.stderr)
+    else:
+        models = ensure_ollama()   # เปิด Ollama ให้เองถ้ายังไม่ทำงาน (เหมือนโหมดหน้าต่าง)
+        if models is None:
+            print("เชื่อมต่อ Ollama ไม่ได้ที่", OLLAMA_URL, "- ติดตั้ง Ollama จาก https://ollama.com/download แล้วลองใหม่", file=sys.stderr)
+            return 2
+        model = (args.model if args.model and args.model != "api" else None) or pick_model(models)
+        gen_fn = lambda msgs, temp: stream_chat(model, msgs, temp)
+        if needs_online(src, dst):
+            print("คำเตือน: โมเดลในเครื่องแปลเป็นภาษาลาวได้ไม่ดี (เขียนผิดเพี้ยน) - ตั้งค่า ⚙ ผู้ให้บริการ (settings.json) เพื่อใช้ API ออนไลน์", file=sys.stderr)
+    hits = glossary_for(text, src, args.level, load_glossary(), dst)
     msgs = build_messages(text, src, dst, args.level, hits)
     print(f"[{model}] {src}->{dst} level={args.level} glossary={len(hits)}", file=sys.stderr)
     out = []
     t0 = time.time()
-    gen = stream_chat(model, msgs, LEVELS[args.level]["temp"])
+    gen = gen_fn(msgs, LEVELS[args.level]["temp"])
     try:
         while True:
             piece = next(gen)
@@ -500,7 +568,7 @@ def run_cli(args):
         translation = clean_output("".join(out))
         qmsgs = build_qa_messages(text, src, translation, dst, [], args.ask)
         print(f"\n[ask] {args.ask}", file=sys.stderr)
-        gen = stream_chat(model, qmsgs, 0.4)
+        gen = gen_fn(qmsgs, 0.4)
         try:
             while True:
                 sys.stdout.write(next(gen)); sys.stdout.flush()
