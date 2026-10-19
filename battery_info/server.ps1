@@ -8,6 +8,18 @@ $script:History  = @{}
 $script:PublicIp   = $null
 $script:PublicIpAt = [datetime]::MinValue
 $script:Settings = @{ idleMinutes = 30; cpuThreshold = 2.0 }
+
+# Processes that must never be killed from here (kernel/session critical). Windows usually denies these anyway.
+$script:CriticalKill = @(
+    'system','idle','smss','csrss','wininit','winlogon','services','lsass','lsaiso',
+    'svchost','dwm','fontdrvhost','audiodg','wudfhost','registry','memory compression','securityhealthservice'
+)
+# Windows shell / UI components: killing them disrupts the desktop but is recoverable -> allowed with a strong warning.
+$script:OsShell = @(
+    'explorer','searchhost','searchapp','searchindexer','shellexperiencehost','startmenuexperiencehost',
+    'applicationframehost','systemsettings','textinputhost','sihost','ctfmon','lockapp','widgets','widgetservice',
+    'runtimebroker','taskhostw','dllhost','conhost','phoneexperiencehost'
+)
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Temp files (Add-Type compile output, Wi-Fi profile XML) must stay on F:
@@ -89,6 +101,17 @@ function Get-Processes {
     try { $rawProcs = Get-Process -ErrorAction SilentlyContinue |
         Where-Object { $_.MainWindowTitle -ne '' -and $_.Id -gt 4 } } catch {}
 
+    # Map parent -> child process names, to warn when closing a program would also close others.
+    $childMap = @{}
+    try {
+        foreach ($c in Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,Name -ErrorAction Stop) {
+            $ppid = [int]$c.ParentProcessId
+            if ($ppid -le 4) { continue }
+            if (-not $childMap.ContainsKey($ppid)) { $childMap[$ppid] = @() }
+            $childMap[$ppid] += ($c.Name -replace '\.exe$','')
+        }
+    } catch {}
+
     $out = foreach ($p in $rawProcs) {
         $key = "$($p.Id)"
         $livePids[$key] = $true
@@ -126,6 +149,19 @@ function Get-Processes {
         $title = $p.MainWindowTitle
         if ($title.Length -gt 55) { $title = $title.Substring(0,52)+'...' }
 
+        # Risk classification for closing this program
+        $lname = $p.ProcessName.ToLower()
+        $kids  = @(); if ($childMap.ContainsKey([int]$p.Id)) { $kids = @($childMap[[int]$p.Id] | Sort-Object -Unique) }
+        if ($script:CriticalKill -contains $lname) {
+            $risk = 'critical'; $blocked = $true
+        } elseif ($script:OsShell -contains $lname) {
+            $risk = 'os'; $blocked = $false
+        } elseif ($kids.Count -gt 0) {
+            $risk = 'affects'; $blocked = $false
+        } else {
+            $risk = 'normal'; $blocked = $false
+        }
+
         [PSCustomObject]@{
             pid        = [int]$p.Id
             name       = $p.ProcessName
@@ -135,6 +171,10 @@ function Get-Processes {
             runtimeMin = $runtimeMin
             idleMin    = $idleMin
             isIdle     = ($idleMin -ge $script:Settings.idleMinutes)
+            risk       = $risk
+            blocked    = $blocked
+            childCount = $kids.Count
+            children   = @($kids | Select-Object -First 5)
         }
     }
 
@@ -343,6 +383,22 @@ function Read-JsonBody($req) {
     try { $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
 }
 
+# Close a program by PID. Refuses kernel/session-critical processes; others are allowed (Task Manager "End Task" equivalent).
+function Stop-ProcessSafe([int]$procPid) {
+    if ($procPid -le 4) { return @{ ok = $false; code = 'invalid' } }
+    $p = Get-Process -Id $procPid -ErrorAction SilentlyContinue
+    if (-not $p) { return @{ ok = $false; code = 'notfound' } }
+    $name = $p.ProcessName
+    if ($script:CriticalKill -contains $name.ToLower()) { return @{ ok = $false; code = 'critical'; name = $name } }
+    try {
+        Stop-Process -Id $procPid -Force -ErrorAction Stop
+        Start-Sleep -Milliseconds 400
+        if (Get-Process -Id $procPid -ErrorAction SilentlyContinue) { return @{ ok = $false; code = 'stillrunning'; name = $name } }
+        Write-Host "[$(Get-Date -f 'HH:mm:ss')] Closed process: $name (pid $procPid)"
+        return @{ ok = $true; name = $name }
+    } catch { return @{ ok = $false; code = 'denied'; name = $name } }
+}
+
 function Get-PingStats([string]$target) {
     $pinger = New-Object System.Net.NetworkInformation.Ping
     $times  = @()
@@ -491,17 +547,23 @@ while ($listener.IsListening) {
         $res  = $ctx.Response
         $path = $req.Url.LocalPath
 
-        $isWifi = $path -like '/api/wifi*'
+        # Sensitive endpoints (reveal Wi-Fi passwords, switch network, close programs) are same-origin only.
+        $isPriv = ($path -like '/api/wifi*') -or ($path -like '/api/process*')
         if ($req.HttpMethod -eq 'OPTIONS') {
-            if ($isWifi) { Send-Response $res 403 'text/plain' '' -Private } else { Send-Response $res 200 'text/plain' '' }
+            if ($isPriv) { Send-Response $res 403 'text/plain' '' -Private } else { Send-Response $res 200 'text/plain' '' }
             continue
         }
-        if ($isWifi -and -not (Test-SameOrigin $req)) { Send-Response $res 403 'text/plain' 'Forbidden' -Private; continue }
-        if ($isWifi -and $path -ne '/api/wifi' -and ($req.HttpMethod -ne 'POST' -or $req.ContentType -notlike 'application/json*')) {
+        if ($isPriv -and -not (Test-SameOrigin $req)) { Send-Response $res 403 'text/plain' 'Forbidden' -Private; continue }
+        if ($isPriv -and $path -ne '/api/wifi' -and ($req.HttpMethod -ne 'POST' -or $req.ContentType -notlike 'application/json*')) {
             Send-Response $res 405 'text/plain' 'POST application/json only' -Private; continue
         }
 
         switch ($path) {
+            '/api/process/kill' {
+                $b = Read-JsonBody $req
+                $r = Stop-ProcessSafe ([int]$b.pid)
+                Send-Response $res 200 'application/json; charset=utf-8' ($r | ConvertTo-Json -Compress) -Private
+            }
             '/api/wifi' {
                 Send-Response $res 200 'application/json; charset=utf-8' ((Get-WifiReport) | ConvertTo-Json -Depth 5 -Compress) -Private
             }

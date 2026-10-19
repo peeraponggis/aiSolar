@@ -176,6 +176,25 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 
 /* proc footer */
 #proc-footer{display:flex;align-items:center;justify-content:space-between;padding:4px 14px;background:#0a0a14;border-top:1px solid var(--border);font-size:10px;color:var(--muted);flex-shrink:0}
+.x-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--card2);color:var(--muted2);cursor:pointer;font-size:11px;line-height:1;padding:0}
+.x-btn:hover{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red)}
+.x-btn.risk-os{color:var(--orange);border-color:rgba(249,115,22,.4)}
+.x-btn.risk-affects{color:var(--yellow);border-color:rgba(234,179,8,.4)}
+#kill-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px}
+#kill-modal.open{display:flex}
+.km-box{background:var(--card);border:1px solid var(--border);border-radius:12px;max-width:440px;width:100%;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.km-box h3{font-size:15px;margin-bottom:10px;color:var(--text)}
+.km-warn{font-size:12.5px;line-height:1.7;padding:10px 12px;border-radius:8px;margin-bottom:14px}
+.km-warn.w-critical{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:var(--red)}
+.km-warn.w-os{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.35);color:var(--orange)}
+.km-warn.w-affects{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.35);color:var(--yellow)}
+.km-warn.w-normal{background:var(--card2);border:1px solid var(--border);color:var(--muted2)}
+.km-btns{display:flex;gap:8px;justify-content:flex-end}
+.km-btns button{padding:7px 16px;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--border)}
+.km-cancel{background:var(--card2);color:var(--text)}
+.km-ok{background:var(--red);color:#fff;border-color:var(--red)}
+.km-ok:disabled{opacity:.5;cursor:default}
+#kill-msg{font-size:11.5px;min-height:15px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -377,8 +396,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
         <th style="width:60px" onclick="procSort='mem';renderProcTable()" id="th-mem">RAM</th>
         <th style="width:52px" onclick="procSort='runtime';renderProcTable()" id="th-run">เวลา</th>
         <th style="width:72px" onclick="procSort='idle';renderProcTable()" id="th-idle">ไม่ใช้งาน</th>
+        <th style="width:48px;text-align:center" id="th-close">ปิด</th>
       </tr></thead>
-      <tbody id="proc-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">กำลังเชื่อมต่อ server…</td></tr></tbody>
+      <tbody id="proc-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">กำลังเชื่อมต่อ server…</td></tr></tbody>
     </table>
   </div>
 
@@ -468,6 +488,19 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 </div>
 </div>
 
+<!-- Close-program confirmation -->
+<div id="kill-modal" onclick="if(event.target===this)closeKillModal()">
+  <div class="km-box">
+    <h3 id="km-head">—</h3>
+    <div id="km-warn" class="km-warn w-normal">—</div>
+    <div class="km-btns">
+      <button class="km-cancel" id="km-cancel" onclick="closeKillModal()">ยกเลิก</button>
+      <button class="km-ok" id="km-ok">ปิดเลย</button>
+    </div>
+    <div id="kill-msg"></div>
+  </div>
+</div>
+
 <script>
 // ════ CONSTANTS ════
 const DESIGN=52500,FULL=44800,CYCLES=407,RATED=1000;
@@ -490,7 +523,7 @@ const T={
     tab1:'แบตเตอรี่',tab2:'โปรแกรม',
     lblCharge:'สถานะการชาร์จ',lblHealth:'สุขภาพแบตเตอรี่',lblCycles:'รอบการชาร์จ',
     recTitle:'คำแนะนำ',fullLbl:'📄 รายงานฉบับเต็มจาก Windows (powercfg)',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.1.0 · โดย ลุงพี',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.2.0 · โดย ลุงพี',
     sg1:'แบรนด์ / ซีรีส์',sg2:'รุ่น',sg3:'โปรเซสเซอร์',sg4:'หน่วยความจำ',
     sg5:'การ์ดจอ',sg6:'พื้นที่เก็บข้อมูล',sg7:'ระบบปฏิบัติการ',sg8:'แบตเตอรี่',
     usedLbl:'ใช้ไปแล้ว',remainLbl:'เหลืออยู่',ratedLbl:'Rated',remainShort:'เหลือ',
@@ -505,7 +538,16 @@ const T={
     alertLow:p=>`⚡ แบตเตอรี่เหลือ ${p}%! กรุณาเสียบชาร์จโดยด่วน`,
     alertIdle:n=>`⚠️ ${n} โปรแกรมไม่ได้ใช้งานนาน — คลิกเพื่อปิด`,
     procLbl:'โปรแกรม',sortMem:'RAM ↓',sortIdle:'Idle ↓',
-    thName:'ชื่อ',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'เวลา',thIdle:'ไม่ใช้งาน',
+    thName:'ชื่อ',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'เวลา',thIdle:'ไม่ใช้งาน',thClose:'ปิด',
+    closeBtn:'ปิด',closing:'กำลังปิด…',closedOk:n=>`ปิด "${n}" แล้ว`,closeFail:n=>`ปิด "${n}" ไม่สำเร็จ`,
+    closeDenied:n=>`ปิด "${n}" ไม่ได้ (สิทธิ์ไม่พอ ลองเปิดโปรแกรมด้วยสิทธิ์ผู้ดูแล)`,
+    closeCriticalBlock:n=>`"${n}" เป็นโปรแกรมหลักของระบบปฏิบัติการ ปิดไม่ได้ (อาจทำให้เครื่องค้างหรือจอฟ้า)`,
+    confHead:n=>`ยืนยันปิด "${n}" ?`,
+    warnCritical:'⛔ เป็นระบบปฏิบัติการหลัก ไม่ควรปิด — อาจทำให้ Windows ค้างหรือจอฟ้า',
+    warnOs:'⚠️ เป็นส่วนหนึ่งของ Windows (เดสก์ท็อป/ทาสก์บาร์/เมนู) การปิดจะทำให้หน้าจอรวนชั่วคราว (มักกลับมาเองหรือรีสตาร์ตเครื่องแก้ได้)',
+    warnAffects:(n,list)=>`⚠️ โปรแกรมนี้มีโปรแกรมย่อย ${n} ตัวทำงานอยู่ (${list}) การปิดจะปิดโปรแกรมย่อยเหล่านี้ด้วย งานที่ยังไม่บันทึกอาจหาย`,
+    warnNormal:'งานที่ยังไม่ได้บันทึกในโปรแกรมนี้อาจหายไป',
+    btnConfirm:'ปิดเลย',btnCancel:'ยกเลิก',
     setLbl:'ตั้งค่า',spIdle:'ไม่ใช้งานนาน',spMin:'นาที',spSave:'บันทึก',
     srvOk:'เชื่อมต่อแล้ว',srvErr:'ไม่ได้เชื่อมต่อ',
     rec:(h,c)=>{
@@ -520,7 +562,7 @@ const T={
     tab1:'Battery',tab2:'Processes',
     lblCharge:'Charge Status',lblHealth:'Battery Health',lblCycles:'Charge Cycles',
     recTitle:'Recommendation',fullLbl:'📄 Full Windows Battery Report',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.1.0 · by LungPee',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.2.0 · by LungPee',
     sg1:'Brand / Series',sg2:'Model',sg3:'Processor',sg4:'Memory',
     sg5:'GPU',sg6:'Storage',sg7:'Operating System',sg8:'Battery',
     usedLbl:'Used',remainLbl:'Remaining',ratedLbl:'Rated',remainShort:'Left',
@@ -534,7 +576,16 @@ const T={
     alertLow:p=>`⚡ Battery low at ${p}%! Please plug in charger immediately.`,
     alertIdle:n=>`⚠️ ${n} program${n>1?'s':''} idle — click to dismiss`,
     procLbl:'Programs',sortMem:'RAM ↓',sortIdle:'Idle ↓',
-    thName:'Name',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'Runtime',thIdle:'Idle',
+    thName:'Name',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'Runtime',thIdle:'Idle',thClose:'Close',
+    closeBtn:'Close',closing:'Closing…',closedOk:n=>`Closed "${n}"`,closeFail:n=>`Failed to close "${n}"`,
+    closeDenied:n=>`Can't close "${n}" (insufficient rights — try running it as administrator)`,
+    closeCriticalBlock:n=>`"${n}" is a core OS process and cannot be closed (could freeze the PC or cause a blue screen)`,
+    confHead:n=>`Close "${n}"?`,
+    warnCritical:'⛔ Core operating-system process — do not close. May freeze Windows or cause a blue screen.',
+    warnOs:'⚠️ Part of Windows (desktop/taskbar/menu). Closing will briefly disrupt the screen (usually recovers on its own, or restart the PC).',
+    warnAffects:(n,list)=>`⚠️ This program has ${n} child program(s) running (${list}). Closing it will also close them; unsaved work may be lost.`,
+    warnNormal:'Unsaved work in this program may be lost.',
+    btnConfirm:'Close it',btnCancel:'Cancel',
     setLbl:'Settings',spIdle:'Idle after',spMin:'min',spSave:'Save',
     srvOk:'Connected',srvErr:'Server offline',
     rec:(h,c)=>{
@@ -934,6 +985,42 @@ document.addEventListener('click',e=>{
   else if(act==='conn'){ connectWifi(b.dataset.ssid,b.dataset.open==='1',b.dataset.saved==='1'); }
 });
 
+// ════ CLOSE PROGRAM ════
+let killTarget=null;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-kill]'); if(!b) return;
+  openKillModal({pid:+b.dataset.kill,name:b.dataset.pname,risk:b.dataset.prisk,kids:+b.dataset.pkids,list:b.dataset.pklist});
+});
+function openKillModal(p){
+  killTarget=p; const t=T[lang];
+  set('km-head',t.confHead(p.name));
+  const warn=document.getElementById('km-warn');
+  let cls,txt;
+  if(p.risk==='os'){cls='w-os';txt=t.warnOs;}
+  else if(p.risk==='affects'){cls='w-affects';txt=t.warnAffects(p.kids,p.list||'');}
+  else{cls='w-normal';txt=t.warnNormal;}
+  warn.className='km-warn '+cls; warn.textContent=txt;
+  set('km-cancel',t.btnCancel); set('km-ok',t.btnConfirm);
+  document.getElementById('km-ok').disabled=false;
+  set('kill-msg','');
+  document.getElementById('kill-modal').classList.add('open');
+}
+function closeKillModal(){ document.getElementById('kill-modal').classList.remove('open'); killTarget=null; }
+document.getElementById('km-ok').addEventListener('click',async()=>{
+  if(!killTarget) return;
+  const t=T[lang], msg=document.getElementById('kill-msg'), ok=document.getElementById('km-ok');
+  ok.disabled=true; msg.style.color='var(--yellow)'; msg.textContent=t.closing;
+  try{
+    const r=await fetch(API+'/api/process/kill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pid:killTarget.pid})});
+    const d=await r.json();
+    if(d.ok){ msg.style.color='var(--green)'; msg.textContent=t.closedOk(killTarget.name); setTimeout(closeKillModal,700); fetchProc(); }
+    else if(d.code==='critical'){ msg.style.color='var(--red)'; msg.textContent=t.closeCriticalBlock(killTarget.name); }
+    else if(d.code==='denied'){ msg.style.color='var(--red)'; msg.textContent=t.closeDenied(killTarget.name); }
+    else { msg.style.color='var(--red)'; msg.textContent=t.closeFail(killTarget.name); }
+  }catch(e){ msg.style.color='var(--red)'; msg.textContent=t.closeFail(killTarget.name); }
+  ok.disabled=false;
+});
+
 function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
 function setHTML(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v}
 
@@ -952,7 +1039,7 @@ function setLang(l){
   set('t-proc-lbl',t.procLbl);set('t-set-lbl',t.setLbl);
   set('t-sp-idle',t.spIdle);set('t-sp-min',t.spMin);set('t-sp-save',t.spSave);
   set('th-name',t.thName);set('th-title',t.thTitle);set('th-cpu',t.thCpu);
-  set('th-mem',t.thMem);set('th-run',t.thRun);set('th-idle',t.thIdle);
+  set('th-mem',t.thMem);set('th-run',t.thRun);set('th-idle',t.thIdle);set('th-close',t.thClose);
   document.getElementById('sort-sel').options[0].text=t.sortMem;
   document.getElementById('sort-sel').options[2].text=t.sortIdle;
   renderHealth();
@@ -1074,7 +1161,7 @@ function renderProcTable(){
   set('proc-count',procs.length);
 
   const tb=document.getElementById('proc-body');
-  if(!procs.length){tb.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">—</td></tr>`;return}
+  if(!procs.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">—</td></tr>`;return}
   tb.innerHTML=procs.map(p=>{
     const cpuC=p.cpu>50?'var(--red)':p.cpu>20?'var(--orange)':p.cpu>5?'var(--yellow)':'var(--green)';
     const memStr=p.memMB>=1024?`${(p.memMB/1024).toFixed(1)}G`:`${p.memMB}M`;
@@ -1083,6 +1170,9 @@ function renderProcTable(){
       :p.idleMin>0?`<span style="color:var(--muted);font-size:10px">${fmtTime(p.idleMin)}</span>`
       :`<span style="color:var(--border)">—</span>`;
     const dotC=p.cpu>10?'var(--orange)':p.isIdle?'var(--red)':'var(--green)';
+    const closeCell=p.blocked
+      ? `<span title="OS" style="color:var(--red);cursor:not-allowed">🔒</span>`
+      : `<button class="x-btn risk-${p.risk||'normal'}" data-kill="${p.pid}" data-pname="${esc(p.name)}" data-prisk="${p.risk||'normal'}" data-pkids="${p.childCount||0}" data-pklist="${esc((p.children||[]).join(', '))}" title="${esc(p.name)}">✕</button>`;
     return `<tr class="${p.isIdle?'idle-row':''}">
       <td class="td-name"><span class="p-dot" style="background:${dotC}"></span>${esc(p.name)}</td>
       <td class="td-title">${esc(p.title||'—')}</td>
@@ -1090,6 +1180,7 @@ function renderProcTable(){
       <td style="color:var(--muted2)">${memStr}</td>
       <td style="color:var(--muted)">${fmtTime(p.runtimeMin)}</td>
       <td>${idleCell}</td>
+      <td style="text-align:center">${closeCell}</td>
     </tr>`;
   }).join('');
 }
