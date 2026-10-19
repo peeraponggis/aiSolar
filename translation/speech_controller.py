@@ -62,7 +62,12 @@ class SpeechController:
         name = self.tts_voice_var.get()
         clone_id = self.clone_ids.get(name)
         base_voice = TTS_VOICES.get(name, ("th-TH-PremwadeeNeural", "th"))[0] if not clone_id else "th-TH-NiwatNeural"
-        voice = base_voice if lang == "th" else EN_VOICES.get(base_voice, "en-US-JennyNeural")
+        if lang == "th":
+            voice = base_voice
+        elif lang == "lo":   # เสียงลาวของ edge-tts (หญิง Keomany / ชาย Chanthavong) เลือกเพศตามเสียงไทยที่ตั้งไว้
+            voice = "lo-LA-ChanthavongNeural" if "Niwat" in base_voice else "lo-LA-KeomanyNeural"
+        else:
+            voice = EN_VOICES.get(base_voice, "en-US-JennyNeural")
         return voice, TTS_RATES.get(self.tts_rate_var.get(), "+0%"), (clone_id if lang == "th" else None), name
 
     def feed_sentence(self, text, lang, display=None):

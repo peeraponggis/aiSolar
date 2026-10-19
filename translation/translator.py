@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 Local Translator - โปรแกรมช่วยแปลบนเดสก์ท็อป ใช้โมเดลในเครื่องผ่าน Ollama
-โมเดลหลัก: scb10x/typhoon2.5-qwen3-4b (ไทย-อังกฤษ, รัน 100% บน GPU 4GB)
+โมเดลหลัก: scb10x/typhoon2.5-qwen3-4b (ไทย-อังกฤษ, รัน 100% บน GPU 4GB) · ลาว→ไทย ใช้โมเดลเดียวกันได้
+ไทย/อังกฤษ→ลาว ควรใช้ผู้ให้บริการออนไลน์ (⚙ ผู้ให้บริการ) เพราะโมเดล 4B เขียนลาวผิดเพี้ยน
 
 เปิดด้วยทางลัด "แปลภาษา Local" (เรียก LocalTranslator.exe) หรือรันจากซอร์สโค้ด:
     python translator.py                       เปิดหน้าต่างโปรแกรม (เปิด Ollama ให้เองถ้ายังไม่ทำงาน)
     python translator.py --cli "ข้อความ"        แปลใน console (ทดสอบ)
     python translator.py --cli --level engineering --to en "ข้อความ"
+    python translator.py --cli --to lo "ข้อความไทย"          แปลเป็นลาว (ใช้ ⚙ ผู้ให้บริการออนไลน์ถ้าตั้งค่าไว้)
 
     python translator.py --minimized            เปิดแบบย่อหน้าต่าง (ใช้กับ Startup)
 
@@ -50,8 +52,8 @@ from replacements_dialog import open_replacements_dialog
 from speech_controller import SpeechController
 from engine import (
     DEFAULT_QUESTIONS, GLOSSARY_FILE, HISTORY_FILE,
-    LANGS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
-    build_messages, chat_stream, clean_output, detect_lang,
+    LANGS, LANG_LABELS, LEVEL_ORDER, LEVELS, MAX_HISTORY, SETTINGS_FILE,
+    api_backend, build_messages, chat_stream, clean_output, default_dst, detect_lang, needs_online,
     glossary_for, load_glossary, run_cli,
 )
 from tts_engine import (
@@ -217,9 +219,10 @@ def run_gui(minimized=False):
 
     row2 = Flow(opts); row2.pack(fill="x", pady=(4, 0))
     f_dir = ttk.Frame(row2); ttk.Label(f_dir, text="ทิศทาง:").pack(side="left")
-    DIRS = [("auto", "ตรวจอัตโนมัติ (ไทย ⇄ อังกฤษ)"), ("th2en", "ไทย → อังกฤษ"), ("en2th", "อังกฤษ → ไทย")]
+    DIRS = [("auto", "ตรวจอัตโนมัติ (ไทย ⇄ อังกฤษ, ลาว → ไทย)"), ("th2en", "ไทย → อังกฤษ"), ("en2th", "อังกฤษ → ไทย"),
+            ("th2lo", "ไทย → ลาว"), ("lo2th", "ลาว → ไทย"), ("en2lo", "อังกฤษ → ลาว")]
     dir_var = tk.StringVar(value=dict(DIRS).get(settings["direction"], DIRS[0][1]))
-    dir_cb = ttk.Combobox(f_dir, textvariable=dir_var, values=[d[1] for d in DIRS], state="readonly", width=26); dir_cb.pack(side="left", padx=(4, 0))
+    dir_cb = ttk.Combobox(f_dir, textvariable=dir_var, values=[d[1] for d in DIRS], state="readonly", width=30); dir_cb.pack(side="left", padx=(4, 0))
     dir_cb.bind("<<ComboboxSelected>>", lambda e: (settings.update(direction=next(k for k, v in DIRS if v == dir_var.get())), save_settings()))
     row2.add(f_dir, padx=(0, 16))
     f_model = ttk.Frame(row2); ttk.Label(f_model, text="โมเดล:").pack(side="left")
@@ -308,12 +311,11 @@ def run_gui(minimized=False):
     # ---------- actions
     def current_direction(text):
         d = settings["direction"]
-        if d == "th2en":
-            return "th", "en"
-        if d == "en2th":
-            return "en", "th"
+        if "2" in d and all(x in LANGS for x in d.split("2")):   # th2en, en2th, th2lo, lo2th, en2lo
+            s, t = d.split("2")
+            return s, t
         s = detect_lang(text)
-        return s, ("en" if s == "th" else "th")
+        return s, default_dst(s)
 
     def start_translate(variant=False, text=None):
         if worker["busy"]:
@@ -326,8 +328,14 @@ def run_gui(minimized=False):
             set_status("ยังไม่ได้เชื่อมต่อโมเดล - กด ⚙ ผู้ให้บริการ เพื่อดาวน์โหลดโมเดล หรือกด F5 แล้วลองใหม่"); return
         s, d = current_direction(text)
         level = level_var.get()
-        hits = glossary_for(text, s, level, glossary)
+        hits = glossary_for(text, s, level, glossary, d)
         msgs = build_messages(text, s, d, level, hits, variant)
+        # ไทย/อังกฤษ→ลาว: โมเดล 4B ในเครื่องเขียนลาวผิดเพี้ยน -> ถ้ามี ⚙ ผู้ให้บริการ ให้ใช้ API เฉพาะงานนี้ ไม่งั้นเตือนที่แถบสถานะ
+        route, route_note = None, ""
+        if needs_online(s, d) and st.get("backend") != "api":
+            route = api_backend(settings)
+            route_note = (f" · ภาษาลาวใช้โมเดลออนไลน์ {route['model']}" if route
+                          else " · ⚠ โมเดลในเครื่องแปลเป็นลาวได้ไม่ดี แนะนำตั้งค่า ⚙ ผู้ให้บริการ")
         src_lbl.set(f"ข้อความต้นทาง ({LANGS[s]})"); dst_lbl.set(f"คำแปล ({LANGS[d]})")
         dst.delete("1.0", "end")
         speech.stop_speech()
@@ -337,19 +345,21 @@ def run_gui(minimized=False):
         last_src["text"] = text        # จำข้อความที่กำลังแปล ถ้าต้นทางเปลี่ยนไปจากนี้จะล้างกล่องแปล/คำตอบ
         worker["stop"].clear(); worker["busy"] = True
         translate_btn.state(["disabled"]); stop_btn.state(["!disabled"])
-        set_status(f"กำลังแปล {LANGS[s]} → {LANGS[d]} · {LEVELS[level]['label']}" + (f" · glossary {len(hits)} คำ" if hits else "") + " ...")
+        set_status(f"กำลังแปล {LANG_LABELS[s]} → {LANG_LABELS[d]} · {LEVELS[level]['label']}" + (f" · glossary {len(hits)} คำ" if hits else "") + route_note + " ...")
         temp = LEVELS[level]["temp"] + (0.35 if variant else 0)
+        used_model = route["model"] if route else st["model"]
 
         def job():
             t0 = time.time(); buf = []; stats = {}
             try:
-                gen = chat_stream(st["model"], msgs, temp, worker["stop"])
+                gen = chat_stream(st["model"], msgs, temp, worker["stop"], backend=route)
                 while True:
                     try:
                         piece = next(gen)
                     except StopIteration as e:
                         stats = e.value or {}; break
                     buf.append(piece); q.put(("piece", piece))
+                stats = dict(stats or {}, model=used_model, note=route_note)
                 q.put(("done", "".join(buf), stats, time.time() - t0, text, level))
             except Exception as e:
                 log.exception("แปลผิดพลาด (model=%s, level=%s)", st["model"], level)
@@ -367,7 +377,8 @@ def run_gui(minimized=False):
             history_panel.notify_new_entry()
         ev, ed = stats.get("eval_count") or 0, stats.get("eval_duration") or 0
         speed = f" · {ev/(ed/1e9):.1f} tok/s" if ed else ""
-        set_status(("หยุดแล้ว" if worker["stop"].is_set() else "แปลเสร็จ") + f" · {elapsed:.1f} วินาที{speed} · {st['model']}")
+        set_status(("หยุดแล้ว" if worker["stop"].is_set() else "แปลเสร็จ") + f" · {elapsed:.1f} วินาที{speed} · {stats.get('model') or st['model']}"
+                   + ("" if "ออนไลน์" in (stats.get("note") or "") else (stats.get("note") or "")))
         if st.get("demo_t0"):
             print(f"[demo] {time.time() - st['demo_t0']:5.1f}s  แปลเสร็จ ({elapsed:.1f}s{speed})", file=sys.stderr, flush=True)
         qa_demo = os.environ.get("TRANSLATOR_QA_DEMO")
@@ -539,9 +550,9 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Local Translator (Ollama)")
     ap.add_argument("--cli", action="store_true", help="แปลใน console แทนหน้าต่าง")
     ap.add_argument("--level", choices=LEVEL_ORDER, default="general")
-    ap.add_argument("--src", choices=["th", "en"])
-    ap.add_argument("--to", choices=["th", "en"])
-    ap.add_argument("--model")
+    ap.add_argument("--src", choices=["th", "en", "lo"])
+    ap.add_argument("--to", choices=["th", "en", "lo"], help="ปลายทาง: th ไทย · en อังกฤษ · lo ลาว (ลาวใช้ API ออนไลน์ถ้าตั้งค่าไว้)")
+    ap.add_argument("--model", help="ชื่อโมเดล Ollama หรือ 'api' เพื่อบังคับใช้ผู้ให้บริการออนไลน์")
     ap.add_argument("--minimized", action="store_true", help="เปิดแบบย่อหน้าต่าง (สำหรับ Startup)")
     ap.add_argument("--tts", metavar="TEXT", help="ทดสอบเสียงอ่าน: สังเคราะห์และเล่นข้อความนี้")
     ap.add_argument("--stt-selftest", action="store_true",

@@ -185,7 +185,7 @@ class QAPanel:
         if not src_text and not translation:
             self.set_status("กรุณาใส่ข้อความหรือแปลก่อน"); return
         s_lang = detect_lang(src_text) if src_text else ("en" if detect_lang(translation) == "th" else "th")
-        d_lang = "en" if s_lang == "th" else "th"
+        d_lang = detect_lang(translation) if translation else ("en" if s_lang == "th" else "th")
         msgs = build_qa_messages(src_text, s_lang, translation, d_lang, self.state["history"], question)
         if not self.state["open"]:
             self.toggle(True)
