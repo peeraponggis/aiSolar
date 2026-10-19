@@ -18,7 +18,7 @@ import time
 from engine import clean_output, detect_lang
 from tts_engine import (
     EN_VOICES, TTS_RATES, TTS_TMP, TTS_VOICES, TtsPipeline,
-    apply_replacements, clean_for_tts, load_replacements, pop_sentences, split_tts_chunks, warm_up_tts,
+    apply_replacements, clean_for_tts, load_replacements, pop_sentences, split_lang_runs, split_tts_chunks, warm_up_tts,
 )
 
 log = logging.getLogger(__name__)
@@ -77,6 +77,13 @@ class SpeechController:
             return
         if lang == "th":
             spoken = apply_replacements(spoken, self.replacements)
+        if lang == "lo":
+            # เสียงลาวของ edge-tts ไม่อ่านคำอังกฤษที่ปนมา -> แยกคำอังกฤษไปให้เสียงอังกฤษอ่าน แล้วเล่นต่อกันตามลำดับ
+            en_voice = self.speech_config("en")[0]
+            for run_text, run_lang in split_lang_runs(spoken, "lo"):
+                if self.pipeline.feed(run_text, voice=en_voice if run_lang == "en" else None):
+                    self.spans.append(display)   # ทุกท่อนย่อยไฮไลท์ประโยคเดิมบนจอ
+            return
         if self.pipeline.feed(spoken):
             self.spans.append(display)
 

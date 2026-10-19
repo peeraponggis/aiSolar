@@ -223,6 +223,27 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
     return out
 
 
+LATIN_RUN_RE = re.compile(r"[A-Za-z0-9&'./+\-]+(?:\s+[A-Za-z0-9&'./+\-]+)*")   # คำละติน/ตัวเลขที่ติดกัน เช่น "PV 5 kW"
+
+
+def split_lang_runs(text, main_lang):
+    """แยกข้อความเป็นท่อนตามภาษา: คำอังกฤษ (อักษรละตินติดกัน) เป็นท่อน 'en' ที่เหลือเป็น main_lang
+    ใช้กับเสียงลาวของ edge-tts (Keomany/Chanthavong) ซึ่งข้ามคำอังกฤษไปเลยไม่ยอมอ่าน
+    ต่างจากเสียงไทยที่อ่านอังกฤษปนได้ คืน [(ข้อความ, ภาษา), ...] เรียงตามลำดับเดิม"""
+    runs, pos = [], 0
+    for m in LATIN_RUN_RE.finditer(text):
+        before = text[pos:m.start()]
+        if before.strip():
+            runs.append((before.strip(), main_lang))
+        # ท่อนที่เป็นตัวเลขล้วน (ไม่มีอักษรละติน) ให้เสียงหลักอ่านตามปกติ
+        runs.append((m.group(0), "en" if re.search(r"[A-Za-z]", m.group(0)) else main_lang))
+        pos = m.end()
+    tail = text[pos:]
+    if tail.strip():
+        runs.append((tail.strip(), main_lang))
+    return runs or [(text, main_lang)]
+
+
 def split_tts_chunks(text, max_len=140):
     """แบ่งข้อความเป็นท่อนสั้นๆ ตามบรรทัดและประโยค เพื่อเริ่มเล่นท่อนแรกได้เร็วระหว่างสร้างท่อนถัดไป"""
     chunks = []
@@ -350,14 +371,16 @@ class TtsPipeline:
                 pool.shutdown(wait=False, cancel_futures=True)
         self.thread = threading.Thread(target=run, daemon=True); self.thread.start()
 
-    def feed(self, text):
-        """คืน True ถ้ารับท่อนนี้เข้าคิว (ลำดับท่อนตรงกับลำดับ 'playing' ที่จะส่งออกมา)"""
+    def feed(self, text, voice=None):
+        """คืน True ถ้ารับท่อนนี้เข้าคิว (ลำดับท่อนตรงกับลำดับ 'playing' ที่จะส่งออกมา)
+        voice: ใช้เสียงอื่นเฉพาะท่อนนี้ (เช่น คำอังกฤษที่ปนในประโยคลาว) ท่อนที่ระบุเสียงเองไม่ผ่านการโคลน"""
         if self.jobs is None or self.stop_event.is_set() or not text.strip():
             return False
         self.count += 1
+        clone_id = None if voice else self.clone_id
         # เสียงโคลนต้องใช้ edge-tts ก่อนแปลงเสียง จึงไม่ตัดเวลา (ช้าเป็นปกติอยู่แล้ว)
-        deadline = None if self.clone_id else EDGE_DEADLINE_S
-        self.jobs.put(self.pool.submit(tts_synthesize, text, self.voice, self.rate, "+0Hz", self.clone_id,
+        deadline = None if clone_id else EDGE_DEADLINE_S
+        self.jobs.put(self.pool.submit(tts_synthesize, text, voice or self.voice, self.rate, "+0Hz", clone_id,
                                        deadline=deadline))
         return True
 
