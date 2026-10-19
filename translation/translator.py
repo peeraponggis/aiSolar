@@ -59,7 +59,7 @@ from engine import (
 from tts_engine import (
     TTS_RATES, TTS_VOICES, Player,
     apply_replacements, list_clone_profiles, load_replacements,
-    sapi_synthesize, tts_synthesize,
+    sapi_synthesize, split_lang_runs, tts_synthesize,
 )
 from win_hooks import KEYEVENTF_KEYUP, VK_MENU, win_event_thread
 
@@ -546,6 +546,9 @@ def run_gui(minimized=False):
 # ---------------------------------------------------------------- main
 if __name__ == "__main__":
     setup_logging()
+    for _stream in (sys.stdout, sys.stderr):   # console ไทย (cp874) พิมพ์อักษรลาวไม่ได้ -> บังคับ UTF-8 ทุกโหมด (--cli, --tts, ...)
+        if hasattr(_stream, "reconfigure"):
+            _stream.reconfigure(encoding="utf-8", errors="replace")
     log.info(about_text())
     ap = argparse.ArgumentParser(description="Local Translator (Ollama)")
     ap.add_argument("--cli", action="store_true", help="แปลใน console แทนหน้าต่าง")
@@ -590,11 +593,16 @@ if __name__ == "__main__":
         sys.exit(0)
     if a.tts:
         lang = detect_lang(a.tts)
-        v = "th-TH-PremwadeeNeural" if lang == "th" else "en-US-JennyNeural"
-        t = apply_replacements(a.tts, load_replacements()) if lang == "th" else a.tts
-        p = tts_synthesize(t, v); print("audio:", p, os.path.getsize(p), "bytes")
-        pl = Player(); pl.play(p)
-        while pl.is_playing():
-            time.sleep(0.2)
-        pl.stop(); sys.exit(0)
+        voices = {"th": "th-TH-PremwadeeNeural", "lo": "lo-LA-KeomanyNeural", "en": "en-US-JennyNeural"}
+        # ลาว: แยกคำอังกฤษให้เสียงอังกฤษอ่าน (เหมือนในหน้าต่าง) ภาษาอื่นอ่านทั้งก้อนด้วยเสียงเดียว
+        runs = split_lang_runs(a.tts, "lo") if lang == "lo" else [(a.tts, lang)]
+        pl = Player()
+        for t, l in runs:
+            t = apply_replacements(t, load_replacements()) if l == "th" else t
+            p = tts_synthesize(t, voices[l]); print(f"audio [{l}] {t[:40]!r}:", p, os.path.getsize(p), "bytes", flush=True)
+            pl.play(p)
+            while pl.is_playing():
+                time.sleep(0.2)
+            pl.stop()
+        sys.exit(0)
     run_gui(minimized=a.minimized)
