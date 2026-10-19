@@ -435,14 +435,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
       <div class="cyc-row"><span data-nt="gw">Gateway</span><span id="nt-gw">—</span></div>
       <div class="cyc-row"><span data-nt="dnsS">DNS</span><span id="nt-dnss">—</span></div>
     </div>
-    <div class="card" style="--card-accent:var(--green)">
-      <div class="c-lbl" data-nt="wifi">Wi-Fi</div>
-      <div class="cyc-row"><span data-nt="ssid">SSID</span><span id="nt-ssid">—</span></div>
-      <div class="cyc-row"><span data-nt="band">ย่านความถี่</span><span id="nt-band">—</span></div>
-      <div class="cyc-row"><span data-nt="sig">สัญญาณ</span><span id="nt-sig">—</span></div>
-      <div class="cyc-row"><span data-nt="rssi">RSSI</span><span id="nt-rssi">—</span></div>
-      <div class="cyc-row"><span data-nt="rate">อัตรา รับ/ส่ง</span><span id="nt-rate">—</span></div>
-      <div class="cyc-row"><span data-nt="auth">การยืนยันตัวตน</span><span id="nt-auth">—</span></div>
+    <div class="card" id="conn-detail-card" style="--card-accent:var(--green)">
+      <div class="c-lbl" id="conn-detail-lbl">Wi-Fi</div>
+      <div id="conn-detail-body"></div>
     </div>
     <div class="card" style="--card-accent:var(--orange)">
       <div class="c-lbl" data-nt="traffic">ปริมาณข้อมูลตั้งแต่เปิดเครื่อง</div>
@@ -495,7 +490,7 @@ const T={
     tab1:'แบตเตอรี่',tab2:'โปรแกรม',
     lblCharge:'สถานะการชาร์จ',lblHealth:'สุขภาพแบตเตอรี่',lblCycles:'รอบการชาร์จ',
     recTitle:'คำแนะนำ',fullLbl:'📄 รายงานฉบับเต็มจาก Windows (powercfg)',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.0.0 · โดย ลุงพี',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.1.0 · โดย ลุงพี',
     sg1:'แบรนด์ / ซีรีส์',sg2:'รุ่น',sg3:'โปรเซสเซอร์',sg4:'หน่วยความจำ',
     sg5:'การ์ดจอ',sg6:'พื้นที่เก็บข้อมูล',sg7:'ระบบปฏิบัติการ',sg8:'แบตเตอรี่',
     usedLbl:'ใช้ไปแล้ว',remainLbl:'เหลืออยู่',ratedLbl:'Rated',remainShort:'เหลือ',
@@ -525,7 +520,7 @@ const T={
     tab1:'Battery',tab2:'Processes',
     lblCharge:'Charge Status',lblHealth:'Battery Health',lblCycles:'Charge Cycles',
     recTitle:'Recommendation',fullLbl:'📄 Full Windows Battery Report',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.0.0 · by LungPee',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.1.0 · by LungPee',
     sg1:'Brand / Series',sg2:'Model',sg3:'Processor',sg4:'Memory',
     sg5:'GPU',sg6:'Storage',sg7:'Operating System',sg8:'Battery',
     usedLbl:'Used',remainLbl:'Remaining',ratedLbl:'Rated',remainShort:'Left',
@@ -605,6 +600,7 @@ const NT={
     down:'ดาวน์โหลด',up:'อัปโหลด',ping:'Ping (เฉลี่ย)',jit:'Jitter',loss:'Packet loss',
     conn:'การเชื่อมต่อ',adapter:'อแดปเตอร์',link:'ความเร็วลิงก์',lip:'IP ภายใน',pip:'IP สาธารณะ',gw:'Gateway',dnsS:'DNS',
     wifi:'Wi-Fi',ssid:'SSID',band:'ย่านความถี่',sig:'สัญญาณ',rssi:'RSSI',rate:'อัตรา รับ/ส่ง',auth:'การยืนยันตัวตน',
+    lanTitle:'LAN (สายแลน)',lanName:'ชื่ออแดปเตอร์',lanSpeed:'ความเร็วลิงก์',lanDuplex:'โหมดดูเพล็กซ์',lanMtu:'MTU',lanMac:'MAC Address',lanDriver:'เวอร์ชันไดรเวอร์',lanState:'สถานะ',lanConnected:'เชื่อมต่อแล้ว',
     traffic:'ปริมาณข้อมูลตั้งแต่เปิดเครื่อง',sent:'ส่งแล้ว',recv:'รับแล้ว',
     tblT:'Ping ตามปลายทาง',tgt:'ปลายทาง',min:'ต่ำสุด',avg:'เฉลี่ย',max:'สูงสุด',
     none:'ยังไม่เคยทดสอบความเร็ว',busy:'กำลังทดสอบ…',fail:'ทดสอบไม่สำเร็จ ตรวจสอบการเชื่อมต่อ',
@@ -615,6 +611,7 @@ const NT={
     down:'Download',up:'Upload',ping:'Ping (avg)',jit:'Jitter',loss:'Packet loss',
     conn:'Connection',adapter:'Adapter',link:'Link speed',lip:'Local IP',pip:'Public IP',gw:'Gateway',dnsS:'DNS',
     wifi:'Wi-Fi',ssid:'SSID',band:'Band',sig:'Signal',rssi:'RSSI',rate:'Rate rx/tx',auth:'Authentication',
+    lanTitle:'LAN (Ethernet)',lanName:'Adapter name',lanSpeed:'Link speed',lanDuplex:'Duplex',lanMtu:'MTU',lanMac:'MAC Address',lanDriver:'Driver version',lanState:'State',lanConnected:'Connected',
     traffic:'Traffic since boot',sent:'Sent',recv:'Received',
     tblT:'Ping by target',tgt:'Target',min:'Min',avg:'Avg',max:'Max',
     none:'No speed test yet',busy:'Testing…',fail:'Test failed — check connection',
@@ -737,13 +734,35 @@ function renderNet(d){
   set('nt-pip',d.publicIp||'—');
   set('nt-gw',d.gateway||'—');
   set('nt-dnss',[].concat(d.dns||[]).join(', ')||'—');
-  const w=d.wifi;
-  set('nt-ssid',w?w.ssid:t.wired);
-  set('nt-band',w?`${w.band} · CH ${w.channel}`:'—');
-  set('nt-sig',w?w.signal:'—');
-  set('nt-rssi',w?`${w.rssi} dBm`:'—');
-  set('nt-rate',w?`${w.rxRate} / ${w.txRate} Mbps`:'—');
-  set('nt-auth',w?w.auth:'—');
+
+  // adaptive connection-detail card: Wi-Fi or LAN
+  const w=d.wifi, wl=d.wired;
+  const lbl=document.getElementById('conn-detail-lbl');
+  const rows=(pairs)=>pairs.map(([k,v])=>`<div class="cyc-row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('');
+  if(wl){
+    lbl.textContent=t.lanTitle;
+    document.getElementById('conn-detail-card').style.setProperty('--card-accent','var(--cyan)');
+    document.getElementById('conn-detail-body').innerHTML=rows([
+      [t.lanName,wl.name||'—'],
+      [t.lanSpeed,wl.linkSpeed||'—'],
+      [t.lanDuplex,wl.duplex||'—'],
+      [t.lanMtu,wl.mtu!=null?wl.mtu+' bytes':'—'],
+      [t.lanMac,wl.mac||'—'],
+      [t.lanDriver,wl.driver||'—'],
+      [t.lanState,(/up|connected/i.test(wl.state)?t.lanConnected:(wl.state||'—'))]
+    ]);
+  } else {
+    lbl.textContent=t.wifi;
+    document.getElementById('conn-detail-card').style.setProperty('--card-accent','var(--green)');
+    document.getElementById('conn-detail-body').innerHTML=rows([
+      [t.ssid,w?w.ssid:t.wired],
+      [t.band,w?`${w.band} · CH ${w.channel}`:'—'],
+      [t.sig,w?w.signal:'—'],
+      [t.rssi,w?`${w.rssi} dBm`:'—'],
+      [t.rate,w?`${w.rxRate} / ${w.txRate} Mbps`:'—'],
+      [t.auth,w?w.auth:'—']
+    ]);
+  }
   set('nt-rx',d.rxMB!=null?d.rxMB+' MB':'—');
   set('nt-tx',d.txMB!=null?d.txMB+' MB':'—');
   renderSpeed();
@@ -808,9 +827,12 @@ function renderSummary(){
       (lang==='th'?'ลองเปลี่ยน DNS เป็น 1.1.1.1 หรือ 8.8.8.8':'Try DNS 1.1.1.1 or 8.8.8.8'));
   }
 
-  // wifi security + signal
-  const wf=d.wifi;
-  if(wf){
+  // connection: Wi-Fi signal/security, or LAN
+  const wf=d.wifi, wl=d.wired;
+  if(wl){
+    add('ok',(lang==='th'?`เชื่อมต่อผ่านสาย LAN · ${wl.linkSpeed} · ${wl.duplex}`:`Wired LAN · ${wl.linkSpeed} · ${wl.duplex}`),
+        /full/i.test(wl.duplex)?'':(lang==='th'?'ลิงก์เป็น Half Duplex ตรวจสายแลนหรือพอร์ตสวิตช์':'Half duplex link — check the cable or switch port'));
+  } else if(wf){
     const sig=parseInt(wf.signal)||0;
     const slv=sig>=70?'ok':sig>=45?'warn':'bad';
     add(slv,(lang==='th'?`สัญญาณ Wi-Fi ${wf.signal} (${wf.ssid})`:`Wi-Fi signal ${wf.signal} (${wf.ssid})`),

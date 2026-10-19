@@ -425,7 +425,7 @@ async function pollServer(){
     const net=await fetch(API+'/api/net',{cache:'no-store'}).then(r=>r.json());
     $('srv-net').style.display='block';
     set('s-adapter',net.adapter||'—'); set('s-lip',net.localIp||'—'); set('s-gw',net.gateway||'—');
-    set('s-wifi',net.wifi?`${net.wifi.ssid} · ${net.wifi.signal}`:'—');
+    set('s-wifi',net.wifi?`${net.wifi.ssid} · ${net.wifi.signal}`:(net.wired?`LAN · ${net.wired.linkSpeed} · ${net.wired.duplex}`:'—'));
     if(net.publicIp) publicIp=net.publicIp;
     $('s-ping').querySelector('tbody').innerHTML=(net.pings||[]).map(p=>`<tr><td>${esc(p.target)}</td><td>${p.avg??'—'} ms</td><td>${p.jitter??'—'}</td><td style="color:${p.loss>0?'var(--red)':'var(--green)'}">${p.loss}%</td></tr>`).join('');
   }catch(e){

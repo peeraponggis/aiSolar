@@ -374,10 +374,24 @@ function Get-PingStats([string]$target) {
 }
 
 function Get-NetReport {
-    $route = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | Sort-Object RouteMetric | Select-Object -First 1
-    $cfg   = if ($route) { Get-NetIPConfiguration -InterfaceIndex $route.InterfaceIndex -ErrorAction SilentlyContinue } else { $null }
-    $ad    = if ($route) { Get-NetAdapter -InterfaceIndex $route.InterfaceIndex -ErrorAction SilentlyContinue } else { $null }
-    $st    = if ($ad) { Get-NetAdapterStatistics -Name $ad.Name -ErrorAction SilentlyContinue } else { $null }
+    # Pick the real active adapter: a default-route interface that is Up and (for Wi-Fi) actually connected.
+    # Avoids picking a radio-disconnected Wi-Fi or a VPN tunnel when a LAN cable is the live link.
+    $routes = @(Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue |
+                Sort-Object { $_.RouteMetric + $_.InterfaceMetric })
+    $ad = $null
+    foreach ($r in $routes) {
+        $a = Get-NetAdapter -InterfaceIndex $r.InterfaceIndex -ErrorAction SilentlyContinue
+        if (-not $a -or $a.Status -ne 'Up') { continue }
+        if ($a.PhysicalMediaType -eq 'Unspecified') { continue }   # skip VPN tunnels (e.g. Tailscale)
+        if ($a.MediaType -eq 'Native 802.11') {
+            $wi = Get-WifiInfo
+            if (-not ($wi -and $wi.state -eq 'connected')) { continue }   # Wi-Fi radio is off/disconnected
+        }
+        $ad = $a; break
+    }
+    if (-not $ad -and $routes.Count) { $ad = Get-NetAdapter -InterfaceIndex $routes[0].InterfaceIndex -ErrorAction SilentlyContinue }
+    $cfg = if ($ad) { Get-NetIPConfiguration -InterfaceIndex $ad.ifIndex -ErrorAction SilentlyContinue } else { $null }
+    $st  = if ($ad) { Get-NetAdapterStatistics -Name $ad.Name -ErrorAction SilentlyContinue } else { $null }
 
     $gateway = if ($cfg -and $cfg.IPv4DefaultGateway) { $cfg.IPv4DefaultGateway[0].NextHop } else { $null }
     $localIp = if ($cfg -and $cfg.IPv4Address) { $cfg.IPv4Address[0].IPAddress } else { $null }
@@ -398,11 +412,33 @@ function Get-NetReport {
     $targets += '1.1.1.1', '8.8.8.8'
     $pings = @($targets | ForEach-Object { Get-PingStats $_ })
 
-    $wifi = if ($ad -and $ad.MediaType -eq 'Native 802.11') { Get-WifiInfo } else { $null }
+    $isWifiAd = $ad -and $ad.MediaType -eq 'Native 802.11'
+    $wifi  = if ($isWifiAd) { Get-WifiInfo } else { $null }
+
+    # Wired/Ethernet detail (shown when the active adapter is a cable, not Wi-Fi)
+    $linkType = 'other'
+    $wired = $null
+    if ($ad) {
+        if ($isWifiAd) { $linkType = 'wifi' }
+        elseif ($ad.PhysicalMediaType -eq '802.3' -or $ad.MediaType -eq '802.3') {
+            $linkType = 'wired'
+            $wired = [PSCustomObject]@{
+                name      = $ad.Name
+                adapter   = $ad.InterfaceDescription
+                linkSpeed = $ad.LinkSpeed
+                duplex    = if ($ad.FullDuplex) { 'Full Duplex' } else { 'Half Duplex' }
+                mtu       = $ad.MtuSize
+                mac       = $ad.MacAddress
+                driver    = $ad.DriverVersion
+                state     = $ad.Status
+            }
+        }
+    }
 
     [PSCustomObject]@{
         adapter   = if ($ad) { $ad.InterfaceDescription } else { $null }
         linkSpeed = if ($ad) { $ad.LinkSpeed } else { $null }
+        linkType  = $linkType
         localIp   = $localIp
         publicIp  = $script:PublicIp
         gateway   = $gateway
@@ -412,6 +448,7 @@ function Get-NetReport {
         txMB      = if ($st) { [math]::Round($st.SentBytes / 1MB, 1) } else { $null }
         pings     = $pings
         wifi      = $wifi
+        wired     = $wired
         timestamp = (Get-Date -Format 'HH:mm:ss')
     }
 }
