@@ -191,6 +191,12 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
                 log.debug("edge-tts ลองครั้งที่ %d ไม่สำเร็จ (%s): %s", attempt + 1, voice, e)
             await asyncio.sleep(0.4 * (attempt + 1))   # ข้อผิดพลาดชั่วคราวของ edge-tts มักผ่านเมื่อลองซ้ำทันที ไม่ต้องรอนาน
         raise last or RuntimeError("edge-tts ไม่ส่งเสียงกลับมา")
+    # เสียงสำรองในเครื่องมีเฉพาะไทย (ปัตตรา) และอังกฤษ (Zira) — Windows ไม่มีเสียงลาว Zira อ่านอักษรลาวไม่ได้
+    # ภาษาที่ไม่มีเสียงสำรอง: รอ edge-tts นานขึ้นแทนการสลับไปเสียงที่อ่านไม่ได้
+    fallback = "Pattara" if voice.startswith("th") else "Zira" if voice.startswith("en") else None
+    if fallback is None and deadline:
+        deadline = max(deadline, NO_LOCAL_VOICE_DEADLINE_S)
+
     async def run_with_deadline():
         if deadline:
             await asyncio.wait_for(run(), timeout=deadline)
@@ -199,8 +205,11 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
     try:
         asyncio.run(run_with_deadline())
     except Exception as e:
+        if fallback is None:
+            log.warning("edge-tts (%s) ไม่ส่งเสียงภายใน %s วินาที และไม่มีเสียงสำรองในเครื่องสำหรับภาษานี้", voice, deadline,
+                        exc_info=not isinstance(e, asyncio.TimeoutError))
+            raise RuntimeError(f"เสียง {voice} ต้องใช้อินเทอร์เน็ต (edge-tts) และยังไม่ตอบ — ลองกดอ่านอีกครั้ง") from e
         # บริการ edge-tts ล่ม/ช้าชั่วคราว -> ใช้เสียงในเครื่องของ Windows แทน เพื่อให้ยังได้ยินเสียง (ปัตตรา/Zira)
-        fallback = "Pattara" if voice.startswith("th") else "Zira"
         if isinstance(e, asyncio.TimeoutError):
             log.info("edge-tts (%s) ช้าเกิน %.1f วินาที - ใช้เสียงในเครื่อง %s แทนสำหรับท่อนนี้", voice, deadline, fallback)
         else:
@@ -293,6 +302,7 @@ def pop_sentences(buf, final=False, min_len=60, max_len=140):
 
 _warmed = {}
 EDGE_DEADLINE_S = 4.0
+NO_LOCAL_VOICE_DEADLINE_S = 25.0   # ลาว ฯลฯ: ท่อนยาวที่สร้างพร้อมกันหลายท่อนใช้ 4-10 วินาที
 
 
 def warm_up_tts(voice, min_interval=120):
