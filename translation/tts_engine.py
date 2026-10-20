@@ -240,16 +240,20 @@ def split_lang_runs(text, main_lang):
     ใช้กับเสียงลาวของ edge-tts (Keomany/Chanthavong) ซึ่งข้ามคำอังกฤษไปเลยไม่ยอมอ่าน
     ต่างจากเสียงไทยที่อ่านอังกฤษปนได้ คืน [(ข้อความ, ภาษา), ...] เรียงตามลำดับเดิม"""
     runs, pos = [], 0
+
+    def add(part, lang):
+        # ท่อนที่มีแต่เครื่องหมาย เช่น "." ท้ายประโยคที่หลุดออกมาหลังคำอังกฤษ: ไม่มีอะไรให้อ่าน
+        # และ edge-tts ตอบ "No audio was received" ทำให้การอ่านทั้งข้อความหยุด -> ข้าม
+        part = part.strip()
+        if re.search(r"\w", part):
+            runs.append((part, lang))
+
     for m in LATIN_RUN_RE.finditer(text):
-        before = text[pos:m.start()]
-        if before.strip():
-            runs.append((before.strip(), main_lang))
+        add(text[pos:m.start()], main_lang)
         # ท่อนที่เป็นตัวเลขล้วน (ไม่มีอักษรละติน) ให้เสียงหลักอ่านตามปกติ
-        runs.append((m.group(0), "en" if re.search(r"[A-Za-z]", m.group(0)) else main_lang))
+        add(m.group(0), "en" if re.search(r"[A-Za-z]", m.group(0)) else main_lang)
         pos = m.end()
-    tail = text[pos:]
-    if tail.strip():
-        runs.append((tail.strip(), main_lang))
+    add(text[pos:], main_lang)
     return runs or [(text, main_lang)]
 
 
@@ -355,24 +359,32 @@ class TtsPipeline:
         ev, jobs, pool, sid = self.stop_event, self.jobs, self.pool, self.session
 
         def run():
-            played = 0
+            played, idx, failed, last_err = 0, -1, 0, None
             try:
                 while not ev.is_set():
                     fut = jobs.get()
                     if fut is None:
                         break
-                    path = fut.result()
+                    idx += 1   # ลำดับท่อนตามที่ feed (ไฮไลท์อ้างอิงลำดับนี้ แม้ข้ามบางท่อน)
+                    try:
+                        path = fut.result()
+                    except Exception as e:   # ท่อนเดียวสร้างเสียงไม่ได้: ข้ามไปท่อนถัดไป ไม่หยุดทั้งข้อความ
+                        failed, last_err = failed + 1, e
+                        log.warning("ข้ามท่อนที่ %d เพราะสร้างเสียงไม่ได้: %s", idx + 1, e)
+                        continue
                     if ev.is_set():
                         break
                     played += 1
-                    self.on_event("status", f"กำลังอ่านท่อนที่ {played} ...")
-                    self.on_event("playing", (sid, played - 1))
+                    self.on_event("status", f"กำลังอ่านท่อนที่ {idx + 1} ...")
+                    self.on_event("playing", (sid, idx))
                     self.player.play(path)
                     while self.player.is_playing() and not ev.is_set():
                         time.sleep(0.1)
                     self.player.stop()
                 if not ev.is_set():
-                    self.on_event("done", f"อ่านเสียงจบแล้ว ({played} ท่อน)")
+                    if failed and not played:
+                        raise last_err
+                    self.on_event("done", f"อ่านเสียงจบแล้ว ({played} ท่อน" + (f" · ข้าม {failed} ท่อนที่สร้างเสียงไม่ได้)" if failed else ")"))
             except Exception as e:
                 log.exception("TtsPipeline เล่นเสียงผิดพลาด")
                 self.player.stop()
