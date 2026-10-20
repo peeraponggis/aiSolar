@@ -6,7 +6,8 @@
 
 โปรแกรม: translator (Local Translator) · agent (ลุงพี Agent) · gateway (ลุงพี AI Gateway) · chat (หน้าแชทลุงพี AI)
          · launcher (AI-Bridge-Launcher) · yt (YT Shorts) — สองตัวนี้แก้ VERSION.json + CHANGELOG.md
-         · multitools (Multi Tools)
+         · multitools (Multi Tools) · thailao (พจนานุกรมลาว) · survey (GIS Civil Workspace)
+         · designauto (Design Auto ออกแบบโซลาร์ 3D) — แก้ VERSION.json + CHANGELOG.md
 patch = แก้บั๊ก/ปรับเล็กน้อย · minor = เพิ่มความสามารถ · major = เปลี่ยนใหญ่ที่เข้ากันไม่ได้กับของเดิม
 """
 import datetime
@@ -24,6 +25,9 @@ TARGETS = {
     "launcher": Path(r"F:\enterprise\aipass-auto-router\VERSION.json"),   # + CHANGELOG.md ข้างกัน
     "yt": ROOT / "yt" / "VERSION.json",                                    # + CHANGELOG.md ข้างกัน
     "multitools": ROOT / "multi-tools" / "app_version.py",
+    "thailao": ROOT / "Thai-Lao" / "_template.html",                       # ต้องรัน _make_html.py หลังเลื่อนเวอร์ชัน
+    "survey": ROOT / "survey" / "Pee_survey.html",   # APP_INFO + APP_CHANGELOG ในไฟล์ HTML
+    "designauto": ROOT / "aiSolar" / "design-auto" / "VERSION.json",       # + CHANGELOG.md ข้างกัน
 }
 TH_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
 
@@ -93,6 +97,8 @@ def bump(target, level, note):
 
 
 def main(argv):
+    if hasattr(sys.stdout, "reconfigure"):   # console cp874 พิมพ์ · ไม่ได้
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     if len(argv) == 1 and argv[0] == "--show":
         for name, path in TARGETS.items():
             v, u = current(path)
