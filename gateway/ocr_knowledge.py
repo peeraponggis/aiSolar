@@ -10,6 +10,9 @@
     python ocr_knowledge.py --engine kku         ใช้โมเดลออนไลน์ของ KKU gen.ai (ใช้เครดิต)
     python ocr_knowledge.py --force FiTv         ทำใหม่ทั้งที่มีผลแล้ว เฉพาะไฟล์ที่ชื่อมีคำว่า FiTv
     python ocr_knowledge.py --check              แค่แสดงว่าไฟล์ไหนมีกี่หน้าที่ต้อง OCR
+    python ocr_knowledge.py --clean              ตัดคำบรรยายรูปออกจากผล OCR ที่มีอยู่ (ไม่ต้อง OCR ใหม่)
+
+ใช้จากหน้าจอได้: ลุงพี AI -> 🧠 คลังความรู้ -> ปุ่ม "🔍 OCR PDF สแกน" (เลือกตัวอ่านได้ ดูความคืบหน้าในหน้าต่างเดียวกัน)
 
 เสร็จแล้วสั่ง gateway จัดคลังเฉพาะไฟล์ที่เปลี่ยน ({"force": false}) ไม่ต้อง embed ใหม่ทั้งหมด
 """
@@ -77,9 +80,22 @@ def sidecar(p):
     return KNOWLEDGE / ".ocr" / (str(p.relative_to(KNOWLEDGE)) + ".json")
 
 
+FIGURE_RE = re.compile(r"<figure\b.*?(?:</figure>|$)", re.S | re.I)
+# คำบรรยายรูปที่ OCR รุ่นก่อนเก็บไว้แล้ว (แท็ก <figure> ถูกตัดไปแล้ว): ย่อหน้าที่โมเดลแต่งขึ้นเอง ขึ้นต้นแบบนี้และยาว
+FIGURE_PARA_RE = re.compile(r"^\s*(ภาพ(?!ที่)|รูป(?!ที่)|แผนภาพ|แผนภูมิ|กราฟ|ตราสัญลักษณ์|โลโก้)")
+
+
+def strip_figure_paragraphs(text):
+    paras = re.split(r"\n\s*\n", text)
+    keep = [p for p in paras if not (FIGURE_PARA_RE.match(p) and len(p.strip()) > 60)]
+    return "\n\n".join(keep).strip()
+
+
 def tidy(text):
-    """HTML ตารางจาก Typhoon -> แถวข้อความ "a | b" (ค้นหาง่ายกว่า) และตัดแท็กที่ไม่ใช่เนื้อหา"""
-    t = re.sub(r"</t[dh]>\s*<t[dh][^>]*>", " | ", text, flags=re.I)
+    """HTML ตารางจาก Typhoon -> แถวข้อความ "a | b" (ค้นหาง่ายกว่า) ตัดคำบรรยายรูป <figure> ที่โมเดลแต่งเพิ่ม
+    (ไม่ใช่ข้อความในเอกสาร ทำให้ผลค้นมีข้อความเช่น "ภาพตราสัญลักษณ์ของ กฟภ. ..." ติดมา) และแท็กที่ไม่ใช่เนื้อหา"""
+    t = FIGURE_RE.sub(" ", text)
+    t = re.sub(r"</t[dh]>\s*<t[dh][^>]*>", " | ", t, flags=re.I)
     t = re.sub(r"</?(tr|table|thead|tbody)[^>]*>", "\n", t, flags=re.I)
     t = re.sub(r"</?(t[dh]|page_number|figure|br)[^>]*>", " ", t, flags=re.I)
     t = html.unescape(t)
@@ -115,7 +131,7 @@ def ocr_typhoon(page):
     })
     if d.get("error"):
         raise RuntimeError(d["error"])
-    return tidy(d["message"]["content"])
+    return d["message"]["content"]
 
 
 def ocr_tesseract(page):
@@ -126,7 +142,7 @@ def ocr_tesseract(page):
                        input=png, capture_output=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if r.returncode != 0:
         raise RuntimeError(r.stderr.decode("utf-8", "replace")[:300])
-    return tidy(r.stdout.decode("utf-8", "replace"))
+    return r.stdout.decode("utf-8", "replace")
 
 
 def _kku_key():
@@ -146,7 +162,7 @@ def ocr_kku(page):
     }, {"Authorization": "Bearer " + _kku_key()}, timeout=300)
     if "choices" not in d:   # KKU ตอบ HTTP 200 พร้อม error ในเนื้อหา (เช่น เครดิตหมด)
         raise RuntimeError(str(d.get("error", d))[:300])
-    return tidy(d["choices"][0]["message"]["content"] or "")
+    return d["choices"][0]["message"]["content"] or ""
 
 
 ENGINES = {"typhoon": ocr_typhoon, "tesseract": ocr_tesseract, "kku": ocr_kku}
@@ -162,6 +178,7 @@ def main():
     ap.add_argument("--engine", choices=ENGINES, default="typhoon")
     ap.add_argument("--force", action="store_true", help="ทำใหม่แม้มีผล OCR ที่ตรงกับไฟล์แล้ว")
     ap.add_argument("--check", action="store_true", help="แค่แสดงจำนวนหน้าที่ต้อง OCR")
+    ap.add_argument("--clean", action="store_true", help="ตัดคำบรรยายรูปออกจากผล OCR ที่มีอยู่ (ไม่ OCR ใหม่)")
     ap.add_argument("--no-reindex", action="store_true")
     ap.add_argument("only", nargs="*", help="ทำเฉพาะไฟล์ที่ชื่อมีคำเหล่านี้")
     a = ap.parse_args()
@@ -172,28 +189,48 @@ def main():
     pdfs = sorted(p for p in KNOWLEDGE.rglob("*.pdf") if not any(part.startswith(".") for part in p.relative_to(KNOWLEDGE).parts))
     if a.only:
         pdfs = [p for p in pdfs if any(w.lower() in p.name.lower() for w in a.only)]
+    if a.clean:
+        changed = clean_existing(pdfs)
+        print(f"เสร็จ: ตัดคำบรรยายรูปใน {changed} ไฟล์", flush=True)
+        if changed and not a.no_reindex:
+            reindex()
+        return
     engine = ENGINES[a.engine]
-    changed, failed_total = 0, 0
+    changed, failed_total, check_files, check_pages = 0, 0, 0, 0
+    # ไฟล์ที่ตรวจแล้วว่าไม่มีหน้าต้อง OCR: จำลายเซ็นไว้ ไม่ต้องอ่าน PDF ทุกไฟล์ใหม่ทุกครั้ง (ไฟล์ใหญ่อ่านนานหลายนาที)
+    scan_file = KNOWLEDGE / ".ocr" / "_no_ocr_needed.json"
+    try:
+        no_ocr = json.loads(scan_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        no_ocr = {}
     for p in pdfs:
         side = sidecar(p)
+        rel = str(p.relative_to(KNOWLEDGE))
         old = json.loads(side.read_text(encoding="utf-8")) if side.is_file() else {}
         if old.get("sig") == file_sig(p) and not a.force and not old.get("failed"):
             continue
+        if not a.force and no_ocr.get(rel) == file_sig(p):
+            continue
         todo = pages_to_ocr(p)
         if not todo:
+            no_ocr[rel] = file_sig(p)
             continue
+        no_ocr.pop(rel, None)
         print(f"{p.relative_to(KNOWLEDGE)}: {len(todo)} หน้าต้อง OCR", flush=True)
         if a.check:
+            check_pages += len(todo); check_files += 1
             continue
         doc = pymupdf.open(p)
         pages = {} if a.force else {int(k): v for k, v in (old.get("pages") or {}).items()} if old.get("sig") == file_sig(p) else {}
+        raw = {int(k): v for k, v in (old.get("raw") or {}).items()} if pages else {}
         failed = []
         for i in todo:
             if i in pages:
                 continue
             t0 = time.time()
             try:
-                pages[i] = engine(doc[i])
+                raw[i] = engine(doc[i])   # เก็บข้อความดิบ: เปลี่ยนวิธีทำความสะอาดภายหลังได้โดยไม่ต้อง OCR ใหม่
+                pages[i] = tidy(raw[i])
                 print(f"   หน้า {i + 1}: {len(pages[i])} ตัวอักษร · {time.time() - t0:.0f} วินาที", flush=True)
             except Exception as e:
                 failed.append(i)
@@ -201,19 +238,50 @@ def main():
             # บันทึกทุกหน้า: หยุดกลางทางแล้วรันใหม่จะทำต่อจากหน้าที่ค้าง
             side.parent.mkdir(parents=True, exist_ok=True)
             side.write_text(json.dumps({"sig": file_sig(p), "engine": a.engine, "failed": failed,
-                                        "pages": {str(k): v for k, v in sorted(pages.items())}},
+                                        "pages": {str(k): v for k, v in sorted(pages.items())},
+                                        "raw": {str(k): v for k, v in sorted(raw.items())}},
                                        ensure_ascii=False, indent=1), encoding="utf-8")
         changed += 1
         failed_total += len(failed)
+    existing = {str(p.relative_to(KNOWLEDGE)) for p in pdfs} if not a.only else None
+    if existing is not None:   # ลืมไฟล์ที่ถูกลบไปแล้ว
+        no_ocr = {k: v for k, v in no_ocr.items() if k in existing}
+    scan_file.parent.mkdir(parents=True, exist_ok=True)
+    scan_file.write_text(json.dumps(no_ocr, ensure_ascii=False, indent=1), encoding="utf-8")
     if a.check:
+        print(f"ตรวจเสร็จ: {check_files} ไฟล์ {check_pages} หน้าที่ต้อง OCR" if check_pages else
+              "ตรวจเสร็จ: ไม่มีหน้าที่ต้อง OCR (ทุกไฟล์อ่านได้ หรือทำ OCR แล้ว)", flush=True)
         return
     print(f"เสร็จ: OCR {changed} ไฟล์ · หน้าที่ไม่สำเร็จ {failed_total}", flush=True)
     if changed and not a.no_reindex:
-        try:
-            r = _post(GATEWAY + "/api/rag/reindex", {"force": False}, timeout=30)
-            print("สั่ง gateway จัดคลังเฉพาะไฟล์ที่เปลี่ยน:", r.get("msg"))
-        except Exception as e:
-            print("สั่ง gateway จัดคลังไม่ได้ (gateway ไม่ได้เปิด?) — เปิด ลุงพี AI แล้วจะจัดเองตอนเริ่ม:", e)
+        reindex()
+
+
+def reindex():
+    try:
+        r = _post(GATEWAY + "/api/rag/reindex", {"force": False}, timeout=30)
+        print("สั่ง gateway จัดคลังเฉพาะไฟล์ที่เปลี่ยน:", r.get("msg"), flush=True)
+    except Exception as e:
+        print("สั่ง gateway จัดคลังไม่ได้ (gateway ไม่ได้เปิด?) — เปิด ลุงพี AI แล้วจะจัดเองตอนเริ่ม:", e, flush=True)
+
+
+def clean_existing(pdfs):
+    """ใช้ tidy ใหม่กับผล OCR ที่มีอยู่: มีข้อความดิบ -> ทำความสะอาดใหม่จากดิบ / ไม่มี (OCR รุ่นแรก) -> ตัดย่อหน้าคำบรรยายรูป"""
+    changed = 0
+    for p in pdfs:
+        side = sidecar(p)
+        if not side.is_file():
+            continue
+        d = json.loads(side.read_text(encoding="utf-8"))
+        raw = d.get("raw") or {}
+        new = {k: (tidy(raw[k]) if k in raw else strip_figure_paragraphs(v)) for k, v in d["pages"].items()}
+        if new != d["pages"]:
+            removed = sum(len(d["pages"][k]) - len(new[k]) for k in new)
+            d["pages"] = new
+            side.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+            print(f"{p.relative_to(KNOWLEDGE)}: ตัดออก {removed} ตัวอักษร", flush=True)
+            changed += 1
+    return changed
 
 
 if __name__ == "__main__":
