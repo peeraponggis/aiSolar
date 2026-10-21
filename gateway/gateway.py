@@ -205,10 +205,33 @@ async def _list_thai_voices():
 # ============================================================
 # RAG FUNCTIONS (in-process, from rag_server.py)
 # ============================================================
+def ocr_sidecar(path):
+    """ผล OCR ของ PDF (สร้างด้วย ocr_knowledge.py) เก็บที่ knowledge\\.ocr\\<path>.json — โฟลเดอร์ซ่อน ไม่ถูกจัดเข้าคลังเอง"""
+    try:
+        return KNOWLEDGE_DIR / ".ocr" / (str(path.relative_to(KNOWLEDGE_DIR)) + ".json")
+    except ValueError:
+        return None
+
+def _ocr_pages(path):
+    side = ocr_sidecar(path)
+    if not side or not side.is_file():
+        return {}
+    try:
+        d = json.loads(side.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    st = path.stat()
+    if d.get("sig") != f"{int(st.st_mtime)}_{st.st_size}":   # PDF เปลี่ยนหลังทำ OCR: ผลเก่าใช้ไม่ได้
+        return {}
+    return {int(k): v for k, v in (d.get("pages") or {}).items()}
+
 def read_pdf(path):
+    # หน้าที่เป็นภาพสแกน/ฟอนต์ไทยรุ่นเก่าที่ถอดเป็นอักษรเพี้ยน ใช้ข้อความ OCR แทน (ถ้ามี) หน้าอื่นใช้ข้อความในไฟล์ตามเดิม
     try:
         from pypdf import PdfReader
-        return "\n".join((p.extract_text() or "") for p in PdfReader(str(path)).pages)
+        ocr = _ocr_pages(path)
+        return "\n".join(ocr[i] if i in ocr else (pg.extract_text() or "")
+                         for i, pg in enumerate(PdfReader(str(path)).pages))
     except Exception as e:
         print(f"  PDF read failed {path.name}: {e}")
         return ""
@@ -288,7 +311,11 @@ def cosine(a, b):
 
 def file_sig(p):
     st = p.stat()
-    return f"{int(st.st_mtime)}_{st.st_size}"
+    sig = f"{int(st.st_mtime)}_{st.st_size}"
+    side = ocr_sidecar(p) if p.suffix.lower() == ".pdf" else None
+    if side and side.is_file():   # เพิ่ม/ทำ OCR ใหม่ = ไฟล์นี้ต้อง embed ใหม่
+        sig += f"_ocr{int(side.stat().st_mtime)}"
+    return sig
 
 INDEX_VER = 2   # เปลี่ยนเมื่อวิธีอ่าน/แบ่งข้อความเปลี่ยน -> cache เก่าใช้ไม่ได้ ต้อง embed ใหม่ทั้งหมด (v2: แบ่งท่อนยาว + แก้สระไทย PDF)
 _build_lock = threading.Lock()
@@ -965,8 +992,9 @@ class GatewayHandler(BaseHTTPRequestHandler):
             # RAG reindex
             elif u.path == "/api/rag/reindex":
                 busy = _build_lock.locked()
+                force = data.get("force", True) is not False   # {"force": false} = embed เฉพาะไฟล์ที่เปลี่ยน (เช่น หลังทำ OCR)
                 if not busy:
-                    threading.Thread(target=lambda: build_index(force=True), daemon=True).start()
+                    threading.Thread(target=lambda: build_index(force=force), daemon=True).start()
                 _send_json(self, {"ok": True, "msg": "already indexing" if busy else "reindexing..."})
             
             else:
