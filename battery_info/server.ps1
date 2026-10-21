@@ -28,6 +28,20 @@ if (-not (Test-Path $TmpDir)) { New-Item -ItemType Directory -Path $TmpDir | Out
 $env:TMP  = $TmpDir
 $env:TEMP = $TmpDir
 
+# Capture the user's REAL temp folder before we redirect our own $env:TEMP to the project's tmp/
+$script:UserTemp = Join-Path $env:LOCALAPPDATA 'Temp'
+
+try {
+    Add-Type -ErrorAction Stop -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class MemHelper {
+    [DllImport("psapi.dll", SetLastError = true)]
+    public static extern bool EmptyWorkingSet(IntPtr hProcess);
+}
+'@
+} catch {}
+
 $script:WlanReady   = $false
 $script:Profiles    = @()
 $script:ProfilesAt  = [datetime]::MinValue
@@ -399,6 +413,108 @@ function Stop-ProcessSafe([int]$procPid) {
     } catch { return @{ ok = $false; code = 'denied'; name = $name } }
 }
 
+# ── Tune-up actions ────────────────────────────────────────────
+# All reversible or self-recovering (OneDrive and Explorer relaunch; wsearch can be restarted).
+function Get-TuneStats {
+    $o = Get-CimInstance Win32_OperatingSystem
+    $totalMB = [int]($o.TotalVisibleMemorySize/1KB)
+    $freeMB  = [int]($o.FreePhysicalMemory/1KB)
+    $disks = @(Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
+        [PSCustomObject]@{
+            drive   = $_.DeviceID
+            freeGB  = [math]::Round($_.FreeSpace/1GB,1)
+            totalGB = [math]::Round($_.Size/1GB,1)
+            freePct = [math]::Round($_.FreeSpace/$_.Size*100)
+        }
+    })
+    [PSCustomObject]@{
+        totalMB = $totalMB
+        freeMB  = $freeMB
+        usedMB  = $totalMB - $freeMB
+        usedPct = [math]::Round(($totalMB-$freeMB)/$totalMB*100,1)
+        disks   = $disks
+        at      = (Get-Date -Format 'HH:mm:ss')
+    }
+}
+
+function Invoke-EmptyWorkingSet {
+    $before = [int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)
+    $cleared = 0; $failed = 0
+    foreach ($p in Get-Process | Where-Object { $_.WorkingSet64 -gt 50MB }) {
+        try { if ([MemHelper]::EmptyWorkingSet($p.Handle)) { $cleared++ } else { $failed++ } } catch { $failed++ }
+    }
+    Start-Sleep -Milliseconds 800
+    $after = [int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)
+    @{ ok=$true; cleared=$cleared; failed=$failed; freedMB=($after-$before); beforeFreeMB=$before; afterFreeMB=$after }
+}
+
+function Invoke-RestartExplorer {
+    $es = @(Get-Process explorer -EA SilentlyContinue)
+    foreach ($e in $es) { try { Stop-Process -Id $e.Id -Force -EA Stop } catch {} }
+    Start-Sleep -Milliseconds 800
+    if (-not (Get-Process explorer -EA SilentlyContinue)) {
+        try { Start-Process explorer.exe } catch {}
+    }
+    Start-Sleep -Milliseconds 500
+    $up = [bool](Get-Process explorer -EA SilentlyContinue)
+    @{ ok=$up; killed=$es.Count }
+}
+
+function Invoke-StopSearch {
+    try {
+        $svc = Get-Service wsearch -EA Stop
+        if ($svc.Status -eq 'Stopped') { return @{ ok=$true; already=$true; msg='Windows Search already stopped' } }
+        Stop-Service wsearch -Force -EA Stop
+        @{ ok=$true; msg='Windows Search stopped' }
+    } catch { @{ ok=$false; msg="$_" } }
+}
+
+function Invoke-ClearTemp {
+    $t = $script:UserTemp
+    if (-not (Test-Path $t)) { return @{ ok=$false; msg='user temp not found' } }
+    $before = [math]::Round((Get-ChildItem $t -Recurse -Force -EA SilentlyContinue | Measure-Object Length -Sum).Sum / 1MB, 1)
+    $removed = 0; $locked = 0
+    Get-ChildItem $t -Force -EA SilentlyContinue | ForEach-Object {
+        try { Remove-Item $_.FullName -Recurse -Force -EA Stop; $removed++ }
+        catch { $locked++ }
+    }
+    $after = [math]::Round((Get-ChildItem $t -Recurse -Force -EA SilentlyContinue | Measure-Object Length -Sum).Sum / 1MB, 1)
+    @{ ok=$true; freedMB=[int]($before-$after); beforeMB=$before; afterMB=$after; removed=$removed; locked=$locked }
+}
+
+function Invoke-StopOneDrive {
+    $procs = @(Get-Process OneDrive -EA SilentlyContinue)
+    if (-not $procs.Count) { return @{ ok=$true; already=$true; msg='OneDrive not running' } }
+    foreach ($p in $procs) { try { Stop-Process -Id $p.Id -Force -EA Stop } catch {} }
+    Start-Sleep -Milliseconds 400
+    $still = @(Get-Process OneDrive -EA SilentlyContinue).Count
+    @{ ok=($still -eq 0); killed=$procs.Count; still=$still }
+}
+
+function Invoke-StorageSense {
+    # Run the built-in silent disk cleanup task; works without admin for the user's own files.
+    try {
+        schtasks /run /tn '\Microsoft\Windows\DiskCleanup\SilentCleanup' 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) { @{ ok=$true; msg='SilentCleanup task started (runs in background)' } }
+        else { @{ ok=$false; msg="schtasks returned $LASTEXITCODE" } }
+    } catch { @{ ok=$false; msg="$_" } }
+}
+
+function Invoke-Tune([string]$action) {
+    $before = Get-TuneStats
+    $r = switch ($action) {
+        'emptyws'      { Invoke-EmptyWorkingSet }
+        'restartshell' { Invoke-RestartExplorer }
+        'stopsearch'   { Invoke-StopSearch }
+        'cleartemp'    { Invoke-ClearTemp }
+        'stoponedrive' { Invoke-StopOneDrive }
+        'storagesense' { Invoke-StorageSense }
+        default        { @{ ok=$false; msg='unknown action' } }
+    }
+    $after = Get-TuneStats
+    @{ action=$action; result=$r; before=$before; after=$after; freedMB=($after.freeMB - $before.freeMB) }
+}
+
 function Get-PingStats([string]$target) {
     $pinger = New-Object System.Net.NetworkInformation.Ping
     $times  = @()
@@ -547,14 +663,14 @@ while ($listener.IsListening) {
         $res  = $ctx.Response
         $path = $req.Url.LocalPath
 
-        # Sensitive endpoints (reveal Wi-Fi passwords, switch network, close programs) are same-origin only.
-        $isPriv = ($path -like '/api/wifi*') -or ($path -like '/api/process*')
+        # Sensitive endpoints (reveal Wi-Fi passwords, switch network, close programs, tune actions) are same-origin only.
+        $isPriv = ($path -like '/api/wifi*') -or ($path -like '/api/process*') -or ($path -like '/api/tune*')
         if ($req.HttpMethod -eq 'OPTIONS') {
             if ($isPriv) { Send-Response $res 403 'text/plain' '' -Private } else { Send-Response $res 200 'text/plain' '' }
             continue
         }
         if ($isPriv -and -not (Test-SameOrigin $req)) { Send-Response $res 403 'text/plain' 'Forbidden' -Private; continue }
-        if ($isPriv -and $path -ne '/api/wifi' -and ($req.HttpMethod -ne 'POST' -or $req.ContentType -notlike 'application/json*')) {
+        if ($isPriv -and $path -notin @('/api/wifi','/api/tune/stats') -and ($req.HttpMethod -ne 'POST' -or $req.ContentType -notlike 'application/json*')) {
             Send-Response $res 405 'text/plain' 'POST application/json only' -Private; continue
         }
 
@@ -563,6 +679,14 @@ while ($listener.IsListening) {
                 $b = Read-JsonBody $req
                 $r = Stop-ProcessSafe ([int]$b.pid)
                 Send-Response $res 200 'application/json; charset=utf-8' ($r | ConvertTo-Json -Compress) -Private
+            }
+            '/api/tune/stats' {
+                Send-Response $res 200 'application/json; charset=utf-8' ((Get-TuneStats) | ConvertTo-Json -Depth 5 -Compress) -Private
+            }
+            '/api/tune/action' {
+                $b = Read-JsonBody $req
+                $out = Invoke-Tune ([string]$b.action)
+                Send-Response $res 200 'application/json; charset=utf-8' ($out | ConvertTo-Json -Depth 6 -Compress) -Private
             }
             '/api/wifi' {
                 Send-Response $res 200 'application/json; charset=utf-8' ((Get-WifiReport) | ConvertTo-Json -Depth 5 -Compress) -Private

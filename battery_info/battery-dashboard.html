@@ -229,6 +229,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
   <div class="tab-btn active" onclick="switchTab('batt')" id="tab-batt-btn">🔋 <span id="t-tab1">แบตเตอรี่</span></div>
   <div class="tab-btn" onclick="switchTab('proc')" id="tab-proc-btn">📊 <span id="t-tab2">โปรแกรม</span> <span id="idle-badge-tab" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:0 5px;border-radius:8px;margin-left:3px">0</span></div>
   <div class="tab-btn" onclick="switchTab('net')" id="tab-net-btn">🌐 <span data-nt="tab">อินเทอร์เน็ต</span></div>
+  <div class="tab-btn" onclick="switchTab('tune')" id="tab-tune-btn">🧹 <span data-tu="tab">ปรับประสิทธิภาพ</span></div>
 </div>
 
 <!-- ── ALERT BANNERS (shared) ── -->
@@ -488,6 +489,44 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 </div>
 </div>
 
+<!-- ════ TAB 4: TUNE-UP ════ -->
+<div class="tab-panel" id="tab-tune">
+<div style="padding:14px 20px 30px">
+
+  <!-- Live stats -->
+  <div class="b-cards" style="padding-top:0">
+    <div class="card" style="--card-accent:var(--cyan)">
+      <div class="c-lbl" data-tu="ramTitle">แรม (RAM)</div>
+      <div class="h-score"><span id="tu-free">—</span><span style="font-size:14px;color:var(--muted2)"> / <span id="tu-total">—</span></span></div>
+      <div class="h-bar-track" style="margin-top:7px"><div class="h-bar-fill" id="tu-bar" style="width:0%;background:linear-gradient(90deg,var(--green),var(--yellow))"></div></div>
+      <div class="c-sub" style="margin-top:4px"><span data-tu="used">ใช้ไป</span> <span id="tu-pct">—</span> · <span data-tu="atRefresh">อัปเดต</span> <span id="tu-at">—</span></div>
+    </div>
+    <div class="card" style="--card-accent:var(--purple)">
+      <div class="c-lbl" data-tu="diskTitle">พื้นที่ดิสก์</div>
+      <div id="tu-disks" class="c-sub" style="line-height:1.9;font-size:12px">—</div>
+    </div>
+    <div class="card" style="--card-accent:var(--orange)">
+      <div class="c-lbl" data-tu="summaryTitle">ผลรวมที่คืนได้</div>
+      <div class="h-score" style="color:var(--green)"><span id="tu-total-freed">0</span><span style="font-size:14px;color:var(--muted2)"> MB</span></div>
+      <div class="c-sub" id="tu-run-count" style="margin-top:4px">—</div>
+      <button class="mini-btn" style="margin-top:6px" onclick="clearTuneLog()" data-tu="clearLog">ล้างบันทึก</button>
+    </div>
+  </div>
+
+  <!-- Action list -->
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-tu="actionsTitle">การปรับประสิทธิภาพ</div>
+    <div id="tune-list" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Log -->
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-tu="logTitle">บันทึกผลการทำงาน</div>
+    <div id="tune-log" style="margin-top:6px;font-family:Consolas,monospace;font-size:11.5px;line-height:1.8;color:var(--muted2);max-height:300px;overflow-y:auto"></div>
+  </div>
+</div>
+</div>
+
 <!-- Close-program confirmation -->
 <div id="kill-modal" onclick="if(event.target===this)closeKillModal()">
   <div class="km-box">
@@ -523,7 +562,7 @@ const T={
     tab1:'แบตเตอรี่',tab2:'โปรแกรม',
     lblCharge:'สถานะการชาร์จ',lblHealth:'สุขภาพแบตเตอรี่',lblCycles:'รอบการชาร์จ',
     recTitle:'คำแนะนำ',fullLbl:'📄 รายงานฉบับเต็มจาก Windows (powercfg)',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.2.0 · โดย ลุงพี',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.3.0 · โดย ลุงพี',
     sg1:'แบรนด์ / ซีรีส์',sg2:'รุ่น',sg3:'โปรเซสเซอร์',sg4:'หน่วยความจำ',
     sg5:'การ์ดจอ',sg6:'พื้นที่เก็บข้อมูล',sg7:'ระบบปฏิบัติการ',sg8:'แบตเตอรี่',
     usedLbl:'ใช้ไปแล้ว',remainLbl:'เหลืออยู่',ratedLbl:'Rated',remainShort:'เหลือ',
@@ -562,7 +601,7 @@ const T={
     tab1:'Battery',tab2:'Processes',
     lblCharge:'Charge Status',lblHealth:'Battery Health',lblCycles:'Charge Cycles',
     recTitle:'Recommendation',fullLbl:'📄 Full Windows Battery Report',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.2.0 · by LungPee',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.3.0 · by LungPee',
     sg1:'Brand / Series',sg2:'Model',sg3:'Processor',sg4:'Memory',
     sg5:'GPU',sg6:'Storage',sg7:'Operating System',sg8:'Battery',
     usedLbl:'Used',remainLbl:'Remaining',ratedLbl:'Rated',remainShort:'Left',
@@ -711,9 +750,12 @@ const WF={
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 function applyNetLabels(){
-  const t=NT[lang], w=WF[lang];
+  const t=NT[lang], w=WF[lang], tu=TU[lang];
   document.querySelectorAll('[data-nt]').forEach(el=>{ if(t[el.dataset.nt]!==undefined) el.textContent=t[el.dataset.nt]; });
   document.querySelectorAll('[data-wf]').forEach(el=>{ if(w[el.dataset.wf]!==undefined) el.textContent=w[el.dataset.wf]; });
+  document.querySelectorAll('[data-tu]').forEach(el=>{ if(tu[el.dataset.tu]!==undefined) el.textContent=tu[el.dataset.tu]; });
+  if(document.getElementById('tune-list')) renderTuneList();
+  set('tu-run-count',tu.runCount(tuneRunCount));
 }
 
 // Parallel streams: a single connection underestimates throughput on high-latency links.
@@ -1021,6 +1063,123 @@ document.getElementById('km-ok').addEventListener('click',async()=>{
   ok.disabled=false;
 });
 
+// ════ TUNE-UP ════
+const TU={
+  th:{
+    tab:'ปรับประสิทธิภาพ',
+    ramTitle:'แรม (RAM)',diskTitle:'พื้นที่ดิสก์',summaryTitle:'ผลรวมที่คืนได้ในหน้านี้',
+    used:'ใช้ไป',atRefresh:'อัปเดต',runCount:n=>n?`ทำงานไปแล้ว ${n} ครั้ง`:'ยังไม่ได้ปรับอะไร',
+    actionsTitle:'การปรับประสิทธิภาพ',logTitle:'บันทึกผลการทำงาน',clearLog:'ล้างบันทึก',
+    btnRun:'ทำเลย',btnBusy:'กำลังทำ…',btnOpen:'เปิด',
+    freed:n=>n>=0?`คืนแรมได้ ${n} MB`:`แรมเปลี่ยน ${n} MB`,
+    none:'(ไม่มีการเปลี่ยนแปลง)',failMsg:'ทำไม่สำเร็จ',
+    items:[
+      {k:'emptyws',   icon:'🧠',t:'ล้าง Working Set ของทุกโปรแกรม',d:'สั่งทุกโปรแกรมคายแรมที่ไม่ได้ใช้คืนให้ระบบ (คล้ายรีสตาร์ตแต่ไม่ปิดโปรแกรม)',risk:'ปลอดภัย'},
+      {k:'restartshell',icon:'🖥',t:'รีสตาร์ต Explorer',d:'ปิด Taskbar/Desktop แล้วเปิดใหม่ ล้าง handle ของ shell',risk:'หน้าจอกะพริบ 1-2 วิ'},
+      {k:'cleartemp', icon:'🗑',t:'ล้างโฟลเดอร์ TEMP',d:'ลบไฟล์ชั่วคราวใน %TEMP% ของผู้ใช้ (ไฟล์ที่โปรแกรมเปิดอยู่จะข้าม)',risk:'ปลอดภัย'},
+      {k:'stopsearch',icon:'🔍',t:'หยุด Windows Search Indexer',d:'ลด disk I/O เบื้องหลัง (เปิดกลับได้ด้วย Start-Service wsearch)',risk:'ค้นหาใน Explorer จะช้าลงชั่วคราว'},
+      {k:'stoponedrive',icon:'☁',t:'หยุด OneDrive sync',d:'ปิดโปรแกรม OneDrive คืนแรม + ลด I/O (เปิดใหม่จาก Start Menu ได้)',risk:'ไฟล์จะไม่ sync จนกว่าจะเปิดใหม่'},
+      {k:'storagesense',icon:'🧹',t:'สั่ง Windows Storage Sense ล้างขยะ',d:'เรียกงาน SilentCleanup ของ Windows ล้าง Temp/Recycle Bin/Windows Update เก่า (รันพื้นหลัง)',risk:'ปลอดภัย'},
+      {k:'chrome_tm', icon:'📑',t:'เปิด Chrome Task Manager',d:'เปิดในหน้าต่าง Chrome: จัดเรียงตาม Memory แล้วปิดแท็บหนัก (ต้องเปิด Chrome อยู่)',risk:'ต้องทำเอง',url:'chrome://task-manager'},
+      {k:'chrome_disc',icon:'💤',t:'พักแท็บ Chrome ทั้งหมด',d:'เปิด chrome://discards แล้วกด Urgent Discard แท็บที่ไม่ได้ดู',risk:'ต้องทำเอง',url:'chrome://discards'}
+    ]
+  },
+  en:{
+    tab:'Tune-up',
+    ramTitle:'RAM',diskTitle:'Disk space',summaryTitle:'Total freed this session',
+    used:'Used',atRefresh:'At',runCount:n=>n?`${n} action(s) run`:'No actions yet',
+    actionsTitle:'Performance actions',logTitle:'Action log',clearLog:'Clear log',
+    btnRun:'Run',btnBusy:'Running…',btnOpen:'Open',
+    freed:n=>n>=0?`Freed ${n} MB`:`RAM changed ${n} MB`,
+    none:'(no change)',failMsg:'Action failed',
+    items:[
+      {k:'emptyws',   icon:'🧠',t:'Trim working set of every process',d:'Ask every process to release unused RAM back to the OS (like a restart without closing programs).',risk:'Safe'},
+      {k:'restartshell',icon:'🖥',t:'Restart Explorer',d:'Close taskbar/desktop and reopen; frees shell handles.',risk:'Screen flashes 1–2s'},
+      {k:'cleartemp', icon:'🗑',t:'Clear %TEMP% folder',d:'Delete leftover temp files in the user TEMP (locked files are skipped).',risk:'Safe'},
+      {k:'stopsearch',icon:'🔍',t:'Stop Windows Search Indexer',d:'Reduce background disk I/O (restart with Start-Service wsearch).',risk:'Explorer search is slower meanwhile'},
+      {k:'stoponedrive',icon:'☁',t:'Stop OneDrive sync',d:'Kill OneDrive to free RAM + I/O (restart via Start Menu).',risk:'Files won\'t sync until restarted'},
+      {k:'storagesense',icon:'🧹',t:'Run Windows Storage Sense cleanup',d:'Trigger SilentCleanup to clear Temp/Recycle Bin/old Updates (runs in background).',risk:'Safe'},
+      {k:'chrome_tm', icon:'📑',t:'Open Chrome Task Manager',d:'Opens Chrome: sort by Memory and close heavy tabs (requires Chrome open).',risk:'Manual',url:'chrome://task-manager'},
+      {k:'chrome_disc',icon:'💤',t:'Discard all Chrome tabs',d:'Open chrome://discards then hit Urgent Discard on tabs you\'re not viewing.',risk:'Manual',url:'chrome://discards'}
+    ]
+  }
+};
+
+let tuneTotalFreed=0, tuneRunCount=0, tuneLog=[];
+
+function tuneTs(d){ return d.toLocaleTimeString(lang==='th'?'th-TH':'en-US'); }
+
+async function fetchTuneStats(){
+  try{
+    const r=await fetch(API+'/api/tune/stats',{cache:'no-store'});
+    const d=await r.json(); renderTuneStats(d);
+  }catch(e){}
+}
+
+function renderTuneStats(d){
+  const freeGB=(d.freeMB/1024).toFixed(1), totGB=(d.totalMB/1024).toFixed(1);
+  set('tu-free',freeGB+' GB'); set('tu-total',totGB+' GB');
+  set('tu-pct',d.usedPct+'%'); set('tu-at',d.at);
+  document.getElementById('tu-bar').style.width=d.usedPct+'%';
+  const col=d.usedPct>85?'linear-gradient(90deg,var(--orange),var(--red))':d.usedPct>65?'linear-gradient(90deg,var(--yellow),var(--orange))':'linear-gradient(90deg,var(--green),var(--yellow))';
+  document.getElementById('tu-bar').style.background=col;
+  document.getElementById('tu-disks').innerHTML=(d.disks||[]).map(x=>{
+    const c=x.freePct<15?'var(--red)':x.freePct<25?'var(--yellow)':'var(--green)';
+    return `<div class="cyc-row"><span>${x.drive}</span><span style="color:${c}">${x.freeGB} / ${x.totalGB} GB (${x.freePct}%)</span></div>`;
+  }).join('');
+}
+
+function renderTuneList(){
+  const t=TU[lang];
+  document.getElementById('tune-list').innerHTML=t.items.map(it=>`
+    <div class="sum-item" style="padding:10px 0;align-items:flex-start">
+      <span class="ic" style="font-size:18px">${it.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:12.5px">${esc(it.t)}</div>
+        <div class="fx" style="margin-top:2px">${esc(it.d)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">${esc(it.risk)}</div>
+      </div>
+      <button class="mini-btn primary" data-tune="${it.k}" ${it.url?`data-url="${esc(it.url)}"`:''}>${it.url?('▶ '+t.btnOpen):('▶ '+t.btnRun)}</button>
+    </div>`).join('');
+}
+
+function appendTuneLog(line,color){
+  tuneLog.unshift({t:tuneTs(new Date()),msg:line,color:color||'var(--muted2)'});
+  if(tuneLog.length>50) tuneLog.length=50;
+  document.getElementById('tune-log').innerHTML=tuneLog.map(x=>`<div><span style="color:var(--muted)">${x.t}</span> <span style="color:${x.color}">${esc(x.msg)}</span></div>`).join('');
+  set('tu-total-freed',tuneTotalFreed);
+  set('tu-run-count',TU[lang].runCount(tuneRunCount));
+}
+
+function clearTuneLog(){ tuneLog=[]; tuneTotalFreed=0; tuneRunCount=0; appendTuneLog('—','var(--muted)'); tuneLog=[]; document.getElementById('tune-log').innerHTML=''; set('tu-total-freed',0); set('tu-run-count',TU[lang].runCount(0)); }
+
+async function runTune(key,btn){
+  const t=TU[lang], it=t.items.find(x=>x.k===key); if(!it) return;
+  if(it.url){ window.open(it.url,'_blank'); appendTuneLog(`${it.icon} ${it.t} — ${t.btnOpen}: ${it.url}`,'var(--cyan)'); return; }
+  btn.disabled=true; const prev=btn.textContent; btn.textContent='⋯ '+t.btnBusy;
+  try{
+    const r=await fetch(API+'/api/tune/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:key})});
+    const d=await r.json();
+    const freed=d.freedMB||0; tuneRunCount++; if(freed>0) tuneTotalFreed+=freed;
+    renderTuneStats(d.after);
+    let msg='',col='var(--green)';
+    if(key==='emptyws') msg=`${it.icon} ${t.freed(freed)} (${d.result.cleared} โปรเซส, ล้มเหลว ${d.result.failed})`;
+    else if(key==='cleartemp') msg=`${it.icon} TEMP: ลบ ${d.result.removed} รายการ (ล็อก ${d.result.locked}), คืนที่ว่าง ${d.result.freedMB} MB · ${t.freed(freed)}`;
+    else if(key==='restartshell') msg=`${it.icon} Explorer รีสตาร์ต (${d.result.killed} โปรเซส) · ${t.freed(freed)}`;
+    else if(key==='stopsearch') { msg=`${it.icon} ${d.result.msg||''} · ${t.freed(freed)}`; if(!d.result.ok) col='var(--yellow)'; }
+    else if(key==='stoponedrive') { msg=`${it.icon} OneDrive: ปิด ${d.result.killed||0} โปรเซส · ${t.freed(freed)}`; if(d.result.already) msg=`${it.icon} ${d.result.msg}`; }
+    else if(key==='storagesense') { msg=`${it.icon} ${d.result.msg||''}`; if(!d.result.ok) col='var(--red)'; }
+    else msg=`${it.icon} ${t.freed(freed)}`;
+    appendTuneLog(msg,col);
+  }catch(e){ appendTuneLog(`${it.icon} ${t.failMsg}: ${e.message||e}`,'var(--red)'); }
+  btn.disabled=false; btn.textContent=prev;
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-tune]'); if(!b) return;
+  runTune(b.dataset.tune,b);
+});
+
 function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
 function setHTML(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v}
 
@@ -1054,12 +1213,13 @@ function setLang(l){
 // ════ TAB SWITCH ════
 function switchTab(tab){
   activeTab=tab;
-  ['batt','proc','net'].forEach(k=>{
+  ['batt','proc','net','tune'].forEach(k=>{
     document.getElementById('tab-'+k).classList.toggle('active',k===tab);
     document.getElementById('tab-'+k+'-btn').classList.toggle('active',k===tab);
   });
   if(tab==='proc') fetchProc();
   if(tab==='net'){ fetchNet(); fetchWifi(); }
+  if(tab==='tune') fetchTuneStats();
 }
 
 // ════ BATTERY ════
@@ -1273,6 +1433,7 @@ if('getBattery' in navigator){
 
 // Process fetch loop
 fetchProc();
+renderTuneList(); set('tu-run-count',TU.th.runCount(0));
 setRefresh(10);
 </script>
 </body>
