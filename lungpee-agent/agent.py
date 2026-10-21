@@ -279,6 +279,9 @@ def _parse_tool_args(raw):
 
 def handle_command(text):
     log.info("คำถาม/คำสั่ง (raw): %s", text)
+    if not st["model"]:   # ตอนเปิดเครื่อง Ollama อาจยังไม่ขึ้น/กำลังอัปเดต: ลองเชื่อมต่อใหม่ก่อน ไม่ต้องกดเมนูเอง
+        log.info("ยังไม่ได้เชื่อมต่อโมเดล - ลองเชื่อมต่อใหม่")
+        connect_model()
     if not st["model"]:
         log.warning("ยังไม่ได้เชื่อมต่อโมเดล - ข้ามคำถามนี้")
         speak("ขอโทษครับ ยังเชื่อมต่อโมเดลไม่ได้"); return

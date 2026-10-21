@@ -12,10 +12,11 @@ model_connection.py - เชื่อมต่อ/สลับเส้นทา
 import logging
 import threading
 
-from engine import BACKEND, ensure_ollama, pick_model, resolve_api_key, warm_up
+from engine import BACKEND, ensure_ollama, list_models, pick_model, resolve_api_key, warm_up
 
 log = logging.getLogger(__name__)
 
+RETRY_MS = 10_000   # เชื่อมต่อ Ollama ไม่ได้: ลองใหม่เบื้องหลังทุก 10 วินาที
 API_TAG = "☁ "   # รายการโมเดลออนไลน์ในช่องโมเดลขึ้นต้นด้วยเครื่องหมายนี้
 
 
@@ -81,8 +82,10 @@ class ModelConnection:
         else:
             self.use_backend("local"); self.st["model"] = ""
             self.model_var.set("ไม่พบโมเดล" if models is None else "ยังไม่มีโมเดลในเครื่อง")
-            self.set_status(("เชื่อมต่อ Ollama ไม่ได้" if models is None else "Ollama ทำงานแต่ยังไม่มีโมเดล")
+            self.set_status(("เชื่อมต่อ Ollama ไม่ได้ (จะลองใหม่เองทุก 10 วินาที)" if models is None else "Ollama ทำงานแต่ยังไม่มีโมเดล")
                             + " - กด ⚙ ผู้ให้บริการ เพื่อดาวน์โหลดโมเดลในเครื่อง หรือใส่ API key ใช้โมเดลออนไลน์")
+            if models is None:   # เช่น เปิดเครื่องตอน Ollama กำลังอัปเดต/ยังไม่ขึ้น: เดิมต้องกด F5 เอง
+                self.root.after(RETRY_MS, self.retry_quietly)
             return
         if self.on_ready:
             self.on_ready(models)
@@ -90,3 +93,15 @@ class ModelConnection:
     def connect(self):
         self.set_status("กำลังเชื่อมต่อ Ollama (ถ้ายังไม่เปิดจะเปิดให้เอง) ...")
         threading.Thread(target=lambda: self.q.put(("models", ensure_ollama())), daemon=True).start()
+
+    def retry_quietly(self):
+        """ลองเชื่อมต่อ Ollama ใหม่เบื้องหลังโดยไม่เปลี่ยนข้อความสถานะ — สำเร็จเมื่อไรก็พร้อมใช้ทันที"""
+        if self.st.get("model") or BACKEND.get("mode") == "api":
+            return
+
+        def check():   # เธรดเบื้องหลัง: ส่งผลกลับผ่านคิว (on_models ทำงานบนเธรดหลัก และนัดลองใหม่ถ้ายังไม่ได้)
+            models = list_models()
+            if models is not None:
+                log.info("เชื่อมต่อ Ollama ได้แล้ว (ลองใหม่อัตโนมัติ) พบ %d โมเดล", len(models))
+            self.q.put(("models", models))
+        threading.Thread(target=check, daemon=True).start()
