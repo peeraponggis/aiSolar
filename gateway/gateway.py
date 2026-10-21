@@ -290,7 +290,21 @@ def file_sig(p):
     st = p.stat()
     return f"{int(st.st_mtime)}_{st.st_size}"
 
+INDEX_VER = 2   # เปลี่ยนเมื่อวิธีอ่าน/แบ่งข้อความเปลี่ยน -> cache เก่าใช้ไม่ได้ ต้อง embed ใหม่ทั้งหมด (v2: แบ่งท่อนยาว + แก้สระไทย PDF)
+_build_lock = threading.Lock()
+
 def build_index(force=False, log=print):
+    # ทีละรอบเท่านั้น: เดิมรอบตอนเปิด gateway กับรอบที่สั่ง reindex ทำพร้อมกัน embed ไฟล์เดียวกันซ้ำ
+    # และรอบที่จบทีหลังเขียนทับผลของอีกรอบ
+    if not _build_lock.acquire(blocking=False):
+        log("index: กำลังสร้างอยู่แล้ว — ข้ามคำสั่งนี้")
+        return False
+    try:
+        return _build_index(force, log)
+    finally:
+        _build_lock.release()
+
+def _build_index(force=False, log=print):
     KNOWLEDGE_DIR.mkdir(exist_ok=True)
     files = [p for p in KNOWLEDGE_DIR.rglob("*")
              if p.is_file() and not p.name.startswith(".")
@@ -303,7 +317,9 @@ def build_index(force=False, log=print):
             cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
         except Exception:
             cache = {}
-    cached_files = cache.get("files", {})
+    cached_files = cache.get("files", {}) if cache.get("ver") == INDEX_VER else {}
+    if cache and not cached_files:
+        log(f"index: รูปแบบ cache เปลี่ยน (v{cache.get('ver', 1)} -> v{INDEX_VER}) — embed ใหม่ทุกไฟล์")
 
     chunks, vecs, sources = [], [], []
     new_cache_files = {}
@@ -333,6 +349,9 @@ def build_index(force=False, log=print):
             if failed:
                 log(f"     {failed}/{len(cks)} chunks embed ไม่สำเร็จ — จะลองใหม่รอบหน้า")
             e = {"sig": "" if failed else sig, "chunks": [c for c, _ in pairs], "vecs": [v for _, v in pairs]}
+            # บันทึกทุกไฟล์ที่ embed เสร็จ: ถ้าปิด gateway กลางทาง (ทั้งหมดใช้เวลานาน) รอบหน้าไม่ต้องเริ่มใหม่ทั้งหมด
+            CACHE_FILE.write_text(json.dumps({"ver": INDEX_VER, "files": {**cached_files, **new_cache_files, key: e}},
+                                             ensure_ascii=False), encoding="utf-8")
         new_cache_files[key] = e
         for c, v in zip(e["chunks"], e["vecs"]):
             chunks.append(c)
@@ -342,7 +361,7 @@ def build_index(force=False, log=print):
     with _index_lock:
         _index.update(chunks=chunks, vecs=vecs, sources=sources,
                       indexed_at=time.strftime("%Y-%m-%d %H:%M:%S"), files=len(files))
-    CACHE_FILE.write_text(json.dumps({"files": new_cache_files}, ensure_ascii=False), encoding="utf-8")
+    CACHE_FILE.write_text(json.dumps({"ver": INDEX_VER, "files": new_cache_files}, ensure_ascii=False), encoding="utf-8")
     log(f"index done: {len(chunks)} chunks from {len(files)} files")
 
 def rag_search(q, k=4):
@@ -945,8 +964,10 @@ class GatewayHandler(BaseHTTPRequestHandler):
             
             # RAG reindex
             elif u.path == "/api/rag/reindex":
-                threading.Thread(target=lambda: build_index(force=True), daemon=True).start()
-                _send_json(self, {"ok": True, "msg": "reindexing..."})
+                busy = _build_lock.locked()
+                if not busy:
+                    threading.Thread(target=lambda: build_index(force=True), daemon=True).start()
+                _send_json(self, {"ok": True, "msg": "already indexing" if busy else "reindexing..."})
             
             else:
                 _send_error(self, "not found", 404)
