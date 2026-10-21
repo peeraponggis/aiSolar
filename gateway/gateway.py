@@ -297,7 +297,12 @@ def build_index(force=False, log=print):
                 log(f"     ...{ci}/{len(cks)}")
                 sys.stdout.flush()
             pairs = [(c, v) for c, v in zip(cks, cvs) if v]
-            e = {"sig": sig, "chunks": [c for c, _ in pairs], "vecs": [v for _, v in pairs]}
+            failed = len(cks) - len(pairs)
+            # embed ล้มเหลว (เช่น Ollama ปิด/กำลังอัปเดต): ไม่จำลายเซ็นไฟล์ รอบหน้าจะ embed ใหม่
+            # (เดิมจำไว้ทั้งที่ได้ 0 chunks ไฟล์ไม่เปลี่ยนจึงไม่ถูก embed อีกเลย คลังความรู้ว่างถาวร)
+            if failed:
+                log(f"     {failed}/{len(cks)} chunks embed ไม่สำเร็จ — จะลองใหม่รอบหน้า")
+            e = {"sig": "" if failed else sig, "chunks": [c for c, _ in pairs], "vecs": [v for _, v in pairs]}
         new_cache_files[key] = e
         for c, v in zip(e["chunks"], e["vecs"]):
             chunks.append(c)
