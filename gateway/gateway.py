@@ -728,6 +728,10 @@ def kku_proxy(handler, method, sub, body=None):
 # ============================================================
 IMAGE_DIR = Path(os.environ.get("LOCAL_IMAGE_DIR") or r"F:\LocalAI\clip_bank\img")
 IMAGE_RUNNER = os.environ.get("LUNGPEE_IMAGE_RUNNER", r"F:\LocalAI\gateway\image_runner.py")
+# OCR PDF สแกนในคลังความรู้ (ปุ่มในหน้า 🧠 คลังความรู้) — รัน ocr_knowledge.py ด้วย python ของเครื่อง (มี pymupdf)
+OCR_SCRIPT = os.environ.get("LUNGPEE_OCR_SCRIPT", r"F:\LocalAI\gateway\ocr_knowledge.py")
+OCR_ENGINES = ("typhoon", "tesseract", "kku")
+_ocr_job = {"proc": None, "engine": "", "mode": "", "started": None}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 _image_jobs = {}
 
@@ -782,6 +786,40 @@ def start_image_job(req):
         _image_jobs.pop(old, None)
     threading.Thread(target=_run_image_job, args=(job_id, req), daemon=True).start()
     return job_id
+
+
+def _ocr_log():
+    return KNOWLEDGE_DIR / ".ocr" / "ocr.log"
+
+
+def start_ocr(engine, mode="run", force=False):
+    """mode: run = OCR หน้าที่ยังไม่มีผล / check = แค่นับหน้าที่ต้อง OCR — ทีละงานเท่านั้น"""
+    import subprocess
+    if _ocr_job["proc"] and _ocr_job["proc"].poll() is None:
+        raise RuntimeError("กำลังทำ OCR อยู่แล้ว รอให้เสร็จก่อน")
+    if not os.path.isfile(OCR_SCRIPT):
+        raise RuntimeError(f"ไม่พบ {OCR_SCRIPT}")
+    engine = engine if engine in OCR_ENGINES else "typhoon"
+    args = [_image_python(), "-u", OCR_SCRIPT, "--engine", engine] + (["--check"] if mode == "check" else []) + (["--force"] if force else [])
+    log = _ocr_log(); log.parent.mkdir(parents=True, exist_ok=True)
+    out = open(log, "w", encoding="utf-8")
+    _ocr_job.update(proc=subprocess.Popen(args, stdout=out, stderr=subprocess.STDOUT, cwd=os.path.dirname(OCR_SCRIPT),
+                                          env=dict(os.environ, PYTHONIOENCODING="utf-8", LUNGPEE_KNOWLEDGE=str(KNOWLEDGE_DIR)),
+                                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)),
+                    engine=engine, mode=mode, started=time.time())
+    return ocr_status()
+
+
+def ocr_status():
+    proc = _ocr_job["proc"]
+    running = bool(proc and proc.poll() is None)
+    try:
+        lines = _ocr_log().read_text(encoding="utf-8", errors="replace").splitlines()[-40:]
+    except OSError:
+        lines = []
+    return {"running": running, "engine": _ocr_job["engine"], "mode": _ocr_job["mode"],
+            "seconds": round(time.time() - _ocr_job["started"]) if _ocr_job["started"] else 0,
+            "exit": None if running or not proc else proc.returncode, "log": lines}
 
 
 def list_images(limit=24):
@@ -852,6 +890,9 @@ class GatewayHandler(BaseHTTPRequestHandler):
                 _send_bytes(self, audio, "audio/mpeg")
             
             # RAG
+            elif u.path == "/api/rag/ocr/status":
+                _send_json(self, ocr_status())
+
             elif u.path == "/api/rag/status":
                 with _index_lock:
                     _send_json(self, {
@@ -924,6 +965,16 @@ class GatewayHandler(BaseHTTPRequestHandler):
         try:
             if u.path.startswith("/api/kku/"):
                 kku_proxy(self, "POST", u.path[len("/api/kku"):], json.dumps(data).encode("utf-8"))
+
+            elif u.path == "/api/rag/ocr":
+                # ใช้ GPU/เครดิตของผู้ใช้ -> รับเฉพาะหน้าแชทของ gateway เอง
+                if not _same_origin(self):
+                    _send_error(self, "forbidden origin", 403)
+                else:
+                    try:
+                        _send_json(self, start_ocr(data.get("engine", "typhoon"), data.get("mode", "run"), bool(data.get("force"))))
+                    except RuntimeError as e:
+                        _send_error(self, str(e), 409)
 
             elif u.path == "/api/image":
                 # ใช้ GPU/เครดิตของผู้ใช้ -> รับเฉพาะหน้าแชทของ gateway เอง
