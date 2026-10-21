@@ -213,16 +213,46 @@ def read_pdf(path):
         print(f"  PDF read failed {path.name}: {e}")
         return ""
 
+# PDF ภาษาไทยรุ่นเก่า (ฟอนต์ Windows) เก็บสระบน/ล่างและวรรณยุกต์เป็นรหัส Private Use (U+F700–F71A)
+# เช่น "ไฟฟา" = "ไฟฟ้า" — ถ้าไม่แปลงกลับ คำค้นภาษาไทยจะไม่ตรงกับเนื้อหา
+THAI_PUA = str.maketrans({
+    0xF700: "ฐ", 0xF701: "ิ", 0xF702: "ี", 0xF703: "ึ", 0xF704: "ื", 0xF705: "่", 0xF706: "้", 0xF707: "๊",
+    0xF708: "๋", 0xF709: "์", 0xF70A: "่", 0xF70B: "้", 0xF70C: "๊", 0xF70D: "๋", 0xF70E: "์", 0xF70F: "ญ",
+    0xF710: "ั", 0xF711: "ํ", 0xF712: "็", 0xF713: "่", 0xF714: "้", 0xF715: "๊", 0xF716: "๋", 0xF717: "์",
+    0xF718: "ุ", 0xF719: "ู", 0xF71A: "ฺ",
+})
+
 def read_file(path):
     if path.suffix.lower() == ".pdf":
-        return read_pdf(path)
+        return read_pdf(path).translate(THAI_PUA)
     try:
-        return path.read_text(encoding="utf-8-sig", errors="ignore")
+        return path.read_text(encoding="utf-8-sig", errors="ignore").translate(THAI_PUA)
     except Exception:
         return ""
 
+def _split_long(p, size):
+    """ย่อหน้าที่ยาวเกิน size (ตาราง/CSV ที่ไม่มีบรรทัดว่างคั่น): ตัดตามบรรทัด แล้วตามช่องว่าง/ความยาว
+    — เดิมทั้งก้อน 7,000–70,000 ตัวอักษรเป็นท่อนเดียว เกินความยาวที่ bge-m3 รับได้ Ollama ตอบ HTTP 500"""
+    if len(p) <= size:
+        return [p]
+    out, cur = [], ""
+    for line in p.split("\n"):
+        while len(line) > size:   # บรรทัดเดียวยาวเกิน: ตัดที่ช่องว่างใกล้ size ที่สุด
+            cut = line.rfind(" ", size // 2, size)
+            cut = cut if cut > 0 else size
+            if cur:
+                out.append(cur); cur = ""
+            out.append(line[:cut]); line = line[cut:].lstrip()
+        if cur and len(cur) + len(line) + 1 > size:
+            out.append(cur); cur = line
+        else:
+            cur = cur + "\n" + line if cur else line
+    if cur:
+        out.append(cur)
+    return out
+
 def chunk_text(t, size=800, overlap=120):
-    paras = [p.strip() for p in re.split(r"\n\s*\n", t) if p.strip()]
+    paras = [s for p in re.split(r"\n\s*\n", t) if p.strip() for s in _split_long(p.strip(), size)]
     chunks, cur = [], ""
     for p in paras:
         if len(cur) + len(p) + 2 > size and cur:
