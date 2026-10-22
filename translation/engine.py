@@ -528,11 +528,100 @@ def pull_model(name, progress_cb=None):
 
 def chat_stream(model, messages, temperature, stop_event=None, backend=None):
     """ตัวเลือกเส้นทาง: โมเดลในเครื่อง (Ollama) หรือ API ออนไลน์ ตาม BACKEND ที่ GUI ตั้งไว้
-    backend = dict รูปแบบเดียวกับ BACKEND เพื่อบังคับเส้นทางเฉพาะงานนี้ (เช่น ไทย→ลาว ต้องใช้ API)"""
+    backend = dict รูปแบบเดียวกับ BACKEND เพื่อบังคับเส้นทางเฉพาะงานนี้ (เช่น ไทย→ลาว ต้องใช้ API)
+    โหมดอัตโนมัติ (BACKEND['fallback_model'] = โมเดลในเครื่อง): ถ้า API ล้มก่อนตอบอะไรออกมา ถอยไปแปลด้วยโมเดลในเครื่องแทน"""
     b = backend or BACKEND
     if b["mode"] == "api":
-        return (yield from stream_chat_openai(b["base"], b["key"], b["model"], messages, temperature, stop_event))
+        fallback = b.get("fallback_model")
+        if not fallback:
+            return (yield from stream_chat_openai(b["base"], b["key"], b["model"], messages, temperature, stop_event))
+        gen = stream_chat_openai(b["base"], b["key"], b["model"], messages, temperature, stop_event)
+        try:
+            first = next(gen)
+        except StopIteration as e:
+            return e.value
+        except Exception as e:
+            log.warning("API %s ล้ม (%s) — ถอยไปใช้โมเดลในเครื่อง %s", b.get("model"), str(e)[:120], fallback)
+            return (yield from stream_chat(fallback, messages, temperature, stop_event))
+        yield first
+        return (yield from gen)
     return (yield from stream_chat(model, messages, temperature, stop_event))
+
+
+# ---------------------------------------------------------------- เพิ่มผู้ให้บริการเข้าศูนย์ผู้ให้บริการ (ทะเบียนกลาง)
+HUB_PRESETS = {   # ชุดย่อของ Multi Tools core/provider_hub.py — ชื่อ/base/ตัวแปรคีย์ตรงกัน จึงใช้ร่วมกันได้
+    "openrouter": {"name": "OpenRouter (หลายโมเดล มีแบบฟรี)", "base": "https://openrouter.ai/api/v1", "key_env": "OPENROUTER_API_KEY",
+                   "free": True, "paid": True, "signup": "https://openrouter.ai/keys",
+                   "models": ["google/gemma-4-26b-a4b-it:free", "qwen/qwen3.8-27b:free", "qwen/qwen3-235b-a22b-2507"]},
+    "groq": {"name": "Groq (เร็วมาก ฟรีจำกัด)", "base": "https://api.groq.com/openai/v1", "key_env": "GROQ_API_KEY",
+             "free": True, "paid": True, "signup": "https://console.groq.com/keys", "models": ["llama-3.3-70b-versatile", "qwen/qwen3-32b"]},
+    "gemini": {"name": "Google Gemini (ฟรีจำกัด)", "base": "https://generativelanguage.googleapis.com/v1beta/openai", "key_env": "GEMINI_API_KEY",
+               "free": True, "paid": True, "signup": "https://aistudio.google.com/apikey", "models": ["gemini-2.5-flash", "gemini-2.5-flash-lite"]},
+    "openai": {"name": "OpenAI", "base": "https://api.openai.com/v1", "key_env": "OPENAI_API_KEY",
+               "free": False, "paid": True, "signup": "https://platform.openai.com/api-keys", "models": ["gpt-4o-mini", "gpt-4.1-mini"]},
+    "typhoon": {"name": "OpenTyphoon (SCB10X ภาษาไทย)", "base": "https://api.opentyphoon.ai/v1", "key_env": "TYPHOON_API_KEY",
+                "free": True, "paid": True, "signup": "https://opentyphoon.ai", "models": ["typhoon-v2.5-30b-a3b-instruct"]},
+    "custom": {"name": "", "base": "", "key_env": "", "free": False, "paid": False, "signup": "", "models": []},
+}
+_ENV_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,63}$")
+
+
+def set_windows_key(env, value):
+    """เก็บคีย์เป็นตัวแปรผู้ใช้ของ Windows (HKCU\\Environment) — ไม่ลงไฟล์/log"""
+    value = (value or "").strip()
+    if not _ENV_NAME_RE.match(env or ""):
+        raise ValueError("ชื่อตัวแปรคีย์ต้องเป็นตัวพิมพ์ใหญ่/ตัวเลข/_ เช่น OPENROUTER_API_KEY")
+    if not value or any(c in value for c in " \t\r\n\"'"):
+        raise ValueError("คีย์ต้องไม่ว่างและไม่มีช่องว่าง/อัญประกาศ")
+    import winreg
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0, winreg.KEY_SET_VALUE) as k:
+        winreg.SetValueEx(k, env, 0, winreg.REG_SZ, value)
+    os.environ[env] = value
+    try:
+        import ctypes
+        ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x1A, 0, "Environment", 2, 3000, None)
+    except Exception:
+        pass
+
+
+def hub_add_provider(preset, name="", base="", key_env="", key=""):
+    """เพิ่มผู้ให้บริการลงทะเบียนกลาง (รูปแบบเดียวกับ Multi Tools) + ตั้งคีย์ถ้าให้มา คืนชื่อรายการใน API_PRESETS"""
+    pre = HUB_PRESETS.get(preset) or HUB_PRESETS["custom"]
+    name = (name or "").strip() or pre["name"]
+    base = ((base or "").strip() or pre["base"]).rstrip("/")
+    key_env = (key_env or "").strip() or pre["key_env"]
+    if not name or not re.match(r"^https://|^http://(127\.0\.0\.1|localhost)[:/]", base):
+        raise ValueError("ใส่ชื่อ และ Base URL ที่ขึ้นต้นด้วย https:// (ลงท้าย /v1)")
+    if key_env and not _ENV_NAME_RE.match(key_env):
+        raise ValueError("ชื่อตัวแปรคีย์ต้องเป็นตัวพิมพ์ใหญ่/ตัวเลข/_ เช่น OPENROUTER_API_KEY")
+    try:
+        with open(HUB_FILE, encoding="utf-8") as f:
+            doc = json.load(f)
+        items = doc.get("providers") or []
+    except (OSError, ValueError):
+        doc, items = {"version": 1}, [{"id": "kku", "preset": "kku", "name": "KKU gen.ai (มข.)", "base": "https://gen.ai.kku.ac.th/okmd/api/v1",
+                                       "key_env": "KKU_API_KEY", "auth": "bearer", "models_url": None, "free": False, "paid": True,
+                                       "signup": "https://gen.ai.kku.ac.th", "enabled": True,
+                                       "models": ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gpt-5.4-mini", "deepseek-v4-flash", "claude-sonnet-5", "qwen3.7-plus"]}]
+    pid, n = (preset if preset in HUB_PRESETS else "custom"), 2
+    while any(p.get("id") == pid for p in items):
+        pid, n = f"{preset}-{n}", n + 1
+    item = {"id": pid, "preset": preset if preset in HUB_PRESETS else "custom", "name": name, "base": base, "key_env": key_env,
+            "auth": "bearer" if key_env else "none", "models_url": None, "models": list(pre["models"]), "free": pre["free"], "paid": pre["paid"],
+            "signup": pre["signup"], "enabled": True}
+    items.append(item)
+    doc.update(providers=items, updated=time.strftime("%Y-%m-%dT%H:%M:%S"), by="Local Translator",
+               note="no API keys here — keys live in Windows user environment variables named by key_env")
+    os.makedirs(os.path.dirname(HUB_FILE), exist_ok=True)
+    tmp = HUB_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, HUB_FILE)
+    if key and key_env:
+        set_windows_key(key_env, key)
+    load_hub_presets()
+    tag = "/".join(t for t, ok in (("ฟรี", pre["free"]), ("เสียเงิน", pre["paid"])) if ok)
+    return HUB_PREFIX + name + (f" [{tag}]" if tag else "")
 
 
 def clean_output(text):

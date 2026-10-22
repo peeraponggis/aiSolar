@@ -41,7 +41,7 @@ class ModelConnection:
     def use_backend(self, mode):
         """สลับเส้นทางที่ใช้จริง: 'local' หรือ 'api'"""
         a = self.settings.get("api") or {}
-        BACKEND.update(mode=mode, base=a.get("base", ""), key=resolve_api_key(a), model=a.get("model", ""))
+        BACKEND.update(mode=mode, base=a.get("base", ""), key=resolve_api_key(a), model=a.get("model", ""), fallback_model="")
         self.st["backend"] = mode
         if mode == "api":
             self.st["model"] = a.get("model", "")   # ให้ปุ่มแปล/ถามผ่านการตรวจ "มีโมเดล" (chat_stream ใช้ BACKEND['model'] เอง)
@@ -65,10 +65,17 @@ class ModelConnection:
         api_entry = (API_TAG + a.get("model", "")) if api_ok else None
         values = list(models or []) + ([api_entry] if api_entry else [])
         self.st["models"] = list(models or []); self.model_cb["values"] = values
-        want_api = (mode == "api" and api_ok) or (mode == "auto" and not local_ok and api_ok)
+        # อัตโนมัติ = ใช้ API ก่อน (เร็ว/คุณภาพสูงกว่าโมเดล 4B ในเครื่อง) ถ้ายังไม่ได้ตั้ง API ค่อยใช้โมเดลในเครื่อง
+        want_api = (mode == "api" and api_ok) or (mode == "auto" and api_ok)
         if want_api:
             self.use_backend("api"); self.model_var.set(api_entry)
-            why = "" if mode == "api" else " (ไม่พบโมเดลในเครื่อง จึงสลับให้อัตโนมัติ)"
+            why = ""
+            if mode == "auto" and local_ok:   # API ล้มเมื่อไร chat_stream ถอยไปใช้โมเดลในเครื่องตัวนี้เอง
+                saved = self.settings.get("model", "")
+                BACKEND["fallback_model"] = saved if saved in models else pick_model(models)
+                why = f" (อัตโนมัติ · ถ้า API ล้มจะใช้ {BACKEND['fallback_model']} ในเครื่องแทน)"
+            elif mode == "auto":
+                why = " (อัตโนมัติ · ไม่พบโมเดลในเครื่อง)"
             self.set_status(f"พร้อมใช้งาน · โมเดลออนไลน์ {a.get('model')} ผ่าน API{why}")
         elif local_ok:
             self.use_backend("local")
