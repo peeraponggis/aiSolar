@@ -19,6 +19,7 @@ _DEFAULTS = {
     "voice": "ปัตตรา (ในเครื่อง เร็ว ออฟไลน์)",  # SAPI offline เร็วที่สุด
     "rate": "ปกติ",
     "model": "",
+    "online_model": "",  # "<ผู้ให้บริการ>::<โมเดล>" จากศูนย์ผู้ให้บริการ — ว่าง = ใช้โมเดลในเครื่อง
     "notes": "",  # ข้อมูลที่ผู้ใช้ขอให้จำ ("จำไว้ว่า...")
 }
 
@@ -38,7 +39,7 @@ def load() -> dict:
 
 def save(st: dict):
     """บันทึกเฉพาะ fields ที่ต้องการ persist"""
-    to_save = {k: st[k] for k in ("voice", "rate", "model", "notes") if k in st}
+    to_save = {k: st[k] for k in ("voice", "rate", "model", "online_model", "notes") if k in st}
     try:
         os.makedirs(_SETTINGS_DIR, exist_ok=True)
         with open(_SETTINGS_FILE, "w", encoding="utf-8") as f:

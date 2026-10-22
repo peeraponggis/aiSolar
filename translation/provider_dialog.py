@@ -17,7 +17,7 @@ import webbrowser
 from tkinter import ttk
 
 from engine import (
-    API_PRESETS, DEFAULT_MODEL, clean_output, env_key, find_ollama_exe, list_models,
+    API_PRESETS, DEFAULT_MODEL, clean_output, env_key, find_ollama_exe, list_models, load_hub_presets, preset_nokey,
     list_models_openai, pull_model, stream_chat_openai,
 )
 
@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 def open_provider_dialog(root, fam, small_font, settings, save_settings, connect):
     a = dict(settings.get("api") or {})
+    load_hub_presets()   # รายการจากศูนย์ผู้ให้บริการล่าสุด (เผื่อเพิ่ม/แก้ใน Multi Tools ระหว่างเปิดโปรแกรม)
     dlg = tk.Toplevel(root); dlg.title("ผู้ให้บริการโมเดล"); dlg.transient(root); dlg.grab_set(); dlg.resizable(False, False)
     body = ttk.Frame(dlg, padding=14); body.pack(fill="both", expand=True)
     ttk.Label(body, text="เส้นทางที่ใช้แปล", font=(fam, 10, "bold")).grid(row=0, column=0, sticky="w", pady=(0, 4))
@@ -61,7 +62,10 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
         note_var.set(p["note"])
         link.config(text=("สมัคร/ขอคีย์: " + p["signup"]) if p["signup"] else "")
         link.bind("<Button-1>", lambda e, u=p["signup"]: webbrowser.open(u) if u else None)
-        if p.get("key_env"):
+        if p.get("nokey"):
+            key_var.set("")
+            msg_var.set("ผู้ให้บริการนี้ไม่ใช้คีย์ — เว้นช่อง API key ว่างไว้")
+        elif p.get("key_env"):
             if preset_var.get() != a.get("preset"):
                 key_var.set("")   # ไม่ส่งคีย์ของผู้ให้บริการเดิมไปยังผู้ให้บริการนี้
             found = bool(env_key(p["key_env"]))
@@ -75,7 +79,7 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
         return key_var.get().strip() or env_key(API_PRESETS[preset_var.get()].get("key_env"))
 
     def load_models():
-        if not (base_var.get().strip() and current_key()):
+        if not (base_var.get().strip() and (current_key() or preset_nokey(preset_var.get()))):
             msg_var.set("ใส่ Base URL และ API key ก่อน"); return
         msg_var.set("กำลังโหลดรายการโมเดล ...")
 
@@ -91,7 +95,7 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
 
     def test_api():
         b, k, m = base_var.get().strip(), current_key(), model_v.get().strip()
-        if not (b and k and m):
+        if not (b and (k or preset_nokey(preset_var.get())) and m):
             msg_var.set("ใส่ Base URL, API key และโมเดลให้ครบก่อน"); return
         msg_var.set("กำลังทดสอบ ...")
 

@@ -12,7 +12,7 @@ model_connection.py - เชื่อมต่อ/สลับเส้นทา
 import logging
 import threading
 
-from engine import BACKEND, ensure_ollama, list_models, pick_model, resolve_api_key, warm_up
+from engine import BACKEND, api_ready, ensure_ollama, list_models, pick_model, resolve_api_key, warm_up
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class ModelConnection:
 
     def api_configured(self):
         a = self.settings.get("api") or {}
-        return bool(a.get("base") and resolve_api_key(a) and a.get("model"))
+        return api_ready(a)
 
     def use_backend(self, mode):
         """สลับเส้นทางที่ใช้จริง: 'local' หรือ 'api'"""

@@ -53,3 +53,7 @@ gateway/build/
 
 # Multi Tools is its own git repo
 multi-tools/
+_scratch/
+
+# ทะเบียนศูนย์ผู้ให้บริการ (ข้อมูลผู้ใช้ ไม่มีคีย์ — Multi Tools สร้างใหม่ได้)
+shared/providers.json
