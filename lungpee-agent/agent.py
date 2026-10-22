@@ -29,7 +29,7 @@ from avatar import AvatarWindow
 from hotkey import hotkey_thread
 from text_input import TextInputPopup
 from voice_input import VoiceInput
-from ollama_client import clean_output, ensure_ollama, pick_model, stream_chat, warm_up
+from ollama_client import clean_output, ensure_ollama, hub_models, pick_model, stream_chat, warm_up
 from tool_registry import DISPATCH, TOOLS
 from tts_engine import (
     EN_VOICES, TTS_RATES, TTS_VOICES, TtsPipeline,
@@ -279,12 +279,13 @@ def _parse_tool_args(raw):
 
 def handle_command(text):
     log.info("คำถาม/คำสั่ง (raw): %s", text)
-    if not st["model"]:   # ตอนเปิดเครื่อง Ollama อาจยังไม่ขึ้น/กำลังอัปเดต: ลองเชื่อมต่อใหม่ก่อน ไม่ต้องกดเมนูเอง
+    if not st["model"] and not st.get("online_model"):   # ตอนเปิดเครื่อง Ollama อาจยังไม่ขึ้น/กำลังอัปเดต: ลองเชื่อมต่อใหม่ก่อน ไม่ต้องกดเมนูเอง
         log.info("ยังไม่ได้เชื่อมต่อโมเดล - ลองเชื่อมต่อใหม่")
         connect_model()
-    if not st["model"]:
+    if not st["model"] and not st.get("online_model"):
         log.warning("ยังไม่ได้เชื่อมต่อโมเดล - ข้ามคำถามนี้")
         speak("ขอโทษครับ ยังเชื่อมต่อโมเดลไม่ได้"); return
+    use_model = st.get("online_model") or st["model"]   # โมเดลออนไลน์จากศูนย์ผู้ให้บริการ (ถ้าเลือกไว้ในเมนูถาดระบบ)
 
     # Goal 4a — "จำไว้ว่า..." บันทึก notes แบบ instant โดยไม่ส่งโมเดล
     m_remember = _REMEMBER_RE.search(text)
@@ -331,7 +332,7 @@ def handle_command(text):
         buf = []
         stream_speak_begin()   # เริ่มพูดได้ทันทีตั้งแต่ประโยคแรกของรอบนี้
         try:
-            gen = stream_chat(st["model"], messages, temperature=0.4, tools=TOOLS)
+            gen = stream_chat(use_model, messages, temperature=0.4, tools=TOOLS)
             result = {"tool_calls": [], "stats": {}}
             while True:
                 try:
@@ -342,7 +343,7 @@ def handle_command(text):
                 buf.append(piece)
                 stream_speak_piece(piece)
         except Exception:
-            log.exception("เรียกโมเดลผิดพลาด (model=%s)", st["model"])
+            log.exception("เรียกโมเดลผิดพลาด (model=%s)", use_model)
             stream_speak_end()
             speak("ขอโทษครับ เรียกโมเดลไม่สำเร็จ"); return
         stream_speak_end()
@@ -474,12 +475,30 @@ def main():
         icon.stop()
         root.after(0, root.quit)
 
+    # โมเดล: ในเครื่อง (ค่าเริ่มต้น) หรือโมเดลออนไลน์จากศูนย์ผู้ให้บริการ (ทะเบียนกลางที่ Multi Tools จัดการ)
+    def pick_online(mid):
+        def handler(icon, item):
+            st["online_model"] = mid
+            _settings.save(st)
+            log.info("เลือกโมเดล: %s", mid or "ในเครื่อง (Ollama)")
+        return handler
+
+    def model_items():
+        yield pystray.MenuItem("ในเครื่อง (Ollama)" + (f" · {st['model']}" if st["model"] else ""), pick_online(""),
+                               checked=lambda item: not st.get("online_model"), radio=True)
+        opts = hub_models()
+        if not opts:
+            yield pystray.MenuItem("ยังไม่มีโมเดลออนไลน์ (ตั้งค่าใน Multi Tools → ศูนย์ผู้ให้บริการ)", None, enabled=False)
+        for mid, label in opts:
+            yield pystray.MenuItem(label, pick_online(mid), checked=lambda item, m=mid: st.get("online_model") == m, radio=True)
+
     menu = pystray.Menu(
         pystray.MenuItem(f"{APP_NAME} v{VERSION} · ปรับปรุง {thai_date(UPDATED)} · โดย {AUTHOR}", None, enabled=False),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem("พูดคุยกับลุงพี (หรือกด Ctrl+Alt+L)", on_toggle),
         pystray.MenuItem("พิมพ์ถามแทน", on_type_instead),
         pystray.MenuItem("เชื่อมต่อโมเดลใหม่", on_reconnect),
+        pystray.MenuItem("โมเดล", pystray.Menu(model_items)),
         pystray.MenuItem("ออกจากโปรแกรม", on_quit),
     )
     icon = pystray.Icon("lungpee-agent", image, f"ลุงพี v{VERSION}", menu)

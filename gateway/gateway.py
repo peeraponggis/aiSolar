@@ -666,21 +666,8 @@ def serve_static(handler, path):
 # KKU gen.ai (มข.) — OpenAI-compatible, คีย์อยู่ฝั่ง server เท่านั้น
 # ============================================================
 KKU_BASE = os.environ.get("KKU_API_BASE", "https://gen.ai.kku.ac.th/okmd/api/v1").rstrip("/")
-KKU_PATHS = {("GET", "/v1/models"), ("POST", "/v1/chat/completions")}
 SAME_ORIGINS = {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
 
-
-def _kku_key():
-    # อ่านจาก registry สำรอง เพราะ gateway ที่เปิดก่อนตั้งตัวแปรจะไม่เห็นใน os.environ
-    key = os.environ.get("KKU_API_KEY")
-    if key:
-        return key
-    try:
-        import winreg
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
-            return winreg.QueryValueEx(k, "KKU_API_KEY")[0] or ""
-    except OSError:
-        return ""
 
 
 def _same_origin(handler):
@@ -691,25 +678,93 @@ def _same_origin(handler):
     return handler.headers.get("Sec-Fetch-Site") != "cross-site"
 
 
-def kku_proxy(handler, method, sub, body=None):
+# ============================================================
+# ศูนย์ผู้ให้บริการ (ทะเบียนกลาง F:\LocalAI\shared\providers.json จัดการใน Multi Tools) — คีย์อยู่ฝั่ง server เท่านั้น
+#   GET  /api/hub/providers              รายชื่อที่เปิดใช้ + พร้อมใช้ (มีคีย์) ไหม
+#   GET  /api/hub/<id>/v1/models         POST /api/hub/<id>/v1/chat/completions   (proxy ใส่คีย์ให้)
+#   /api/kku/v1/* ของเดิมยังใช้ได้ (= /api/hub/kku/v1/*)
+# ============================================================
+HUB_FILE = os.environ.get("LUNGPEE_PROVIDERS") or r"F:\LocalAI\shared\providers.json"
+HUB_PATHS = {("GET", "/v1/models"), ("POST", "/v1/chat/completions")}
+
+
+def _env_key(name):
+    # อ่านจาก registry สำรอง เพราะ gateway ที่เปิดก่อนตั้งตัวแปรจะไม่เห็นใน os.environ
+    if not name:
+        return ""
+    key = os.environ.get(name)
+    if key:
+        return key
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+            return winreg.QueryValueEx(k, name)[0] or ""
+    except OSError:
+        return ""
+
+
+def hub_providers():
+    """รายการที่เปิดใช้ในทะเบียนกลาง — ถ้าไม่มีไฟล์ ใช้ KKU อย่างเดียวเหมือนเดิม"""
+    try:
+        with open(HUB_FILE, encoding="utf-8") as f:
+            items = json.load(f).get("providers") or []
+    except (OSError, ValueError):
+        items = [{"id": "kku", "name": "KKU gen.ai (มข.)", "base": KKU_BASE, "key_env": "KKU_API_KEY"}]
+    out = []
+    for p in items:
+        if not isinstance(p, dict) or not p.get("id") or not p.get("base") or p.get("enabled", True) is False:
+            continue
+        out.append({"id": p["id"], "name": p.get("name") or p["id"], "base": p["base"].rstrip("/"),
+                    "key_env": p.get("key_env") or "", "auth": p.get("auth") or "bearer",
+                    "models_url": p.get("models_url") or "", "models": p.get("models") or [],
+                    "free": bool(p.get("free")), "paid": bool(p.get("paid"))})
+    return out
+
+
+def _hub_headers(p, key):
+    if p["auth"] == "none":
+        return {}
+    if p["auth"] == "anthropic":
+        return {"Authorization": "Bearer " + key, "x-api-key": key, "anthropic-version": "2023-06-01"}
+    return {"Authorization": "Bearer " + key}
+
+
+def hub_proxy(handler, method, sub, body=None):
     if not _same_origin(handler):
         _send_error(handler, "forbidden origin", 403); return
-    key = _kku_key()
-    if sub == "/status":
-        _send_json(handler, {"available": bool(key), "base": KKU_BASE}); return
-    if (method, sub) not in KKU_PATHS:
+    if sub == "/providers":
+        _send_json(handler, [{**{k: p[k] for k in ("id", "name", "free", "paid", "models")},
+                              "available": p["auth"] == "none" or bool(_env_key(p["key_env"]))} for p in hub_providers()]); return
+    pid, _, rest = sub.lstrip("/").partition("/")
+    rest = "/" + rest
+    p = next((x for x in hub_providers() if x["id"] == pid), None)
+    if not p:
+        _send_error(handler, "ไม่พบผู้ให้บริการนี้ในทะเบียนกลาง (จัดการใน Multi Tools)", 404); return
+    key = "" if p["auth"] == "none" else _env_key(p["key_env"])
+    if rest == "/status":
+        _send_json(handler, {"available": p["auth"] == "none" or bool(key), "base": p["base"]}); return
+    if (method, rest) not in HUB_PATHS:
         _send_error(handler, "not allowed", 404); return
-    if not key:
-        _send_error(handler, "ยังไม่ได้ตั้งตัวแปร KKU_API_KEY ของ Windows", 503); return
-    req = urllib.request.Request(KKU_BASE + sub[len("/v1"):], data=body, method=method, headers={
-        "Authorization": "Bearer " + key, "Content-Type": "application/json",
+    if p["auth"] != "none" and not key:
+        _send_error(handler, f"ยังไม่ได้ตั้งตัวแปร {p['key_env']} ของ Windows (ตั้งได้ใน Multi Tools → ตั้งค่า)", 503); return
+    url = (p["models_url"] if rest == "/v1/models" and p["models_url"] else p["base"] + rest[len("/v1"):])
+    req = urllib.request.Request(url, data=body, method=method, headers={
+        **_hub_headers(p, key), "Content-Type": "application/json",
         "Accept": handler.headers.get("Accept") or "*/*"})
+    _stream_upstream(handler, req, p["name"])
+
+
+def kku_proxy(handler, method, sub, body=None):
+    hub_proxy(handler, method, "/kku" + sub, body)
+
+
+def _stream_upstream(handler, req, name):
     try:
         resp = urllib.request.urlopen(req, timeout=300)
     except urllib.error.HTTPError as e:
         _send_bytes(handler, e.read(), e.headers.get("Content-Type") or "application/json", e.code); return
     except urllib.error.URLError as e:
-        _send_error(handler, f"เชื่อมต่อ KKU ไม่ได้: {e.reason}", 502); return
+        _send_error(handler, f"เชื่อมต่อ {name} ไม่ได้: {e.reason}", 502); return
     with resp:
         handler.send_response(resp.status)
         handler.send_header("Content-Type", resp.headers.get("Content-Type") or "application/json")
@@ -850,7 +905,10 @@ class GatewayHandler(BaseHTTPRequestHandler):
         q = parse_qs(u.query)
         
         try:
-            if u.path.startswith("/api/kku/"):
+            if u.path.startswith("/api/hub/"):
+                hub_proxy(self, "GET", u.path[len("/api/hub"):])
+
+            elif u.path.startswith("/api/kku/"):
                 kku_proxy(self, "GET", u.path[len("/api/kku"):])
 
             elif u.path == "/api/version":
@@ -963,7 +1021,10 @@ class GatewayHandler(BaseHTTPRequestHandler):
             data = {}
         
         try:
-            if u.path.startswith("/api/kku/"):
+            if u.path.startswith("/api/hub/"):
+                hub_proxy(self, "POST", u.path[len("/api/hub"):], json.dumps(data).encode("utf-8"))
+
+            elif u.path.startswith("/api/kku/"):
                 kku_proxy(self, "POST", u.path[len("/api/kku"):], json.dumps(data).encode("utf-8"))
 
             elif u.path == "/api/rag/ocr":
@@ -1062,6 +1123,7 @@ if __name__ == "__main__":
     print(f"LocalAI Unified Gateway on http://{HOST}:{PORT}")
     print("Endpoints:")
     print("  /api/kku/v1/* -> KKU gen.ai (key from KKU_API_KEY)")
+    print("  /api/hub/providers, /api/hub/<id>/v1/* -> providers from F:\\LocalAI\\shared\\providers.json (keys from Windows env)")
     print("  /api/version, /api/shutdown -> version info / exit (same-origin only)")
     print("  /api/chat, /api/generate, /api/embeddings, /api/tags, /api/pull -> Ollama")
     print("  /api/tts, /api/voices -> Edge TTS")

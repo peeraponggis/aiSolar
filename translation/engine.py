@@ -392,6 +392,37 @@ API_PRESETS = {
         "note": "คุณภาพสูง คิดค่าใช้จ่ายตามโทเค็น"},
     "กำหนดเอง (OpenAI-compatible)": {"base": "", "models": [], "signup": "", "note": "ใส่ Base URL ที่ลงท้ายด้วย /v1 ของบริการที่รองรับรูปแบบ OpenAI"},
 }
+# ศูนย์ผู้ให้บริการ (ทะเบียนกลางที่ Multi Tools จัดการ — ลุงพี AI / ลุงพี Agent ใช้ไฟล์เดียวกัน) ไม่มีคีย์ในไฟล์:
+# คีย์อ่านจากตัวแปร Windows ตาม key_env · ผู้ให้บริการที่ไม่ใช้คีย์ (เช่น Pollinations) มี nokey=True
+HUB_FILE = os.environ.get("LUNGPEE_PROVIDERS") or r"F:\LocalAI\shared\providers.json"
+HUB_PREFIX = "🔗 "
+
+
+def load_hub_presets():
+    """เติมรายการจากทะเบียนกลางเข้า API_PRESETS (ชื่อขึ้นต้น 🔗) — เรียกซ้ำได้เมื่อเปิดหน้าต่างผู้ให้บริการ"""
+    for k in [k for k in API_PRESETS if k.startswith(HUB_PREFIX)]:
+        del API_PRESETS[k]
+    try:
+        with open(HUB_FILE, encoding="utf-8") as f:
+            items = json.load(f).get("providers") or []
+    except (OSError, ValueError):
+        return 0
+    n = 0
+    for p in items:
+        if not isinstance(p, dict) or not p.get("base") or p.get("enabled", True) is False or p.get("auth") == "anthropic":
+            continue   # anthropic: /models ต้องใช้ header พิเศษ ใช้ผ่าน Multi Tools/ลุงพี AI แทน
+        nokey = p.get("auth") == "none" or not p.get("key_env")
+        tag = "/".join(t for t, ok in (("ฟรี", p.get("free")), ("เสียเงิน", p.get("paid"))) if ok)
+        API_PRESETS[HUB_PREFIX + (p.get("name") or p["id"]) + (f" [{tag}]" if tag else "")] = {
+            "base": p["base"].rstrip("/"), "models": [m for m in (p.get("models") or []) if isinstance(m, str)],
+            "signup": p.get("signup") or "", "key_env": p.get("key_env") or "", "nokey": nokey,
+            "note": ("จากศูนย์ผู้ให้บริการ (จัดการรายชื่อ/คีย์ใน Multi Tools → ตั้งค่า) · "
+                     + ("ไม่ต้องใช้คีย์" if nokey else f"คีย์จากตัวแปร {p.get('key_env')} ของ Windows อัตโนมัติ ไม่ต้องกรอก"))}
+        n += 1
+    return n
+
+
+load_hub_presets()
 BACKEND = {"mode": "local", "base": "", "key": "", "model": ""}   # โหมดที่ใช้งานอยู่จริง (ตั้งโดย GUI)
 
 
@@ -415,8 +446,23 @@ def resolve_api_key(api):
     return api.get("key") or env_key(API_PRESETS.get(api.get("preset"), {}).get("key_env"))
 
 
+def preset_nokey(name):
+    """ผู้ให้บริการที่ไม่ใช้คีย์ (เช่น Pollinations จากศูนย์ผู้ให้บริการ)"""
+    return bool(API_PRESETS.get(name or "", {}).get("nokey"))
+
+
+def api_ready(api):
+    """ตั้งค่า API ครบพอจะใช้ได้: มี base + โมเดล และมีคีย์ (หรือผู้ให้บริการไม่ใช้คีย์)"""
+    api = api or {}
+    return bool(api.get("base") and api.get("model") and (resolve_api_key(api) or preset_nokey(api.get("preset"))))
+
+
+def _auth_headers(key):
+    return {"Authorization": "Bearer " + key} if key else {}
+
+
 def list_models_openai(base, key, timeout=15):
-    req = urllib.request.Request(base.rstrip("/") + "/models", headers={"Authorization": "Bearer " + key, "User-Agent": "LocalTranslator/1.0"})
+    req = urllib.request.Request(base.rstrip("/") + "/models", headers={**_auth_headers(key), "User-Agent": "LocalTranslator/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         d = json.loads(r.read().decode("utf-8"))
     items = d.get("data") if isinstance(d, dict) else d
@@ -428,7 +474,7 @@ def stream_chat_openai(base, key, model, messages, temperature, stop_event=None)
     msgs = [dict(m, content=m["content"].replace("/no_think", "").rstrip()) for m in messages]
     body = json.dumps({"model": model, "messages": msgs, "stream": True, "temperature": temperature}).encode("utf-8")
     req = urllib.request.Request(base.rstrip("/") + "/chat/completions", data=body,
-                                 headers={"Content-Type": "application/json", "Authorization": "Bearer " + key, "User-Agent": "LocalTranslator/1.0",
+                                 headers={"Content-Type": "application/json", **_auth_headers(key), "User-Agent": "LocalTranslator/1.0",
                                           "HTTP-Referer": "https://localtranslator.local", "X-Title": "Local Translator"})
     try:
         resp = urllib.request.urlopen(req, timeout=180)
@@ -512,9 +558,8 @@ def warm_up(model):
 def api_backend(settings):
     """คืน dict เส้นทาง API ออนไลน์จาก settings['api'] (รูปแบบเดียวกับ BACKEND) หรือ None ถ้ายังไม่ได้ตั้งค่าครบ"""
     a = (settings or {}).get("api") or {}
-    key = resolve_api_key(a)
-    if a.get("base") and key and a.get("model"):
-        return {"mode": "api", "base": a["base"], "key": key, "model": a["model"]}
+    if api_ready(a):
+        return {"mode": "api", "base": a["base"], "key": resolve_api_key(a), "model": a["model"]}
     return None
 
 
