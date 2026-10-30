@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 # -*- coding: utf-8 -*-
 """image_runner.py — สร้างภาพด้วยสคริปต์ของ AI-Bridge-Launcher (local_image / gemini_image) ตัวเดียวกัน
 ภาพจึงไปอยู่ที่เดียวกัน (F:\\LocalAI\\clip_bank\\img + prompts\\) และได้พฤติกรรมเดียวกันทุกอย่าง

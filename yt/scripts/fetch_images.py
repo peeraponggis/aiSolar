@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import os
 import sys
 import json
@@ -177,6 +186,103 @@ def photo_download_url(photo: dict, orientation: str = "portrait") -> str:
         return src.get("large2x") or src.get("large", "")
     size = "h=1920" if orientation == "portrait" else "w=1920"
     return f"{original}?auto=compress&cs=tinysrgb&{size}"
+
+
+def _shorter_query(query: str) -> str:
+    words = query.split()
+    return " ".join(words[:2]) if len(words) > 2 else ""
+
+
+def _search_scene(query: str, orientation: str) -> tuple[list[dict], list[dict]]:
+    videos = _search_pexels_videos(query, 8, orientation)
+    photos = _search_pexels_photos(query, 8, orientation) if len(videos) < 3 else []
+    short = _shorter_query(query)
+    if not videos and not photos and short:
+        videos = _search_pexels_videos(short, 8, orientation)
+        photos = _search_pexels_photos(short, 8, orientation)
+    return videos, photos
+
+
+async def fetch_scene_media(project_id: str, scenes: list[dict], topic: str,
+                            orientation: str = "portrait", source: str = "pexels",
+                            ai_engine: str = "flux", durations: list[float] | None = None,
+                            log=None) -> list[dict]:
+    """One media file per scene, chosen from that scene's own visual query.
+    source: "pexels" (video, else photo), "ai" (AI image for every scene) or
+    "mixed" (Pexels video, else AI image). Never reuses a Pexels item.
+    Writes media/scenes.json and returns one record per scene."""
+    import shutil
+    from scripts.ai_images import generate_images, is_available as ai_available
+    from scripts.generate_script import image_prompt
+
+    media_dir = os.path.join("projects", project_id, "media")
+    os.makedirs(media_dir, exist_ok=True)
+    records = [{"index": i, "text": s["text"], "query": s.get("visual") or topic,
+                "file": None, "source": None, "fallback": False}
+               for i, s in enumerate(scenes)]
+    used: set = set()
+    use_pexels = source in ("pexels", "mixed") and bool(_get_pexels_key())
+
+    if use_pexels:
+        found = await asyncio.gather(*(asyncio.to_thread(_search_scene, r["query"], orientation)
+                                       for r in records))
+        downloads = []
+        for r, (videos, photos) in zip(records, found):
+            need = (durations[r["index"]] if durations and r["index"] < len(durations) else 0) or 0
+            fresh = [v for v in videos if v.get("id") not in used]
+            long_enough = [v for v in fresh if (v.get("duration") or 0) >= need]
+            pick = (long_enough or fresh or [None])[0]
+            if pick:
+                used.add(pick.get("id"))
+                url = _pick_best_video_file(pick, orientation)
+                path = os.path.join(media_dir, f"{r['index']:02d}_clip.mp4")
+                downloads.append((r, url, path, "pexels-video"))
+                continue
+            if source == "mixed":
+                continue
+            photo = next((p for p in photos if p.get("id") not in used), None)
+            if photo:
+                used.add(photo.get("id"))
+                path = os.path.join(media_dir, f"{r['index']:02d}_img.jpg")
+                downloads.append((r, photo_download_url(photo, orientation), path, "pexels-photo"))
+        oks = await asyncio.gather(*(asyncio.to_thread(_download_file, url, path)
+                                     for _, url, path, _ in downloads if url))
+        for (r, url, path, kind), ok in zip([d for d in downloads if d[1]], oks):
+            if ok:
+                r["file"], r["source"] = path, kind
+
+    want_ai = [r for r in records if not r["file"]] if source in ("ai", "mixed") else []
+    if want_ai and ai_available():
+        if log:
+            log(f"สร้างภาพ AI {len(want_ai)} ภาพ ({ai_engine}) — ภาพแรกต้องโหลดโมเดลประมาณ 1 นาที")
+        shape = "landscape" if orientation == "landscape" else "portrait"
+        paths = await generate_images([image_prompt(r["query"]) for r in want_ai], ai_engine, shape)
+        for r, src in zip(want_ai, paths):
+            if src and os.path.exists(src):
+                dst = os.path.join(media_dir, f"{r['index']:02d}_img{os.path.splitext(src)[1]}")
+                shutil.copy2(src, dst)
+                r["file"], r["source"] = dst, f"ai-{ai_engine}"
+    elif want_ai and log:
+        log("ไม่พบ AI-Bridge-Launcher — ใช้สื่อจาก Pexels แทน", "warning")
+
+    missing = [r for r in records if not r["file"]]
+    if missing and _get_pexels_key():
+        videos = await asyncio.to_thread(_search_pexels_videos, topic, 8 + len(missing), orientation)
+        spare = [v for v in videos if v.get("id") not in used]
+        jobs = []
+        for r, v in zip(missing, spare):
+            used.add(v.get("id"))
+            jobs.append((r, _pick_best_video_file(v, orientation),
+                         os.path.join(media_dir, f"{r['index']:02d}_clip.mp4")))
+        oks = await asyncio.gather(*(asyncio.to_thread(_download_file, u, p) for _, u, p in jobs if u))
+        for (r, _, path), ok in zip([j for j in jobs if j[1]], oks):
+            if ok:
+                r["file"], r["source"], r["fallback"] = path, "pexels-topic", True
+
+    with open(os.path.join(media_dir, "scenes.json"), "w", encoding="utf-8") as f:
+        json.dump([{**r, "file": os.path.basename(r["file"]) if r["file"] else None} for r in records],
+                  f, ensure_ascii=False, indent=2)
+    return records
 
 
 async def fetch_background_media(project_id: str, topic: str, count: int = 4,

@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import asyncio
 import json
 import os
@@ -149,19 +158,44 @@ _THAI_LEADING = set("\u0E40\u0E41\u0E42\u0E43\u0E44")
 
 
 def _can_break_before(text: str, i: int) -> bool:
-    return 0 < i < len(text) and text[i] not in _THAI_COMBINING \
+    # ๆ (repeat mark) belongs to the word before it, like a vowel or tone mark.
+    return 0 < i < len(text) and text[i] not in _THAI_COMBINING and text[i] != "ๆ" \
         and text[i - 1] not in _THAI_LEADING
 
 
-def _wrap_line(text: str, max_chars: int) -> list[str]:
-    """Greedy wrap: prefer spaces; otherwise break between Thai character
-    clusters (never before a vowel/tone mark or after a leading vowel)."""
-    lines, rest = [], text.strip()
-    while len(rest) > max_chars:
+def _word_breaks(text: str, words: list[dict]) -> list[int]:
+    """Indexes in `text` where a spoken word ends (from TTS word timings).
+    Only usable when the on-screen text is exactly what was spoken."""
+    if not words or _letters(text) != sum(_letters(w["t"]) for w in words):
+        return []
+    ends, n = set(), 0
+    for w in words:
+        n += _letters(w["t"])
+        ends.add(n)
+    out, count = [], 0
+    for i, ch in enumerate(text):
+        if not ch.isspace():
+            count += 1
+        if count in ends and i + 1 < len(text) and not text[i + 1].isspace() \
+                and _can_break_before(text, i + 1):
+            out.append(i + 1)
+    return out
+
+
+def _wrap_line(text: str, max_chars: int, breaks: list[int] | None = None) -> list[str]:
+    """Greedy wrap. Preference: a space; a space slightly past the limit; the
+    end of a spoken word (`breaks`); before a Thai leading vowel; finally
+    between character clusters (never before a vowel/tone mark)."""
+    text = text.strip()
+    lines, start = [], 0
+    while len(text) - start > max_chars * 1.15:
+        rest = text[start:]
         cut = rest.rfind(" ", 0, max_chars + 1)
         if cut <= max_chars // 3:
             # Slightly long is better than splitting a phrase mid-way.
             cut = rest.find(" ", max_chars, int(max_chars * 1.2) + 1)
+        if cut <= 0 and breaks:
+            cut = max((b - start for b in breaks if max_chars // 2 <= b - start <= max_chars), default=0)
         if cut <= 0:
             # No dictionary: a leading vowel always starts a new syllable,
             # so breaking right before one rarely splits a word.
@@ -172,9 +206,11 @@ def _wrap_line(text: str, max_chars: int) -> list[str]:
             while cut > 1 and not _can_break_before(rest, cut):
                 cut -= 1
         lines.append(rest[:cut].strip())
-        rest = rest[cut:].strip()
-    if rest:
-        lines.append(rest)
+        start += cut
+        while start < len(text) and text[start].isspace():
+            start += 1
+    if start < len(text):
+        lines.append(text[start:].strip())
     return lines
 
 
@@ -206,11 +242,23 @@ def _load_timings(project_dir: str, script: str, duration: float) -> list[dict]:
     if timing and "speaker" in timing[0]:
         entries = [{"text": d["text"], "speaker": d["speaker"]} for d in parse_dialogue(script)]
     else:
-        entries = [{"text": s} for s in _split_sentences(_clean_script_for_tts(script))]
+        cleaned = _clean_script_for_tts(script)
+        entries = [{"text": s} for s in _split_sentences(cleaned)]
+        # Audio made before long paragraphs were chunked has one block per paragraph.
+        unchunked = [{"text": s} for s in _split_sentences(cleaned, chunk=False)]
+        if timing and len(entries) != len(timing) and len(unchunked) == len(timing):
+            entries = unchunked
     entries = [e for e in entries if e["text"].strip()]
 
     if timing and len(entries) == len(timing):
-        return [{**e, "start": t["start"], "end": t["end"]} for e, t in zip(entries, timing)]
+        out = []
+        for e, t in zip(entries, timing):
+            cue = {**e, "start": t["start"], "end": t["end"]}
+            # Word times only describe the text that was spoken.
+            if t.get("words") and e["text"].strip() == t["text"].strip():
+                cue["words"] = t["words"]
+            out.append(cue)
+        return out
     if timing and entries:
         return _proportional(entries, timing[0]["start"], timing[-1]["end"])
     if entries:
@@ -228,6 +276,47 @@ def _ass_time(t: float) -> str:
 
 def _ass_text(text: str) -> str:
     return text.replace("\\", "/").replace("{", "(").replace("}", ")")
+
+
+def _letters(text: str) -> int:
+    return len(re.sub(r"\s+", "", text))
+
+
+def _cue_end_times(entry: dict, cue_texts: list[str]) -> list[float]:
+    """When each subtitle cue should end. With word timings from TTS, a cue
+    ends when the word containing its last letter finishes; letters are
+    counted without spaces and scaled to the spoken text, which can differ
+    (pronunciation replacements). Without word timings, time is split by
+    text length."""
+    start, end = float(entry["start"]), float(entry["end"])
+    shown_total = sum(_letters(c) for c in cue_texts) or 1
+    words = entry.get("words") or []
+    if not words:
+        ends, t = [], start
+        for c in cue_texts:
+            t += (end - start) * _letters(c) / shown_total
+            ends.append(t)
+        return ends
+
+    spoken_cum, n = [], 0
+    for w in words:
+        n += _letters(w["t"])
+        spoken_cum.append(n)
+    spoken_total = spoken_cum[-1] or 1
+
+    ends, shown = [], 0
+    prev = start
+    for i, c in enumerate(cue_texts):
+        shown += _letters(c)
+        if i == len(cue_texts) - 1:
+            t = end
+        else:
+            target = shown * spoken_total / shown_total
+            k = next((j for j, cum in enumerate(spoken_cum) if cum >= target), len(words) - 1)
+            t = max(float(words[k]["e"]), prev + 0.4)
+        ends.append(min(t, end))
+        prev = ends[-1]
+    return ends
 
 
 def _write_ass(timing: list[dict], cfg: dict, path: str):
@@ -248,13 +337,12 @@ def _write_ass(timing: list[dict], cfg: dict, path: str):
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
     for entry in timing:
-        wrapped = _wrap_line(entry["text"], cfg["sub_max_chars"])
+        breaks = _word_breaks(entry["text"], entry.get("words") or [])
+        wrapped = _wrap_line(entry["text"], cfg["sub_max_chars"], breaks)
         cues = [wrapped[i:i + 2] for i in range(0, len(wrapped), 2)]
-        start, end = float(entry["start"]), float(entry["end"])
-        total_chars = sum(len("".join(c)) for c in cues) or 1
-        t = start
-        for cue in cues:
-            cue_end = t + (end - start) * len("".join(cue)) / total_chars
+        ends = _cue_end_times(entry, ["".join(c) for c in cues])
+        t = float(entry["start"])
+        for cue, cue_end in zip(cues, ends):
             text = "\\N".join(_ass_text(c) for c in cue)
             lines.append(f"Dialogue: 0,{_ass_time(t)},{_ass_time(cue_end)},"
                          f"{entry.get('speaker', 'A')},,0,0,0,,{text}")
@@ -278,8 +366,17 @@ def _drawtext_font(path: str) -> str:
     return path.replace("\\", "/").replace(":", "\\:")
 
 
+def _overlay_bottom(cfg: dict, subtitles: bool) -> int:
+    """Pixels from the bottom edge to the overlay text's baseline area: just
+    above the (up to two-line) subtitle block, so the two never overlap."""
+    if not subtitles:
+        return 350
+    line_h = int(cfg["sub_fs"] * 1.35)
+    return cfg["sub_margin"] + 2 * line_h + 28
+
+
 def _build_overlay_text_filter(text: str, fontsize: int, font_name: str,
-                               animation: str, duration: float) -> str:
+                               animation: str, duration: float, bottom: int) -> str:
     if not text.strip():
         return ""
     font_path = FONT_MAP.get(font_name, FONT_PATH)
@@ -291,7 +388,7 @@ def _build_overlay_text_filter(text: str, fontsize: int, font_name: str,
         f":expansion=none:fontsize={fontsize}:fontcolor=white"
         f":borderw=2:bordercolor=black@0.8:x=(w-text_w)/2"
     )
-    y_pos = "h-350"
+    y_pos = f"h-{bottom}-text_h"
     if animation == "fade":
         fd = max(0.5, duration * 0.08)
         return base + (
@@ -300,7 +397,7 @@ def _build_overlay_text_filter(text: str, fontsize: int, font_name: str,
         )
     if animation == "slide_up":
         sd = max(0.5, duration * 0.06)
-        return base + f":y='if(lt(t\\,{sd:.2f})\\,h-((h-350)*t/{sd:.2f})\\,{y_pos})'"
+        return base + f":y='if(lt(t\\,{sd:.2f})\\,h-({bottom}+text_h)*t/{sd:.2f}\\,{y_pos})'"
     return base + f":y={y_pos}"
 
 
@@ -447,16 +544,44 @@ def _kenburns_graph(images: list[str], seg_durs: list[float],
     return inputs, parts + _xfade_chain(labels, seg_durs, "base")
 
 
+PREVIEW_ENC = ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "30", "-pix_fmt", "yuv420p"]
+
+
+def _preview_cfg(cfg: dict) -> dict:
+    """Half-size settings for the quick storyboard preview."""
+    out = dict(cfg)
+    for key in ("w", "h", "pre_w", "pre_h", "sub_fs", "sub_margin", "overlay_fs"):
+        out[key] = int(cfg[key] / 2) // 2 * 2
+    out["audio_br"] = "96k"
+    return out
+
+
 def _render(inputs: list[str], parts: list[str], finish: list[str], extra_inputs: list[str],
-            audio_wav: str, output_path: str, duration: float, cfg: dict) -> None:
+            audio_wav: str, output_path: str, duration: float, cfg: dict,
+            enc_args: list[str] | None = None) -> None:
     n_inputs = inputs.count("-i") + extra_inputs.count("-i")
     graph = parts + [f"[base]{','.join(finish)}[vout]" if finish else "[base]null[vout]"]
+    # The graph grows with every media file; reading it from a file keeps the
+    # command under Windows' 32,767-character limit (~50 media otherwise).
+    graph_file = output_path + ".graph.txt"
+    with open(graph_file, "w", encoding="utf-8") as f:
+        f.write(";\n".join(graph))
     timeout = int(max(600, duration * 20))
+    try:
+        _encode(inputs, extra_inputs, audio_wav, graph_file, n_inputs, output_path,
+                duration, cfg, enc_args, timeout)
+    finally:
+        os.remove(graph_file)
+
+
+def _encode(inputs: list[str], extra_inputs: list[str], audio_wav: str, graph_file: str,
+            n_inputs: int, output_path: str, duration: float, cfg: dict,
+            enc_args: list[str] | None, timeout: int) -> None:
     for attempt in range(2):
         cmd = [FFMPEG, "-y", *inputs, *extra_inputs, "-i", audio_wav,
-               "-filter_complex", ";".join(graph),
+               "-/filter_complex", graph_file,
                "-map", "[vout]", "-map", f"{n_inputs}:a",
-               *_video_enc_args(),
+               *(enc_args or _video_enc_args()),
                "-c:a", "aac", "-b:a", cfg["audio_br"], "-ar", "48000", "-ac", "2",
                "-t", f"{duration + 0.3:.2f}", "-movflags", "+faststart",
                output_path]
@@ -464,7 +589,7 @@ def _render(inputs: list[str], parts: list[str], finish: list[str], extra_inputs
         if result.returncode == 0:
             return
         global _nvenc_ok
-        if attempt == 0 and _nvenc_ok and "nvenc" in (result.stderr or "").lower():
+        if attempt == 0 and not enc_args and _nvenc_ok and "nvenc" in (result.stderr or "").lower():
             print("NVENC encode failed mid-render, retrying with libx264")
             _nvenc_ok = False
             continue
@@ -487,16 +612,21 @@ def _create_video_sync(project_id: str, audio_path: str, script: str,
                        subtitles: bool, bgm_path: str, bgm_volume: float,
                        aspect_ratio: str, overlay_opts: dict,
                        media_durations: list[float] | None,
-                       log: Callable | None) -> str:
+                       log: Callable | None,
+                       preview: bool = False,
+                       ordered: list[tuple[str, str]] | None = None) -> str:
     cfg = ASPECT_CONFIGS.get(aspect_ratio, ASPECT_CONFIGS["9:16"])
+    if preview:
+        cfg = _preview_cfg(cfg)
     W, H = cfg["w"], cfg["h"]
-    tag = aspect_ratio.replace(":", "x")
+    ratio_tag = aspect_ratio.replace(":", "x")
+    tag = ratio_tag + ("_preview" if preview else "")
     project_dir = os.path.join("projects", project_id)
     output_dir = os.path.join(project_dir, "output")
     os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, f"final_{tag}.mp4")
+    output_path = os.path.join(output_dir, f"{'preview' if preview else 'final'}_{ratio_tag}.mp4")
 
-    if log:
+    if log and not preview:
         log(f"เข้ารหัสวิดีโอด้วย {encoder_label()}")
     duration = get_audio_duration(audio_path)
     final_audio = _prepare_final_audio(
@@ -514,14 +644,19 @@ def _create_video_sync(project_id: str, audio_path: str, script: str,
         finish.append(_build_overlay_text_filter(
             overlay_opts["overlay_text"], cfg["overlay_fs"],
             overlay_opts.get("overlay_font", "sarabun"),
-            overlay_opts.get("overlay_animation", "static"), duration))
+            overlay_opts.get("overlay_animation", "static"), duration,
+            bottom=_overlay_bottom(cfg, subtitles)))
     finish.append(_build_watermark_filter(cfg["overlay_fs"] // 2))
 
-    videos = [v for v in background_videos if os.path.exists(v)]
-    images = [i for i in background_images if os.path.exists(i)]
-    sources = sorted([(v, "video") for v in videos] + [(i, "image") for i in images],
-                     key=lambda s: _extract_media_order(s[0]))
-    stills_only = bool(sources) and not videos
+    if ordered is not None:
+        sources = [(p, k) for p, k in ordered if os.path.exists(p)]
+    else:
+        videos = [v for v in background_videos if os.path.exists(v)]
+        images = [i for i in background_images if os.path.exists(i)]
+        sources = sorted([(v, "video") for v in videos] + [(i, "image") for i in images],
+                         key=lambda s: _extract_media_order(s[0]))
+    # The preview skips Ken Burns: it is the slowest part of a render.
+    stills_only = bool(sources) and all(k == "image" for _, k in sources) and not preview
     if not sources:
         bg = os.path.join("assets", "templates", "default_bg.jpg")
         sources = [(bg, "image")]
@@ -557,7 +692,8 @@ def _create_video_sync(project_id: str, audio_path: str, script: str,
                 log("Ken Burns ล้มเหลว — ใช้สไลด์โชว์แบบนิ่งแทน", "warning")
 
     inputs, parts = _sequence_graph(sources, seg_durs, cfg)
-    _render(inputs, parts, finish, extra_inputs, final_audio, output_path, duration, cfg)
+    _render(inputs, parts, finish, extra_inputs, final_audio, output_path, duration, cfg,
+            enc_args=PREVIEW_ENC if preview else None)
     return output_path
 
 
@@ -569,10 +705,12 @@ async def create_video(project_id: str, audio_path: str, script: str = "",
                        aspect_ratio: str = "9:16",
                        overlay_opts: dict | None = None,
                        media_durations: list[float] | None = None,
-                       log: Callable | None = None) -> str:
+                       log: Callable | None = None,
+                       preview: bool = False,
+                       ordered: list[tuple[str, str]] | None = None) -> str:
     return await asyncio.to_thread(
         _create_video_sync, project_id, audio_path, script,
         background_videos or [], background_images or [],
         subtitles, bgm_path, bgm_volume, aspect_ratio, overlay_opts or {},
-        media_durations, log,
+        media_durations, log, preview, ordered,
     )

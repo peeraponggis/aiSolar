@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import os
 import re
 import json
@@ -71,7 +80,27 @@ def apply_replacements(text: str, replacements: dict) -> str:
     return text
 
 
-def _split_sentences(text: str) -> list[str]:
+MAX_SEGMENT_CHARS = 250
+
+
+def _chunk_long(sentence: str, limit: int = MAX_SEGMENT_CHARS) -> list[str]:
+    """Thai paragraphs often have no full stops; cut very long ones at spaces
+    so each TTS request stays short and quick to synthesize."""
+    if len(sentence) <= limit:
+        return [sentence]
+    chunks, current = [], ""
+    for phrase in sentence.split(" "):
+        if current and len(current) + 1 + len(phrase) > limit:
+            chunks.append(current)
+            current = phrase
+        else:
+            current = f"{current} {phrase}" if current else phrase
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _split_sentences(text: str, chunk: bool = True) -> list[str]:
     parts = re.split(r'(?<=[.!?。！？])\s*|\n+', text)
     sentences = []
     for p in parts:
@@ -82,6 +111,8 @@ def _split_sentences(text: str) -> list[str]:
             sentences[-1] += " " + p
         else:
             sentences.append(p)
+    if chunk:
+        sentences = [c for s in sentences for c in _chunk_long(s)]
     return sentences if sentences else [text]
 
 
@@ -156,8 +187,25 @@ _edge_tts_blocked_until = 0.0
 EDGE_TTS_COOLDOWN = 120
 
 
+async def _edge_stream(text: str, voice_name: str, output_path: str,
+                       rate: str, pitch: str) -> list[dict]:
+    """Write the audio and return per-word timing [{"t", "s", "e"}] in seconds."""
+    communicate = edge_tts.Communicate(text, voice_name, rate=rate, pitch=pitch,
+                                       boundary="WordBoundary")
+    words = []
+    with open(output_path, "wb") as f:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                f.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                start = chunk["offset"] / 1e7
+                words.append({"t": chunk["text"], "s": round(start, 3),
+                              "e": round(start + chunk["duration"] / 1e7, 3)})
+    return words
+
+
 async def _edge_tts(text: str, voice: str, output_path: str,
-                    rate: str, pitch: str, max_retries: int = 5):
+                    rate: str, pitch: str, max_retries: int = 5) -> list[dict]:
     # The service intermittently answers "No audio received" (~1 in 4 calls
     # in testing, independent of text/prosody), so a few quick retries matter.
     global _edge_tts_failures, _edge_tts_blocked_until
@@ -166,12 +214,13 @@ async def _edge_tts(text: str, voice: str, output_path: str,
     voice_name = VOICES.get(voice, voice)
     for attempt in range(max_retries):
         try:
-            communicate = edge_tts.Communicate(text, voice_name, rate=rate, pitch=pitch)
-            await asyncio.wait_for(communicate.save(output_path), timeout=30)
+            words = await asyncio.wait_for(
+                _edge_stream(text, voice_name, output_path, rate, pitch),
+                timeout=30 + len(text) / 8)
             if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
                 _edge_tts_failures = 0
                 _edge_tts_blocked_until = 0.0
-                return
+                return words
         except asyncio.TimeoutError:
             print(f"edge-tts timeout on attempt {attempt + 1}/{max_retries}")
         except Exception as e:
@@ -201,36 +250,41 @@ async def _tts_with_retry(text: str, voice: str, output_path: str,
         return
     try:
         await _edge_tts(clean, voice, output_path, rate, pitch, max_retries)
+        return
     except EdgeTTSUnavailable:
         print("edge-tts unavailable, using gTTS (voice/rate/pitch will not apply)")
         await asyncio.to_thread(_gtts_sync, clean, output_path)
 
 
 async def _synthesize_segments(segments: list[dict], seg_dir: str,
-                               log: Callable | None = None) -> list[str]:
-    """TTS every segment (3 at a time). If edge-tts fails for any of them, the
-    whole set is redone with gTTS so one clip never mixes two different voices."""
+                               log: Callable | None = None,
+                               report: dict | None = None) -> tuple[list[str], list[list[dict]]]:
+    """TTS every segment (3 at a time); returns clip paths and per-segment word
+    timings. If edge-tts fails for any of them, the whole set is redone with
+    gTTS (no word timings) so one clip never mixes two different voices."""
     os.makedirs(seg_dir, exist_ok=True)
     paths = [os.path.join(seg_dir, f"seg_{i:03d}.mp3") for i in range(len(segments))]
     sem = asyncio.Semaphore(TTS_CONCURRENCY)
 
-    async def one(i: int):
+    async def one(i: int) -> list[dict]:
         seg = segments[i]
         text = _strip_tts_noise(seg["tts_text"])
         if not _has_speech(text):
             await asyncio.to_thread(_write_silence, paths[i])
-            return
+            return []
         async with sem:
-            await _edge_tts(text, seg["voice"], paths[i], seg["rate"], seg["pitch"])
+            return await _edge_tts(text, seg["voice"], paths[i], seg["rate"], seg["pitch"])
 
     results = await asyncio.gather(*(one(i) for i in range(len(segments))),
                                    return_exceptions=True)
     errors = [r for r in results if isinstance(r, Exception)]
     if not errors:
-        return paths
+        return paths, results
     if not all(isinstance(e, EdgeTTSUnavailable) for e in errors):
         raise next(e for e in errors if not isinstance(e, EdgeTTSUnavailable))
 
+    if report is not None:
+        report["used_gtts"] = True
     msg = "edge-tts ใช้ไม่ได้ — สร้างเสียงทั้งหมดใหม่ด้วย gTTS (เสียง/ความเร็ว/โทนจะไม่ตรงที่เลือก)"
     print(msg)
     if log:
@@ -244,37 +298,54 @@ async def _synthesize_segments(segments: list[dict], seg_dir: str,
             else:
                 _write_silence(paths[i])
     await asyncio.to_thread(redo_all)
-    return paths
+    return paths, [[] for _ in segments]
+
+
+SAMPLE_RATE = 48000
+
+
+def _decode_pcm(path: str) -> bytes:
+    """Decode any audio file to raw 48 kHz mono 16-bit samples."""
+    result = subprocess.run(
+        [FFMPEG, "-v", "error", "-i", path, "-f", "s16le", "-ac", "1", "-ar", str(SAMPLE_RATE), "-"],
+        capture_output=True, timeout=120)
+    if result.returncode != 0:
+        raise RuntimeError(f"Could not decode {path}: {result.stderr.decode('utf-8', 'replace')[-300:]}")
+    return result.stdout
 
 
 def _concat_with_gaps(clips: list[str], gap: float, output_wav: str) -> list[float]:
-    """Join clips into one 48 kHz mono WAV with silence between them; returns each clip's duration."""
-    durations = [get_audio_duration(c) for c in clips]
-    inputs, filters, labels = [], [], []
-    for i, clip in enumerate(clips):
-        inputs += ["-i", clip]
-        filters.append(f"[{i}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono[a{i}]")
-        labels.append(f"[a{i}]")
-        if i < len(clips) - 1:
-            filters.append(f"aevalsrc=0:s=48000:d={gap}:c=mono,"
-                           f"aformat=sample_fmts=fltp:channel_layouts=mono[g{i}]")
-            labels.append(f"[g{i}]")
-    filters.append("".join(labels) + f"concat=n={len(labels)}:v=0:a=1[out]")
-    cmd = [FFMPEG, "-y", *inputs, "-filter_complex", ";".join(filters),
-           "-map", "[out]", "-c:a", "pcm_s16le", "-ar", "48000", output_wav]
-    result = subprocess.run(cmd, capture_output=True, timeout=300,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0 or not os.path.exists(output_wav):
-        raise RuntimeError(f"Audio concat failed: {(result.stderr or '')[-500:]}")
-    return durations
+    """Join clips into one 48 kHz mono WAV with silence between them and return
+    each clip's exact duration. Joined in Python rather than with one FFmpeg
+    command, whose length (one input per sentence) Windows caps at 32,767
+    characters — about 150 sentences."""
+    import wave
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        pcms = list(pool.map(_decode_pcm, clips))
+    silence = b"\x00\x00" * int(SAMPLE_RATE * gap)
+    with wave.open(output_wav, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(SAMPLE_RATE)
+        for i, pcm in enumerate(pcms):
+            if i:
+                w.writeframes(silence)
+            w.writeframes(pcm)
+    return [len(p) / 2 / SAMPLE_RATE for p in pcms]
 
 
-def _write_timings(path: str, items: list[dict], durations: list[float], gap: float):
+def _write_timings(path: str, items: list[dict], durations: list[float], gap: float,
+                   words: list[list[dict]] | None = None):
     timing, t = [], 0.0
-    for it, d in zip(items, durations):
+    for i, (it, d) in enumerate(zip(items, durations)):
         entry = {"text": it["text"], "start": round(t, 3), "end": round(t + d, 3)}
         if "speaker" in it:
             entry["speaker"] = it["speaker"]
+        if words and words[i]:
+            entry["words"] = [{"t": w["t"], "s": round(t + w["s"], 3), "e": round(t + w["e"], 3)}
+                              for w in words[i]]
         timing.append(entry)
         t += d + gap
     with open(path, "w", encoding="utf-8") as f:
@@ -346,6 +417,7 @@ async def generate_audio(
     clone_engine: str = "openvoice",
     tone_preset: dict | None = None,
     log: Callable | None = None,
+    report: dict | None = None,
 ) -> str:
     """Returns path to audio/narration.wav and writes audio/timings.json
     (one entry per spoken sentence/line) for subtitle timing."""
@@ -402,10 +474,10 @@ async def generate_audio(
         segments.append({"tts_text": apply_replacements(it["text"], replacements),
                          "voice": it["voice"], "rate": r, "pitch": p})
 
-    clip_paths = await _synthesize_segments(segments, seg_dir, log=log)
+    clip_paths, seg_words = await _synthesize_segments(segments, seg_dir, log=log, report=report)
     base_wav = os.path.join(out_dir, "base_tts.wav") if clone_voice_id else narration
     durations = await asyncio.to_thread(_concat_with_gaps, clip_paths, gap, base_wav)
-    _write_timings(timings_path, items, durations, gap)
+    _write_timings(timings_path, items, durations, gap, seg_words)
     shutil.rmtree(seg_dir, ignore_errors=True)
 
     if clone_voice_id:
@@ -418,6 +490,8 @@ async def generate_audio(
             await asyncio.to_thread(_polish_audio, narration)
         else:
             os.replace(base_wav, narration)
+            if report is not None:
+                report["clone_failed"] = True
             msg = "โคลนเสียงไม่สำเร็จ — ใช้เสียง TTS ปกติแทน"
             print(msg)
             if log:
