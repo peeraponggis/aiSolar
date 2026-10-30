@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 # -*- coding: utf-8 -*-
 """
 yk_fetch_history.py — ดึงประวัติยี่กี cat888 ย้อนหลังหลายวัน + สร้าง CSV + Screenshot

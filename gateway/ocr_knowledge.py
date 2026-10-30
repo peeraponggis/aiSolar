@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 # -*- coding: utf-8 -*-
 """ocr_knowledge.py — อ่านตัวอักษรจากภาพ (OCR) ให้ PDF ในคลังความรู้ของ ลุงพี AI โดย ลุงพี
 

@@ -1,9 +1,9 @@
 {
- "level": "general",
- "direction": "auto",
+ "level": "science",
+ "direction": "en2th",
  "topmost": false,
  "clipwatch": false,
- "model": "",
+ "model": "☁ gemini-3.1-flash-lite",
  "floaticon": true,
  "autospeak": true,
  "ttsVoice": "เปรมวดี (หญิง)",
@@ -16,14 +16,14 @@
   "แปลอีกสำนวนที่เป็นทางการกว่า",
   "ร่างคำตอบกลับอีเมลนี้อย่างสุภาพ"
  ],
- "qaOpen": false,
+ "qaOpen": true,
  "qaAutoSpeak": true,
  "api": {
   "mode": "auto",
-  "preset": "OpenTyphoon (SCB10X, ปรับจูนภาษาไทย - แนะนำ)",
-  "base": "https://api.opentyphoon.ai/v1",
+  "preset": "KKU gen.ai (มข.)",
+  "base": "https://gen.ai.kku.ac.th/okmd/api/v1",
   "key": "",
-  "model": "typhoon-v2.5-30b-a3b-instruct"
+  "model": "gemini-3.1-flash-lite"
  },
  "optsOpen": true
 }

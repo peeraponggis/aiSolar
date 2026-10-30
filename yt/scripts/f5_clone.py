@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 """F5-TTS-THAI voice cloning, run out-of-process.
 
 F5-TTS-THAI pins numpy<=1.26.4, which conflicts with OpenVoice's environment,

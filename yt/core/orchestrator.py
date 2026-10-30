@@ -1,21 +1,33 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import glob
 import json
 import os
+import re
 import shutil
 import time
 import uuid
 import traceback
 from dataclasses import dataclass
 from core.logger import ProjectStatus
-from scripts.generate_script import generate_script, DURATION_PRESETS
+from scripts.generate_script import generate_script, generate_scene_script, DURATION_PRESETS
 from scripts.generate_audio import generate_audio
-from scripts.create_video import create_video
-from scripts.fetch_images import fetch_background_media
+from scripts.create_video import create_video, XFADE_DUR
+from scripts.fetch_images import fetch_background_media, fetch_scene_media
 
 # Phases where a background task is actually running; a server restart
 # orphans these. media_ready waits on the user, so it survives restarts.
 _IN_FLIGHT = {"pending", "brainstorming", "script_done", "generating_audio",
               "audio_done", "creating_video"}
+
+RUN_MODES = {"semi": "กึ่งอัตโนมัติ", "review": "อัตโนมัติ + หยุดตรวจ", "auto": "อัตโนมัติเต็ม"}
 
 
 @dataclass
@@ -35,13 +47,45 @@ def _cleanup_intermediates(project_id: str):
     for d in ("audio/segments", "audio/tone_clips", "audio/clips", "audio/se_tmp"):
         shutil.rmtree(os.path.join(base, d), ignore_errors=True)
     patterns = ("audio/base_tts*", "audio/final_mix*", "audio/mixed.*",
-                "media/img_clip_*", "output/*.ass", "output/*_overlay.png")
+                "media/img_clip_*", "output/*.ass", "output/*_overlay.png", "output/preview_*")
     for pattern in patterns:
         for f in glob.glob(os.path.join(base, pattern)):
             try:
                 os.remove(f)
             except OSError:
                 pass
+
+
+def _letters(text: str) -> int:
+    text = re.sub(r"^\s*[AB]\s*[:：]\s*", "", text, flags=re.M)
+    return len(re.sub(r"\s+", "", text))
+
+
+def scene_spans(scenes: list[dict], project_id: str, total: float) -> list[float]:
+    """How long each scene is spoken, from audio/timings.json. Each timing block
+    is assigned to the scene its text falls in (by cumulative letter count)."""
+    path = os.path.join("projects", project_id, "audio", "timings.json")
+    with open(path, encoding="utf-8") as f:
+        timing = json.load(f)
+    bounds, n = [], 0
+    for s in scenes:
+        n += _letters(s["text"])
+        bounds.append(n)
+    starts = [None] * len(scenes)
+    done = 0
+    for entry in timing:
+        size = _letters(entry["text"])
+        middle = done + size / 2
+        done += size
+        k = next((i for i, b in enumerate(bounds) if middle <= b), len(scenes) - 1)
+        if starts[k] is None:
+            starts[k] = float(entry["start"])
+    starts[0] = 0.0
+    for i in range(1, len(starts)):  # a scene with no timing block of its own
+        if starts[i] is None:
+            starts[i] = starts[i - 1]
+    ends = starts[1:] + [total]
+    return [max(0.5, e - s) for s, e in zip(starts, ends)]
 
 
 class Orchestrator:
@@ -91,9 +135,11 @@ class Orchestrator:
                        custom_script: str = "", bgm_path: str = "", bgm_volume: float = 0.2,
                        aspect_ratios: list[str] | None = None, mode: str = "narration",
                        voice_b: str = "", overlay_opts: dict | None = None,
-                       duration_preset: str = "short", media_durations: list[float] | None = None):
+                       duration_preset: str = "short", media_durations: list[float] | None = None,
+                       run_mode: str = "semi", media_source: str = "pexels", ai_engine: str = "flux"):
         vs = voice_settings or VoiceSettings()
         status = self.projects[project_id]
+        status.run_mode = run_mode if run_mode in RUN_MODES else "semi"
         try:
             clone_name = ""
             if vs.clone_voice_id:
@@ -111,59 +157,11 @@ class Orchestrator:
                 "clone_tau": vs.clone_tau,
             }
             mode_label = "สนทนา 2 คน" if mode == "dialogue" else "บรรยาย"
-            status.log(f"เริ่มสร้างคลิป ({mode_label}): {topic}")
+            status.log(f"เริ่มสร้างคลิป ({mode_label} · โหมด{RUN_MODES[status.run_mode]}): {topic}")
             preset = DURATION_PRESETS.get(duration_preset, DURATION_PRESETS["short"])
             status.log(f"ความยาว: {preset['label_th']}")
-            if custom_script.strip():
-                status.log("ใช้สคริปต์กำหนดเอง — ข้ามระดมสมอง+สร้างสคริปต์")
-            else:
-                if persona.strip():
-                    status.log(f"บุคลิกตัวละคร: {persona[:60]}")
-                status.log("ระดมสมอง Gemini + เขียนสคริปต์ Ollama...")
-            status.update("brainstorming", 10)
-            script = await generate_script(project_id, topic, voice=vs.voice,
-                                           persona=persona, custom_script=custom_script,
-                                           mode=mode, duration_preset=duration_preset,
-                                           log=status.log)
-            status.log(f"ได้สคริปต์ {len(script)} ตัวอักษร", "success")
-            status.update("script_done", 35, script=script)
-
-            if vs.clone_voice_id:
-                voice_desc = f"โคลนเสียง '{clone_name or vs.clone_voice_id[:8]}' ({vs.clone_engine})"
-            else:
-                voice_desc = f"edge-tts: {vs.voice}"
-            if vs.tone != "normal":
-                voice_desc += f" | โทน: {vs.tone}"
-            status.log(f"สร้างเสียง ({voice_desc})...")
-            status.update("generating_audio", 50)
-            audio_path = await generate_audio(
-                project_id, script,
-                voice=vs.voice, rate=vs.rate, pitch=vs.pitch,
-                clone_voice_id=vs.clone_voice_id,
-                mode=mode, voice_b=voice_b, tone=vs.tone,
-                tone_preset=vs.tone_preset,
-                clone_tau=vs.clone_tau,
-                clone_engine=vs.clone_engine,
-                log=status.log,
-            )
-            status.log("ได้เสียงแล้ว", "success")
-            status.update("audio_done", 70, audio_path=audio_path)
-
-            if skip_media_fetch:
-                media_dir = os.path.join("projects", project_id, "media")
-                videos = sorted(glob.glob(os.path.join(media_dir, "*_clip*")))
-                images = sorted(glob.glob(os.path.join(media_dir, "*_img*")))
-                status.log(f"ใช้สื่อที่อัปโหลด: {len(videos)} วิดีโอ, {len(images)} รูป")
-            else:
-                status.log("ดึงสื่อประกอบจาก Pexels...")
-                status.update("creating_video", 75)
-                orientation = "landscape" if aspect_ratios == ["16:9"] else "portrait"
-                media = await fetch_background_media(project_id, topic, count=preset["media_count"],
-                                                     orientation=orientation)
-                status.log(f"ได้สื่อ: {len(media.get('videos', []))} วิดีโอ, "
-                           f"{len(media.get('images', []))} รูป", "success")
-
-            status.render_params = {
+            orientation = "landscape" if aspect_ratios == ["16:9"] else "portrait"
+            render_params = {
                 "subtitles": subtitles,
                 "bgm_path": bgm_path,
                 "bgm_volume": bgm_volume,
@@ -172,13 +170,145 @@ class Orchestrator:
                 "overlay_opts": overlay_opts or {},
                 "media_durations": media_durations,
             }
-            status.update("media_ready", 80)
-            status.log("จัดเรียง media ใน Storyboard แล้วกด 'สร้างวิดีโอ'")
+
+            if status.run_mode == "semi":
+                await self._generate_classic(status, project_id, topic, vs, preset, persona,
+                                             custom_script, mode, voice_b, duration_preset,
+                                             skip_media_fetch, orientation, clone_name)
+                status.render_params = render_params
+                status.update("media_ready", 80)
+                status.log("จัดเรียง media ใน Storyboard แล้วกด 'สร้างวิดีโอ'")
+                return
+
+            await self._generate_scenes(status, project_id, topic, vs, preset, persona,
+                                        custom_script, mode, voice_b, duration_preset,
+                                        skip_media_fetch, orientation, media_source, ai_engine,
+                                        render_params, clone_name)
 
         except Exception:
             error_msg = traceback.format_exc()[-500:]
             status.log(error_msg[:200], "error")
             status.update("error", 0, error=error_msg)
+
+    def _voice_desc(self, vs: VoiceSettings, clone_name: str) -> str:
+        if vs.clone_voice_id:
+            desc = f"โคลนเสียง '{clone_name or vs.clone_voice_id[:8]}' ({vs.clone_engine})"
+        else:
+            desc = f"edge-tts: {vs.voice}"
+        return desc + (f" | โทน: {vs.tone}" if vs.tone != "normal" else "")
+
+    async def _audio(self, status: ProjectStatus, project_id: str, script: str, vs: VoiceSettings,
+                     mode: str, voice_b: str, clone_name: str, report: dict | None = None) -> str:
+        status.log(f"สร้างเสียง ({self._voice_desc(vs, clone_name)})...")
+        status.update("generating_audio", 50)
+        audio_path = await generate_audio(
+            project_id, script,
+            voice=vs.voice, rate=vs.rate, pitch=vs.pitch,
+            clone_voice_id=vs.clone_voice_id,
+            mode=mode, voice_b=voice_b, tone=vs.tone,
+            tone_preset=vs.tone_preset,
+            clone_tau=vs.clone_tau,
+            clone_engine=vs.clone_engine,
+            log=status.log, report=report,
+        )
+        status.log("ได้เสียงแล้ว", "success")
+        status.update("audio_done", 70, audio_path=audio_path)
+        return audio_path
+
+    async def _generate_classic(self, status, project_id, topic, vs, preset, persona, custom_script,
+                                mode, voice_b, duration_preset, skip_media_fetch, orientation,
+                                clone_name):
+        """Semi-automatic mode: the original flow, unchanged."""
+        if custom_script.strip():
+            status.log("ใช้สคริปต์กำหนดเอง — ข้ามระดมสมอง+สร้างสคริปต์")
+        else:
+            if persona.strip():
+                status.log(f"บุคลิกตัวละคร: {persona[:60]}")
+            status.log("ระดมสมอง Gemini + เขียนสคริปต์ Ollama...")
+        status.update("brainstorming", 10)
+        script = await generate_script(project_id, topic, voice=vs.voice,
+                                       persona=persona, custom_script=custom_script,
+                                       mode=mode, duration_preset=duration_preset,
+                                       log=status.log)
+        status.log(f"ได้สคริปต์ {len(script)} ตัวอักษร", "success")
+        status.update("script_done", 35, script=script)
+        await self._audio(status, project_id, script, vs, mode, voice_b, clone_name)
+        if skip_media_fetch:
+            media_dir = os.path.join("projects", project_id, "media")
+            videos = sorted(glob.glob(os.path.join(media_dir, "*_clip*")))
+            images = sorted(glob.glob(os.path.join(media_dir, "*_img*")))
+            status.log(f"ใช้สื่อที่อัปโหลด: {len(videos)} วิดีโอ, {len(images)} รูป")
+        else:
+            status.log("ดึงสื่อประกอบจาก Pexels...")
+            status.update("creating_video", 75)
+            media = await fetch_background_media(project_id, topic, count=preset["media_count"],
+                                                 orientation=orientation)
+            status.log(f"ได้สื่อ: {len(media.get('videos', []))} วิดีโอ, "
+                       f"{len(media.get('images', []))} รูป", "success")
+
+    async def _generate_scenes(self, status, project_id, topic, vs, preset, persona, custom_script,
+                               mode, voice_b, duration_preset, skip_media_fetch, orientation,
+                               media_source, ai_engine, render_params, clone_name):
+        """Review / auto modes: the script is a list of scenes, each with its own media."""
+        from core.quality import check_before_render
+        from scripts.utils import get_audio_duration
+
+        media_dir = os.path.join("projects", project_id, "media")
+        uploaded = sorted(f for f in glob.glob(os.path.join(media_dir, "[0-9][0-9]_*"))) \
+            if skip_media_fetch else []
+        status.log("เขียนสคริปต์แบบแบ่งฉาก (Gemini) + คำค้นภาพของแต่ละฉาก...")
+        status.update("brainstorming", 10)
+        res = await generate_scene_script(project_id, topic, voice=vs.voice, persona=persona,
+                                          custom_script=custom_script, mode=mode,
+                                          duration_preset=duration_preset,
+                                          scene_count=len(uploaded) or None, log=status.log)
+        scenes = res["scenes"]
+        status.scenes = scenes
+        status.post = {"title": res["title"], "description": res["description"],
+                       "hashtags": res["hashtags"]}
+        status.log(f"ได้สคริปต์ {len(scenes)} ฉาก · ชื่อคลิป: {res['title']}", "success")
+        status.update("script_done", 35, script=res["script"])
+
+        report: dict = {}
+        audio_path = await self._audio(status, project_id, res["script"], vs, mode, voice_b,
+                                       clone_name, report)
+        total = get_audio_duration(audio_path)
+        spans = scene_spans(scenes, project_id, total)
+
+        media = None
+        if uploaded:
+            status.log(f"ใช้สื่อที่อัปโหลด {len(uploaded)} ไฟล์ ตามลำดับฉาก")
+        else:
+            labels = {"pexels": "Pexels", "ai": "ภาพ AI", "mixed": "Pexels + ภาพ AI"}
+            status.log(f"หาสื่อทีละฉาก ({labels.get(media_source, media_source)})...")
+            status.update("creating_video", 75)
+            media = await fetch_scene_media(project_id, scenes, topic, orientation=orientation,
+                                            source=media_source, ai_engine=ai_engine,
+                                            durations=spans, log=status.log)
+            got = sum(1 for r in media if r["file"])
+            status.log(f"ได้สื่อ {got}/{len(scenes)} ฉาก", "success" if got == len(scenes) else "warning")
+
+        media_count = len(uploaded) or sum(1 for r in (media or []) if r["file"])
+        if media_count == len(scenes):
+            # Each picture stays up exactly while its scene is spoken; the
+            # crossfade overlap is added back so cuts land on the scene change.
+            render_params["media_durations"] = [d + XFADE_DUR if i < len(spans) - 1 else d
+                                                for i, d in enumerate(spans)]
+        status.render_params = render_params
+
+        reasons = check_before_render(audio_path, preset, scenes, media, report,
+                                      res.get("problems", []), bool(vs.clone_voice_id))
+        status.review_reasons = reasons
+        if status.run_mode == "auto" and not reasons:
+            status.update("media_ready", 80)
+            status.log("ผ่านด่านตรวจคุณภาพ — เรนเดอร์อัตโนมัติ", "success")
+            await self.render_video(project_id)
+            return
+        status.update("media_ready", 80)
+        if reasons:
+            status.log("ต้องตรวจก่อนเรนเดอร์: " + "; ".join(reasons), "warning")
+        else:
+            status.log("พร้อมแล้ว — ตรวจ Storyboard / ดูตัวอย่างเร็ว แล้วกด 'สร้างวิดีโอ'")
 
     async def render_video(self, project_id: str):
         status = self.projects[project_id]
@@ -212,6 +342,7 @@ class Orchestrator:
                 )
 
             _cleanup_intermediates(project_id)
+            await self._finish(status, project_id, video_paths)
             m, s = divmod(int(time.time() - render_start), 60)
             status.log(f"เสร็จสิ้น! เรนเดอร์ใช้เวลา {m}:{s:02d}", "success")
             first_path = next(iter(video_paths.values()))
@@ -221,3 +352,30 @@ class Orchestrator:
             error_msg = traceback.format_exc()[-500:]
             status.log(error_msg[:200], "error")
             status.update("error", 0, error=error_msg)
+
+    async def _finish(self, status: ProjectStatus, project_id: str, video_paths: dict):
+        """Post text, thumbnail, checks, and the automatic copy to F:\\LocalAI\\clips."""
+        import asyncio
+        from core.quality import check_after_render
+        from scripts.post_assets import make_thumbnail, save_to_clips, write_post
+        from scripts.utils import get_audio_duration
+
+        output_dir = os.path.join("projects", project_id, "output")
+        post = status.post or {"title": status.topic, "description": "", "hashtags": []}
+        status.post = post
+        try:
+            problems = check_after_render(video_paths, get_audio_duration(status.audio_path))
+            for p in problems:
+                status.log(p, "warning")
+            post_txt = write_post(output_dir, post)
+            media = sorted(glob.glob(os.path.join("projects", project_id, "media", "[0-9][0-9]_*")))
+            ratio = next(iter(video_paths))
+            size = (1080, 1920) if ratio == "9:16" else (1920, 1080)
+            source = media[0] if media else next(iter(video_paths.values()))
+            thumb = await asyncio.to_thread(make_thumbnail, source, post["title"],
+                                            os.path.join(output_dir, "thumbnail.jpg"), size)
+            folder = await asyncio.to_thread(save_to_clips, video_paths, [post_txt, thumb], post["title"])
+            status.clips_folder = folder
+            status.log(f"บันทึกไว้ที่ {folder}", "success")
+        except Exception as e:
+            status.log(f"สร้างข้อมูลโพสต์/บันทึกไป clips ไม่สำเร็จ: {e}", "warning")

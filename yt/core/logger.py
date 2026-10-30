@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import json
 import os
 import time
@@ -17,6 +26,11 @@ class ProjectStatus:
     video_paths: dict | None = None
     render_params: dict | None = None
     voice_settings: dict | None = None
+    run_mode: str = "semi"
+    scenes: list | None = None
+    post: dict | None = None
+    review_reasons: list | None = None
+    clips_folder: str | None = None
     created_at: float = field(default_factory=time.time)
     updated_at: float = field(default_factory=time.time)
     logs: list = field(default_factory=list, repr=False)
@@ -46,6 +60,11 @@ class ProjectStatus:
             "video_paths": self.video_paths,
             "render_params": self.render_params,
             "voice_settings": self.voice_settings,
+            "run_mode": self.run_mode,
+            "scenes": self.scenes,
+            "post": self.post,
+            "review_reasons": self.review_reasons,
+            "clips_folder": self.clips_folder,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
@@ -72,6 +91,11 @@ class ProjectStatus:
             video_paths=d.get("video_paths"),
             render_params=d.get("render_params"),
             voice_settings=d.get("voice_settings"),
+            run_mode=d.get("run_mode", "semi"),
+            scenes=d.get("scenes"),
+            post=d.get("post"),
+            review_reasons=d.get("review_reasons"),
+            clips_folder=d.get("clips_folder"),
             created_at=d.get("created_at", 0),
             updated_at=d.get("updated_at", 0),
         )

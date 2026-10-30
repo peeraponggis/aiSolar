@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import asyncio
 import json
 import os
@@ -12,9 +21,11 @@ from fastapi import FastAPI, File, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
+from core.clip_queue import ClipQueue
 from core.orchestrator import Orchestrator, VoiceSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -87,35 +98,53 @@ async def root():
     return FileResponse(str(BASE_DIR / "static" / "dashboard.html"))
 
 
-@app.post("/api/generate")
-async def generate_video(
-    topic: str = Query(..., min_length=1),
-    voice: str = Query("female"),
-    rate: str = Query("+0%"),
-    pitch: str = Query("+0Hz"),
-    media_files: str = Query(""),
-    subtitles: str = Query("on"),
-    clone_voice_id: str = Query(""),
-    persona: str = Query(""),
-    custom_script: str = Query(""),
-    bgm_file: str = Query(""),
-    bgm_volume: int = Query(20),
-    aspect_ratio: str = Query("9:16"),
-    mode: str = Query("narration"),
-    voice_b: str = Query(""),
-    tone: str = Query("normal"),
-    tone_var: int = Query(0),
-    tone_rate: int = Query(0),
-    tone_pitch: int = Query(0),
-    overlay_text: str = Query(""),
-    overlay_font: str = Query("sarabun"),
-    overlay_animation: str = Query("static"),
-    duration_preset: str = Query("short"),
-    clone_tau: int = Query(30),
-    media_durations: str = Query(""),
-    clone_engine: str = Query("openvoice"),
-    template_fields: str = Query(""),
-):
+class GenerateRequest(BaseModel):
+    """Sent as a JSON body: a long script in the URL hits the server's ~64 KB
+    request-line limit (about 7,000 Thai characters)."""
+    topic: str = Field(..., min_length=1)
+    voice: str = "female"
+    rate: str = "+0%"
+    pitch: str = "+0Hz"
+    media_files: str = ""
+    subtitles: str = "on"
+    clone_voice_id: str = ""
+    persona: str = ""
+    custom_script: str = ""
+    bgm_file: str = ""
+    bgm_volume: int = 20
+    aspect_ratio: str = "9:16"
+    mode: str = "narration"
+    voice_b: str = ""
+    tone: str = "normal"
+    tone_var: int = 0
+    tone_rate: int = 0
+    tone_pitch: int = 0
+    overlay_text: str = ""
+    overlay_font: str = "sarabun"
+    overlay_animation: str = "static"
+    duration_preset: str = "short"
+    clone_tau: int = 30
+    media_durations: str = ""
+    clone_engine: str = "openvoice"
+    template_fields: str = ""
+    run_mode: str = "semi"
+    media_source: str = "pexels"
+    ai_engine: str = "flux"
+
+
+def _prepare_generation(req: GenerateRequest):
+    """Create the project and copy its inputs; returns (project_id, coroutine that runs it)."""
+    topic, voice, rate, pitch = req.topic, req.voice, req.rate, req.pitch
+    media_files, subtitles, clone_voice_id = req.media_files, req.subtitles, req.clone_voice_id
+    persona, custom_script = req.persona, req.custom_script
+    bgm_file, bgm_volume, aspect_ratio = req.bgm_file, req.bgm_volume, req.aspect_ratio
+    mode, voice_b, tone = req.mode, req.voice_b, req.tone
+    tone_var, tone_rate, tone_pitch = req.tone_var, req.tone_rate, req.tone_pitch
+    overlay_text, overlay_font = req.overlay_text, req.overlay_font
+    overlay_animation, duration_preset = req.overlay_animation, req.duration_preset
+    clone_tau, media_durations = req.clone_tau, req.media_durations
+    clone_engine, template_fields = req.clone_engine, req.template_fields
+
     project_id = orchestrator.create_project(topic)
     skip_fetch = False
     bgm_path = ""
@@ -192,7 +221,7 @@ async def generate_video(
             dur_list = [float(d) for d in media_durations.split(",") if d.strip()]
         except ValueError:
             dur_list = None
-    _spawn(
+    return project_id, (
         orchestrator.generate(project_id, topic, vs,
                               skip_media_fetch=skip_fetch,
                               subtitles=(subtitles == "on"),
@@ -205,9 +234,79 @@ async def generate_video(
                               voice_b=voice_b,
                               overlay_opts=overlay_opts,
                               duration_preset=dur_preset,
-                              media_durations=dur_list)
+                              media_durations=dur_list,
+                              run_mode=req.run_mode if req.run_mode in ("semi", "review", "auto") else "semi",
+                              media_source=req.media_source if req.media_source in ("pexels", "ai", "mixed") else "pexels",
+                              ai_engine=req.ai_engine if req.ai_engine in ("flux", "flux-fast", "gemini") else "flux")
     )
+
+
+@app.post("/api/generate")
+async def generate_video(req: GenerateRequest):
+    project_id, job = _prepare_generation(req)
+    _spawn(job)
     return {"id": project_id, "status": "processing"}
+
+
+# ── Queue: many topics, one clip at a time, fully automatic ──
+
+async def _run_queue_item(item: dict) -> str:
+    req = GenerateRequest(**{**item["settings"], "run_mode": "auto"})
+    project_id, job = _prepare_generation(req)
+    item["project_id"] = project_id
+    await job
+    return project_id
+
+
+clip_queue = ClipQueue(BASE_DIR / "queue" / "queue.json", _run_queue_item, orchestrator.projects)
+
+
+@app.on_event("startup")
+async def _start_queue_worker():
+    _spawn(clip_queue.worker())
+
+
+@app.get("/api/queue")
+async def queue_list():
+    return clip_queue.snapshot()
+
+
+@app.post("/api/queue")
+async def queue_add(request: Request):
+    """{"settings": <GenerateRequest without topic>, "topics": ["...", ...]}"""
+    body = await request.json()
+    topics = [t.strip() for t in body.get("topics", []) if isinstance(t, str) and t.strip()]
+    if not topics:
+        return JSONResponse({"error": "ใส่หัวข้ออย่างน้อย 1 หัวข้อ"}, status_code=400)
+    base = {k: v for k, v in (body.get("settings") or {}).items() if k in GenerateRequest.model_fields}
+    # Each topic gets its own script and media.
+    for own in ("custom_script", "media_files", "media_durations"):
+        base.pop(own, None)
+    added = []
+    for topic in topics[:50]:
+        settings = GenerateRequest(**{**base, "topic": topic, "run_mode": "auto"}).model_dump()
+        added.append(clip_queue.add(settings)["id"])
+    return {"added": len(added)}
+
+
+@app.delete("/api/queue/{item_id}")
+async def queue_remove(item_id: str):
+    return {"ok": clip_queue.remove(item_id)}
+
+
+@app.post("/api/queue/{item_id}/retry")
+async def queue_retry(item_id: str):
+    return {"ok": clip_queue.retry(item_id)}
+
+
+@app.post("/api/queue/control")
+async def queue_control(request: Request):
+    action = (await request.json()).get("action")
+    if action in ("pause", "resume"):
+        clip_queue.set_paused(action == "pause")
+    elif action == "clear_finished":
+        clip_queue.clear_finished()
+    return clip_queue.snapshot()
 
 
 @app.get("/api/status/{project_id}")
@@ -268,12 +367,17 @@ VIDEO_EXTS = {".mp4", ".mov", ".webm", ".mkv"}
 
 def _apply_media_order(project_id: str, order: list[str]):
     """Renumber media to NN_clip.ext / NN_img.ext — the form render_video globs for.
-    Files in `order` come first in that order; any others are numbered after
-    them, so two files never share a number."""
+    `order` is the storyboard's media, in order. Files the user removed from
+    the storyboard are moved to media/_removed/ (not rendered, not deleted)."""
     media_dir = BASE_DIR / "projects" / project_id / "media"
     present = sorted(f.name for f in media_dir.iterdir()
                      if f.is_file() and re.match(r"\d+_(clip|img)", f.name))
-    ordered = [f for f in order if f in present] + [f for f in present if f not in order]
+    removed_dir = media_dir / "_removed"
+    for name in present:
+        if name not in order:
+            removed_dir.mkdir(exist_ok=True)
+            os.replace(media_dir / name, removed_dir / f"{_uuid.uuid4().hex[:6]}_{name}")
+    ordered = [f for f in order if f in present]
     staged = []
     for i, fname in enumerate(ordered):
         src = media_dir / fname
@@ -302,29 +406,259 @@ async def render_project_video(project_id: str, request: Request):
 
     if body.get("script"):
         status.script = body["script"]
-    if body.get("media_order"):
+    if isinstance(body.get("media_order"), list):
         _apply_media_order(project_id, body["media_order"])
-    if "media_durations" in body and status.render_params:
-        status.render_params["media_durations"] = body["media_durations"] or None
+    # Typed durations win; otherwise keep the automatic per-scene timing.
+    if any(d and d > 0 for d in (body.get("media_durations") or [])) and status.render_params:
+        status.render_params["media_durations"] = body["media_durations"]
 
     status.update("creating_video", 82, error=None)
     _spawn(orchestrator.render_video(project_id))
     return {"ok": True}
 
 
+# ── Quick storyboard preview (half size, fast encode, nothing on disk renamed) ──
+
+_preview_jobs: dict[str, dict] = {}
+
+
+async def _run_preview(project_id: str, script: str, ordered: list[tuple[str, str]],
+                       durations: list[float] | None, params: dict, ratio: str):
+    from scripts.create_video import create_video
+    job = _preview_jobs[project_id]
+    status = orchestrator.projects[project_id]
+    try:
+        await create_video(
+            project_id, status.audio_path or "", script=script,
+            subtitles=params.get("subtitles", True),
+            bgm_path=params.get("bgm_path", ""), bgm_volume=params.get("bgm_volume", 0.2),
+            aspect_ratio=ratio, overlay_opts=params.get("overlay_opts", {}),
+            media_durations=durations, preview=True, ordered=ordered,
+        )
+        job["status"] = "done"
+    except Exception as e:
+        job["status"] = "error"
+        job["error"] = str(e)[-300:]
+    job["seconds"] = round(time.time() - job["started"], 1)
+
+
+@app.post("/api/project/{project_id}/preview")
+async def start_preview(project_id: str, request: Request):
+    status = orchestrator.projects.get(project_id)
+    if not status:
+        return JSONResponse({"error": "Project not found"}, status_code=404)
+    if not status.audio_path or not status.render_params:
+        return JSONResponse({"error": "โปรเจคนี้ยังไม่พร้อมทำตัวอย่าง"}, status_code=400)
+    if _preview_jobs.get(project_id, {}).get("status") == "running":
+        return {"ok": True}
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+
+    media_dir = BASE_DIR / "projects" / project_id / "media"
+    order = body.get("media_order")
+    if not isinstance(order, list):
+        order = sorted(f.name for f in media_dir.iterdir()
+                       if f.is_file() and re.match(r"\d+_(clip|img)", f.name))
+    ordered = []
+    for name in order:
+        if _safe_name(name) and (media_dir / name).is_file():
+            kind = "video" if Path(name).suffix.lower() in VIDEO_EXTS else "image"
+            ordered.append((os.path.join("projects", project_id, "media", name), kind))
+
+    params = status.render_params
+    ratio = (params.get("aspect_ratios") or ["9:16"])[0]
+    _preview_jobs[project_id] = {"status": "running", "error": None, "started": time.time(), "ratio": ratio}
+    _spawn(_run_preview(project_id, body.get("script") or status.script or "", ordered,
+                        body.get("media_durations") or params.get("media_durations"), params, ratio))
+    return {"ok": True}
+
+
+@app.get("/api/project/{project_id}/preview/status")
+async def preview_status(project_id: str):
+    job = _preview_jobs.get(project_id)
+    if not job:
+        return {"status": "none"}
+    return {k: job.get(k) for k in ("status", "error", "seconds", "ratio")}
+
+
+@app.get("/api/project/{project_id}/preview/video")
+async def preview_video(project_id: str):
+    job = _preview_jobs.get(project_id) or {}
+    if not _safe_name(project_id) or job.get("status") != "done":
+        return JSONResponse({"error": "Not ready"}, status_code=404)
+    tag = job["ratio"].replace(":", "x")
+    path = BASE_DIR / "projects" / project_id / "output" / f"preview_{tag}.mp4"
+    if not path.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return FileResponse(str(path), media_type="video/mp4", headers={"Cache-Control": "no-store"})
+
+
+# ── Scenes, AI images, post text ──
+
+@app.get("/api/project/{project_id}/scenes")
+async def project_scenes(project_id: str):
+    path = BASE_DIR / "projects" / project_id / "media" / "scenes.json"
+    if not _safe_name(project_id) or not path.exists():
+        return []
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/ai-image/status")
+async def ai_image_status():
+    from scripts.ai_images import ENGINE_LABELS, is_available
+    return {"available": is_available(), "engines": ENGINE_LABELS}
+
+
+@app.post("/api/project/{project_id}/ai-image")
+async def project_ai_image(project_id: str, request: Request):
+    """Draw one AI image for a storyboard scene and add it to the project's media."""
+    from scripts.ai_images import generate_images
+    from scripts.generate_script import image_prompt
+
+    status = orchestrator.projects.get(project_id)
+    if not status:
+        return JSONResponse({"error": "Project not found"}, status_code=404)
+    body = await request.json()
+    prompt = (body.get("prompt") or "").strip()
+    if not prompt:
+        return JSONResponse({"error": "ใส่คำอธิบายภาพก่อน"}, status_code=400)
+    engine = body.get("engine") if body.get("engine") in ("flux", "flux-fast", "gemini") else "flux"
+    ratio = ((status.render_params or {}).get("aspect_ratios") or ["9:16"])[0]
+    shape = "landscape" if ratio == "16:9" else "portrait"
+    try:
+        paths = await generate_images([image_prompt(prompt)], engine, shape)
+    except RuntimeError as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+    if not paths or not paths[0]:
+        return JSONResponse({"error": "สร้างภาพไม่สำเร็จ"}, status_code=500)
+    media_dir = BASE_DIR / "projects" / project_id / "media"
+    name = f"99_img_{_uuid.uuid4().hex[:6]}{Path(paths[0]).suffix}"
+    shutil.copy2(paths[0], media_dir / name)
+    return {"filename": name, "type": "image"}
+
+
+@app.get("/api/project/{project_id}/thumbnail")
+async def project_thumbnail(project_id: str):
+    path = BASE_DIR / "projects" / project_id / "output" / "thumbnail.jpg"
+    if not _safe_name(project_id) or not path.exists():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return FileResponse(str(path), media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
 @app.get("/api/download/{project_id}")
 async def download_video(project_id: str, ratio: str = Query("")):
-    output_dir = BASE_DIR / "projects" / project_id / "output"
-    if ratio:
-        tag = ratio.replace(":", "x")
-        path = output_dir / f"final_{tag}.mp4"
-    else:
-        path = output_dir / "final_9x16.mp4"
-        if not path.exists():
-            path = output_dir / "final.mp4"
-    if not path.exists():
+    if not _safe_name(project_id):
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    outputs = _project_outputs(project_id)
+    path = outputs.get(ratio) if ratio else next(iter(outputs.values()), None)
+    if not path:
         return JSONResponse({"error": "Video not found"}, status_code=404)
     return FileResponse(str(path), media_type="video/mp4", filename=path.name)
+
+
+@app.get("/api/version")
+async def app_version():
+    return json.loads((BASE_DIR / "VERSION.json").read_text(encoding="utf-8"))
+
+
+@app.get("/gallery")
+async def gallery_page():
+    return FileResponse(str(BASE_DIR / "static" / "gallery.html"))
+
+
+_duration_cache: dict[str, tuple[float, float]] = {}
+_thumb_sem = asyncio.Semaphore(4)
+
+
+def _project_outputs(project_id: str) -> dict[str, Path]:
+    """Finished videos on disk, keyed by ratio ("9:16"/"16:9")."""
+    out_dir = BASE_DIR / "projects" / project_id / "output"
+    found = {}
+    for tag, ratio in (("9x16", "9:16"), ("16x9", "16:9")):
+        p = out_dir / f"final_{tag}.mp4"
+        if p.exists():
+            found[ratio] = p
+    legacy = out_dir / "final.mp4"
+    if not found and legacy.exists():
+        found["9:16"] = legacy
+    return found
+
+
+def _cached_duration(path: Path) -> float:
+    from scripts.utils import get_audio_duration
+    mtime = path.stat().st_mtime
+    hit = _duration_cache.get(str(path))
+    if hit and hit[0] == mtime:
+        return hit[1]
+    try:
+        dur = get_audio_duration(str(path))
+    except RuntimeError:
+        dur = 0.0
+    _duration_cache[str(path)] = (mtime, dur)
+    return dur
+
+
+def _gallery_items() -> list[dict]:
+    from concurrent.futures import ThreadPoolExecutor
+
+    entries = []
+    for pid, status in orchestrator.projects.items():
+        if status.phase != "done":
+            continue
+        outputs = _project_outputs(pid)
+        if outputs:
+            entries.append((pid, status, outputs))
+    first_videos = [next(iter(o.values())) for _, _, o in entries]
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        durations = list(pool.map(_cached_duration, first_videos))
+
+    items = []
+    for (pid, status, outputs), dur in zip(entries, durations):
+        vs = status.voice_settings or {}
+        items.append({
+            "project_id": pid,
+            "topic": status.topic,
+            "created_at": status.created_at,
+            "updated_at": status.updated_at,
+            "ratios": list(outputs),
+            "duration": round(dur, 1),
+            "size": sum(p.stat().st_size for p in outputs.values()),
+            "voice": vs.get("clone_name") or vs.get("voice") or "",
+        })
+    items.sort(key=lambda i: i["created_at"] or 0, reverse=True)
+    return items
+
+
+@app.get("/api/gallery")
+async def gallery_list():
+    return await asyncio.to_thread(_gallery_items)
+
+
+def _make_thumb(video: Path, thumb: Path):
+    import subprocess
+    from scripts.create_video import FFMPEG
+    subprocess.run([FFMPEG, "-y", "-ss", "1", "-i", str(video), "-frames:v", "1",
+                    "-vf", "scale=360:-2", "-q:v", "4", str(thumb)],
+                   capture_output=True, timeout=60)
+
+
+@app.get("/api/gallery/thumb/{project_id}")
+async def gallery_thumb(project_id: str, ratio: str = Query("9:16")):
+    if not _safe_name(project_id):
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    video = _project_outputs(project_id).get(ratio)
+    if not video:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    thumb = video.with_name(f"thumb_{ratio.replace(':', 'x')}.jpg")
+    if not thumb.exists() or thumb.stat().st_mtime < video.stat().st_mtime:
+        async with _thumb_sem:
+            await asyncio.to_thread(_make_thumb, video, thumb)
+    if not thumb.exists():
+        return JSONResponse({"error": "Thumbnail failed"}, status_code=500)
+    return FileResponse(str(thumb), media_type="image/jpeg",
+                        headers={"Cache-Control": "max-age=86400"})
 
 
 @app.get("/api/audio/{project_id}")
@@ -527,6 +861,82 @@ async def preview_voice_tts(
             os.remove(base)
 
     return _send_and_delete(mp3)
+
+
+# ── Voice presets (a tested combination of base voice + clone settings) ──
+
+VOICE_PRESETS_PATH = BASE_DIR / "config" / "voice_presets.json"
+
+
+def _load_voice_presets() -> list[dict]:
+    if not VOICE_PRESETS_PATH.exists():
+        return []
+    return json.loads(VOICE_PRESETS_PATH.read_text(encoding="utf-8"))
+
+
+def _save_voice_presets(presets: list[dict]):
+    tmp = VOICE_PRESETS_PATH.with_suffix(".tmp")
+    tmp.write_text(json.dumps(presets, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(tmp, VOICE_PRESETS_PATH)
+
+
+@app.get("/api/voice-presets")
+async def list_voice_presets():
+    from scripts.voice_clone import list_voice_profiles
+    names = {p["id"]: p.get("name", p["id"]) for p in list_voice_profiles()}
+    presets = _load_voice_presets()
+    for p in presets:
+        p["clone_name"] = names.get(p.get("clone_voice_id") or "", "")
+        p["clone_missing"] = bool(p.get("clone_voice_id")) and p["clone_voice_id"] not in names
+    return presets
+
+
+@app.post("/api/voice-presets")
+async def save_voice_preset(request: Request):
+    body = await request.json()
+    name = (body.get("name") or "").strip()[:60]
+    if not name:
+        return JSONResponse({"error": "กรุณาตั้งชื่อชุดเสียง"}, status_code=400)
+    preset = {
+        "id": _uuid.uuid4().hex[:8],
+        "name": name,
+        "voice": body.get("voice") if body.get("voice") in ("female", "male") else "female",
+        "rate": max(-50, min(50, int(body.get("rate", 0)))),
+        "pitch": max(-50, min(50, int(body.get("pitch", 0)))),
+        "tone": body.get("tone") or "normal",
+        "tone_custom": body.get("tone_custom") if body.get("tone") == "custom" else None,
+        "clone_voice_id": body.get("clone_voice_id") or "",
+        "clone_engine": body.get("clone_engine") if body.get("clone_engine") in ("openvoice", "f5-tts-thai") else "openvoice",
+        "tau": max(10, min(80, int(body.get("tau", 30)))),
+        "source": body.get("source") or "settings",
+        "created_at": time.time(),
+    }
+    presets = [p for p in _load_voice_presets() if p.get("name") != name]
+    presets.append(preset)
+    _save_voice_presets(presets)
+    return preset
+
+
+@app.delete("/api/voice-presets/{preset_id}")
+async def delete_voice_preset(preset_id: str):
+    presets = _load_voice_presets()
+    kept = [p for p in presets if p.get("id") != preset_id]
+    if len(kept) == len(presets):
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    _save_voice_presets(kept)
+    return {"ok": True}
+
+
+@app.post("/api/script/normalize")
+async def normalize_script_text(request: Request):
+    from scripts.script_tools import normalize_script
+
+    body = await request.json()
+    text = (body.get("text") or "").strip()
+    if not text:
+        return JSONResponse({"error": "ไม่มีข้อความ"}, status_code=400)
+    scenes = max(1, min(20, int(body.get("scenes") or 4)))
+    return await normalize_script(text[:6000], scenes)
 
 
 # ── Replacements endpoints ──
