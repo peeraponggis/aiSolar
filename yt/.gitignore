@@ -15,3 +15,5 @@ processed/
 drafts/
 *.wav
 *.prev
+logs/
+queue/

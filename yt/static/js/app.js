@@ -323,6 +323,7 @@ async function uploadBgm(fileList) {
     const saved = await resp.json();
     if (saved.length) {
       bgmFilename = saved[0].filename;
+      _scheduleSaveForm();
       document.getElementById("bgmFileName").textContent = fileList[0].name;
       document.getElementById("bgmPlayer").src = `/api/uploads/file/${bgmFilename}`;
       document.getElementById("bgmEmpty").classList.add("hidden");
@@ -342,6 +343,7 @@ async function removeBgm() {
     try { await fetch(`/api/uploads/${bgmFilename}`, { method: "DELETE" }); } catch {}
   }
   bgmFilename = "";
+  _scheduleSaveForm();
   document.getElementById("bgmEmpty").classList.remove("hidden");
   document.getElementById("bgmPreview").classList.add("hidden");
   document.getElementById("bgmPlayer").src = "";
@@ -519,6 +521,7 @@ async function handleUpload(fileList) {
 }
 
 function renderMediaGrid() {
+  _scheduleSaveForm();
   const container = document.getElementById("selectedMedia");
   const grid = document.getElementById("mediaGrid");
   const count = document.getElementById("mediaCount");
@@ -854,6 +857,55 @@ async function confirmTrim() {
   closeTrim();
 }
 
+// ── Script normalisation (pure Thai, readings, numbers, scene paragraphs) ──
+
+let _scriptBeforeNormalize = null;
+const SCENES_PER_PRESET = { short: 4, medium: 8, long: 12 };
+
+async function normalizeScript() {
+  const input = document.getElementById("customScriptInput");
+  const text = input.value.trim();
+  if (!text) return showToast("วางข้อความในช่องสคริปต์ก่อน", true);
+  const scenes = selectedMedia.length || SCENES_PER_PRESET[selectedDuration] || 4;
+  const btn = document.getElementById("normalizeScriptBtn");
+  btn.disabled = true;
+  btn.textContent = "กำลังแปลง... (อาจใช้เวลา 1 นาที)";
+  try {
+    const resp = await fetch("/api/script/normalize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, scenes }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "แปลงไม่สำเร็จ");
+    _scriptBeforeNormalize = input.value;
+    input.value = data.text;
+    updateScriptCounter();
+    document.getElementById("undoScriptBtn").classList.remove("hidden");
+    showToast(`แบ่งเป็น ${data.paragraphs} ฉาก — ตรวจข้อความก่อนสร้างคลิป`);
+    const guessed = Object.entries(data.guessed || {});
+    const notes = [...(data.warnings || [])];
+    if (guessed.length) {
+      notes.unshift("คำอ่านที่ระบบเดา (เพิ่มในคำอ่านภาษาอังกฤษได้ถ้าถูก): " +
+        guessed.slice(0, 6).map(([en, th]) => `${en} → ${th}`).join(", "));
+    }
+    notes.forEach((n, i) => setTimeout(() => showToast(n, !n.startsWith("คำอ่านที่ระบบเดา")), 3200 * (i + 1)));
+  } catch (e) {
+    showToast(e.message || "แปลงไม่สำเร็จ", true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✨ แปลงสคริปต์";
+  }
+}
+
+function undoNormalizeScript() {
+  if (_scriptBeforeNormalize === null) return;
+  document.getElementById("customScriptInput").value = _scriptBeforeNormalize;
+  _scriptBeforeNormalize = null;
+  updateScriptCounter();
+  document.getElementById("undoScriptBtn").classList.add("hidden");
+}
+
 // ── Voice Preview ──
 
 async function previewVoice() {
@@ -1031,27 +1083,8 @@ async function saveReplacements() {
 
 // ── Generate ──
 
-async function startGenerate() {
-  const input = document.getElementById("topicInput");
-  const topic = input.value.trim();
-  if (!topic) return showToast("กรุณาใส่หัวข้อ", true);
-
-  const btn = document.getElementById("generateBtn");
-  btn.disabled = true;
-  btn.textContent = "กำลังสร้าง...";
-
-  // The previous clip stays visible (dimmed) until the new one is ready.
-  document.getElementById("resultSection").classList.add("stale");
-  _showWorkSection("progressSection", `กำลังสร้าง: ${topic}`);
-  updateProgress(0, "pending");
-
-  generateStartTime = Date.now();
-  logLastTimestamp = 0;
-  unseenLogCount = 0;
-  document.getElementById("consoleLogs").innerHTML = "";
-  updateConsoleBadge();
-  document.getElementById("etaText").textContent = "";
-
+// Everything the server needs to make a clip, from the current settings.
+function _generateSettings(topic) {
   const persona = document.getElementById("personaInput").value.trim();
   const customScript = document.getElementById("customScriptInput").value.trim();
 
@@ -1080,6 +1113,9 @@ async function startGenerate() {
     overlay_font: document.getElementById("overlayFont").value,
     overlay_animation: document.getElementById("overlayAnimation").value,
     clone_engine: selectedCloneEngine,
+    run_mode: selectedRunMode,
+    media_source: selectedMediaSource,
+    ai_engine: selectedAiEngine,
   });
   if (selectedMedia.length) {
     params.set("media_files", selectedMedia.map((m) => m.filename).join(","));
@@ -1092,10 +1128,47 @@ async function startGenerate() {
     params.set("template_fields", JSON.stringify(videoTemplateFields));
   }
 
+  return Object.fromEntries(params);
+}
+
+async function startGenerate() {
+  const input = document.getElementById("topicInput");
+  const topic = input.value.trim();
+  if (!topic) return showToast("กรุณาใส่หัวข้อ", true);
+
+  const btn = document.getElementById("generateBtn");
+  btn.disabled = true;
+  btn.textContent = "กำลังสร้าง...";
+
+  // The previous clip stays visible (dimmed) until the new one is ready.
+  document.getElementById("resultSection").classList.add("stale");
+  _showWorkSection("progressSection", `กำลังสร้าง: ${topic}`);
+  updateProgress(0, "pending");
+
+  generateStartTime = Date.now();
+  logLastTimestamp = 0;
+  unseenLogCount = 0;
+  document.getElementById("consoleLogs").innerHTML = "";
+  updateConsoleBadge();
+  document.getElementById("etaText").textContent = "";
+
+  const settings = _generateSettings(topic);
+
   try {
-    const resp = await fetch(`/api/generate?${params}`, { method: "POST" });
+    const resp = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+    });
     const data = await resp.json();
+    if (!resp.ok) {
+      const detail = Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail || data.error;
+      showToast(`สร้างคลิปไม่ได้: ${detail || resp.status}`, true);
+      resetButton();
+      return;
+    }
     currentProjectId = data.id;
+    _rememberProject(currentProjectId);
     pollStatus();
   } catch (e) {
     showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้", true);
@@ -1192,6 +1265,8 @@ function _fillCommonResult(data) {
     vsInfoEl.textContent = label;
   }
   vsInfoEl.classList.toggle("hidden", !vs);
+  _renderReviewBox(data);
+  _renderPostInfo(data);
 }
 
 function showResult(data) {
@@ -1249,6 +1324,8 @@ function newClip() {
   updateScriptCounter();
   if (selectedMedia.length) clearAllMedia();
   currentProjectId = null;
+  try { sessionStorage.removeItem(PROJECT_KEY); } catch { /* storage unavailable */ }
+  _scheduleSaveForm();
   document.getElementById("setupPanel").scrollTo({ top: 0, behavior: "smooth" });
   window.scrollTo({ top: 0, behavior: "smooth" });
   document.getElementById("topicInput").focus();
@@ -1281,11 +1358,14 @@ let _sbProjectId = null;
 let _sbScenes = [];
 let _sbMediaFiles = [];
 let _sbDurations = [];
+let _sbRemoved = [];
+let _sbQueries = [];
 let _sbPhase = null;
 let _sbDragIdx = null;
 
 function showStoryboardPreview(data) {
   currentProjectId = data.project_id;
+  _rememberProject(currentProjectId);
   _fillCommonResult(data);
   // No finished video yet: the Video tab would be empty.
   document.querySelector('.tab[data-tab="video"]').classList.add("hidden");
@@ -1295,12 +1375,8 @@ function showStoryboardPreview(data) {
   _showWorkSection("resultSection");
 }
 
-async function _startRender() {
-  if (!currentProjectId) return;
-  const btn = document.querySelector(".sb-render-btn");
-  if (btn) { btn.disabled = true; btn.textContent = "กำลังสร้าง..."; }
-  _sbPhase = "rendering";
-
+// What the storyboard currently shows; the preview and the real render use the same.
+function _storyboardBody() {
   const body = {};
   const scriptText = _sbScenes.filter((s) => s.trim()).join("\n\n");
   if (scriptText) body.script = scriptText;
@@ -1311,8 +1387,82 @@ async function _startRender() {
     order.push(m.filename);
     durations.push(_sbDurations[i] || 0);
   });
-  if (order.length) body.media_order = order;
+  body.media_order = order;
   body.media_durations = durations.some((d) => d > 0) ? durations : null;
+  return body;
+}
+
+// ── Quick preview ──
+
+let _previewTimer = null;
+
+function _resetPreview() {
+  if (_previewTimer) { clearInterval(_previewTimer); _previewTimer = null; }
+  const v = document.getElementById("sbPreviewVideo");
+  v.pause(); v.removeAttribute("src"); v.load();
+  document.getElementById("sbPreview").classList.add("hidden");
+}
+
+function _markPreviewOutdated() {
+  if (document.getElementById("sbPreview").classList.contains("hidden")) return;
+  const note = document.getElementById("sbPreviewNote");
+  note.textContent = "⚠ แก้ Storyboard หลังทำตัวอย่าง — กดดูตัวอย่างอีกครั้ง";
+  note.classList.add("outdated");
+}
+
+async function _startPreview() {
+  if (!currentProjectId) return;
+  const pid = currentProjectId;
+  const btn = document.querySelector(".sb-preview-btn");
+  btn.disabled = true;
+  const started = Date.now();
+  btn.textContent = "กำลังทำตัวอย่าง...";
+  try {
+    const resp = await fetch(`/api/project/${pid}/preview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_storyboardBody()),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "เริ่มทำตัวอย่างไม่ได้");
+  } catch (e) {
+    showToast(e.message, true);
+    btn.disabled = false;
+    btn.textContent = "👁 ดูตัวอย่างเร็ว";
+    return;
+  }
+  if (_previewTimer) clearInterval(_previewTimer);
+  _previewTimer = setInterval(async () => {
+    const b = document.querySelector(".sb-preview-btn");
+    if (b) b.textContent = `กำลังทำตัวอย่าง... ${Math.round((Date.now() - started) / 1000)} วิ`;
+    let st;
+    try { st = await (await fetch(`/api/project/${pid}/preview/status`)).json(); } catch { return; }
+    if (st.status === "running") return;
+    clearInterval(_previewTimer);
+    _previewTimer = null;
+    if (b) { b.disabled = false; b.textContent = "👁 ดูตัวอย่างเร็ว"; }
+    if (pid !== currentProjectId) return;
+    if (st.status !== "done") return showToast(st.error || "ทำตัวอย่างไม่สำเร็จ", true);
+    const box = document.getElementById("sbPreview");
+    const video = document.getElementById("sbPreviewVideo");
+    video.classList.toggle("landscape", st.ratio === "16:9");
+    video.src = `/api/project/${pid}/preview/video?t=${Date.now()}`;
+    const note = document.getElementById("sbPreviewNote");
+    note.textContent = `ทำเสร็จใน ${st.seconds} วิ`;
+    note.classList.remove("outdated");
+    box.classList.remove("hidden");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+    video.play().catch(() => {});
+  }, 1000);
+}
+
+async function _startRender() {
+  if (!currentProjectId) return;
+  const btn = document.querySelector(".sb-render-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "กำลังสร้าง..."; }
+  _sbPhase = "rendering";
+  _resetPreview();
+  const body = _storyboardBody();
 
   try {
     const resp = await fetch(`/api/project/${currentProjectId}/render`, {
@@ -1338,6 +1488,7 @@ async function buildStoryboard(data) {
     return;
   }
 
+  if (_sbProjectId !== data.project_id) _resetPreview();
   _sbProjectId = data.project_id;
   _sbScenes = data.script
     .split(/\n\s*\n/)
@@ -1348,9 +1499,12 @@ async function buildStoryboard(data) {
     const resp = await fetch(`/api/project/${data.project_id}/media`);
     if (resp.ok) _sbMediaFiles = await resp.json();
   } catch {}
+  await _loadSceneInfo(data.project_id);
+  _sbQueries = _sbScenes.map((_, i) => _sceneQuery(i));
 
   const n = Math.max(_sbScenes.length, _sbMediaFiles.length);
   _sbDurations = new Array(n).fill(0);
+  _sbRemoved = [];
 
   _renderStoryboard();
 }
@@ -1381,6 +1535,7 @@ function _renderStoryboard() {
     html += _sbMismatchWarning();
     html += `<div class="sb-render-bar">
       <span>ลากที่ ≡ เพื่อสลับลำดับ · คลิกรูปเพื่อเปลี่ยนสื่อ · แก้ข้อความเปลี่ยนเฉพาะซับไตเติ้ล (ไม่เปลี่ยนเสียง)</span>
+      <button class="tool-btn sb-preview-btn" onclick="_startPreview()">👁 ดูตัวอย่างเร็ว</button>
       <button class="btn primary sb-render-btn" onclick="_startRender()">สร้างวิดีโอ</button>
     </div>`;
   }
@@ -1432,8 +1587,10 @@ function _renderStoryboard() {
     html += `<div class="sb-scene" ${dragAttrs}>
       ${editable ? '<div class="sb-drag-handle" title="ลากเพื่อสลับลำดับ">≡</div>' : ""}
       <div class="sb-scene-num">${sceneNum}</div>
-      <div class="sb-thumb" onclick="openMediaPicker(${i},'${fname}')" title="คลิกเพื่อเปลี่ยนสื่อ">${thumbContent}</div>
-      <div class="sb-body">${bodyHtml}</div>
+      <div class="sb-thumb" onclick="openMediaPicker(${i},'${fname}')" title="${media ? "คลิกเพื่อเปลี่ยนสื่อ" : "คลิกเพื่อเลือกสื่อ"}">${thumbContent}</div>
+      <div class="sb-body">${bodyHtml}${_sbQueries[i] ? `<div class="sb-query" title="คำค้นภาพของฉากนี้">🔎 ${escapeHtml(_sbQueries[i])}</div>` : ""}</div>
+      ${editable && _aiImagesAvailable ? `<button class="sb-ai" title="สร้างภาพ AI ให้ฉากนี้" onclick="_sbAiImage(${i})">🎨</button>` : ""}
+      ${editable && media ? `<button class="sb-remove" title="เอาสื่อนี้ออกจากวิดีโอ (เลือกกลับมาได้)" onclick="_sbRemoveMedia(${i})">🗑</button>` : ""}
     </div>`;
   }
   html += "</div>";
@@ -1444,11 +1601,13 @@ function _renderStoryboard() {
 function _sbEditScript(idx, text) {
   while (_sbScenes.length <= idx) _sbScenes.push("");
   _sbScenes[idx] = text;
+  _markPreviewOutdated();
 }
 
 function _sbEditDuration(idx, val) {
   while (_sbDurations.length <= idx) _sbDurations.push(0);
   _sbDurations[idx] = parseFloat(val) || 0;
+  _markPreviewOutdated();
 }
 
 function _sbClearDropMarks() {
@@ -1492,7 +1651,10 @@ function _sbDrop(e, targetIdx) {
   move(_sbMediaFiles);
   move(_sbScenes);
   move(_sbDurations);
+  while (_sbQueries.length < n) _sbQueries.push("");
+  move(_sbQueries);
 
+  _markPreviewOutdated();
   _renderStoryboard();
 }
 
@@ -1511,16 +1673,19 @@ function openMediaPicker(sceneIdx, currentFilename) {
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 
   let grid = "";
-  for (const m of _sbMediaFiles) {
+  const choices = [..._sbMediaFiles.filter(Boolean), ..._sbRemoved.map((m) => ({ ...m, removed: true }))];
+  for (const m of choices) {
     const src = `/api/project/${_sbProjectId}/media/${m.filename}`;
     const active = m.filename === currentFilename ? " sb-pick-active" : "";
     const tag = m.type === "video"
       ? `<video src="${src}" preload="metadata" muted></video>`
       : `<img src="${src}" loading="lazy">`;
-    grid += `<div class="sb-pick-item${active}" data-fname="${_escapeAttr(m.filename)}">
-      ${tag}<span>${escapeHtml(m.filename)}</span>
+    const label = m.removed ? `${escapeHtml(m.filename)} (เอาออกแล้ว)` : escapeHtml(m.filename);
+    grid += `<div class="sb-pick-item${active}${m.removed ? " sb-pick-removed" : ""}" data-fname="${_escapeAttr(m.filename)}">
+      ${tag}<span>${label}</span>
     </div>`;
   }
+  if (!choices.length) grid = '<p class="no-results">ไม่มีสื่อในโปรเจคนี้</p>';
 
   overlay.innerHTML = `<div class="sb-picker">
     <div class="sb-picker-header">
@@ -1541,14 +1706,39 @@ function _pickMedia(sceneIdx, currentFname, targetFname, overlay) {
   overlay.remove();
   if (!targetFname || currentFname === targetFname) return;
 
+  while (_sbMediaFiles.length <= sceneIdx) _sbMediaFiles.push(null);
   const targetIdx = _sbMediaFiles.findIndex((m) => m && m.filename === targetFname);
-  if (targetIdx < 0) return;
-
-  const tmp = _sbMediaFiles[sceneIdx];
-  _sbMediaFiles[sceneIdx] = _sbMediaFiles[targetIdx];
-  _sbMediaFiles[targetIdx] = tmp;
-
+  if (targetIdx >= 0) {
+    const tmp = _sbMediaFiles[sceneIdx];
+    _sbMediaFiles[sceneIdx] = _sbMediaFiles[targetIdx];
+    _sbMediaFiles[targetIdx] = tmp;
+  } else {
+    // Bringing back a removed item; whatever was in this scene is removed instead.
+    const r = _sbRemoved.findIndex((m) => m.filename === targetFname);
+    if (r < 0) return;
+    const [restored] = _sbRemoved.splice(r, 1);
+    if (_sbMediaFiles[sceneIdx]) _sbRemoved.push(_sbMediaFiles[sceneIdx]);
+    _sbMediaFiles[sceneIdx] = restored;
+  }
+  _markPreviewOutdated();
   _renderStoryboard();
+}
+
+function _sbRemoveMedia(idx) {
+  const m = _sbMediaFiles[idx];
+  if (!m) return;
+  _sbRemoved.push(m);
+  _sbMediaFiles[idx] = null;
+  // A row left with neither media nor text has nothing to show.
+  if (!(_sbScenes[idx] || "").trim()) {
+    _sbMediaFiles.splice(idx, 1);
+    _sbScenes.splice(idx, 1);
+    _sbDurations.splice(idx, 1);
+    _sbQueries.splice(idx, 1);
+  }
+  _markPreviewOutdated();
+  _renderStoryboard();
+  showToast("เอาสื่อออกแล้ว — คลิกช่องว่างเพื่อเลือกกลับมาได้");
 }
 
 function _escapeAttr(str) {
@@ -1565,6 +1755,8 @@ function _collectFormState() {
     id: _currentDraftId,
     topic: document.getElementById("topicInput").value.trim(),
     voice: selectedVoice,
+    rate: document.getElementById("rateSlider").value,
+    pitch: document.getElementById("pitchSlider").value,
     tone: selectedTone,
     subtitles: subtitlesEnabled,
     persona: document.getElementById("personaInput").value.trim(),
@@ -1585,12 +1777,17 @@ function _collectFormState() {
     overlayAnimation: document.getElementById("overlayAnimation")?.value || "",
     mediaFiles: selectedMedia.map(m => m.filename),
     cloneEngine: selectedCloneEngine,
+    runMode: selectedRunMode,
+    mediaSource: selectedMediaSource,
+    aiEngine: selectedAiEngine,
   };
 }
 
 function _restoreFormState(d) {
   document.getElementById("topicInput").value = d.topic || "";
   if (d.voice) selectVoice(d.voice);
+  if (d.rate !== undefined) { document.getElementById("rateSlider").value = d.rate; updateRateLabel(); }
+  if (d.pitch !== undefined) { document.getElementById("pitchSlider").value = d.pitch; updatePitchLabel(); }
   if (d.tone) {
     document.getElementById("toneSelect").value = d.tone;
     selectTone(d.tone);
@@ -1624,6 +1821,9 @@ function _restoreFormState(d) {
   const fontSel = document.getElementById("overlayFont");
   fontSel.value = [...fontSel.options].some((o) => o.value === d.overlayFont) ? d.overlayFont : "sarabun";
   if (d.overlayAnimation) document.getElementById("overlayAnimation").value = d.overlayAnimation;
+  if (d.runMode) selectRunMode(d.runMode);
+  if (d.mediaSource) selectMediaSource(d.mediaSource);
+  if (d.aiEngine) { selectedAiEngine = d.aiEngine; document.getElementById("aiEngineSelect").value = d.aiEngine; }
   _currentDraftId = d.id || null;
 }
 
@@ -1688,6 +1888,7 @@ async function loadProject(projectId) {
     const resp = await fetch(`/api/status/${projectId}`);
     const data = await resp.json();
     currentProjectId = projectId;
+    _rememberProject(currentProjectId);
     generateStartTime = null;
     if (data.phase === "done") {
       showResult(data);
@@ -1827,7 +2028,145 @@ async function loadVoiceProfiles() {
   } catch {}
 }
 
+// ── Voice presets ──
+
+let _voicePresets = [];
+const VOICE_NAMES = { female: "หญิง (เปรมวดี)", male: "ชาย (นิวัตน์)" };
+const TONE_NAMES = { normal: "ปกติ", cheerful: "สนุกสนาน", energetic: "ตื่นเต้น", warm: "อบอุ่น", serious: "จริงจัง", news: "ผู้ประกาศข่าว", custom: "กำหนดเอง" };
+const CLONE_ENGINE_NAMES = { openvoice: "OpenVoice V2", "f5-tts-thai": "F5-TTS-THAI" };
+
+const _signed = (v, unit) => (v > 0 ? `+${v}${unit}` : v < 0 ? `${v}${unit}` : "ปกติ");
+
+function describeVoicePreset(p) {
+  const parts = [`ต้นฉบับ: ${VOICE_NAMES[p.voice] || p.voice}`];
+  if (p.clone_voice_id) {
+    const name = p.clone_missing ? "(เสียงโคลนถูกลบไปแล้ว)" : p.clone_name;
+    parts.push(`โคลนด้วย: ${name} · ${CLONE_ENGINE_NAMES[p.clone_engine] || p.clone_engine}`);
+    parts.push(`ระดับโคลน ${(p.tau / 100).toFixed(2)}`);
+  } else {
+    parts.push("ไม่โคลน");
+  }
+  parts.push(`ความเร็ว ${_signed(p.rate, "%")}`, `ระดับเสียง ${_signed(p.pitch, "Hz")}`, `โทน: ${TONE_NAMES[p.tone] || p.tone}`);
+  return parts.join(" · ");
+}
+
+async function loadVoicePresets(selectId) {
+  try {
+    _voicePresets = await (await fetch("/api/voice-presets")).json();
+  } catch { _voicePresets = []; }
+  const sel = document.getElementById("voicePresetSelect");
+  sel.innerHTML = '<option value="">— ชุดเสียงที่บันทึกไว้ —</option>' +
+    _voicePresets.map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  sel.value = selectId || "";
+  _showPresetInfo(sel.value);
+}
+
+function _showPresetInfo(id) {
+  const p = _voicePresets.find((x) => x.id === id);
+  const info = document.getElementById("voicePresetInfo");
+  info.textContent = p ? describeVoicePreset(p) : "";
+  info.classList.toggle("hidden", !p);
+  document.getElementById("deletePresetBtn").classList.toggle("hidden", !p);
+}
+
+function applyVoicePreset(id) {
+  _showPresetInfo(id);
+  const p = _voicePresets.find((x) => x.id === id);
+  if (!p) return;
+  selectVoice(p.voice);
+  document.getElementById("rateSlider").value = p.rate; updateRateLabel();
+  document.getElementById("pitchSlider").value = p.pitch; updatePitchLabel();
+  document.getElementById("toneSelect").value = p.tone; selectTone(p.tone);
+  if (p.tone === "custom" && p.tone_custom) {
+    document.getElementById("customToneVar").value = p.tone_custom.variation ?? 10;
+    document.getElementById("customToneRate").value = p.tone_custom.rate ?? 0;
+    document.getElementById("customTonePitch").value = p.tone_custom.pitch ?? 0;
+  }
+  selectedCloneEngine = p.clone_engine;
+  document.getElementById("cloneEngineSelect").value = p.clone_engine;
+  document.getElementById("tauSlider").value = p.tau; updateTauLabel();
+  const cloneSel = document.getElementById("cloneVoiceSelect");
+  const available = p.clone_voice_id && [...cloneSel.options].some((o) => o.value === p.clone_voice_id);
+  cloneSel.value = available ? p.clone_voice_id : "";
+  selectCloneVoice(cloneSel.value);
+  if (p.clone_voice_id && !available) showToast("เสียงโคลนของชุดนี้ถูกลบไปแล้ว — ใช้เสียง TTS ปกติแทน", true);
+  else showToast(`ใช้ชุดเสียง "${p.name}" แล้ว`);
+}
+
+async function _postVoicePreset(preset) {
+  const resp = await fetch("/api/voice-presets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(preset),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || "บันทึกไม่สำเร็จ");
+  return data;
+}
+
+async function saveVoicePreset() {
+  const tau = parseInt(document.getElementById("tauSlider").value);
+  const cloneName = cloneVoiceId
+    ? document.getElementById("cloneVoiceSelect").selectedOptions[0].text.replace(/\s*\([\d.]+s\)$/, "")
+    : "";
+  const suggested = cloneName
+    ? `${cloneName} · ${TONE_NAMES[selectedTone]} · โคลน ${(tau / 100).toFixed(2)}`
+    : `${VOICE_NAMES[selectedVoice]} · ${TONE_NAMES[selectedTone]}`;
+  const name = prompt("ตั้งชื่อชุดเสียง (ชื่อซ้ำจะบันทึกทับ):", suggested);
+  if (!name) return;
+  try {
+    const saved = await _postVoicePreset({
+      name,
+      voice: selectedVoice,
+      rate: parseInt(document.getElementById("rateSlider").value),
+      pitch: parseInt(document.getElementById("pitchSlider").value),
+      tone: selectedTone,
+      tone_custom: selectedTone === "custom" ? {
+        variation: parseInt(document.getElementById("customToneVar").value) || 10,
+        rate: parseInt(document.getElementById("customToneRate").value) || 0,
+        pitch: parseInt(document.getElementById("customTonePitch").value) || 0,
+      } : null,
+      clone_voice_id: cloneVoiceId,
+      clone_engine: selectedCloneEngine,
+      tau,
+    });
+    await loadVoicePresets(saved.id);
+    showToast(`บันทึกชุดเสียง "${saved.name}" แล้ว`);
+  } catch (e) {
+    showToast(e.message, true);
+  }
+}
+
+async function deleteVoicePreset() {
+  const id = document.getElementById("voicePresetSelect").value;
+  const p = _voicePresets.find((x) => x.id === id);
+  if (!p || !confirm(`ลบชุดเสียง "${p.name}"?`)) return;
+  await fetch(`/api/voice-presets/${id}`, { method: "DELETE" });
+  await loadVoicePresets();
+  showToast("ลบชุดเสียงแล้ว");
+}
+
+// The compare job always uses Premwadee at normal speed/pitch as the base,
+// with OpenVoice and the modal's tau, so that is exactly what gets saved.
+async function saveComparedVoice(voiceId, voiceName) {
+  const tau = _compareJobTau;
+  const name = prompt("ตั้งชื่อชุดเสียง (ชื่อซ้ำจะบันทึกทับ):", `${voiceName} · โคลน ${(tau / 100).toFixed(2)}`);
+  if (!name) return;
+  try {
+    const saved = await _postVoicePreset({
+      name, voice: "female", rate: 0, pitch: 0, tone: "normal",
+      clone_voice_id: voiceId, clone_engine: "openvoice", tau, source: "compare",
+    });
+    await loadVoicePresets(document.getElementById("voicePresetSelect").value);
+    showToast(`บันทึกชุดเสียง "${saved.name}" แล้ว — เลือกใช้ได้ที่ "ชุดเสียง"`);
+  } catch (e) {
+    showToast(e.message, true);
+  }
+}
+
 // ── Compare All Voices ──
+
+let _compareJobTau = 30;
 
 let _compareVoices = [];
 let _comparePollTimer = null;
@@ -1872,7 +2211,8 @@ function _renderCompareList(results, showCheckbox) {
   html += results.map((r) => {
     const icon = icons[r.status] || icons.idle;
     const player = r.status === "done" && r._jobId
-      ? `<audio controls preload="none" src="/api/compare-voices/audio/${r._jobId}/${r.id}"></audio>`
+      ? `<audio controls preload="none" src="/api/compare-voices/audio/${r._jobId}/${r.id}"></audio>
+         <button class="compare-save-btn" title="บันทึกเป็นชุดเสียง" onclick="saveComparedVoice('${r.id}', '${escapeHtml(r.name).replace(/'/g, "\\'")}')">💾 บันทึก</button>`
       : r.status === "error"
         ? `<span class="compare-err" title="${escapeHtml(r.error || "")}">ไม่สำเร็จ</span>`
         : "";
@@ -1917,11 +2257,12 @@ async function startCompareVoices() {
   progress.classList.remove("hidden");
   progress.textContent = `กำลังโหลดโมเดล OpenVoice แล้วเทียบ ${selected.length} เสียง...`;
 
+  _compareJobTau = parseInt(document.getElementById("compareTauSlider").value);
   try {
     const resp = await fetch("/api/compare-voices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice_ids: selected, tau: parseFloat(document.getElementById("compareTauSlider").value) / 100 }),
+      body: JSON.stringify({ text, voice_ids: selected, tau: _compareJobTau / 100 }),
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || "เริ่มเทียบเสียงไม่สำเร็จ");
@@ -2150,6 +2491,18 @@ async function renderTemplateImage() {
 // ── Help system ──
 
 const HELP_TEXTS = {
+  run_mode: {
+    title: "โหมดทำงาน",
+    body: "<b>กึ่งอัตโนมัติ</b> — ระบบเดิม: เขียนสคริปต์ สร้างเสียง ดึงสื่อจากหัวข้อ แล้วหยุดให้จัด Storyboard\n\n<b>อัตโนมัติ + หยุดตรวจ</b> — สคริปต์แบ่งเป็นฉาก หาสื่อตรงทีละฉาก ภาพเปลี่ยนตามจังหวะพูด แล้วหยุดให้ตรวจ/ดูตัวอย่างหนึ่งครั้งก่อนสร้างวิดีโอ\n\n<b>อัตโนมัติเต็ม</b> — เหมือนแบบหยุดตรวจ แต่ถ้าผ่านด่านตรวจคุณภาพ (เสียงถูกต้อง ความยาวพอดี สื่อครบทุกฉาก) จะสร้างวิดีโอให้เลย ถ้าไม่ผ่านจะหยุดพร้อมบอกเหตุผล\n\nทุกโหมด: เมื่อเสร็จจะได้ชื่อคลิป คำอธิบาย แฮชแทก ภาพปก และบันทึกลง F:\\LocalAI\\clips อัตโนมัติ"
+  },
+  media_source: {
+    title: "แหล่งสื่อ",
+    body: "<b>Pexels</b> — คลิป/ภาพจริงจาก Pexels ตามคำค้นของแต่ละฉาก\n\n<b>Pexels + ภาพ AI</b> — ใช้คลิป Pexels ก่อน ฉากไหนหาไม่ได้ให้ AI วาด\n\n<b>ภาพ AI</b> — ให้ AI วาดทุกฉาก (AI-Bridge-Launcher)\n\n<b>FLUX.2 klein</b> วาดในเครื่อง ภาพแรกโหลดโมเดลประมาณ 1 นาที จากนั้นประมาณ 30 วินาทีต่อภาพ (โหมดเร็ว 15 วินาที)\n<b>Gemini</b> วาดบนคลาวด์ เร็ว แต่คิดเงินต่อภาพ\n\nใน Storyboard กดปุ่ม 🎨 ที่ฉากใดก็ได้เพื่อสร้างภาพ AI ให้ฉากนั้นเอง"
+  },
+  voice_preset: {
+    title: "ชุดเสียง",
+    body: "บันทึกการตั้งค่าเสียงที่ทดลองแล้วว่าดี เพื่อใช้ครั้งต่อไปด้วยคลิกเดียว\n\n<b>สิ่งที่บันทึก:</b> เสียงต้นฉบับ (เปรมวดี/นิวัตน์), เสียงโคลนและเครื่องโคลน, ระดับโคลน, ความเร็ว, ระดับเสียง และโทนเสียง\n\n<b>บันทึกได้ 2 ทาง:</b>\n• ปุ่ม 💾 บันทึกชุดเสียง = บันทึกค่าที่ตั้งอยู่ตอนนี้\n• ปุ่ม 💾 บันทึก ในหน้าต่างเทียบเสียง = บันทึกเสียงที่ฟังแล้วชอบ (ต้นฉบับเปรมวดี ความเร็วปกติ OpenVoice และระดับโคลนที่ใช้เทียบ)\n\nเลือกชุดเสียงจากรายการ = ตั้งค่าทั้งหมดให้ทันที\nตั้งชื่อซ้ำกับชุดเดิม = บันทึกทับ"
+  },
   voice: {
     title: "เสียงพูด",
     body: "เลือกเสียง TTS สำหรับบรรยาย\n\n<b>หญิง (เปรมวดี)</b> — เสียง th-TH-PremwadeeNeural\n<b>ชาย (นิวัตน์)</b> — เสียง th-TH-NiwatNeural\n\nถ้าใช้โหมดสนทนา 2 คน เสียงนี้จะเป็น \"เสียง A\" (คนอธิบาย)"
@@ -2221,5 +2574,296 @@ document.getElementById("topicInput").addEventListener("keydown", (e) => {
 });
 
 loadHistory();
-loadVoiceProfiles();
 loadCloneEngines();
+
+// ── Run mode, media source, AI images ──
+
+let selectedRunMode = "semi";
+let selectedMediaSource = "pexels";
+let selectedAiEngine = "flux";
+let _aiImagesAvailable = false;
+let _sbScenesInfo = [];
+
+function _updateModeRows() {
+  const sceneMode = selectedRunMode !== "semi";
+  document.querySelectorAll(".scene-only").forEach((el) => el.classList.toggle("hidden", !sceneMode));
+  const aiRow = document.querySelector(".ai-only");
+  if (aiRow) aiRow.classList.toggle("hidden", !sceneMode || selectedMediaSource === "pexels");
+}
+
+function selectRunMode(mode) {
+  selectedRunMode = mode;
+  document.querySelectorAll("[data-runmode]").forEach((b) => b.classList.toggle("active", b.dataset.runmode === mode));
+  _updateModeRows();
+}
+
+function selectMediaSource(src) {
+  if (src !== "pexels" && !_aiImagesAvailable) {
+    showToast("ไม่พบ AI-Bridge-Launcher (F:\\enterprise\\aipass-auto-router) — ใช้ Pexels", true);
+    src = "pexels";
+  }
+  selectedMediaSource = src;
+  document.querySelectorAll("[data-msource]").forEach((b) => b.classList.toggle("active", b.dataset.msource === src));
+  _updateModeRows();
+}
+
+async function loadAiImageStatus() {
+  try {
+    _aiImagesAvailable = (await (await fetch("/api/ai-image/status")).json()).available;
+  } catch { _aiImagesAvailable = false; }
+}
+
+function _renderReviewBox(data) {
+  const box = document.getElementById("sbReview");
+  const reasons = data.review_reasons || [];
+  if (data.phase === "media_ready" && reasons.length) {
+    box.innerHTML = `<b>⚠ ต้องตรวจก่อนสร้างวิดีโอ</b><ul>${reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>`;
+    box.classList.remove("hidden");
+  } else {
+    box.classList.add("hidden");
+  }
+}
+
+function _renderPostInfo(data) {
+  const box = document.getElementById("postInfo");
+  const post = data.post;
+  if (!post || data.phase !== "done") { box.classList.add("hidden"); return; }
+  const tags = (post.hashtags || []).join(" ");
+  const block = (label, key, text) => text ? `<div class="post-row">
+      <div class="post-head"><b>${label}</b><button class="tool-btn" onclick="copyPostText('${key}')">คัดลอก</button></div>
+      <div class="post-text" id="post_${key}">${escapeHtml(text)}</div></div>` : "";
+  box.innerHTML = `
+    <div class="post-grid">
+      <img class="post-thumb" src="/api/project/${data.project_id}/thumbnail?t=${data.updated_at || ""}" alt="ภาพปก"
+           onerror="this.style.display='none'">
+      <div class="post-fields">
+        ${block("ชื่อคลิป", "title", post.title)}
+        ${block("คำอธิบาย", "description", post.description)}
+        ${block("แฮชแทก", "hashtags", tags)}
+        <div class="post-head"><button class="tool-btn" onclick="copyPostText('all')">คัดลอกทั้งหมด</button>
+          <a class="tool-btn" href="/api/project/${data.project_id}/thumbnail" download="thumbnail.jpg">⬇ ภาพปก</a></div>
+        ${data.clips_folder ? `<div class="post-folder">📁 บันทึกไว้ที่ ${escapeHtml(data.clips_folder)}</div>` : ""}
+      </div>
+    </div>`;
+  box.classList.remove("hidden");
+}
+
+async function copyPostText(key) {
+  const get = (k) => document.getElementById(`post_${k}`)?.textContent || "";
+  const text = key === "all" ? ["title", "description", "hashtags"].map(get).filter(Boolean).join("\n\n") : get(key);
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("คัดลอกแล้ว");
+  } catch {
+    showToast("คัดลอกไม่ได้ — เลือกข้อความแล้วกด Ctrl+C", true);
+  }
+}
+
+async function _loadSceneInfo(projectId) {
+  try {
+    _sbScenesInfo = await (await fetch(`/api/project/${projectId}/scenes`)).json();
+  } catch { _sbScenesInfo = []; }
+}
+
+function _sceneQuery(i) {
+  const info = _sbScenesInfo[i];
+  return info ? info.query : "";
+}
+
+async function _sbAiImage(idx) {
+  const def = _sbQueries[idx] || (_sbScenes[idx] || "").slice(0, 80);
+  const prompt = window.prompt("คำอธิบายภาพ (ภาษาอังกฤษจะได้ผลดีที่สุด):", def);
+  if (!prompt) return;
+  const thumb = document.querySelectorAll(".sb-scene")[idx]?.querySelector(".sb-thumb");
+  if (thumb) thumb.innerHTML = '<div class="sb-no-media">🎨 กำลังสร้างภาพ...<br><small>ครั้งแรกโหลดโมเดล ~1 นาที</small></div>';
+  try {
+    const resp = await fetch(`/api/project/${_sbProjectId}/ai-image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, engine: selectedAiEngine }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "สร้างภาพไม่สำเร็จ");
+    while (_sbMediaFiles.length <= idx) _sbMediaFiles.push(null);
+    if (_sbMediaFiles[idx]) _sbRemoved.push(_sbMediaFiles[idx]);
+    _sbMediaFiles[idx] = { filename: data.filename, type: "image" };
+    _markPreviewOutdated();
+    showToast("ได้ภาพ AI แล้ว — ภาพเดิมอยู่ในรายการ 'เอาออกแล้ว'");
+  } catch (e) {
+    showToast(e.message, true);
+  }
+  _renderStoryboard();
+}
+
+// ── Queue: many topics, one clip at a time, fully automatic ──
+
+const QUEUE_LABELS = { waiting: "รอคิว", running: "กำลังทำ", needs_review: "รอตรวจ", done: "เสร็จแล้ว", error: "ล้มเหลว" };
+let _queueTimer = null;
+let _queuePaused = false;
+let _queueHadWork = false;
+
+async function _postQueue(topics) {
+  const settings = _generateSettings("");
+  delete settings.topic;
+  const resp = await fetch("/api/queue", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topics, settings }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || "เพิ่มเข้าคิวไม่ได้");
+  return data.added;
+}
+
+async function addCurrentToQueue() {
+  const topic = document.getElementById("topicInput").value.trim();
+  if (!topic) return showToast("กรุณาใส่หัวข้อ", true);
+  try {
+    await _postQueue([topic]);
+    showToast(`เพิ่ม "${topic}" เข้าคิวแล้ว (อัตโนมัติเต็ม)`);
+    document.getElementById("topicInput").value = "";
+    loadQueue();
+  } catch (e) { showToast(e.message, true); }
+}
+
+async function addTopicsToQueue() {
+  const box = document.getElementById("queueTopics");
+  const topics = box.value.split("\n").map((t) => t.trim()).filter(Boolean);
+  if (!topics.length) return showToast("ใส่หัวข้อบรรทัดละ 1 หัวข้อ", true);
+  try {
+    const added = await _postQueue(topics);
+    box.value = "";
+    showToast(`เพิ่มเข้าคิว ${added} หัวข้อ`);
+    loadQueue();
+  } catch (e) { showToast(e.message, true); }
+}
+
+async function _queueControl(action) {
+  await fetch("/api/queue/control", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }),
+  });
+  loadQueue();
+}
+
+function toggleQueuePause() { _queueControl(_queuePaused ? "resume" : "pause"); }
+function clearFinishedQueue() { _queueControl("clear_finished"); }
+
+async function queueRetry(id) {
+  await fetch(`/api/queue/${id}/retry`, { method: "POST" });
+  loadQueue();
+}
+
+async function queueRemove(id) {
+  await fetch(`/api/queue/${id}`, { method: "DELETE" });
+  loadQueue();
+}
+
+async function loadQueue() {
+  let q;
+  try { q = await (await fetch("/api/queue")).json(); } catch { return; }
+  _queuePaused = q.paused;
+  const items = q.items || [];
+  const section = document.getElementById("queueSection");
+  const active = items.filter((i) => ["waiting", "running"].includes(i.status));
+  section.classList.toggle("has-items", items.length > 0);
+  document.getElementById("queuePauseBtn").textContent = q.paused ? "▶ ทำต่อ" : "⏸ หยุดชั่วคราว";
+  const count = (s) => items.filter((i) => i.status === s).length;
+  document.getElementById("queueSummary").textContent = items.length
+    ? `รอ ${count("waiting")} · กำลังทำ ${count("running")} · เสร็จ ${count("done")} · รอตรวจ ${count("needs_review")} · ล้มเหลว ${count("error")}${q.paused ? " · หยุดชั่วคราว" : ""}`
+    : "ยังไม่มีงานในคิว";
+  document.getElementById("queueList").innerHTML = items.map((i) => {
+    const progress = i.status === "running" && i.progress != null ? ` ${i.progress}%` : "";
+    const open = i.project_id ? `<button class="tool-btn" onclick="loadProject('${i.project_id}')">เปิด</button>` : "";
+    const retry = ["error", "needs_review"].includes(i.status) ? `<button class="tool-btn" onclick="queueRetry('${i.id}')">ทำใหม่</button>` : "";
+    const remove = i.status !== "running" ? `<button class="tool-btn" onclick="queueRemove('${i.id}')" title="เอาออกจากคิว">✕</button>` : "";
+    const err = i.error ? `<div class="queue-error">${escapeHtml(i.error)}</div>` : "";
+    return `<div class="queue-item q-${i.status}">
+      <div class="queue-main"><span class="queue-status">${QUEUE_LABELS[i.status] || i.status}${progress}</span>
+        <span class="queue-topic">${escapeHtml(i.topic)}</span>${open}${retry}${remove}</div>${err}</div>`;
+  }).join("");
+
+  // Poll while there is work; chime once when the queue empties.
+  if (active.length) _queueHadWork = true;
+  else if (_queueHadWork) { _queueHadWork = false; playDoneSound(); showToast("คิวว่างแล้ว — ทำครบทุกหัวข้อ"); loadHistory(); }
+  clearTimeout(_queueTimer);
+  _queueTimer = setTimeout(loadQueue, active.length ? 3000 : 15000);
+}
+
+// ── Keep the page's state across refreshes / navigation ──
+// Per-browser convenience only: settings, chosen media and the clip being
+// worked on are restored when the dashboard is opened again.
+
+const FORM_KEY = "yt.form.v1";
+const PROJECT_KEY = "yt.project";
+let _saveFormTimer = null;
+
+function _storageGet(store, key) {
+  try { return store.getItem(key); } catch { return null; }
+}
+
+function _storageSet(store, key, value) {
+  try { store.setItem(key, value); } catch { /* private mode / storage full */ }
+}
+
+function _scheduleSaveForm() {
+  clearTimeout(_saveFormTimer);
+  _saveFormTimer = setTimeout(() => {
+    const state = _collectFormState();
+    state.media = selectedMedia;
+    state.bgmName = document.getElementById("bgmFileName").textContent;
+    state.presetId = document.getElementById("voicePresetSelect").value;
+    _storageSet(localStorage, FORM_KEY, JSON.stringify(state));
+  }, 400);
+}
+
+function _rememberProject(id) {
+  if (id) _storageSet(sessionStorage, PROJECT_KEY, id);
+}
+
+function _restoreSavedForm() {
+  let saved;
+  try { saved = JSON.parse(_storageGet(localStorage, FORM_KEY) || "null"); } catch { saved = null; }
+  if (!saved) return;
+  _restoreFormState(saved);
+  _currentDraftId = saved.id || null;
+  if (Array.isArray(saved.media) && saved.media.length) {
+    selectedMedia = saved.media;
+    renderMediaGrid();
+  }
+  if (saved.bgmFile) {
+    bgmFilename = saved.bgmFile;
+    document.getElementById("bgmFileName").textContent = saved.bgmName || saved.bgmFile;
+    document.getElementById("bgmPlayer").src = `/api/uploads/file/${bgmFilename}`;
+    document.getElementById("bgmEmpty").classList.add("hidden");
+    document.getElementById("bgmPreview").classList.remove("hidden");
+  }
+  if (saved.presetId && _voicePresets.some((p) => p.id === saved.presetId)) {
+    document.getElementById("voicePresetSelect").value = saved.presetId;
+    _showPresetInfo(saved.presetId);
+  }
+}
+
+const setupPanel = document.getElementById("setupPanel");
+["input", "change", "click"].forEach((ev) => setupPanel.addEventListener(ev, _scheduleSaveForm));
+
+(async () => {
+  await loadVoiceProfiles();
+  await loadVoicePresets();
+  await loadAiImageStatus();
+  _restoreSavedForm();
+  loadQueue();
+  const linked = new URLSearchParams(location.search).get("project");
+  const resumed = linked || _storageGet(sessionStorage, PROJECT_KEY);
+  if (resumed) loadProject(resumed);
+})();
+
+// ── Version footer ──
+const _THAI_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+function _thaiDate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d} ${_THAI_MONTHS[m - 1]} ${y + 543}`;
+}
+fetch("/api/version").then((r) => r.json()).then((v) => {
+  document.getElementById("appVersion").textContent =
+    `${v.name} v${v.version} · สร้าง ${_thaiDate(v.created)} · ปรับปรุงล่าสุด ${_thaiDate(v.updated)} · โดย ${v.author}`;
+}).catch(() => {});
