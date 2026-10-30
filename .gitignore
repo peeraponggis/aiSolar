@@ -57,3 +57,6 @@ _scratch/
 
 # ทะเบียนศูนย์ผู้ให้บริการ (ข้อมูลผู้ใช้ ไม่มีคีย์ — Multi Tools สร้างใหม่ได้)
 shared/providers.json
+
+# repo แยก: github.com/peeraponggis/pee_architec (private)
+pee_architec/
