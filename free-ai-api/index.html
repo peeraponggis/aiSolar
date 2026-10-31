@@ -263,7 +263,7 @@ footer a{color:var(--muted)}
 
 <script>
 'use strict';
-const APP = { name:'Free AI API Finder', version:'1.1.0', created:'2026-10-31', updated:'2026-10-31', author:'ลุงพี', dataChecked:'2026-10-31' };
+const APP = { name:'Free AI API Finder', version:'1.1.1', created:'2026-10-31', updated:'2026-10-31', author:'ลุงพี', dataChecked:'2026-10-31' };
 
 /* ── ข้อมูลผู้ให้บริการ ─────────────────────────────────────────────
    cat:  llm | thai | trial | embed | speech | ocr | gone
@@ -360,7 +360,7 @@ const P = [
  {id:'kilo',name:'Kilo Code (Kilo AI Gateway)',cat:'llm',type:'perm',card:'no',cors:'proxy',login:false,noKey:true,thai:2,thaiModel:'nemotron-3-ultra-550b:free / kilo-auto/free (ตอบไทยได้)',
   free:'ไม่ต้องมี key: 200 req/ชม. ต่อ IP (รุ่น :free) · มี key: รุ่นฟรี + รุ่นเสียเงิน',
   models:'kilo-auto/free, nvidia/nemotron-3-ultra-550b-a55b:free, poolside/laguna-s-2.1:free ฯลฯ (~18 รุ่นฟรี จาก 388)',
-  note:'ทดสอบแล้ว: เรียกแบบไม่มี key ตอบภาษาไทยได้ · เบราว์เซอร์ถูกบล็อก CORS → ใช้ปุ่ม 📋 คำสั่งทดสอบ · รุ่นฟรีบางตัวอาจไม่ว่าง/ติด 429',
+  note:'ทดสอบแล้ว: เรียกแบบไม่มี key → nemotron-3-ultra:free และ kilo-auto/free ตอบภาษาไทยได้ · poolside/laguna-s-2.1:free ติด 429 (คนใช้เยอะ) ช่วงที่ทดสอบ · ต้องการโควต้ามากขึ้น → สมัคร key ที่ app.kilo.ai/profile · เบราว์เซอร์ถูกบล็อก CORS → ใช้ปุ่ม 📋 คำสั่งทดสอบ',
   signup:'https://app.kilo.ai/profile',docs:'https://kilo.ai/docs/gateway/models-and-providers',
   base:'https://ai-gateway.kilo.ai/api/v1',model:'nvidia/nemotron-3-ultra-550b-a55b:free'},
  {id:'opencode',name:'OpenCode Zen',cat:'llm',type:'perm',card:'no',cors:'proxy',login:true,thai:2,thaiModel:'deepseek-v4-flash-free',
