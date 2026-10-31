@@ -3,6 +3,9 @@
 สร้างเมื่อ 31 ต.ค. 2569 · โดย ลุงพี
 เวอร์ชันปัจจุบันอยู่ใน `VERSION.json` และแสดงท้ายหน้าเว็บ (ค่า `APP` ใน index.html)
 
+## v1.1.1 — 31 ต.ค. 2569 · โดย ลุงพี
+- Kilo: บันทึกผลทดสอบรายรุ่น — nemotron-3-ultra:free และ kilo-auto/free ตอบไทยได้, poolside/laguna-s-2.1:free ติด 429 ช่วงทดสอบ · แนะนำสมัคร key ที่ app.kilo.ai/profile เพื่อโควต้ามากขึ้น
+
 ## v1.1.0 — 31 ต.ค. 2569 · โดย ลุงพี
 - ทดสอบ Kilo Code, Agnes AI, Poolside ด้วย endpoint ทางการแล้ว:
   - Kilo AI Gateway `ai-gateway.kilo.ai/api/v1` — ใช้ได้โดยไม่ต้องมี key (200 req/ชม. ต่อ IP) ตอบภาษาไทยได้ แต่เบราว์เซอร์ถูกบล็อก CORS
