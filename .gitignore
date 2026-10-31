@@ -60,3 +60,38 @@ shared/providers.json
 
 # repo แยก: github.com/peeraponggis/pee_architec (private)
 pee_architec/
+
+# ===== กันพลาด: repo นี้เป็น PUBLIC (โดย ลุงพี 31 ต.ค. 2569 · ดู PROGRAMS.md หมวด 4) =====
+# โปรแกรมที่มีรหัสผ่าน PEA / ข้อมูลลูกค้า — โค้ดสะอาดอยู่ที่ git/ai (public) แทน
+AMI_Fetcher/
+AMR_Fetcher/
+PEA_build/
+FB_Fetcher/
+FB_Extension/
+cctv/
+Trading/
+carport_cm/
+desktop_app/
+apps/
+tools/homeguard/
+tools/Tune-PC/
+aiSolar/
+# repo แยกของตัวเอง (clone อยู่ใต้ git/)
+git/
+courseweb/
+project_plan_spa/
+# ข้อมูล/ความลับ
+**/data/customers/
+**/config.ini
+**/.env
+**/.env.*
+*.pem
+*.key
+**/*credential*
+**/*cookie*
+*.sqlite
+*.db
+*.xls
+*.xlsx
+*.mkv
+*.avi
