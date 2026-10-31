@@ -24,7 +24,9 @@
 | solar-engine + asc-enterprises + digitize-kit | `enterprise\solar-project-complete` | proinventive/solar-project-complete (private) |
 | picode monorepo (aiSolar · asc · pi-boq-dev · solar-saas · webproinventive) | `LocalAI\git\picode` | proinventive/picode (private) |
 | picode-cdn | – (ยังไม่ clone) | proinventive/picode-cdn (**public**) |
-| **CRM-Pi / Pi System** (pi_crm_erp + pi_boq_app) | `F:\enterprise\pi-system\` **(laptop เท่านั้น)** | ⚠️ **ยังไม่มี remote** — ต้องสร้าง private repo ใต้ proinventive แล้ว push จาก laptop (ถ้า laptop เสียงานหาย) |
+| **CRM-Pi / Pi System 1.0.0** (pi_crm_erp + pi_boq_app) | **ต้นฉบับจริง:** monorepo picode โฟลเดอร์ `pi-system\` → laptop `F:\enterprise\picode\pi-system\` · home `C:\LocalAI\git\picode\pi-system\` | proinventive/picode (private) |
+
+⚠️ **CRM-Pi มีสำเนาเก่าอีกชุด** — `F:\enterprise\pi-system\` (laptop) = repo `proinventive/pi-system` (private · สร้าง 31 ต.ค. 2569) · clone ไว้ที่ home `C:\enterprise\pi-system\` · **ค้างที่ก่อนมีผู้ช่วย AI** — ห้ามแก้ที่นี่ ใช้ picode เท่านั้น (ลุงพีตัดสินใจว่าจะลบ/เก็บเป็นสำรอง)
 
 CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · build `node pi_crm_erp/scripts/build_pages.mjs` · แผนเชื่อม ASC Studio: `design-auto\docs\crm-pi-integration.md`
 
