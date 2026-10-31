@@ -3,7 +3,7 @@
 อัปเดต 31 ต.ค. 2569 · laptop ใช้ `F:\` · home server ใช้ `C:\` (โครงสร้างโฟลเดอร์เหมือนกัน)
 แบ่ง 4 หมวดตาม **"ใครเห็นได้"** — เช็กหมวดก่อนแก้หรือ push ทุกครั้ง
 
-กฎ: ก่อนเริ่ม `git pull --ff-only` · จบงาน commit + push ก่อนสลับเครื่อง · bump VERSION.json + CHANGELOG ทุกครั้งที่แก้ · push ต้องล็อกอิน GitHub (ลุงพีทำเอง)
+กฎ: ก่อนเริ่ม `git pull --ff-only` · จบงาน commit + push ก่อนสลับเครื่อง · bump VERSION.json + CHANGELOG ทุกครั้งที่แก้ · session ศูนย์กลาง push เองได้ (GCM dpapi store · ดู memory project_central_session)
 
 ---
 
@@ -64,7 +64,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · build `node pi_
 
 - อัปเดต: `bash LocalAI/git/ai/tools/sync_from_localai.sh` → commit + push · สคริปต์คัดเฉพาะโค้ด ล้างบัญชี/รหัสผ่าน/อีเมล และหยุดถ้าเจอรหัสผ่านเหลือ
 - แก้บน laptop แล้วต้องคัดลอกกลับโฟลเดอร์ต้นฉบับเอง
-- ⏳ commit แล้ว (31 ต.ค. 2569) **ยังไม่ได้ push** — รอลุงพีล็อกอิน: `git -C C:/LocalAI/git/ai push origin main`
+- ✅ push ขึ้น GitHub แล้ว (31 ต.ค. 2569 · commit 6caf209)
 - ไม่ขึ้น: ConstructCAD (ของ francisreboucas · GPL) · Carport-CM (มีแค่รูป)
 
 **3.4 repo ที่ยังไม่ได้ clone ลงเครื่องนี้** (clone เฉพาะตัวที่จะแก้)
