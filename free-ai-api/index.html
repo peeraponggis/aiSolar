@@ -263,7 +263,7 @@ footer a{color:var(--muted)}
 
 <script>
 'use strict';
-const APP = { name:'Free AI API Finder', version:'1.1.1', created:'2026-10-31', updated:'2026-10-31', author:'ลุงพี', dataChecked:'2026-10-31' };
+const APP = { name:'Free AI API Finder', version:'1.1.2', created:'2026-10-31', updated:'2026-10-31', author:'ลุงพี', dataChecked:'2026-10-31' };
 
 /* ── ข้อมูลผู้ให้บริการ ─────────────────────────────────────────────
    cat:  llm | thai | trial | embed | speech | ocr | gone
@@ -631,8 +631,10 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show')
 function thDate(iso){ const M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; const [y,m,d]=iso.split('-').map(Number); return `${d} ${M[m-1]} ${y+543}`; }
 
 /* ── filter ── */
+const qText=()=>$('#q').value.trim().toLowerCase();
 function match(p){
-  if(ui.cat!=='all' && p.cat!==ui.cat){
+  // พิมพ์ค้นหา → ค้นทุกหมวด ไม่จำกัดแค่แท็บที่เลือก
+  if(!qText() && ui.cat!=='all' && p.cat!==ui.cat){
     // แท็บไทย รวมเจ้าที่ ⭐⭐⭐ จากหมวดอื่นด้วย
     if(!(ui.cat==='thai' && p.thai>=3 && p.cat!=='gone')) return false;
   }
@@ -646,7 +648,7 @@ function match(p){
   if(c.has('nokey') && !p.noKey) return false;
   if(c.has('done') && !st.done) return false;
   if(c.has('todo') && st.done) return false;
-  const q=$('#q').value.trim().toLowerCase();
+  const q=qText();
   if(q){
     const hay=[p.name,p.free,p.models,p.note,p.thaiModel,(st.note||''),p.thai>=2?'ไทย thai':'',CARD[p.card][0],CORS[p.cors][0]].join(' ').toLowerCase();
     if(!q.split(/\s+/).every(w=>hay.includes(w))) return false;
@@ -666,7 +668,7 @@ function sorted(list){
 function renderTabs(){
   $('#tabs').innerHTML=CATS.map(c=>{
     const n=c.k==='all'?P.length:P.filter(p=>p.cat===c.k||(c.k==='thai'&&p.thai>=3&&p.cat!=='gone')).length;
-    return `<button class="tab${ui.cat===c.k?' active':''}" data-cat="${c.k}">${c.t}<span class="n">${n}</span></button>`;
+    return `<button class="tab${ui.cat===c.k&&!qText()?' active':''}" data-cat="${c.k}">${c.t}<span class="n">${n}</span></button>`;
   }).join('');
 }
 function renderChips(){
@@ -681,7 +683,7 @@ function card(p,i){
   const [cardT,cardC]=CARD[p.card]||CARD['?'], [corsT,corsC]=CORS[p.cors], [typeT,typeC]=TYPE[p.type];
   const testBadge=t?`<span class="test-res b ${t.ok?'ok':'bad'}" title="${esc(t.msg)}">${t.ok?'✓ key ใช้ได้':'✗ ทดสอบไม่ผ่าน'} · ${esc(thDate(t.at.slice(0,10)))}</span>`:'';
   return `<article class="card${st.done?' done':''}" data-id="${p.id}">
-    <div class="card-h"><span class="num">${i+1}</span><h3>${esc(p.name)}</h3></div>
+    <div class="card-h"><span class="num">${i+1}</span><h3>${esc(p.name)}</h3>${qText()?`<span class="b neutral">${esc((CATS.find(c=>c.k===p.cat)||{}).t||'')}</span>`:''}</div>
     <div class="badges">
       <span class="b ${typeC}">${typeT}</span>
       <span class="b ${cardC}">${cardT}</span>
@@ -709,9 +711,9 @@ function card(p,i){
 function render(){
   renderTabs();
   const list=sorted(P.filter(match));
-  $('#grid').innerHTML=list.length?list.map(card).join(''):'<div class="empty">ไม่พบผู้ให้บริการตามเงื่อนไข — ลองล้างตัวกรอง</div>';
+  $('#grid').innerHTML=list.length?list.map(card).join(''):`<div class="empty">ไม่พบผู้ให้บริการตามเงื่อนไข${qText()?' (ค้นทุกหมวดแล้ว)':''} — ลองล้างตัวกรอง</div>`;
   const done=P.filter(p=>(state[p.id]||{}).done).length;
-  $('#summary').textContent=`แสดง ${list.length} จาก ${P.length} ราย · ฟรีถาวร ${P.filter(p=>p.type==='perm').length} · เรียกจากเว็บได้ ${P.filter(p=>p.cors==='ok').length} · ไทย ⭐⭐⭐ ${P.filter(p=>p.thai>=3).length} · สมัครแล้ว ${done}`;
+  $('#summary').textContent=`${qText()?'🔎 ค้นทุกหมวด · ':''}แสดง ${list.length} จาก ${P.length} ราย · ฟรีถาวร ${P.filter(p=>p.type==='perm').length} · เรียกจากเว็บได้ ${P.filter(p=>p.cors==='ok').length} · ไทย ⭐⭐⭐ ${P.filter(p=>p.thai>=3).length} · สมัครแล้ว ${done}`;
   LS.set('fai_ui',ui);
 }
 
