@@ -3,7 +3,17 @@
 อัปเดต 31 ต.ค. 2569 · laptop ใช้ `F:\` · home server ใช้ `C:\` (โครงสร้างโฟลเดอร์เหมือนกัน)
 แบ่ง 4 หมวดตาม **"ใครเห็นได้"** — เช็กหมวดก่อนแก้หรือ push ทุกครั้ง
 
-กฎ: ก่อนเริ่ม `git pull --ff-only` · จบงาน commit + push ก่อนสลับเครื่อง · bump VERSION.json + CHANGELOG ทุกครั้งที่แก้ · session ศูนย์กลาง push เองได้ (GCM dpapi store · ดู memory project_central_session)
+## ⚡ กฎเหล็ก 2 เครื่อง (ลุงพีสั่ง 31 ต.ค. 2569 · ใช้กับทุก repo · ทั้งคนและ Claude ทุก session)
+
+1. **เริ่มงานบนเครื่องไหน → pull ก่อนทุกครั้ง** ก่อนแตะไฟล์ใดๆ
+   `git -C <repo> pull --rebase --autostash` (เก็บงานที่ยังไม่ commit ไว้ให้ แล้วคืนกลับเอง)
+2. **จบงาน → commit + push ทันที** ก่อนสลับเครื่อง/ปิดเครื่อง — ห้ามทิ้ง commit ค้างไว้เครื่องเดียว
+3. **ก่อน push repo public** (aiSolar · asc · online · ai) → ตรวจว่าไม่มี API key / รหัสผ่าน / ข้อมูลลูกค้า (ดูหมวด 4)
+4. **ถ้า pull ขึ้น diverged** → `pull --rebase --autostash` · **ถ้า CONFLICT → หยุด** ห้าม `--force` · ถาม Claude ใน session ศูนย์กลาง
+
+เหตุที่ต้องมีกฎ: 31 ต.ค. 2569 laptop มี commit Free AI API Finder ที่ยังไม่ push ขณะที่ home server push PROGRAMS.md ขึ้นไปก่อน → สองฝั่งแยกทาง `pull --ff-only` ใช้ไม่ได้ ต้องแก้ด้วยมือ
+
+อื่นๆ: bump VERSION.json + CHANGELOG ทุกครั้งที่แก้ · Claude บน home server push/pull เองได้ (GCM dpapi store · memory project_central_session)
 
 ---
 
