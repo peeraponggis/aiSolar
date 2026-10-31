@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<!-- ============================================================================
+     ProInventive Suite — Free AI API Finder (ศูนย์รวม AI API ฟรี)
+     Copyright (C) 2024-2569 ProInventive. All rights reserved.
+     PROPRIETARY AND CONFIDENTIAL
+     Unauthorized use, copying, or distribution is prohibited.
+     Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+     ============================================================================ -->
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free AI API Finder — ศูนย์รวม AI API ฟรี</title>
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="lungpee-pdpa.js"></script>
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --surface2:#f0f2f5; --border:#dde1e7;
+  --text:#1b1f24; --muted:#5d6672; --accent:#2563eb; --accent-weak:#e6eefc;
+  --ok:#15803d; --ok-bg:#e3f5e9; --warn:#a16207; --warn-bg:#fdf3d7;
+  --bad:#b91c1c; --bad-bg:#fbe5e5; --star:#e8a200; --info-bg:#eef2ff;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111418; --surface:#1a1e24; --surface2:#222831; --border:#2f3640;
+    --text:#e7eaee; --muted:#9aa4b1; --accent:#6ea0ff; --accent-weak:#1e2a44;
+    --ok:#4ade80; --ok-bg:#16301f; --warn:#facc15; --warn-bg:#3a3110;
+    --bad:#f87171; --bad-bg:#3b1a1a; --star:#fbbf24; --info-bg:#1b2238;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111418; --surface:#1a1e24; --surface2:#222831; --border:#2f3640;
+  --text:#e7eaee; --muted:#9aa4b1; --accent:#6ea0ff; --accent-weak:#1e2a44;
+  --ok:#4ade80; --ok-bg:#16301f; --warn:#facc15; --warn-bg:#3a3110;
+  --bad:#f87171; --bad-bg:#3b1a1a; --star:#fbbf24; --info-bg:#1b2238;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.55 "IBM Plex Sans Thai","Leelawadee UI","Tahoma",sans-serif}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
+header.top{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.top-row{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand .logo{width:36px;height:36px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+.brand h1{font-size:18px;margin:0;line-height:1.2}
+.brand small{color:var(--muted);font-size:12px}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:3px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.search{flex:1 1 260px;max-width:420px;border:1px solid var(--border);background:var(--surface2);border-radius:8px;padding:7px 12px}
+.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.tab{border:none;background:transparent;padding:6px 12px;border-radius:999px;cursor:pointer;color:var(--muted);white-space:nowrap}
+.tab.active{background:var(--accent-weak);color:var(--accent);font-weight:600}
+.tab .n{font-size:12px;opacity:.8;margin-left:4px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:12px 0 4px}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 11px;cursor:pointer;font-size:13px;user-select:none}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.filters select{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:4px 8px;font-size:13px;margin-left:auto}
+.summary{color:var(--muted);font-size:13px;padding:4px 0 10px}
+.info{background:var(--info-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:14px 0 4px;font-size:14px}
+.info summary{cursor:pointer;font-weight:600}
+.info ul{margin:8px 0 0;padding-left:20px}
+.info li{margin:3px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;padding-bottom:30px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);min-width:0}
+.card.done{border-color:var(--ok)}
+.card-h{display:flex;align-items:flex-start;gap:8px}
+.card-h h3{margin:0;font-size:16px;line-height:1.3;flex:1;min-width:0;overflow-wrap:anywhere}
+.card-h .num{color:var(--muted);font-size:12px;padding-top:2px}
+.badges{display:flex;flex-wrap:wrap;gap:5px}
+.b{font-size:12px;border-radius:6px;padding:1px 7px;border:1px solid transparent;white-space:nowrap}
+.b.ok{background:var(--ok-bg);color:var(--ok)}
+.b.warn{background:var(--warn-bg);color:var(--warn)}
+.b.bad{background:var(--bad-bg);color:var(--bad)}
+.b.neutral{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.b.acc{background:var(--accent-weak);color:var(--accent)}
+.thai{font-size:13px;background:var(--surface2);border-radius:8px;padding:5px 9px}
+.thai .stars{color:var(--star);letter-spacing:1px}
+.row{font-size:13.5px;overflow-wrap:anywhere}
+.row b{color:var(--muted);font-weight:500}
+.note{font-size:12.5px;color:var(--muted)}
+.base{display:flex;gap:6px;align-items:center;font-size:12px;background:var(--surface2);border-radius:6px;padding:4px 6px}
+.base code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Consolas,monospace}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:6px;align-items:center}
+.actions label{font-size:13px;display:flex;gap:4px;align-items:center;cursor:pointer;margin-left:auto}
+.mynote{width:100%;min-height:52px;border:1px solid var(--border);background:var(--surface2);border-radius:8px;padding:6px 8px;font-size:13px;resize:vertical}
+.test-res{font-size:12.5px;border-radius:6px;padding:3px 8px}
+.empty{color:var(--muted);text-align:center;padding:40px 0}
+footer{border-top:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12.5px;padding:16px 0 24px}
+footer a{color:var(--muted)}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border-radius:14px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:18px;border:1px solid var(--border)}
+.modal h2{margin:0 0 4px;font-size:18px}
+.modal .field{margin:10px 0}
+.modal .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:3px}
+.modal input[type=text],.modal input[type=password],.modal textarea{width:100%;border:1px solid var(--border);background:var(--surface2);border-radius:8px;padding:7px 10px}
+.modal .inline{display:flex;gap:6px}
+.modal .inline input{flex:1;min-width:0}
+.out{white-space:pre-wrap;background:var(--surface2);border-radius:8px;padding:10px;font-size:14px;min-height:60px;overflow-wrap:anywhere}
+.warnbox{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:8px 10px;font-size:13px;margin-top:8px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
+.toast.show{opacity:1}
+@media (max-width:600px){
+  header.top{position:static}
+  .top-row{gap:8px}
+  .brand{flex-basis:100%}
+  .search{flex-basis:100%;max-width:none}
+  #btnTestAll{flex:1}
+  .grid{grid-template-columns:1fr}
+  .brand h1{font-size:16px}
+  .filters select{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <div class="logo">AI</div>
+        <div>
+          <h1>ศูนย์รวม AI API ฟรี</h1>
+          <small id="subtitle">Free AI API Finder · ข้อมูลตรวจเมื่อ 31 ต.ค. 2569</small>
+        </div>
+      </div>
+      <input id="q" class="search" type="search" placeholder="ค้นหา ชื่อ / รุ่น / ภาษาไทย / OCR …">
+      <button class="btn" id="btnTestAll" title="ทดสอบทุกเจ้าที่บันทึก key ไว้">⚡ ทดสอบ key ทั้งหมด</button>
+      <button class="btn" id="btnTheme" title="สลับธีม">🌓</button>
+      <button class="btn" id="btnBackup" title="สำรอง/นำเข้า สถานะและบันทึก">💾</button>
+    </div>
+    <nav class="tabs" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <details class="info" id="guide">
+    <summary>📘 อ่านก่อนใช้ — ความหมายของป้าย และคู่ที่แนะนำ</summary>
+    <ul>
+      <li><b>ฟรีถาวร</b> = โควต้ารีเซ็ตทุกวัน/เดือน · <b>เครดิตทดลอง</b> = ให้ครั้งเดียว/มีวันหมดอายุ · <b>ไม่ฟรีแล้ว</b> = ปิดหรือต้องเติมเงิน</li>
+      <li><span class="b ok">🌐 เรียกจากเว็บได้</span> ทดสอบ <code>fetch</code> จริงจากเบราว์เซอร์แล้ว (CORS อนุญาต) ·
+          <span class="b warn">⚠️ ต้องทดสอบ</span> preflight ผ่านแต่คำตอบ error ไม่มี header — ลองด้วย key จริง ·
+          <span class="b bad">🔒 ต้องผ่าน proxy</span> เบราว์เซอร์ถูกบล็อก ต้องเรียกจากเซิร์ฟเวอร์/สคริปต์</li>
+      <li><span class="b neutral">🔐 ต้องเข้าสู่ระบบก่อน</span> ลิงก์สมัครจะพาไปหน้า Login ก่อน (เช่น Typhoon → Sign in with Google → เมนู API Key) เป็นเรื่องปกติ ไม่ใช่ลิงก์เสีย</li>
+      <li><span class="stars" style="color:var(--star)">⭐⭐⭐</span> ภาษาไทยดีมาก · ⭐⭐ ดี · ⭐ พอใช้ — เป็นการประเมินเชิงแนวทาง ควรลองคำถามไทยจริงก่อนเลือก</li>
+      <li><b>คู่แนะนำงานไทย:</b> Gemini Flash (หลัก) + Typhoon (งานไทยล้วน/OCR ไทย) + Groq Kimi K2 / gpt-oss (สำรอง เร็ว) — ทั้งสามเรียกจากเว็บได้</li>
+      <li>🔑 key ที่ใส่ในปุ่ม "ทดสอบ" เก็บใน localStorage ของ<b>เครื่องนี้เท่านั้น</b> — ห้ามนำหน้านี้ขึ้นเว็บสาธารณะพร้อม key</li>
+      <li>เงื่อนไขฟรีเปลี่ยนบ่อยโดยไม่แจ้ง — ตัวเลขเป็นข้อมูล ณ ต.ค. 2569 ตรวจหน้าเอกสารทางการก่อนใช้งานจริง</li>
+    </ul>
+  </details>
+
+  <div class="filters" id="chips"></div>
+  <div class="summary" id="summary"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div id="verLine"></div>
+    <div style="margin-top:6px">แหล่งข้อมูล:
+      <a href="https://github.com/open-free-llm-api/awesome-freellm-apis" target="_blank" rel="noopener">awesome-freellm-apis</a> ·
+      <a href="https://freellmapihub.com/providers.json" target="_blank" rel="noopener">Free LLM API Hub</a> ·
+      <a href="https://dev.to/hassann/top-8-free-ai-apis-in-october-2026-5bb5" target="_blank" rel="noopener">DEV: Top 8 Free AI APIs (ต.ค. 2026)</a> ·
+      <a href="https://www.costbench.com/best/best-llm-api-with-free-tier/" target="_blank" rel="noopener">CostBench</a> ·
+      <a href="https://docs.opentyphoon.ai/en/" target="_blank" rel="noopener">Typhoon Docs</a> ·
+      <a href="https://openthaigpt-thai-llm-leaderboard.static.hf.space/index.html" target="_blank" rel="noopener">Thai LLM Leaderboard</a>
+      · ตรวจลิงก์สมัครและ CORS ด้วยการเรียกจริงเมื่อ 31 ต.ค. 2569
+    </div>
+    <div style="margin-top:6px">© 2024-2569 ProInventive. All rights reserved. · โดย ลุงพี</div>
+  </div>
+</footer>
+
+<!-- Test modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="mTitle">ทดสอบ API key</h2>
+    <div class="note" id="mSub"></div>
+    <div class="field">
+      <label>Base URL (แก้ได้)</label>
+      <input type="text" id="mBase">
+    </div>
+    <div class="field">
+      <label>API key</label>
+      <div class="inline">
+        <input type="password" id="mKey" autocomplete="off" placeholder="วาง key ที่นี่">
+        <button class="btn sm" id="mShow" type="button">👁</button>
+      </div>
+      <label style="display:flex;gap:6px;align-items:center;margin-top:6px;color:var(--text)">
+        <input type="checkbox" id="mRemember" checked> จำ key ไว้ในเครื่องนี้ (localStorage)
+      </label>
+    </div>
+    <div class="field">
+      <label>รุ่น (model)</label>
+      <div class="inline">
+        <input type="text" id="mModel" list="mModels">
+        <button class="btn sm" id="mList" type="button">ดึงรายชื่อรุ่น</button>
+      </div>
+      <datalist id="mModels"></datalist>
+    </div>
+    <div class="field">
+      <label>ข้อความทดสอบ</label>
+      <textarea id="mPrompt" rows="2">สวัสดีครับ ช่วยแนะนำตัวสั้นๆ เป็นภาษาไทย 1 ประโยค และบอกชื่อรุ่นของคุณ</textarea>
+    </div>
+    <div class="inline" style="justify-content:flex-end;gap:8px">
+      <button class="btn" id="mForget" type="button">ลบ key ที่จำไว้</button>
+      <button class="btn" id="mClose" type="button">ปิด</button>
+      <button class="btn primary" id="mSend" type="button">ส่งทดสอบ</button>
+    </div>
+    <div class="field">
+      <label id="mStat">ผลลัพธ์</label>
+      <div class="out" id="mOut">—</div>
+    </div>
+    <div class="warnbox" id="mWarn" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Backup modal -->
+<div class="modal-bg" id="bkBg">
+  <div class="modal">
+    <h2>สำรอง / นำเข้า</h2>
+    <div class="note">สำรองสถานะ "สมัครแล้ว" และบันทึกส่วนตัว (ไม่รวม API key)</div>
+    <div class="field"><textarea id="bkText" rows="8" style="font-family:Consolas,monospace;font-size:12px"></textarea></div>
+    <div class="inline" style="justify-content:flex-end;gap:8px">
+      <button class="btn" id="bkCopy">คัดลอก</button>
+      <button class="btn" id="bkImport">นำเข้าจากกล่องข้อความ</button>
+      <button class="btn primary" id="bkClose">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Command modal: ทดสอบนอกเบราว์เซอร์ (ใช้กับเจ้าที่ติด CORS) -->
+<div class="modal-bg" id="cmdBg">
+  <div class="modal">
+    <h2 id="cmdTitle">คำสั่งทดสอบ</h2>
+    <div class="note" id="cmdSub"></div>
+    <div class="tabs" id="cmdTabs" style="margin-top:10px">
+      <button class="tab active" data-shell="ps">PowerShell</button>
+      <button class="tab" data-shell="py">Python</button>
+      <button class="tab" data-shell="curl">curl (Git Bash / Linux)</button>
+    </div>
+    <div class="field"><textarea id="cmdText" rows="11" readonly style="font-family:Consolas,monospace;font-size:12px;white-space:pre"></textarea></div>
+    <div class="note" id="cmdHint"></div>
+    <div class="inline" style="justify-content:flex-end;gap:8px;margin-top:8px">
+      <button class="btn" id="cmdClose">ปิด</button>
+      <button class="btn primary" id="cmdCopy">คัดลอกคำสั่ง</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const APP = { name:'Free AI API Finder', version:'1.1.0', created:'2026-10-31', updated:'2026-10-31', author:'ลุงพี', dataChecked:'2026-10-31' };
+
+/* ── ข้อมูลผู้ให้บริการ ─────────────────────────────────────────────
+   cat:  llm | thai | trial | embed | speech | ocr | gone
+   type: perm (ฟรีถาวร) | trial (เครดิตทดลอง) | paid (ไม่ฟรีแล้ว)
+   card: no | yes | phone | id | ?   (ต้องผูกบัตร/ยืนยันเบอร์/ยืนยันตัวตน)
+   cors: ok | warn | proxy | na      (ผลทดสอบ fetch จริงจากเบราว์เซอร์)
+   thai: 0-3 ดาว · login: ลิงก์สมัครพาไปหน้า Login ก่อน
+   base/model: ใช้ปุ่มทดสอบ (OpenAI-compatible) · auth: 'bearer' | ชื่อ header
+   ─────────────────────────────────────────────────────────────── */
+const P = [
+ // ── LLM ฟรีถาวร ──
+ {id:'gemini',name:'Google Gemini (AI Studio)',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:3,thaiModel:'Gemini Flash / 2.5 Pro · OCR ไทย และ TTS ไทยดี',
+  free:'Flash / Flash-Lite / 2.5 Pro (จำกัด) + Embedding + TTS · โควต้าแสดงใน AI Studio รีเซ็ตเที่ยงคืนเวลาแปซิฟิก',
+  models:'gemini-2.5-flash, gemini-2.5-flash-lite, Gemma 4, Gemini Embedding 2',
+  note:'แผนฟรี ข้อมูลอาจถูกใช้ปรับปรุงผลิตภัณฑ์ (นอก EU/UK) · รุ่นเรือธง ภาพ/Veo ไม่อยู่ในแผนฟรี',
+  signup:'https://aistudio.google.com/app/apikey',docs:'https://ai.google.dev/gemini-api/docs/rate-limits',
+  base:'https://generativelanguage.googleapis.com/v1beta/openai',model:'gemini-2.5-flash'},
+ {id:'groq',name:'Groq',cat:'llm',type:'perm',card:'phone',cors:'ok',login:true,thai:2,thaiModel:'Kimi K2 / gpt-oss-120b · Whisper ถอดเสียงไทยได้ดี',
+  free:'30 RPM · ~1K–14.4K req/วัน · 6K–8K TPM ต่อรุ่น (จำกัดต่อองค์กร ไม่ใช่ต่อ key)',
+  models:'openai/gpt-oss-120b, llama-3.3-70b-versatile, moonshotai/kimi-k2-instruct, whisper-large-v3',
+  note:'เร็วมาก · ผูกบัตรเฉพาะเมื่ออัปเกรดเป็น Developer tier',
+  signup:'https://console.groq.com/keys',docs:'https://console.groq.com/docs/rate-limits',
+  base:'https://api.groq.com/openai/v1',model:'openai/gpt-oss-120b'},
+ {id:'openrouter',name:'OpenRouter',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:2,thaiModel:'gemma-4-31b-it:free / รุ่น :free อื่นๆ',
+  free:'รุ่น :free 20 RPM · 50 req/วัน (1,000 req/วัน หลังเติม $10 ครั้งเดียว)',
+  models:'google/gemma-4-31b-it:free, nvidia/nemotron-3-*:free (รายชื่อเปลี่ยนทุกเดือน)',
+  note:'รวมหลายผู้ให้บริการไว้ที่เดียว — ใช้แทน NVIDIA/SambaNova ที่เรียกจากเว็บไม่ได้',
+  signup:'https://openrouter.ai/settings/keys',docs:'https://openrouter.ai/docs/api-reference/limits',
+  base:'https://openrouter.ai/api/v1',model:'google/gemma-4-31b-it:free'},
+ {id:'cloudflare',name:'Cloudflare Workers AI',cat:'llm',type:'perm',card:'no',cors:'proxy',login:true,thai:1,thaiModel:'Llama 3.3 70B (ไทยพอใช้)',
+  free:'10,000 Neurons/วัน (รีเซ็ต 00:00 UTC) · text 300 RPM',
+  models:'@cf/meta/llama-3.3-70b-instruct-fp8-fast, Mistral 7B, Qwen',
+  note:'รุ่นใหม่บางตัว (Kimi/GLM/DeepSeek) ต้องมี Workers Paid · ต้องใส่ Account ID ใน URL',
+  signup:'https://dash.cloudflare.com/profile/api-tokens',docs:'https://developers.cloudflare.com/workers-ai/platform/pricing/',
+  base:'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1'},
+ {id:'mistral',name:'Mistral AI (La Plateforme)',cat:'llm',type:'perm',card:'phone',cors:'ok',login:true,thai:1,thaiModel:'Mistral Medium (ไทยอ่อน)',
+  free:'Free / Experiment mode ~1 req/วินาที · ~500K TPM',
+  models:'mistral-medium-latest, mistral-small-latest, open-mistral-7b',
+  note:'บางรุ่น/ปริมาณอาจตอบ 402 ถ้าไม่ผูกวิธีชำระเงิน',
+  signup:'https://console.mistral.ai/api-keys',docs:'https://docs.mistral.ai/admin/billing-usage/usage-limits',
+  base:'https://api.mistral.ai/v1',model:'mistral-small-latest'},
+ {id:'cohere',name:'Cohere (Trial key)',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:2,thaiModel:'Command A+ · embed/rerank-multilingual',
+  free:'1,000 call/เดือน · chat 20 RPM ต่อรุ่น · embed 2,000 input/นาที · rerank 10 RPM',
+  models:'command-a-plus, command-a, embed-multilingual-v3, rerank-multilingual',
+  note:'Trial key ห้ามใช้ production / เชิงพาณิชย์',
+  signup:'https://dashboard.cohere.com/api-keys',docs:'https://docs.cohere.com/docs/rate-limits',
+  base:'https://api.cohere.com/compatibility/v1',model:'command-a-03-2025'},
+ {id:'nvidia',name:'NVIDIA NIM (build.nvidia.com)',cat:'llm',type:'perm',card:'phone',cors:'proxy',login:false,thai:3,thaiModel:'DeepSeek-V4 / Qwen3.5 / GLM-5',
+  free:'ฟรีสำหรับทดลอง/ต้นแบบ ~40 RPM ต่อรุ่น (ตัวเลขจากผู้ใช้) · 100+ รุ่น',
+  models:'deepseek-v4, z-ai/glm-5.x, qwen3.5, nemotron',
+  note:'ใช้ production ต้องมี NVIDIA AI Enterprise license · เรียกจากเว็บไม่ได้ → ใช้ผ่าน OpenRouter หรือสคริปต์',
+  signup:'https://build.nvidia.com/settings/api-keys',docs:'https://build.nvidia.com/',
+  base:'https://integrate.api.nvidia.com/v1'},
+ {id:'sambanova',name:'SambaNova Cloud',cat:'llm',type:'perm',card:'?',cors:'proxy',login:false,thai:2,thaiModel:'DeepSeek-V3.2 / gpt-oss-120b',
+  free:'20 RPM · 20 req/วัน · 200K token/วัน ต่อรุ่น',
+  models:'DeepSeek-V3.1/V3.2, Meta-Llama-3.3-70B-Instruct, gpt-oss-120b, gemma-4-31B-it',
+  note:'เอกสารขัดกันว่าต้องผูกบัตรหรือไม่',
+  signup:'https://cloud.sambanova.ai/apis',docs:'https://docs.sambanova.ai/docs/en/models/rate-limits',
+  base:'https://api.sambanova.ai/v1'},
+ {id:'zai',name:'Z.ai (Zhipu GLM)',cat:'llm',type:'perm',card:'no',cors:'ok',login:false,thai:2,thaiModel:'GLM-4.7-Flash',
+  free:'GLM-4.5-Flash / GLM-4.7-Flash / GLM-4.6V-Flash ฟรีถาวร · 1 คำขอพร้อมกัน',
+  models:'glm-4.7-flash, glm-4.5-flash, glm-4.6v-flash (ภาพ)',
+  note:'ห้ามใช้สร้างโมเดลแข่ง · BigModel (จีน) https://open.bigmodel.cn ใช้ key แยก และเรียกจากเว็บไม่ได้',
+  signup:'https://z.ai/manage-apikey/apikey-list',docs:'https://docs.z.ai/guides/overview/pricing',
+  base:'https://api.z.ai/api/paas/v4',model:'glm-4.7-flash'},
+ {id:'modelscope',name:'ModelScope API-Inference',cat:'llm',type:'perm',card:'id',cors:'ok',login:false,thai:3,thaiModel:'Qwen3.5 (รุ่นใหญ่)',
+  free:'~2,000 req/วัน (Magicubes 200/วัน +50 เมื่อผูก Alibaba Cloud)',
+  models:'Qwen3.5-35B-A3B, Qwen3.5-27B, MiniMax-M2.5',
+  note:'ต้องยืนยันตัวตนจริง (Alibaba) · ห้ามใช้เชิงพาณิชย์',
+  signup:'https://modelscope.cn/my/myaccesstoken',docs:'https://www.modelscope.cn/docs/model-service/API-Inference/intro',
+  base:'https://api-inference.modelscope.cn/v1',model:'Qwen/Qwen3-32B'},
+ {id:'siliconflow',name:'SiliconFlow (จีน)',cat:'llm',type:'perm',card:'id',cors:'ok',login:false,thai:1,thaiModel:'Qwen3-8B (รุ่นเล็ก ไทยพอใช้)',
+  free:'รุ่นราคา ¥0 เช่น Qwen3-8B 1,000 RPM / 50K TPM',
+  models:'Qwen/Qwen3-8B, DeepSeek-R1-Distill-Qwen-7B',
+  note:'แพลตฟอร์มจีน ต้องยืนยันตัวตน (real-name)',
+  signup:'https://cloud.siliconflow.cn/account/ak',docs:'https://docs.siliconflow.cn/docs/userguide/faqs/rate-limit-and-upgradation',
+  base:'https://api.siliconflow.cn/v1',model:'Qwen/Qwen3-8B'},
+ {id:'ovh',name:'OVHcloud AI Endpoints',cat:'llm',type:'perm',card:'no',cors:'ok',login:false,thai:2,thaiModel:'Qwen3.5-397B-A17B',
+  noKey:true,free:'ไม่ต้องสมัครก็ใช้ได้ 2 RPM (นิรนาม) · สมัครแล้วได้มากขึ้น · ~7 รุ่นฟรี',
+  models:'Qwen3.5-397B-A17B, Meta-Llama-3_3-70B-Instruct, Whisper',
+  note:'ทดสอบแบบไม่มี key ได้ (เว้นช่อง key ว่าง)',
+  signup:'https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/',docs:'https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/',
+  base:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',model:'Meta-Llama-3_3-70B-Instruct'},
+ {id:'ollama',name:'Ollama Cloud',cat:'llm',type:'perm',card:'no',cors:'proxy',login:true,thai:3,thaiModel:'deepseek-v4-pro / deepseek-v4-flash',
+  free:'จำกัดต่อรอบใช้งาน/สัปดาห์ · เครดิตแผนฟรีรีเซ็ตรายเดือน',
+  models:'deepseek-v4-pro, deepseek-v4-flash, minimax-m3, gpt-oss',
+  note:'ใช้คู่กับ Ollama ในเครื่องได้ (ollama signin) · เรียกจากเว็บไม่ได้',
+  signup:'https://ollama.com/settings/keys',docs:'https://docs.ollama.com/cloud',
+  base:'https://ollama.com/api'},
+ {id:'llm7',name:'LLM7.io',cat:'llm',type:'perm',card:'no',cors:'ok',login:false,thai:1,thaiModel:'gpt-oss-20b',
+  free:'60 RPM · 250 req/ชม.',models:'gpt-oss-20b, mistral-nemo, minimax-m2.7',note:'',
+  signup:'https://token.llm7.io',docs:'https://token.llm7.io',
+  base:'https://api.llm7.io/v1',model:'gpt-oss-20b'},
+ {id:'kilo',name:'Kilo Code (Kilo AI Gateway)',cat:'llm',type:'perm',card:'no',cors:'proxy',login:false,noKey:true,thai:2,thaiModel:'nemotron-3-ultra-550b:free / kilo-auto/free (ตอบไทยได้)',
+  free:'ไม่ต้องมี key: 200 req/ชม. ต่อ IP (รุ่น :free) · มี key: รุ่นฟรี + รุ่นเสียเงิน',
+  models:'kilo-auto/free, nvidia/nemotron-3-ultra-550b-a55b:free, poolside/laguna-s-2.1:free ฯลฯ (~18 รุ่นฟรี จาก 388)',
+  note:'ทดสอบแล้ว: เรียกแบบไม่มี key ตอบภาษาไทยได้ · เบราว์เซอร์ถูกบล็อก CORS → ใช้ปุ่ม 📋 คำสั่งทดสอบ · รุ่นฟรีบางตัวอาจไม่ว่าง/ติด 429',
+  signup:'https://app.kilo.ai/profile',docs:'https://kilo.ai/docs/gateway/models-and-providers',
+  base:'https://ai-gateway.kilo.ai/api/v1',model:'nvidia/nemotron-3-ultra-550b-a55b:free'},
+ {id:'opencode',name:'OpenCode Zen',cat:'llm',type:'perm',card:'no',cors:'proxy',login:true,thai:2,thaiModel:'deepseek-v4-flash-free',
+  free:'รุ่นฟรี (deepseek-v4-flash-free, big-pickle, mimo-v2.5-free)',models:'deepseek-v4-flash-free, big-pickle',
+  note:'เน้นใช้กับ OpenCode (เครื่องมือเขียนโค้ด)',
+  signup:'https://opencode.ai/auth',docs:'https://opencode.ai/docs/zen/',
+  base:'https://opencode.ai/zen/v1'},
+ {id:'aion',name:'Aion Labs',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:0,
+  free:'15 RPM · 20K token/วัน',models:'aion-2.0, aion-3.0, aion-rp-llama-3.1-8b',note:'',
+  signup:'https://www.aionlabs.ai/app/api-keys/',docs:'https://docs.aionlabs.ai',
+  base:'https://api.aionlabs.ai/v1',model:'aion-labs/aion-2.0'},
+ {id:'agnes',name:'Agnes AI',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:0,
+  free:'30 RPM (ตามรายการชุมชน — ทางการไม่ประกาศโควต้า)',models:'agnes-2.0-flash (ข้อความ+ภาพ, 512K context), agnes-1.5-flash, agnes-image-2.0-flash',
+  note:'ทดสอบแล้ว: เรียกจากเว็บได้ (ทั้ง https และ file://) · ยังไม่ได้ประเมินภาษาไทย',
+  signup:'https://platform.agnes-ai.com/settings/apiKeys',docs:'https://agnes-ai.com/en/docs/overview',
+  base:'https://apihub.agnes-ai.com/v1',model:'agnes-2.0-flash'},
+ {id:'chutes',name:'Chutes.ai',cat:'llm',type:'perm',card:'no',cors:'ok',login:false,thai:2,thaiModel:'DeepSeek-V3 / R1',
+  free:'ทรัพยากรจากชุมชน (โควต้าเปลี่ยนบ่อย)',models:'deepseek-ai/DeepSeek-V3-0324, DeepSeek-R1',note:'',
+  signup:'https://chutes.ai/',docs:'https://chutes.ai/',
+  base:'https://llm.chutes.ai/v1',model:'deepseek-ai/DeepSeek-V3-0324'},
+ {id:'aihorde',name:'AI Horde',cat:'llm',type:'perm',card:'no',cors:'ok',login:false,thai:0,
+  free:'ฟรีจากเครื่องอาสาสมัคร (LLM + ภาพ) · key นิรนาม 0000000000 ใช้ได้ (คิวช้า)',models:'หลากหลายตามอาสาสมัคร',
+  note:'API แบบคิว ไม่ใช่ OpenAI-compatible',
+  signup:'https://aihorde.net/register',docs:'https://aihorde.net/api/'},
+ {id:'pollinations',name:'Pollinations.ai',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:1,thaiModel:'openai (รุ่นเล็ก)',
+  free:'Quest Pollen — LLM / ภาพ / เสียง (ต้องมี key)',models:'openai, mistral, flux (ภาพ)',note:'',
+  signup:'https://enter.pollinations.ai',docs:'https://gen.pollinations.ai/docs',
+  base:'https://gen.pollinations.ai/v1',model:'openai'},
+ {id:'poolside',name:'Poolside',cat:'llm',type:'perm',card:'no',cors:'ok',login:true,thai:0,
+  free:'API key นักพัฒนาฟรี รุ่น Laguna (เขียนโค้ด) · ไม่ประกาศโควต้า · ใช้ฟรีผ่าน Kilo / OpenRouter (:free) ได้ด้วย',
+  models:'poolside/laguna-s-2.1, poolside/laguna-xs-2.1',
+  note:'สมัคร: platform.poolside.ai → แท็บ API Keys → New key · เปิด thinking เป็นค่าเริ่มต้น (คำตอบอาจอยู่ใน reasoning_content) · ปุ่มดึงรายชื่อรุ่นอาจขึ้น "ถูกบล็อก" ถ้า key ผิด',
+  signup:'https://platform.poolside.ai',docs:'https://docs.poolside.ai/api/overview',
+  base:'https://inference.poolside.ai/v1',model:'poolside/laguna-s-2.1'},
+ {id:'arli',name:'Arli AI',cat:'llm',type:'perm',card:'?',cors:'ok',login:false,thai:0,
+  free:'แผนฟรีจำกัดมาก',models:'รุ่น open-weight หลากหลาย',note:'',
+  signup:'https://www.arliai.com',docs:'https://www.arliai.com/pricing',
+  base:'https://api.arliai.com/v1'},
+
+ // ── สายไทย ──
+ {id:'typhoon',name:'Typhoon (SCB 10X)',cat:'thai',type:'perm',card:'no',cors:'ok',login:true,thai:3,thaiModel:'typhoon-v2.5-30b-a3b-instruct · Typhoon OCR · Typhoon ASR (ไทย/อีสาน)',
+  free:'ฟรี (research showcase) · 5 req/วินาที · 200 req/นาที ต่อรุ่น',
+  models:'typhoon-v2.5-30b-a3b-instruct (128K), typhoon-v2.1-12b-instruct, Typhoon OCR, ASR',
+  note:'สมัคร: เปิดลิงก์ → Sign in with Google → เมนู API Key · รุ่น Pro จ่ายตามใช้ผ่าน Together.ai',
+  signup:'https://playground.opentyphoon.ai/api-key',docs:'https://docs.opentyphoon.ai/en/quickstart/',
+  base:'https://api.opentyphoon.ai/v1',model:'typhoon-v2.5-30b-a3b-instruct'},
+ {id:'aiforthai',name:'AI for Thai (NECTEC)',cat:'thai',type:'perm',card:'no',cors:'ok',login:true,thai:3,thaiModel:'Vaja (TTS) · Partii (ASR) · T-OCR · NLP ไทย',
+  free:'API ภาษาไทยหลายตัว ต้องสมัคร key ฟรี · ไม่พบตัวเลขโควต้าที่ประกาศ',
+  models:'OCR, TTS, ASR, ตัดคำ, วิเคราะห์ความรู้สึก (SSENSE) ฯลฯ',
+  note:'API แต่ละตัวมีรูปแบบของตัวเอง (ส่ง key ทาง header Apikey)',
+  signup:'https://aiforthai.in.th',docs:'https://aiforthai.in.th'},
+ {id:'iapp',name:'iApp OpenThai 2.0',cat:'thai',type:'paid',card:'no',cors:'proxy',login:true,thai:3,thaiModel:'OpenThai 2.0 (27B) — อ่านเอกสาร/ลายมือไทย',
+  free:'โปรฟรีหมด 30 ก.ย. 2569 · ตอนนี้ 0.01 / 0.02 IC ต่อ 1K token · 30 RPM',
+  models:'openthai2.0',
+  note:'น้ำหนักโมเดลโหลดฟรี (Apache 2.0) → รันเองในเครื่องผ่าน Ollama/vLLM ได้',
+  signup:'https://iapp.co.th/openmodels/openthai2p0',docs:'https://iapp.co.th/openmodels/openthai2p0',
+  base:'https://api.iapp.co.th/v3/llm/openthai2p0'},
+
+ // ── เครดิตทดลอง ──
+ {id:'cerebras',name:'Cerebras',cat:'trial',type:'trial',card:'yes',cors:'warn',login:true,thai:2,thaiModel:'gpt-oss-120b / zai-glm-4.7',
+  free:'$5 เครดิต หมดอายุ 30 วัน',models:'gpt-oss-120b, zai-glm-4.7, llama',note:'เร็วมาก · ต้องผูกวิธีชำระเงิน',
+  signup:'https://cloud.cerebras.ai',docs:'https://inference-docs.cerebras.ai/support/rate-limits',
+  base:'https://api.cerebras.ai/v1',model:'gpt-oss-120b'},
+ {id:'alibaba',name:'Alibaba Cloud Model Studio (Qwen)',cat:'trial',type:'trial',card:'no',cors:'ok',login:true,thai:3,thaiModel:'Qwen3-Max / qwen-plus',
+  free:'~1M token ต่อรุ่น / 90 วัน (ภูมิภาค Singapore)',models:'qwen3-max, qwen-plus, qwen3-vl-plus',note:'',
+  signup:'https://bailian.console.alibabacloud.com/?apiKey=1',docs:'https://www.alibabacloud.com/help/en/model-studio/new-free-quota',
+  base:'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',model:'qwen-plus'},
+ {id:'tencent',name:'Tencent Hunyuan',cat:'trial',type:'trial',card:'id',cors:'warn',login:true,thai:1,thaiModel:'hunyuan',
+  free:'1M token ต่อรุ่น อายุ 1 ปี',models:'hunyuan-lite, hunyuan-turbo, hunyuan-vision',note:'ต้องยืนยันตัวตน',
+  signup:'https://console.cloud.tencent.com/hunyuan',docs:'https://cloud.tencent.com/document/product/1823/130053',
+  base:'https://api.hunyuan.cloud.tencent.com/v1',model:'hunyuan-lite'},
+ {id:'deepseek',name:'DeepSeek',cat:'trial',type:'trial',card:'?',cors:'ok',login:true,thai:3,thaiModel:'deepseek-chat (V3.2+) / deepseek-reasoner',
+  free:'บางช่วงแจกเครดิตเริ่มต้น · ปกติต้องเติมเงิน (ราคาถูกมาก)',models:'deepseek-chat, deepseek-reasoner',note:'',
+  signup:'https://platform.deepseek.com/api_keys',docs:'https://api-docs.deepseek.com/',
+  base:'https://api.deepseek.com',model:'deepseek-chat'},
+ {id:'xai',name:'xAI (Grok)',cat:'trial',type:'trial',card:'?',cors:'ok',login:true,thai:2,thaiModel:'grok-4.x',
+  free:'ระบบเครดิต — ไม่มีแผนฟรีต่อเนื่อง ต้องเติมเครดิตก่อน',models:'grok-4.3, grok-4.1-fast, grok-3-mini',note:'',
+  signup:'https://console.x.ai',docs:'https://docs.x.ai',
+  base:'https://api.x.ai/v1',model:'grok-3-mini'},
+ {id:'fireworks',name:'Fireworks AI',cat:'trial',type:'trial',card:'no',cors:'ok',login:true,thai:2,thaiModel:'DeepSeek / Qwen',
+  free:'$1 เครดิตเริ่มต้น · 10 RPM (ไม่ผูกบัตร)',models:'deepseek, qwen, llama',note:'ลิงก์เดิม fireworks.ai/account/... ย้ายไป app.fireworks.ai แล้ว',
+  signup:'https://app.fireworks.ai/account/api-keys',docs:'https://docs.fireworks.ai/faq-new/billing-pricing/',
+  base:'https://api.fireworks.ai/inference/v1',model:'accounts/fireworks/models/deepseek-v3p1'},
+ {id:'nebius',name:'Nebius Token Factory',cat:'trial',type:'trial',card:'yes',cors:'ok',login:true,thai:3,thaiModel:'Qwen3-235B-A22B',
+  free:'$1 เครดิต / 30 วัน',models:'Qwen3-235B-A22B, DeepSeek, Llama',note:'',
+  signup:'https://tokenfactory.nebius.com/settings/api-keys',docs:'https://docs.tokenfactory.nebius.com',
+  base:'https://api.tokenfactory.nebius.com/v1',model:'Qwen/Qwen3-235B-A22B'},
+ {id:'novita',name:'Novita AI',cat:'trial',type:'trial',card:'no',cors:'ok',login:true,thai:2,thaiModel:'DeepSeek / Qwen',
+  free:'เครดิตทดลอง + LLM ฟรีบางรุ่น',models:'deepseek, qwen, llama',note:'',
+  signup:'https://novita.ai/settings/key-management',docs:'https://novita.ai/pricing',
+  base:'https://api.novita.ai/openai/v1',model:'deepseek/deepseek-v3-0324'},
+ {id:'scaleway',name:'Scaleway Generative APIs',cat:'trial',type:'trial',card:'yes',cors:'warn',login:true,thai:1,thaiModel:'Llama 3.3 70B',
+  free:'1M token แรกฟรี + Whisper 60 นาที',models:'llama-3.3-70b-instruct, mistral, qwen',note:'ต้องผูกวิธีชำระเงิน',
+  signup:'https://console.scaleway.com/generative-api',docs:'https://www.scaleway.com/en/pricing/model-as-a-service/',
+  base:'https://api.scaleway.ai/v1',model:'llama-3.3-70b-instruct'},
+ {id:'vercel',name:'Vercel AI Gateway',cat:'trial',type:'trial',card:'yes',cors:'ok',login:true,thai:3,thaiModel:'google/gemini-2.5-flash (ผ่าน gateway)',
+  free:'$5/เดือน (บางรุ่น)',models:'รวมหลายผู้ให้บริการ',note:'ต้องผูกวิธีชำระเงิน',
+  signup:'https://vercel.com/ai-gateway',docs:'https://vercel.com/docs/ai-gateway/pricing',
+  base:'https://ai-gateway.vercel.sh/v1',model:'google/gemini-2.5-flash'},
+ {id:'ibm',name:'IBM watsonx.ai (Lite)',cat:'trial',type:'trial',card:'yes',cors:'proxy',login:true,thai:1,thaiModel:'Granite / Llama',
+  free:'Lite 300K token/เดือน',models:'granite, llama, mistral',note:'',
+  signup:'https://dataplatform.cloud.ibm.com',docs:'https://www.ibm.com/docs/en/watsonx/saas?topic=cloud-watsonxai-runtime-plans'},
+ {id:'upstage',name:'Upstage (Solar)',cat:'trial',type:'trial',card:'no',cors:'ok',login:true,thai:1,thaiModel:'Solar',
+  free:'$10 เครดิตแรกเข้า — LLM, embedding, Document Parse/OCR',models:'solar-pro, solar-mini, document-parse',note:'',
+  signup:'https://console.upstage.ai/api-keys',docs:'https://console.upstage.ai/docs/getting-started',
+  base:'https://api.upstage.ai/v1',model:'solar-mini'},
+ {id:'nscale',name:'Nscale',cat:'trial',type:'trial',card:'?',cors:'warn',login:true,thai:2,thaiModel:'Llama-3.3-70B / DeepSeek-R1-Distill',
+  free:'fair-use / เครดิตเริ่มต้น',models:'Llama-3.3-70B-Instruct, DeepSeek-R1-Distill-Llama-70B',note:'',
+  signup:'https://console.nscale.com',docs:'https://docs.nscale.com',
+  base:'https://inference.api.nscale.com/v1',model:'meta-llama/Llama-3.3-70B-Instruct'},
+ {id:'sarvam',name:'Sarvam AI',cat:'trial',type:'trial',card:'?',cors:'ok',login:true,thai:0,
+  free:'₹100 เครดิต ไม่หมดอายุ (เน้นภาษาอินเดีย)',models:'sarvam-m, TTS/STT ภาษาอินเดีย',note:'ส่ง key ทาง header api-subscription-key',
+  signup:'https://dashboard.sarvam.ai',docs:'https://docs.sarvam.ai/api/getting-started/pricing',
+  base:'https://api.sarvam.ai/v1',model:'sarvam-m',auth:'api-subscription-key'},
+ {id:'nlpcloud',name:'NLP Cloud',cat:'trial',type:'trial',card:'yes',cors:'ok',login:false,thai:0,
+  free:'$15 เครดิตทดลอง',models:'ChatDolphin, Llama ฯลฯ',note:'API เฉพาะของตัวเอง',
+  signup:'https://nlpcloud.com',docs:'https://nlpcloud.com/pricing.html'},
+ {id:'baseten',name:'Baseten',cat:'trial',type:'trial',card:'?',cors:'ok',login:false,thai:2,thaiModel:'DeepSeek / Qwen',
+  free:'เครดิตเริ่มต้น (ไม่ระบุจำนวน)',models:'Model APIs: deepseek, qwen, llama',note:'',
+  signup:'https://baseten.co',docs:'https://www.baseten.co/pricing/',
+  base:'https://inference.baseten.co/v1'},
+ {id:'wandb',name:'W&B Inference (CoreWeave)',cat:'trial',type:'trial',card:'no',cors:'ok',login:true,thai:1,thaiModel:'Llama 3.3 70B / Qwen',
+  free:'เครดิต serverless ช่วงเวลาจำกัด (ไม่ประกาศจำนวน)',models:'meta-llama/Llama-3.3-70B-Instruct, Qwen, DeepSeek',note:'ลิงก์ wandb.ai พาไป forge.coreweave.com/wandb',
+  signup:'https://wandb.ai',docs:'https://docs.coreweave.com/products/inference/serverless/usage-limits',
+  base:'https://api.inference.wandb.ai/v1',model:'meta-llama/Llama-3.3-70B-Instruct'},
+ {id:'modal',name:'Modal',cat:'trial',type:'trial',card:'yes',cors:'na',login:false,thai:0,
+  free:'$30/เดือน — เช่า GPU รันโมเดลเอง',models:'(รันโมเดลใดก็ได้เอง)',note:'บริการเช่าเครื่อง ไม่มี API กลาง',
+  signup:'https://modal.com',docs:'https://modal.com/pricing'},
+
+ // ── Embedding / Rerank ──
+ {id:'voyage',name:'Voyage AI',cat:'embed',type:'trial',card:'no',cors:'ok',login:true,thai:2,thaiModel:'voyage-multilingual / voyage-3.x',
+  free:'200M token ต่อรุ่น (ครั้งเดียว)',models:'voyage-3.5, voyage-multilingual-2, rerank-2',note:'',
+  signup:'https://dashboard.voyageai.com',docs:'https://docs.voyageai.com/docs/pricing'},
+ {id:'jina',name:'Jina AI',cat:'embed',type:'trial',card:'no',cors:'ok',login:false,thai:3,thaiModel:'jina-embeddings-v3 / v4 (หลายภาษา)',
+  free:'10M token (ครั้งเดียว)',models:'jina-embeddings-v3/v4, jina-reranker, reader',note:'OpenAI-compatible embeddings',
+  signup:'https://jina.ai/embeddings/',docs:'https://jina.ai/embeddings/'},
+ {id:'pinecone',name:'Pinecone Inference',cat:'embed',type:'perm',card:'no',cors:'ok',login:true,thai:2,thaiModel:'multilingual-e5-large',
+  free:'5M embedding token/เดือน + rerank 500 ครั้ง/เดือน',models:'multilingual-e5-large, llama-text-embed-v2, bge-reranker',note:'',
+  signup:'https://app.pinecone.io',docs:'https://www.pinecone.io/pricing/'},
+ {id:'mixedbread',name:'Mixedbread',cat:'embed',type:'trial',card:'no',cors:'proxy',login:false,thai:1,thaiModel:'mxbai-embed (multilingual)',
+  free:'$5 เครดิตครั้งเดียว',models:'mxbai-embed-large, mxbai-rerank',note:'',
+  signup:'https://www.mixedbread.com',docs:'https://www.mixedbread.com/pricing'},
+ {id:'contextual',name:'Contextual AI',cat:'embed',type:'trial',card:'no',cors:'proxy',login:false,thai:0,
+  free:'$25 เครดิต',models:'rerank, grounded LM',note:'app.contextual.ai ล่ม (502) ตอนตรวจ — ใช้หน้าราคาแทน',
+  signup:'https://contextual.ai/pricing',docs:'https://contextual.ai/pricing'},
+ {id:'twelvelabs',name:'Twelve Labs (วิดีโอ)',cat:'embed',type:'perm',card:'no',cors:'ok',login:true,thai:0,
+  free:'index วิดีโอ 600 นาที · Embed API ฟรี',models:'Marengo (embed), Pegasus (video-to-text)',note:'เรียกจากเว็บได้ แต่ไม่ได้เมื่อเปิดหน้าเป็นไฟล์ file://',
+  signup:'https://playground.twelvelabs.io',docs:'https://www.twelvelabs.io/pricing'},
+
+ // ── เสียง ──
+ {id:'elevenlabs',name:'ElevenLabs',cat:'speech',type:'perm',card:'no',cors:'ok',login:true,thai:3,thaiModel:'eleven_multilingual_v2 / v3 (อ่านไทยดีที่สุด)',
+  free:'10K credit/เดือน (ห้ามใช้เชิงพาณิชย์)',models:'TTS multilingual v2/v3, Scribe STT',note:'ลิงก์ API key ย้ายไป /app/developers/api-keys',
+  signup:'https://elevenlabs.io/app/developers/api-keys',docs:'https://elevenlabs.io/pricing'},
+ {id:'deepgram',name:'Deepgram',cat:'speech',type:'trial',card:'no',cors:'ok',login:false,thai:1,thaiModel:'Nova-3 (รองรับไทย คุณภาพยังไม่สม่ำเสมอ)',
+  free:'$200 เครดิต ไม่หมดอายุ',models:'Nova-3 STT, Aura TTS',note:'',
+  signup:'https://console.deepgram.com/signup',docs:'https://deepgram.com/pricing'},
+ {id:'assemblyai',name:'AssemblyAI',cat:'speech',type:'trial',card:'no',cors:'ok',login:false,thai:2,thaiModel:'Universal (ถอดเสียงไทย)',
+  free:'$50 เครดิต',models:'Universal STT, LeMUR',note:'',
+  signup:'https://www.assemblyai.com/dashboard/signup',docs:'https://www.assemblyai.com/pricing'},
+ {id:'speechmatics',name:'Speechmatics',cat:'speech',type:'trial',card:'no',cors:'ok',login:true,thai:1,thaiModel:'Ursa (รองรับไทย)',
+  free:'$100 เครดิต',models:'STT batch/realtime',note:'',
+  signup:'https://portal.speechmatics.com',docs:'https://www.speechmatics.com/pricing'},
+ {id:'speechify',name:'Speechify API',cat:'speech',type:'perm',card:'no',cors:'ok',login:true,thai:0,
+  free:'500K ตัวอักษร/เดือน',models:'TTS',note:'',
+  signup:'https://console.sws.speechify.com',docs:'https://speechify.ai/pricing'},
+ {id:'unrealspeech',name:'Unreal Speech',cat:'speech',type:'perm',card:'no',cors:'ok',login:false,thai:0,
+  free:'250K ตัวอักษร/เดือน',models:'TTS',note:'',
+  signup:'https://unrealspeech.com',docs:'https://unrealspeech.com/pricing'},
+ {id:'cartesia',name:'Cartesia',cat:'speech',type:'perm',card:'no',cors:'ok',login:true,thai:0,
+  free:'20K credit/เดือน (ห้ามใช้เชิงพาณิชย์)',models:'Sonic TTS',note:'',
+  signup:'https://play.cartesia.ai',docs:'https://cartesia.ai/pricing'},
+ {id:'fishaudio',name:'Fish Audio',cat:'speech',type:'perm',card:'no',cors:'proxy',login:false,thai:1,thaiModel:'TTS หลายภาษา',
+  free:'8K credit/เดือน (ส่วนตัว) · API ฟรีถึง 30 พ.ย. 2569',models:'Fish Speech TTS, voice clone',note:'',
+  signup:'https://fish.audio',docs:'https://fish.audio/plan/'},
+ {id:'hume',name:'Hume AI (Octave TTS)',cat:'speech',type:'trial',card:'no',cors:'ok',login:true,thai:0,
+  free:'$20 เครดิตเริ่มต้น + แผนฟรี (ไม่ใช่เชิงพาณิชย์)',models:'Octave TTS, EVI',note:'',
+  signup:'https://platform.hume.ai',docs:'https://dev.hume.ai/docs/resources/billing'},
+ {id:'gladia',name:'Gladia',cat:'speech',type:'trial',card:'no',cors:'ok',login:true,thai:1,thaiModel:'Whisper-based (รองรับไทย)',
+  free:'€50 เครดิต',models:'STT',note:'',
+  signup:'https://app.gladia.io',docs:'https://www.gladia.io/pricing'},
+ {id:'revai',name:'Rev AI',cat:'speech',type:'trial',card:'no',cors:'proxy',login:false,thai:0,
+  free:'เครดิตเท่ากับ 5 ชม. ถอดเสียง',models:'Reverb STT',note:'',
+  signup:'https://www.rev.ai',docs:'https://www.rev.ai/pricing'},
+ {id:'voicegain',name:'Voicegain',cat:'speech',type:'trial',card:'no',cors:'na',login:false,thai:0,
+  free:'$50 เครดิต',models:'STT',note:'',signup:'https://www.voicegain.ai/developers',docs:'https://www.voicegain.ai/developers'},
+ {id:'smallest',name:'Smallest.ai (Waves)',cat:'speech',type:'trial',card:'?',cors:'na',login:false,thai:0,
+  free:'$10 เครดิต (Pay As You Go)',models:'TTS, STT, voice agents',note:'',signup:'https://smallest.ai/pricing',docs:'https://smallest.ai/pricing'},
+ {id:'retell',name:'Retell AI',cat:'speech',type:'trial',card:'no',cors:'na',login:false,thai:0,
+  free:'$10 เครดิต + 20 สายพร้อมกัน',models:'Voice agents',note:'',signup:'https://www.retellai.com/pricing',docs:'https://www.retellai.com/pricing'},
+ {id:'camb',name:'Camb.ai',cat:'speech',type:'trial',card:'?',cors:'na',login:false,thai:0,
+  free:'5,000 credit ครั้งเดียว (TTS, พากย์, แปล)',models:'TTS, dubbing',note:'',signup:'https://www.camb.ai/pricing',docs:'https://www.camb.ai/pricing'},
+ {id:'rime',name:'Rime',cat:'speech',type:'trial',card:'no',cors:'na',login:false,thai:0,
+  free:'นาทีฟรี (ตัวเลขไม่ชัด)',models:'TTS',note:'',signup:'https://rime.ai/pricing',docs:'https://rime.ai/pricing'},
+
+ // ── OCR / เอกสาร / ภาพ ──
+ {id:'ocrspace',name:'OCR.space',cat:'ocr',type:'perm',card:'no',cors:'ok',login:false,thai:1,thaiModel:'Engine 1/2 อ่านไทยได้บ้าง',
+  free:'25,000 ครั้ง/เดือน',models:'OCR Engine 1/2/3',note:'ส่ง key ทาง header apikey',
+  signup:'https://ocr.space/ocrapi/freekey',docs:'https://ocr.space/OCRAPI'},
+ {id:'llamaparse',name:'LlamaParse',cat:'ocr',type:'perm',card:'no',cors:'proxy',login:true,thai:1,thaiModel:'parse หลายภาษา',
+  free:'10K credit/เดือน',models:'Document parsing',note:'',
+  signup:'https://cloud.llamaindex.ai',docs:'https://www.llamaindex.ai/pricing'},
+ {id:'datalab',name:'Datalab (Marker / Surya)',cat:'ocr',type:'perm',card:'no',cors:'proxy',login:false,thai:2,thaiModel:'Surya (รองรับไทย)',
+  free:'$10/เดือน (อีเมลส่วนตัว) · $20/เดือน (อีเมลงาน)',models:'Marker, Surya OCR',note:'',
+  signup:'https://www.datalab.to',docs:'https://documentation.datalab.to/'},
+ {id:'unstructured',name:'Unstructured',cat:'ocr',type:'trial',card:'no',cors:'proxy',login:false,thai:0,
+  free:'10,000 หน้า ครั้งเดียว',models:'Document parsing',note:'',signup:'https://unstructured.io',docs:'https://unstructured.io/pricing'},
+ {id:'nutrient',name:'Nutrient (Data Extraction)',cat:'ocr',type:'perm',card:'no',cors:'proxy',login:true,thai:0,
+  free:'5,000 credit/เดือน',models:'OCR, extraction',note:'',signup:'https://dashboard.nutrient.io',docs:'https://www.nutrient.io/api/pricing/data-extraction-api/'},
+ {id:'veryfi',name:'Veryfi',cat:'ocr',type:'perm',card:'no',cors:'proxy',login:false,thai:0,
+  free:'Free Forever 100 เอกสาร/เดือน',models:'ใบเสร็จ/ใบแจ้งหนี้',note:'',signup:'https://www.veryfi.com',docs:'https://www.veryfi.com/pricing/'},
+ {id:'nanonets',name:'Nanonets',cat:'ocr',type:'trial',card:'no',cors:'ok',login:false,thai:0,
+  free:'$50 เครดิต',models:'OCR / extraction',note:'',signup:'https://app.nanonets.com',docs:'https://nanonets.com/pricing'},
+ {id:'moondream',name:'Moondream Cloud',cat:'ocr',type:'perm',card:'no',cors:'ok',login:false,thai:0,
+  free:'$5/เดือน',models:'Vision: query, caption, detect',note:'',signup:'https://moondream.ai',docs:'https://moondream.ai/pricing'},
+ {id:'runware',name:'Runware (สร้างภาพ)',cat:'ocr',type:'trial',card:'no',cors:'ok',login:false,thai:0,
+  free:'$2 เครดิต (อีเมลธุรกิจ)',models:'FLUX, SDXL ฯลฯ',note:'',signup:'https://runware.ai',docs:'https://runware.ai/pricing'},
+ {id:'photoroom',name:'Photoroom API',cat:'ocr',type:'perm',card:'no',cors:'ok',login:false,thai:0,
+  free:'ลบพื้นหลัง 10 ครั้ง + sandbox 1,000 ครั้ง/เดือน (มีลายน้ำ)',models:'Remove background',note:'',
+  signup:'https://www.photoroom.com/api',docs:'https://www.photoroom.com/api/pricing'},
+
+ // ── ไม่ฟรีแล้ว / ปิดบริการ ──
+ {id:'github',name:'GitHub Models',cat:'gone',type:'paid',card:'no',cors:'na',login:false,thai:0,
+  free:'ปิดบริการ 30 ก.ค. 2569',models:'',note:'',signup:'https://github.com/marketplace/models',docs:''},
+ {id:'huggingface',name:'Hugging Face Inference Providers',cat:'gone',type:'paid',card:'no',cors:'ok',login:true,thai:2,thaiModel:'ขึ้นกับรุ่น',
+  free:'บัญชีฟรีไม่ได้เครดิตรายเดือนแล้ว (ใช้ Spaces/ZeroGPU ได้)',models:'router รวมหลายผู้ให้บริการ',note:'',
+  signup:'https://huggingface.co/settings/tokens',docs:'https://huggingface.co/docs/inference-providers/en/pricing',
+  base:'https://router.huggingface.co/v1',model:'meta-llama/Llama-3.1-8B-Instruct'},
+ {id:'ai21',name:'AI21 Labs',cat:'gone',type:'paid',card:'no',cors:'na',login:false,thai:0,
+  free:'studio.ai21.com ปิด (พาไปหน้าแรก) — บริษัทเปลี่ยนไปรับเทรนโมเดลให้องค์กร',models:'',note:'',signup:'https://www.ai21.com',docs:''},
+ {id:'together',name:'Together AI',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:3,thaiModel:'Typhoon Pro / Qwen / DeepSeek',
+  free:'ต้องซื้อเครดิตขั้นต่ำ $15',models:'',note:'',signup:'https://api.together.ai',docs:'https://www.together.ai/pricing'},
+ {id:'deepinfra',name:'DeepInfra',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:0,free:'ต้องผูกบัตร/เติมเงิน',models:'',note:'',signup:'https://deepinfra.com',docs:''},
+ {id:'hyperbolic',name:'Hyperbolic',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:0,free:'มัดจำขั้นต่ำ $5',models:'',note:'',signup:'https://app.hyperbolic.xyz',docs:''},
+ {id:'openai',name:'OpenAI',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:3,thaiModel:'GPT',free:'ต้องเติมเครดิตล่วงหน้า',models:'',note:'',signup:'https://platform.openai.com/api-keys',docs:''},
+ {id:'anthropic',name:'Anthropic (Claude)',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:3,thaiModel:'Claude',free:'เครดิตทดสอบเล็กน้อย (ไม่ประกาศจำนวน) แล้วต้องเติมเงิน',models:'',note:'',signup:'https://console.anthropic.com',docs:''},
+ {id:'perplexity',name:'Perplexity API',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:0,free:'ต้องเติมเงิน',models:'',note:'',signup:'https://www.perplexity.ai/settings/api',docs:''},
+ {id:'replicate',name:'Replicate',cat:'gone',type:'paid',card:'yes',cors:'na',login:false,thai:0,free:'ต้องผูกบัตร',models:'',note:'',signup:'https://replicate.com',docs:''},
+ {id:'baidu',name:'Baidu Qianfan (ERNIE Speed)',cat:'gone',type:'paid',card:'?',cors:'na',login:false,thai:0,free:'ERNIE Speed ฟรีเดิมเปลี่ยนเป็นคิดเงิน (ERNIE Speed Pro)',models:'',note:'iFlytek Spark Lite / Gitee AI — ยังยืนยันสถานะปัจจุบันไม่ได้',signup:'https://console.bce.baidu.com/qianfan/',docs:''},
+];
+
+const CATS = [
+  {k:'all',t:'ทั้งหมด'},{k:'llm',t:'🧠 LLM ฟรี'},{k:'thai',t:'🇹🇭 สายไทย'},{k:'trial',t:'🎁 เครดิตทดลอง'},
+  {k:'embed',t:'🔎 Embedding'},{k:'speech',t:'🎙️ เสียง'},{k:'ocr',t:'📄 OCR / ภาพ'},{k:'gone',t:'❌ ไม่ฟรีแล้ว'}
+];
+const CHIPS = [
+  {k:'perm',t:'ฟรีถาวร'},{k:'nocard',t:'ไม่ต้องผูกบัตร'},{k:'thai3',t:'ไทย ⭐⭐⭐'},{k:'thai2',t:'ไทย ⭐⭐ ขึ้นไป'},
+  {k:'cors',t:'🌐 เรียกจากเว็บได้'},{k:'test',t:'ทดสอบในหน้านี้ได้'},{k:'nokey',t:'🆓 ไม่ต้องมี key'},{k:'done',t:'✅ สมัครแล้ว'},{k:'todo',t:'ยังไม่สมัคร'}
+];
+const CARD = {no:['ไม่ต้องผูกบัตร','ok'],yes:['ต้องผูกบัตร','bad'],phone:['ยืนยันเบอร์โทร','warn'],id:['ยืนยันตัวตน','warn'],'?':['บัตร: ไม่ชัด','neutral']};
+const CORS = {ok:['🌐 เรียกจากเว็บได้','ok'],warn:['⚠️ CORS ต้องทดสอบ','warn'],proxy:['🔒 ต้องผ่าน proxy','bad'],na:['CORS: ยังไม่ทดสอบ','neutral']};
+const TYPE = {perm:['ฟรีถาวร','acc'],trial:['เครดิตทดลอง','neutral'],paid:['ไม่ฟรีแล้ว','bad']};
+
+/* ── storage (ป้องกัน localStorage ใช้ไม่ได้) ── */
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+let state = LS.get('fai_state',{});      // {id:{done:bool,note:str}}
+let keys  = LS.get('fai_keys',{});       // {id:key}
+let tests = LS.get('fai_tests',{});      // {id:{ok,msg,at}}
+let ui    = LS.get('fai_ui',{cat:'all',chips:[],sort:'rec'});
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const stars = n=>n?'⭐'.repeat(n):'';
+const testable = p=>!!(p.base && !p.base.includes('{') && (p.cors==='ok'||p.cors==='warn'));
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1800); }
+function thDate(iso){ const M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; const [y,m,d]=iso.split('-').map(Number); return `${d} ${M[m-1]} ${y+543}`; }
+
+/* ── filter ── */
+function match(p){
+  if(ui.cat!=='all' && p.cat!==ui.cat){
+    // แท็บไทย รวมเจ้าที่ ⭐⭐⭐ จากหมวดอื่นด้วย
+    if(!(ui.cat==='thai' && p.thai>=3 && p.cat!=='gone')) return false;
+  }
+  const c=new Set(ui.chips), st=state[p.id]||{};
+  if(c.has('perm') && p.type!=='perm') return false;
+  if(c.has('nocard') && p.card!=='no') return false;
+  if(c.has('thai3') && p.thai<3) return false;
+  if(c.has('thai2') && p.thai<2) return false;
+  if(c.has('cors') && p.cors!=='ok') return false;
+  if(c.has('test') && !testable(p)) return false;
+  if(c.has('nokey') && !p.noKey) return false;
+  if(c.has('done') && !st.done) return false;
+  if(c.has('todo') && st.done) return false;
+  const q=$('#q').value.trim().toLowerCase();
+  if(q){
+    const hay=[p.name,p.free,p.models,p.note,p.thaiModel,(st.note||''),p.thai>=2?'ไทย thai':'',CARD[p.card][0],CORS[p.cors][0]].join(' ').toLowerCase();
+    if(!q.split(/\s+/).every(w=>hay.includes(w))) return false;
+  }
+  return true;
+}
+function sorted(list){
+  const typeRank={perm:0,trial:1,paid:2}, corsRank={ok:0,warn:1,na:2,proxy:3};
+  const a=[...list];
+  if(ui.sort==='name') a.sort((x,y)=>x.name.localeCompare(y.name));
+  else if(ui.sort==='thai') a.sort((x,y)=>y.thai-x.thai||typeRank[x.type]-typeRank[y.type]);
+  else if(ui.sort==='cors') a.sort((x,y)=>corsRank[x.cors]-corsRank[y.cors]||y.thai-x.thai);
+  return a; // rec = ลำดับที่จัดไว้ในข้อมูล
+}
+
+/* ── render ── */
+function renderTabs(){
+  $('#tabs').innerHTML=CATS.map(c=>{
+    const n=c.k==='all'?P.length:P.filter(p=>p.cat===c.k||(c.k==='thai'&&p.thai>=3&&p.cat!=='gone')).length;
+    return `<button class="tab${ui.cat===c.k?' active':''}" data-cat="${c.k}">${c.t}<span class="n">${n}</span></button>`;
+  }).join('');
+}
+function renderChips(){
+  $('#chips').innerHTML=CHIPS.map(c=>`<span class="chip${ui.chips.includes(c.k)?' on':''}" data-chip="${c.k}">${c.t}</span>`).join('')+
+   `<select id="sort" aria-label="เรียงลำดับ">
+      <option value="rec">เรียง: แนะนำ</option><option value="thai">เรียง: ภาษาไทยดีสุด</option>
+      <option value="cors">เรียง: เรียกจากเว็บได้ก่อน</option><option value="name">เรียง: ชื่อ A–Z</option></select>`;
+  $('#sort').value=ui.sort;
+}
+function card(p,i){
+  const st=state[p.id]||{}, t=tests[p.id];
+  const [cardT,cardC]=CARD[p.card]||CARD['?'], [corsT,corsC]=CORS[p.cors], [typeT,typeC]=TYPE[p.type];
+  const testBadge=t?`<span class="test-res b ${t.ok?'ok':'bad'}" title="${esc(t.msg)}">${t.ok?'✓ key ใช้ได้':'✗ ทดสอบไม่ผ่าน'} · ${esc(thDate(t.at.slice(0,10)))}</span>`:'';
+  return `<article class="card${st.done?' done':''}" data-id="${p.id}">
+    <div class="card-h"><span class="num">${i+1}</span><h3>${esc(p.name)}</h3></div>
+    <div class="badges">
+      <span class="b ${typeC}">${typeT}</span>
+      <span class="b ${cardC}">${cardT}</span>
+      <span class="b ${corsC}">${corsT}</span>
+      ${p.noKey?'<span class="b ok">🆓 ใช้ได้ไม่ต้องมี key</span>':''}
+      ${p.login?'<span class="b neutral">🔐 ต้องเข้าสู่ระบบก่อน</span>':''}
+      ${testBadge}
+    </div>
+    ${p.thai?`<div class="thai"><span class="stars">${stars(p.thai)}</span> ไทย: ${esc(p.thaiModel||'')}</div>`:''}
+    <div class="row"><b>ฟรี:</b> ${esc(p.free)}</div>
+    ${p.models?`<div class="row"><b>รุ่น/บริการ:</b> ${esc(p.models)}</div>`:''}
+    ${p.note?`<div class="note">💡 ${esc(p.note)}</div>`:''}
+    ${p.base?`<div class="base"><code title="${esc(p.base)}">${esc(p.base)}</code><button class="btn sm" data-copy="${esc(p.base)}">คัดลอก</button></div>`:''}
+    <div class="actions">
+      ${p.signup?`<a class="btn sm primary" href="${esc(p.signup)}" target="_blank" rel="noopener">${p.login?'🔐 ':''}สมัคร / API key</a>`:''}
+      ${p.docs?`<a class="btn sm" href="${esc(p.docs)}" target="_blank" rel="noopener">เอกสาร</a>`:''}
+      ${testable(p)?`<button class="btn sm" data-test="${p.id}">🧪 ทดสอบ key</button>`:''}
+      ${p.base?`<button class="btn sm" data-cmd="${p.id}" title="คำสั่ง PowerShell / Python / curl สำหรับทดสอบนอกเบราว์เซอร์">📋 คำสั่งทดสอบ</button>`:''}
+      <button class="btn sm" data-note="${p.id}">📝</button>
+      <label><input type="checkbox" data-done="${p.id}" ${st.done?'checked':''}> สมัครแล้ว</label>
+    </div>
+    <textarea class="mynote" data-notebox="${p.id}" placeholder="บันทึกส่วนตัว (เช่น อีเมลที่ใช้สมัคร, วันหมดเครดิต)" style="${st.note?'':'display:none'}">${esc(st.note||'')}</textarea>
+  </article>`;
+}
+function render(){
+  renderTabs();
+  const list=sorted(P.filter(match));
+  $('#grid').innerHTML=list.length?list.map(card).join(''):'<div class="empty">ไม่พบผู้ให้บริการตามเงื่อนไข — ลองล้างตัวกรอง</div>';
+  const done=P.filter(p=>(state[p.id]||{}).done).length;
+  $('#summary').textContent=`แสดง ${list.length} จาก ${P.length} ราย · ฟรีถาวร ${P.filter(p=>p.type==='perm').length} · เรียกจากเว็บได้ ${P.filter(p=>p.cors==='ok').length} · ไทย ⭐⭐⭐ ${P.filter(p=>p.thai>=3).length} · สมัครแล้ว ${done}`;
+  LS.set('fai_ui',ui);
+}
+
+/* ── events ── */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-cat],[data-chip],[data-copy],[data-test],[data-note],[data-cmd]');
+  if(!el) return;
+  if(el.dataset.cat){ ui.cat=el.dataset.cat; render(); }
+  else if(el.dataset.chip){
+    const k=el.dataset.chip, s=new Set(ui.chips);
+    s.has(k)?s.delete(k):s.add(k);
+    if(k==='done'&&s.has('done')) s.delete('todo'); if(k==='todo'&&s.has('todo')) s.delete('done');
+    if(k==='thai3'&&s.has('thai3')) s.delete('thai2'); if(k==='thai2'&&s.has('thai2')) s.delete('thai3');
+    ui.chips=[...s]; renderChips(); render();
+  }
+  else if(el.dataset.copy){ navigator.clipboard?.writeText(el.dataset.copy).then(()=>toast('คัดลอก Base URL แล้ว'),()=>toast('คัดลอกไม่ได้')); }
+  else if(el.dataset.test){ openTest(el.dataset.test); }
+  else if(el.dataset.cmd){ openCmd(el.dataset.cmd); }
+  else if(el.dataset.note){ const b=document.querySelector(`[data-notebox="${el.dataset.note}"]`); b.style.display=b.style.display==='none'?'':'none'; if(b.style.display==='') b.focus(); }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='sort'){ ui.sort=e.target.value; render(); }
+  if(e.target.dataset.done){ const id=e.target.dataset.done; state[id]={...(state[id]||{}),done:e.target.checked}; LS.set('fai_state',state); render(); }
+});
+document.addEventListener('input',e=>{
+  if(e.target.dataset.notebox){ const id=e.target.dataset.notebox; state[id]={...(state[id]||{}),note:e.target.value}; LS.set('fai_state',state); }
+});
+$('#q').addEventListener('input',()=>render());
+
+/* ── theme ── */
+function applyTheme(t){ if(t) document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme; }
+applyTheme(LS.get('fai_theme',''));
+$('#btnTheme').onclick=()=>{
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches;
+  const cur=document.documentElement.dataset.theme||(dark?'dark':'light');
+  const nxt=cur==='dark'?'light':'dark'; applyTheme(nxt); LS.set('fai_theme',nxt);
+};
+
+/* ── API test ── */
+let cur=null;
+function authHeaders(p,key){
+  if(!key) return {};
+  const h=p.auth&&p.auth!=='bearer'?p.auth:'Authorization';
+  return {[h]:h==='Authorization'?`Bearer ${key}`:key};
+}
+function openTest(id){
+  cur=P.find(p=>p.id===id);
+  $('#mTitle').textContent=`ทดสอบ API key — ${cur.name}`;
+  $('#mSub').innerHTML=`CORS: ${CORS[cur.cors][0]} · ส่งคำขอตรงจากเบราว์เซอร์ไปที่ผู้ให้บริการ (ไม่ผ่านเซิร์ฟเวอร์อื่น)`;
+  $('#mBase').value=cur.base; $('#mKey').value=keys[id]||''; $('#mKey').type='password';
+  $('#mModel').value=(tests[id]&&tests[id].model)||cur.model||''; $('#mModels').innerHTML='';
+  $('#mOut').textContent='—'; $('#mStat').textContent='ผลลัพธ์';
+  const w=$('#mWarn');
+  if(cur.cors==='warn'){ w.style.display=''; w.textContent='⚠️ เจ้านี้ตอบ error โดยไม่มี header CORS — ถ้า key ผิดจะเห็นแค่ "ถูกบล็อก" แทนข้อความ error จริง'; }
+  else if(location.protocol==='file:'&&cur.id==='twelvelabs'){ w.style.display=''; w.textContent='⚠️ เจ้านี้ไม่อนุญาตเมื่อเปิดหน้าเป็นไฟล์ (file://)'; }
+  else w.style.display='none';
+  $('#modalBg').classList.add('show'); setTimeout(()=>$('#mKey').focus(),50);
+}
+function closeModal(){ $('#modalBg').classList.remove('show'); cur=null; }
+$('#mClose').onclick=closeModal;
+$('#modalBg').addEventListener('click',e=>{ if(e.target.id==='modalBg') closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); $('#bkBg').classList.remove('show'); $('#cmdBg').classList.remove('show'); } });
+$('#mShow').onclick=()=>{ const k=$('#mKey'); k.type=k.type==='password'?'text':'password'; };
+$('#mForget').onclick=()=>{ delete keys[cur.id]; LS.set('fai_keys',keys); $('#mKey').value=''; toast('ลบ key แล้ว'); };
+
+async function timedFetch(url,opt,ms=45000){
+  const c=new AbortController(), t=setTimeout(()=>c.abort(),ms);
+  try{ return await fetch(url,{...opt,signal:c.signal}); } finally{ clearTimeout(t); }
+}
+function errText(e){
+  if(e.name==='AbortError') return 'หมดเวลา (ไม่ตอบภายในเวลาที่กำหนด)';
+  return 'ถูกบล็อก (CORS) หรือเชื่อมต่อไม่ได้ — ดู Console ของเบราว์เซอร์เพื่อรายละเอียด';
+}
+async function readErr(r){ let t=''; try{ t=await r.text(); }catch(e){} try{ const j=JSON.parse(t); t=j.error?.message||j.message||j.detail||j.error||t; }catch(e){} return `HTTP ${r.status} — ${typeof t==='string'?t.slice(0,400):JSON.stringify(t).slice(0,400)}`; }
+
+$('#mList').onclick=async()=>{
+  const p=cur, base=$('#mBase').value.replace(/\/+$/,''), key=$('#mKey').value.trim();
+  $('#mStat').textContent='กำลังดึงรายชื่อรุ่น…';
+  try{
+    const r=await timedFetch(base+'/models',{headers:authHeaders(p,key)},20000);
+    if(!r.ok){ $('#mOut').textContent=await readErr(r); $('#mStat').textContent='ดึงรายชื่อรุ่นไม่สำเร็จ'; return; }
+    const j=await r.json(); const ids=(j.data||j.models||[]).map(m=>m.id||m.name).filter(Boolean).sort();
+    $('#mModels').innerHTML=ids.map(i=>`<option value="${esc(i)}">`).join('');
+    $('#mOut').textContent=ids.length?`พบ ${ids.length} รุ่น (คลิกช่อง "รุ่น" เพื่อเลือก):\n`+ids.join('\n'):'ไม่พบรายชื่อรุ่นในคำตอบ';
+    $('#mStat').textContent=`รายชื่อรุ่น (${ids.length})`;
+  }catch(e){ $('#mOut').textContent=errText(e); $('#mStat').textContent='ดึงรายชื่อรุ่นไม่สำเร็จ'; }
+};
+
+async function runTest(p,key,model,prompt,base){
+  const t0=performance.now();
+  const r=await timedFetch(base.replace(/\/+$/,'')+'/chat/completions',{
+    method:'POST',headers:{'Content-Type':'application/json',...authHeaders(p,key)},
+    body:JSON.stringify({model,messages:[{role:'user',content:prompt}],max_tokens:300})
+  });
+  const ms=Math.round(performance.now()-t0);
+  if(!r.ok) return {ok:false,msg:await readErr(r),ms};
+  const j=await r.json(); const m=j.choices?.[0]?.message||{};
+  const text=(m.content||'').trim()||(m.reasoning_content||m.reasoning||'').trim()||'(ตอบกลับสำเร็จ แต่ไม่มีข้อความ)';
+  return {ok:true,msg:text,ms,model:j.model||model};
+}
+$('#mSend').onclick=async()=>{
+  const p=cur, key=$('#mKey').value.trim(), model=$('#mModel').value.trim(), base=$('#mBase').value.trim();
+  if(!model){ toast('ใส่ชื่อรุ่นก่อน'); return; }
+  if($('#mRemember').checked && key){ keys[p.id]=key; LS.set('fai_keys',keys); }
+  $('#mSend').disabled=true; $('#mStat').textContent='กำลังส่ง…'; $('#mOut').textContent='…';
+  try{
+    const res=await runTest(p,key,model,$('#mPrompt').value,base);
+    $('#mStat').textContent=res.ok?`✓ สำเร็จ · ${res.ms} ms · ${res.model}`:`✗ ไม่สำเร็จ · ${res.ms} ms`;
+    $('#mOut').textContent=res.msg;
+    tests[p.id]={ok:res.ok,msg:res.msg.slice(0,200),at:new Date().toISOString(),model};
+  }catch(e){
+    $('#mStat').textContent='✗ ไม่สำเร็จ'; $('#mOut').textContent=errText(e);
+    tests[p.id]={ok:false,msg:errText(e),at:new Date().toISOString(),model};
+  }
+  LS.set('fai_tests',tests); $('#mSend').disabled=false; render();
+};
+
+$('#btnTestAll').onclick=async()=>{
+  const list=P.filter(p=>testable(p)&&keys[p.id]);
+  if(!list.length){ toast('ยังไม่มี key ที่บันทึกไว้ — กด 🧪 ทดสอบ key ที่การ์ดก่อน'); return; }
+  const b=$('#btnTestAll'); b.disabled=true;
+  let ok=0;
+  await Promise.all(list.map(async p=>{
+    const model=(tests[p.id]&&tests[p.id].model)||p.model;
+    try{ const r=await runTest(p,keys[p.id],model,'ตอบคำว่า "พร้อม" คำเดียว',p.base); tests[p.id]={ok:r.ok,msg:r.msg.slice(0,200),at:new Date().toISOString(),model}; if(r.ok) ok++; }
+    catch(e){ tests[p.id]={ok:false,msg:errText(e),at:new Date().toISOString(),model}; }
+  }));
+  LS.set('fai_tests',tests); b.disabled=false; render();
+  toast(`ทดสอบ ${list.length} เจ้า · ใช้ได้ ${ok} · ไม่ผ่าน ${list.length-ok}`);
+};
+
+/* ── คำสั่งทดสอบนอกเบราว์เซอร์ (ไม่ติด CORS) ── */
+let cmdP=null, cmdShell='ps';
+const CMD_PROMPT='สวัสดี ตอบสั้นๆ 1 ประโยคเป็นภาษาไทย';
+function buildCmd(p,shell){
+  const url=p.base.replace(/\/+$/,'')+'/chat/completions', model=(tests[p.id]&&tests[p.id].model)||p.model||'MODEL_ID';
+  const hName=p.auth&&p.auth!=='bearer'?p.auth:'Authorization', hVal=hName==='Authorization'?'Bearer YOUR_API_KEY':'YOUR_API_KEY';
+  if(shell==='ps'){
+    return `$body = @{ model='${model}'; max_tokens=300; messages=@(@{ role='user'; content='${CMD_PROMPT}' }) } | ConvertTo-Json -Depth 5\n`+
+      `$r = Invoke-WebRequest -UseBasicParsing -Uri '${url}' -Method Post -ContentType 'application/json; charset=utf-8' \``+
+      (p.noKey?'':`\n  -Headers @{ '${hName}'='${hVal}' } \``)+
+      `\n  -Body ([Text.Encoding]::UTF8.GetBytes($body))\n`+
+      `# อ่านคำตอบเป็น UTF-8 เอง (PowerShell 5.1 ถอดรหัสภาษาไทยผิดถ้าใช้ Invoke-RestMethod)\n`+
+      `$j = [Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray()) | ConvertFrom-Json\n`+
+      `[Console]::OutputEncoding = [Text.Encoding]::UTF8\n$j.model; $j.choices[0].message.content`;
+  }
+  if(shell==='py'){
+    return `import json, sys, urllib.request\nsys.stdout.reconfigure(encoding="utf-8")\n`+
+      `body = json.dumps({"model": "${model}", "max_tokens": 300,\n    "messages": [{"role": "user", "content": "${CMD_PROMPT}"}]}).encode("utf-8")\n`+
+      `headers = {"Content-Type": "application/json", "User-Agent": "free-ai-api-test"${p.noKey?'':`, "${hName}": "${hVal}"`}}\n`+
+      `req = urllib.request.Request("${url}", body, headers)\n`+
+      `j = json.load(urllib.request.urlopen(req, timeout=90))\n`+
+      `m = j["choices"][0]["message"]\nprint(j.get("model"), "|", m.get("content") or m.get("reasoning_content") or m.get("reasoning"))`;
+  }
+  return `curl -s '${url}' \\\n  -H 'Content-Type: application/json' \\\n`+(p.noKey?'':`  -H '${hName}: ${hVal}' \\\n`)+
+    `  -d '{"model":"${model}","max_tokens":300,"messages":[{"role":"user","content":"${CMD_PROMPT}"}]}'`;
+}
+function renderCmd(){
+  document.querySelectorAll('#cmdTabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.shell===cmdShell));
+  $('#cmdText').value=buildCmd(cmdP,cmdShell);
+  $('#cmdHint').textContent=cmdShell==='curl'
+    ?'⚠️ curl ใน Windows (cmd / Git Bash) มักทำภาษาไทยในคำสั่งเพี้ยน — ใช้ PowerShell หรือ Python จะตรงกว่า'
+    :cmdShell==='py'?'บันทึกเป็นไฟล์ .py แล้วรัน: py ไฟล์.py (ไม่ต้องติดตั้งแพ็กเกจเพิ่ม)':'วางใน PowerShell ได้ทันที (Windows PowerShell 5.1 ขึ้นไป)';
+}
+function openCmd(id){
+  cmdP=P.find(p=>p.id===id);
+  $('#cmdTitle').textContent=`คำสั่งทดสอบ — ${cmdP.name}`;
+  $('#cmdSub').innerHTML=(cmdP.noKey?'🆓 เจ้านี้เรียกได้โดยไม่ต้องมี key · ':'แทน <code>YOUR_API_KEY</code> ด้วย key จริง · ')+
+    (cmdP.cors==='proxy'?'เจ้านี้เบราว์เซอร์ถูกบล็อก CORS — ทดสอบด้วยคำสั่งนี้แทน':'รันนอกเบราว์เซอร์ ไม่ติด CORS')+
+    (cmdP.base.includes('{')?' · แก้ค่าในวงเล็บ { } ใน URL ก่อน':'');
+  renderCmd(); $('#cmdBg').classList.add('show');
+}
+$('#cmdTabs').addEventListener('click',e=>{ const t=e.target.closest('[data-shell]'); if(t){ cmdShell=t.dataset.shell; renderCmd(); } });
+$('#cmdClose').onclick=()=>$('#cmdBg').classList.remove('show');
+$('#cmdBg').addEventListener('click',e=>{ if(e.target.id==='cmdBg') $('#cmdBg').classList.remove('show'); });
+$('#cmdCopy').onclick=()=>navigator.clipboard?.writeText($('#cmdText').value).then(()=>toast('คัดลอกคำสั่งแล้ว'),()=>{ $('#cmdText').select(); toast('กด Ctrl+C เพื่อคัดลอก'); });
+
+/* ── backup ── */
+$('#btnBackup').onclick=()=>{ $('#bkText').value=JSON.stringify({app:APP.name,exported:new Date().toISOString(),state},null,1); $('#bkBg').classList.add('show'); };
+$('#bkClose').onclick=()=>$('#bkBg').classList.remove('show');
+$('#bkCopy').onclick=()=>navigator.clipboard?.writeText($('#bkText').value).then(()=>toast('คัดลอกแล้ว'));
+$('#bkImport').onclick=()=>{
+  try{ const j=JSON.parse($('#bkText').value); if(!j.state) throw 0; state={...state,...j.state}; LS.set('fai_state',state); render(); toast('นำเข้าแล้ว'); $('#bkBg').classList.remove('show'); }
+  catch(e){ toast('รูปแบบข้อมูลไม่ถูกต้อง'); }
+};
+
+/* ── init ── */
+$('#verLine').textContent=`${APP.name} v${APP.version} · สร้าง ${thDate(APP.created)} · ปรับปรุงล่าสุด ${thDate(APP.updated)} · โดย ${APP.author} · ข้อมูลผู้ให้บริการตรวจเมื่อ ${thDate(APP.dataChecked)}`;
+$('#subtitle').textContent=`Free AI API Finder v${APP.version} · ${P.length} ผู้ให้บริการ · ตรวจลิงก์/CORS ${thDate(APP.dataChecked)}`;
+if(!LS.get('fai_seen_guide',false)){ $('#guide').open=true; LS.set('fai_seen_guide',true); }
+renderChips(); render();
+</script>
+</body>
+</html>
