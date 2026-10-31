@@ -1,4 +1,4 @@
-# ติดตั้ง Skill ของลุงพีให้ Claude Code บนเครื่องนี้ (laptop / home server) — รันซ้ำได้ · โดย ลุงพี
+﻿# ติดตั้ง Skill ของลุงพีให้ Claude Code บนเครื่องนี้ (laptop / home server) — รันซ้ำได้ · โดย ลุงพี
 # ใช้: powershell -ExecutionPolicy Bypass -File <ไดรฟ์>:\LocalAI\skills\install-skills.ps1
 # คัดลอกทุกโฟลเดอร์ที่มี SKILL.md ใต้ skills\ ไปที่ %USERPROFILE%\.claude\skills\ (ทับฉบับเดิม)
 $src = $PSScriptRoot
