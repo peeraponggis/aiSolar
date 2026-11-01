@@ -35,7 +35,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
 | Design Auto (Auto Solar Co-pilot Studio) | 0.133.0 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
-| ASC Architect (ASCA) | 0.20.0 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
+| ASC Architect (ASCA) | 0.20.1 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
 
 ## หมวด 3 · 🌐 โค้ดเปิดเผยได้ — public · `peeraponggis`
 
