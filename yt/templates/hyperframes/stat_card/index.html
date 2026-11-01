@@ -75,13 +75,16 @@
       const v = window.__hyperframes.getVariables();
       const $ = (id) => document.getElementById(id);
       document.documentElement.style.setProperty("--accent", v.accent);
+      // "%", "฿", "x" read better attached to the number than on a line of their own.
+      const suffix = v.unit && v.unit.trim().length <= 2 ? v.unit.trim() : "";
+      if (suffix) v.unit = "";
       for (const key of ["kicker", "unit", "badge", "caption"]) {
         $(key).textContent = v[key] || "";
         $(key).classList.toggle("empty", !v[key]);
       }
 
       const fmt = (n) => n.toLocaleString("en-US", {
-        minimumFractionDigits: v.decimals, maximumFractionDigits: v.decimals });
+        minimumFractionDigits: v.decimals, maximumFractionDigits: v.decimals }) + suffix;
       // Big numbers ("1,700,000") must still fit across the frame.
       const widest = fmt(v.value).length;
       $("value").style.fontSize = Math.min(300, 880 / (0.64 * widest)) * __S__ + "px";

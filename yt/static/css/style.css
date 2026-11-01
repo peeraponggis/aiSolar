@@ -1480,10 +1480,12 @@ a.tool-btn { text-decoration: none; display: inline-block; }
 .sb-card:hover { border-color: var(--accent); }
 .sb-scene:has(.sb-card) { padding-right: 44px; min-height: 108px; }
 .card-dialog { max-width: 460px; }
-.card-form { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; }
+.card-dialog { overflow-x: hidden; }
+.card-form { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; }
 .card-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--text-dim); }
 .card-form input {
   padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
   background: var(--bg); color: var(--text); font: inherit; font-size: 0.95rem;
+  width: 100%; min-width: 0; box-sizing: border-box;
 }
 .card-hint { font-size: 0.78rem; color: var(--text-dim); }

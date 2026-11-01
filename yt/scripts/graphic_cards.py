@@ -98,6 +98,8 @@ def clean_stat(stat, source_text: str) -> dict | None:
     allowed = {float(t) for t in spoken}
     if any(float(n) not in allowed for f in fields.values() for n in _numbers(f)):
         return None
+    if any(float(n) == value for n in _numbers(fields["badge"])):
+        fields["badge"] = ""  # a badge that repeats the big number adds nothing
     decimals = len(token.split(".")[1]) if "." in token else 0
     return {"value": value, "decimals": min(decimals, 2), **fields}
 
