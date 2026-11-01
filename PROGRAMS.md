@@ -51,7 +51,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | Battery & System Dashboard | 1.3.0 | `LocalAI\battery_info` |
 | GAS Monitor | 2.4.0 | `LocalAI\gas_monitor` |
 | RemoteAIR (รีโมทแอร์ Android/iOS) | 1.0.0 | `LocalAI\remoterAIR` |
-| YT Shorts Automation (คลิปอัตโนมัติ 3 โหมด · คิว · ภาพ AI) | 2.2.0 | `LocalAI\yt` |
+| YT Shorts Automation (คลิปอัตโนมัติ 3 โหมด · คิว · ภาพ AI · การ์ดตัวเลข) | 2.3.0 | `LocalAI\yt` |
 | Free AI API Finder (ศูนย์รวม AI API ฟรี 87 ราย) | 1.1.0 | `LocalAI\free-ai-api` |
 
 **3.2 repo แยก**
