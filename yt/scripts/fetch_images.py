@@ -206,10 +206,11 @@ def _search_scene(query: str, orientation: str) -> tuple[list[dict], list[dict]]
 async def fetch_scene_media(project_id: str, scenes: list[dict], topic: str,
                             orientation: str = "portrait", source: str = "pexels",
                             ai_engine: str = "flux", durations: list[float] | None = None,
-                            log=None) -> list[dict]:
+                            log=None, graphics: bool = False) -> list[dict]:
     """One media file per scene, chosen from that scene's own visual query.
     source: "pexels" (video, else photo), "ai" (AI image for every scene) or
     "mixed" (Pexels video, else AI image). Never reuses a Pexels item.
+    graphics: scenes carrying a checked "stat" become animated stat cards first.
     Writes media/scenes.json and returns one record per scene."""
     import shutil
     from scripts.ai_images import generate_images, is_available as ai_available
@@ -218,16 +219,33 @@ async def fetch_scene_media(project_id: str, scenes: list[dict], topic: str,
     media_dir = os.path.join("projects", project_id, "media")
     os.makedirs(media_dir, exist_ok=True)
     records = [{"index": i, "text": s["text"], "query": s.get("visual") or topic,
-                "file": None, "source": None, "fallback": False}
+                "file": None, "source": None, "fallback": False, "stat": s.get("stat")}
                for i, s in enumerate(scenes)]
     used: set = set()
     use_pexels = source in ("pexels", "mixed") and bool(_get_pexels_key())
 
+    card_scenes = [r for r in records if graphics and r["stat"]]
+    if card_scenes:
+        from scripts.graphic_cards import is_available as cards_available, render_stat_card
+        if cards_available():
+            if log:
+                log(f"สร้างการ์ดตัวเลข {len(card_scenes)} ฉาก (HyperFrames ~20 วินาทีต่อการ์ด)...")
+            for r in card_scenes:
+                need = (durations[r["index"]] if durations and r["index"] < len(durations) else 0) or 6
+                path = os.path.join(media_dir, f"{r['index']:02d}_clip_card.mp4")
+                if await render_stat_card(r["stat"], path, need + 0.5, orientation):
+                    r["file"], r["source"] = path, "graphic"
+                elif log:
+                    log(f"ฉาก {r['index'] + 1}: สร้างการ์ดไม่สำเร็จ — ใช้ภาพตามปกติ", "warning")
+        elif log:
+            log("ไม่พบ Node.js 22+ หรือแม่แบบ HyperFrames — ข้ามการ์ดตัวเลข", "warning")
+
     if use_pexels:
+        todo = [r for r in records if not r["file"]]
         found = await asyncio.gather(*(asyncio.to_thread(_search_scene, r["query"], orientation)
-                                       for r in records))
+                                       for r in todo))
         downloads = []
-        for r, (videos, photos) in zip(records, found):
+        for r, (videos, photos) in zip(todo, found):
             need = (durations[r["index"]] if durations and r["index"] < len(durations) else 0) or 0
             fresh = [v for v in videos if v.get("id") not in used]
             long_enough = [v for v in fresh if (v.get("duration") or 0) >= need]

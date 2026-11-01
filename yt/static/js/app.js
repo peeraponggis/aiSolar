@@ -1116,6 +1116,7 @@ function _generateSettings(topic) {
     run_mode: selectedRunMode,
     media_source: selectedMediaSource,
     ai_engine: selectedAiEngine,
+    graphics: selectedGraphics,
   });
   if (selectedMedia.length) {
     params.set("media_files", selectedMedia.map((m) => m.filename).join(","));
@@ -1590,6 +1591,7 @@ function _renderStoryboard() {
       <div class="sb-thumb" onclick="openMediaPicker(${i},'${fname}')" title="${media ? "คลิกเพื่อเปลี่ยนสื่อ" : "คลิกเพื่อเลือกสื่อ"}">${thumbContent}</div>
       <div class="sb-body">${bodyHtml}${_sbQueries[i] ? `<div class="sb-query" title="คำค้นภาพของฉากนี้">🔎 ${escapeHtml(_sbQueries[i])}</div>` : ""}</div>
       ${editable && _aiImagesAvailable ? `<button class="sb-ai" title="สร้างภาพ AI ให้ฉากนี้" onclick="_sbAiImage(${i})">🎨</button>` : ""}
+      ${editable && _graphicsAvailable ? `<button class="sb-card" title="สร้างการ์ดตัวเลขให้ฉากนี้" onclick="openCardDialog(${i})">📊</button>` : ""}
       ${editable && media ? `<button class="sb-remove" title="เอาสื่อนี้ออกจากวิดีโอ (เลือกกลับมาได้)" onclick="_sbRemoveMedia(${i})">🗑</button>` : ""}
     </div>`;
   }
@@ -1780,6 +1782,7 @@ function _collectFormState() {
     runMode: selectedRunMode,
     mediaSource: selectedMediaSource,
     aiEngine: selectedAiEngine,
+    graphics: selectedGraphics,
   };
 }
 
@@ -1824,6 +1827,7 @@ function _restoreFormState(d) {
   if (d.runMode) selectRunMode(d.runMode);
   if (d.mediaSource) selectMediaSource(d.mediaSource);
   if (d.aiEngine) { selectedAiEngine = d.aiEngine; document.getElementById("aiEngineSelect").value = d.aiEngine; }
+  if (d.graphics) selectGraphics(d.graphics);
   _currentDraftId = d.id || null;
 }
 
@@ -2499,6 +2503,10 @@ const HELP_TEXTS = {
     title: "แหล่งสื่อ",
     body: "<b>Pexels</b> — คลิป/ภาพจริงจาก Pexels ตามคำค้นของแต่ละฉาก\n\n<b>Pexels + ภาพ AI</b> — ใช้คลิป Pexels ก่อน ฉากไหนหาไม่ได้ให้ AI วาด\n\n<b>ภาพ AI</b> — ให้ AI วาดทุกฉาก (AI-Bridge-Launcher)\n\n<b>FLUX.2 klein</b> วาดในเครื่อง ภาพแรกโหลดโมเดลประมาณ 1 นาที จากนั้นประมาณ 30 วินาทีต่อภาพ (โหมดเร็ว 15 วินาที)\n<b>Gemini</b> วาดบนคลาวด์ เร็ว แต่คิดเงินต่อภาพ\n\nใน Storyboard กดปุ่ม 🎨 ที่ฉากใดก็ได้เพื่อสร้างภาพ AI ให้ฉากนั้นเอง"
   },
+  graphics: {
+    title: "การ์ดตัวเลข",
+    body: "ฉากที่พูดถึงตัวเลขสำคัญ (สถิติ ราคา เปอร์เซ็นต์) จะกลายเป็นการ์ดกราฟิกเคลื่อนไหว: ตัวเลขนับขึ้นจาก 0 พร้อมหน่วย ป้าย และคำอธิบาย สร้างด้วย HyperFrames ในเครื่อง ประมาณ 20 วินาทีต่อการ์ด\n\n<b>ตัวเลขบนการ์ดต้องมีอยู่ในคำพูดของฉากนั้นจริง</b> — AI แค่ชี้ว่าฉากไหนมีตัวเลข ระบบตรวจซ้ำด้วยโค้ด ถ้าไม่ตรงจะไม่ทำการ์ดและใช้ภาพตามปกติ\n\nไม่เกิน 1 ใน 3 ของจำนวนฉาก และไม่ใช้กับฉากสุดท้าย (CTA) ฉากอื่นใช้สื่อตามแหล่งที่เลือกไว้\n\nใน Storyboard กดปุ่ม 📊 ที่ฉากใดก็ได้เพื่อพิมพ์ตัวเลขแล้วสร้างการ์ดเอง"
+  },
   voice_preset: {
     title: "ชุดเสียง",
     body: "บันทึกการตั้งค่าเสียงที่ทดลองแล้วว่าดี เพื่อใช้ครั้งต่อไปด้วยคลิกเดียว\n\n<b>สิ่งที่บันทึก:</b> เสียงต้นฉบับ (เปรมวดี/นิวัตน์), เสียงโคลนและเครื่องโคลน, ระดับโคลน, ความเร็ว, ระดับเสียง และโทนเสียง\n\n<b>บันทึกได้ 2 ทาง:</b>\n• ปุ่ม 💾 บันทึกชุดเสียง = บันทึกค่าที่ตั้งอยู่ตอนนี้\n• ปุ่ม 💾 บันทึก ในหน้าต่างเทียบเสียง = บันทึกเสียงที่ฟังแล้วชอบ (ต้นฉบับเปรมวดี ความเร็วปกติ OpenVoice และระดับโคลนที่ใช้เทียบ)\n\nเลือกชุดเสียงจากรายการ = ตั้งค่าทั้งหมดให้ทันที\nตั้งชื่อซ้ำกับชุดเดิม = บันทึกทับ"
@@ -2695,6 +2703,77 @@ async function _sbAiImage(idx) {
   _renderStoryboard();
 }
 
+// ── Stat cards (HyperFrames) ──
+
+let selectedGraphics = "off";
+let _graphicsAvailable = false;
+let _cardSceneIdx = null;
+
+function selectGraphics(val) {
+  if (val === "on" && !_graphicsAvailable) {
+    showToast("ไม่พบ Node.js 22+ หรือแม่แบบการ์ด — ใช้การ์ดตัวเลขไม่ได้", true);
+    val = "off";
+  }
+  selectedGraphics = val;
+  document.querySelectorAll("[data-graphics]").forEach((b) => b.classList.toggle("active", b.dataset.graphics === val));
+}
+
+async function loadGraphicsStatus() {
+  try {
+    _graphicsAvailable = (await (await fetch("/api/graphics/status")).json()).available;
+  } catch { _graphicsAvailable = false; }
+}
+
+function openCardDialog(idx) {
+  _cardSceneIdx = idx;
+  const stat = (_sbScenesInfo[idx] || {}).stat || {};
+  const fmt = (v) => (v === undefined || v === null || v === "") ? ""
+    : Number(v).toLocaleString("en-US", { maximumFractionDigits: stat.decimals ?? 2 });
+  document.getElementById("cardSceneNum").textContent = idx + 1;
+  document.getElementById("cardValue").value = fmt(stat.value);
+  document.getElementById("cardUnit").value = stat.unit || "";
+  document.getElementById("cardLabel").value = stat.label || "";
+  document.getElementById("cardBadge").value = stat.badge || "";
+  document.getElementById("cardCaption").value = stat.caption || "";
+  document.getElementById("cardMakeBtn").disabled = false;
+  document.getElementById("cardModal").classList.remove("hidden");
+  document.getElementById("cardValue").focus();
+}
+
+function closeCardDialog() {
+  document.getElementById("cardModal").classList.add("hidden");
+  _cardSceneIdx = null;
+}
+
+async function confirmCardDialog() {
+  const idx = _cardSceneIdx;
+  const get = (id) => document.getElementById(id).value.trim();
+  const value = get("cardValue").replace(/,/g, "");
+  if (idx === null || value === "" || isNaN(Number(value))) return showToast("ใส่ตัวเลขให้ถูกต้อง", true);
+  const body = { index: idx, value, unit: get("cardUnit"), label: get("cardLabel"),
+                 badge: get("cardBadge"), caption: get("cardCaption") };
+  closeCardDialog();
+  const thumb = document.querySelectorAll(".sb-scene")[idx]?.querySelector(".sb-thumb");
+  if (thumb) thumb.innerHTML = '<div class="sb-no-media">📊 กำลังสร้างการ์ด...<br><small>ประมาณ 20 วินาที</small></div>';
+  try {
+    const resp = await fetch(`/api/project/${_sbProjectId}/graphic-card`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "สร้างการ์ดไม่สำเร็จ");
+    while (_sbMediaFiles.length <= idx) _sbMediaFiles.push(null);
+    if (_sbMediaFiles[idx]) _sbRemoved.push(_sbMediaFiles[idx]);
+    _sbMediaFiles[idx] = { filename: data.filename, type: "video" };
+    _markPreviewOutdated();
+    showToast("ได้การ์ดตัวเลขแล้ว — สื่อเดิมอยู่ในรายการ 'เอาออกแล้ว'");
+  } catch (e) {
+    showToast(e.message, true);
+  }
+  _renderStoryboard();
+}
+
 // ── Queue: many topics, one clip at a time, fully automatic ──
 
 const QUEUE_LABELS = { waiting: "รอคิว", running: "กำลังทำ", needs_review: "รอตรวจ", done: "เสร็จแล้ว", error: "ล้มเหลว" };
@@ -2849,7 +2928,7 @@ const setupPanel = document.getElementById("setupPanel");
 (async () => {
   await loadVoiceProfiles();
   await loadVoicePresets();
-  await loadAiImageStatus();
+  await Promise.all([loadAiImageStatus(), loadGraphicsStatus()]);
   _restoreSavedForm();
   loadQueue();
   const linked = new URLSearchParams(location.search).get("project");
