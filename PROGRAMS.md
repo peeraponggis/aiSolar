@@ -24,7 +24,7 @@
 | solar-engine + asc-enterprises + digitize-kit | `enterprise\solar-project-complete` | proinventive/solar-project-complete (private) |
 | picode monorepo (aiSolar · asc · pi-boq-dev · solar-saas · webproinventive) | `LocalAI\git\picode` | proinventive/picode (private) |
 | picode-cdn | – (ยังไม่ clone) | proinventive/picode-cdn (**public**) |
-| **CRM-Pi / Pi System 1.1.0** (pi_crm_erp + pi_boq_app) | **ต้นฉบับจริง:** monorepo picode โฟลเดอร์ `pi-system\` → laptop `F:\enterprise\picode\pi-system\` · home `C:\LocalAI\git\picode\pi-system\` | proinventive/picode (private) |
+| **CRM-Pi / Pi System 1.2.0** (pi_crm_erp + pi_boq_app) | **ต้นฉบับจริง:** monorepo picode โฟลเดอร์ `pi-system\` → laptop `F:\enterprise\picode\pi-system\` · home `C:\LocalAI\git\picode\pi-system\` | proinventive/picode (private) |
 
 ⚠️ **CRM-Pi มีสำเนาเก่าอีกชุด** — `F:\enterprise\pi-system\` (laptop) = repo `proinventive/pi-system` (private · สร้าง 31 ต.ค. 2569) · clone ไว้ที่ home `C:\enterprise\pi-system\` · **ค้างที่ก่อนมีผู้ช่วย AI** — ห้ามแก้ที่นี่ ใช้ picode เท่านั้น · **ลุงพีให้เก็บไว้เป็นสำรอง** (1 พ.ย. 2569 · ไม่ลบ ไม่ push เพิ่ม)
 
@@ -34,7 +34,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
-| Design Auto (Auto Solar Co-pilot Studio) | 0.131.0 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
+| Design Auto (Auto Solar Co-pilot Studio) | 0.131.1 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
 | ASC Architect (ASCA) | 0.19.1 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
 
 ## หมวด 3 · 🌐 โค้ดเปิดเผยได้ — public · `peeraponggis`
