@@ -26,9 +26,9 @@
 | picode-cdn | – (ยังไม่ clone) | proinventive/picode-cdn (**public**) |
 | **CRM-Pi / Pi System 1.0.0** (pi_crm_erp + pi_boq_app) | **ต้นฉบับจริง:** monorepo picode โฟลเดอร์ `pi-system\` → laptop `F:\enterprise\picode\pi-system\` · home `C:\LocalAI\git\picode\pi-system\` | proinventive/picode (private) |
 
-⚠️ **CRM-Pi มีสำเนาเก่าอีกชุด** — `F:\enterprise\pi-system\` (laptop) = repo `proinventive/pi-system` (private · สร้าง 31 ต.ค. 2569) · clone ไว้ที่ home `C:\enterprise\pi-system\` · **ค้างที่ก่อนมีผู้ช่วย AI** — ห้ามแก้ที่นี่ ใช้ picode เท่านั้น (ลุงพีตัดสินใจว่าจะลบ/เก็บเป็นสำรอง)
+⚠️ **CRM-Pi มีสำเนาเก่าอีกชุด** — `F:\enterprise\pi-system\` (laptop) = repo `proinventive/pi-system` (private · สร้าง 31 ต.ค. 2569) · clone ไว้ที่ home `C:\enterprise\pi-system\` · **ค้างที่ก่อนมีผู้ช่วย AI** — ห้ามแก้ที่นี่ ใช้ picode เท่านั้น · **ลุงพีให้เก็บไว้เป็นสำรอง** (1 พ.ย. 2569 · ไม่ลบ ไม่ push เพิ่ม)
 
-CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · build `node pi_crm_erp/scripts/build_pages.mjs` · แผนเชื่อม ASC Studio: `design-auto\docs\crm-pi-integration.md`
+CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จาก laptop เท่านั้น** (ลุงพีสั่ง 1 พ.ย. 2569): ใน `F:\enterprise\picode\pi-system` → `node pi_crm_erp/scripts/build_pages.mjs` → `npx wrangler pages deploy dist_pages --project-name pi-system --branch production` · แผนเชื่อม ASC Studio: `design-auto\docs\crm-pi-integration.md`
 
 ## หมวด 2 · 🔒 ผลิตภัณฑ์ของลุงพี — private · `peeraponggis`
 

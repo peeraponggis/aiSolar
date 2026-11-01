@@ -13,7 +13,7 @@ description: กฎการทำงานของลุงพี (Peerapong �
 - อ่าน `CLAUDE.md` ของโปรแกรมนั้นก่อนแก้ (มีกฎเฉพาะ เช่น design-auto ต้อง typecheck → test → build)
 - เครื่อง: **laptop = `F:\`** (ห้ามเขียนโค้ดลง C:) · **home server = `C:\LocalAI` + `C:\enterprise`** (ไม่มี F:) · โค้ดห้ามเขียนไดรฟ์ตายตัว ใช้ path สัมพัทธ์
 - Python บน home: `py` หรือ `.venv\Scripts\python` (คำสั่ง `python` เป็นตัวลัด Store ใช้ไม่ได้)
-- CRM-Pi ต้นฉบับจริง = monorepo `proinventive/picode` โฟลเดอร์ `pi-system/` (ไม่ใช่ repo `proinventive/pi-system` ซึ่งเป็นสำเนาเก่า)
+- CRM-Pi ต้นฉบับจริง = monorepo `proinventive/picode` โฟลเดอร์ `pi-system/` (ไม่ใช่ repo `proinventive/pi-system` ซึ่งเป็นสำเนาเก่า **เก็บไว้สำรอง** — ห้ามแก้ ห้ามลบ)
 
 ## 1. กฎเหล็ก 2 เครื่อง (ทุก repo)
 1. **เริ่มงาน → pull ก่อนแตะไฟล์:** `git -C <repo> pull --rebase --autostash`
@@ -57,7 +57,14 @@ description: กฎการทำงานของลุงพี (Peerapong �
 ## 6. GitHub บน home server
 - Claude รันใน Session 0 อ่าน Credential Manager ของหน้าจอ RDP ไม่ได้ → ใช้ GCM แบบ `dpapi` (ตั้งใน `~/.claude/settings.json` env แล้ว) · push/pull ได้เอง
 - token หมดอายุ → ขอรหัสยืนยันแบบ device flow ให้ลุงพีใส่ที่ github.com/login/device · **ห้ามขอรหัสผ่าน**
-- Cloudflare (wrangler) ยังไม่ได้ล็อกอินบน home → deploy CRM-Pi จาก laptop หรือให้ลุงพี `npx wrangler login` บนหน้าจอ RDP
+- **CRM-Pi deploy จาก laptop เท่านั้น** (ลุงพีสั่ง 1 พ.ย. 2569) — บน home ทำถึง build + ตรวจคีย์ใน `dist_pages` แล้วส่งคำสั่งให้ลุงพีรันบน laptop:
+  `cd F:\enterprise\picode\pi-system` → `node pi_crm_erp/scripts/build_pages.mjs` → `npx wrangler pages deploy dist_pages --project-name pi-system --branch production`
 
 ## 7. จบงานทุกครั้ง
 สรุปภาษาไทย: ทำอะไร · ไฟล์ที่แก้ · เวอร์ชัน + commit · ผลเทสต์จริง · สิ่งที่ยังไม่ได้ทำ/ไม่ได้ตรวจ · สิ่งที่ laptop ต้องทำต่อ
+
+## 8. แก้/เพิ่มกฎใน Skill นี้
+- ลุงพีสั่งกฎใหม่ (เช่น "ตั้งเป็นกฎ" "ต่อไปให้…" "บันทึกไว้") → Claude แก้ไฟล์นี้ที่ `<ไดรฟ์>:\LocalAI\skills\lungpee\SKILL.md` (ต้นฉบับใน repo เท่านั้น ห้ามแก้ตัวที่ติดตั้งใน `~/.claude/skills`) + บันทึก memory ด้วย
+- ใส่กฎไว้ในหัวข้อที่ตรงเรื่อง เขียนสั้น ระบุ "ลุงพีสั่ง <วันที่>" · กฎเฉพาะโปรแกรมเดียวให้ลง `CLAUDE.md` ของโปรแกรมนั้นแทน แล้วอ้างถึงจากที่นี่ถ้าสำคัญ
+- Skill ใหม่แยกเรื่อง → สร้างโฟลเดอร์ `skills\<ชื่อ>\SKILL.md` (frontmatter `name` + `description` บอกว่าใช้เมื่อไร)
+- เสร็จแล้ว: รัน `skills\install-skills.ps1` · commit + push aiSolar · บอกลุงพีให้เครื่องอีกฝั่ง pull แล้วรัน install-skills.ps1 · session ที่เปิดค้างต้องเปิดใหม่จึงเห็นกฎใหม่
