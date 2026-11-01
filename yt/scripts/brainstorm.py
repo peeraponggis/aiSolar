@@ -1,7 +1,18 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
+import asyncio
+import os
+from pathlib import Path
+
 import httpx
 from dotenv import load_dotenv
-from pathlib import Path
-import os
 
 _ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(_ENV_PATH)
@@ -13,50 +24,50 @@ _GEMINI_URL = (
 )
 
 
-async def generate_brainstorm(topic: str, duration_preset: str = "short") -> str | None:
+async def gemini_generate(prompt: str, json_output: bool = False, timeout: float = 60) -> str | None:
+    """One Gemini call; None when unavailable (no key, quota, outage) so callers fall back.
+    The key goes in a header, not the URL, so it never appears in error messages."""
     if not _GEMINI_KEY:
-        print("No GOOGLE_API_KEY, skipping brainstorm")
         return None
-    try:
-        return await _brainstorm_call(topic, duration_preset)
-    except httpx.TimeoutException:
-        print("Brainstorm timed out (20s), skipping")
-        return None
-    except Exception as e:
-        print(f"Brainstorm error: {e}")
-        return None
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    if json_output:
+        payload["generationConfig"] = {"responseMimeType": "application/json"}
+    for attempt in range(2):
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(_GEMINI_URL, headers={"x-goog-api-key": _GEMINI_KEY}, json=payload)
+                resp.raise_for_status()
+                return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code
+            if code in (429, 500, 503) and attempt == 0:
+                await asyncio.sleep(3)
+                continue
+            print(f"Gemini error: HTTP {code}")
+            return None
+        except httpx.TimeoutException:
+            print(f"Gemini timed out ({timeout:.0f}s)")
+            return None
+        except (httpx.HTTPError, KeyError, IndexError) as e:
+            print(f"Gemini error: {type(e).__name__}")
+            return None
+    return None
 
 
-async def _brainstorm_call(topic: str, duration_preset: str = "short") -> str:
+async def generate_brainstorm(topic: str, duration_preset: str = "short") -> str | None:
     if duration_preset == "long":
-        style = "เนื้อหาเชิงลึก (3-5 นาที) สำหรับ YouTube"
-        facts = "5-8"
-        hooks = "3"
+        style, facts = "เนื้อหาเชิงลึก (3-5 นาที) สำหรับ YouTube", "5-8"
     elif duration_preset == "medium":
-        style = "เนื้อหาปานกลาง (2-3 นาที) สำหรับ YouTube"
-        facts = "3-5"
-        hooks = "3"
+        style, facts = "เนื้อหาปานกลาง (2-3 นาที) สำหรับ YouTube", "3-5"
     else:
-        style = "YouTube Shorts style (45-60 seconds)"
-        facts = "2-3"
-        hooks = "3"
+        style, facts = "YouTube Shorts style (45-60 seconds)", "2-3"
 
     prompt = f"""Topic for YouTube video: {topic}
 
 Generate in Thai:
-1. [HOOKS] {hooks} engaging opening lines to grab attention
+1. [HOOKS] 3 engaging opening lines to grab attention
 2. [FACTS] {facts} specific facts or statistics
 3. [CTA] One compelling call-to-action
 
 Format: Keep it concise, {style}"""
-
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    async with httpx.AsyncClient(timeout=20) as client:
-        resp = await client.post(
-            _GEMINI_URL,
-            params={"key": _GEMINI_KEY},
-            json=payload,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+    return await gemini_generate(prompt, timeout=20)

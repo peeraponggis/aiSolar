@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -139,27 +148,43 @@ def build_qa_messages(src_text, src_lang, translation, dst_lang, history, questi
     msgs.append({"role": "user", "content": question})
     return msgs
 
-LANGS = {"th": "Thai", "en": "English"}
-THAI_RE = re.compile(r"[฀-๿]")
+LANGS = {"th": "Thai", "en": "English", "lo": "Lao"}
+LANG_LABELS = {"th": "ไทย", "en": "อังกฤษ", "lo": "ลาว"}
+THAI_RE = re.compile(r"[\u0E00-\u0E7F]")
+LAO_RE = re.compile(r"[\u0E80-\u0EFF]")
 THINK_RE = re.compile(r"<think>.*?</think>\s*", re.S)
 
 
 def detect_lang(text):
-    """ตรวจภาษาต้นทางจากสัดส่วนอักษรไทย"""
+    """ตรวจภาษาต้นทางจากสัดส่วนอักษร: ลาว (U+0E80-0EFF) > ไทย > อังกฤษ"""
     letters = [c for c in text if c.isalpha()]
     if not letters:
         return "th"
+    lao = sum(1 for c in letters if LAO_RE.match(c))
+    if lao / len(letters) > 0.3:
+        return "lo"
     thai = sum(1 for c in letters if THAI_RE.match(c))
     return "th" if thai / len(letters) > 0.3 else "en"
 
 
+def default_dst(src):
+    """ปลายทางเริ่มต้นเมื่อไม่ได้บังคับทิศทาง: ไทย→อังกฤษ, อังกฤษ→ไทย, ลาว→ไทย"""
+    return "en" if src == "th" else "th"
+
+
+def needs_online(src, dst):
+    """ทิศทางที่โมเดล 4B ในเครื่องทำไม่ได้ (ทดสอบ 19 ต.ค. 2569: Typhoon/Qwen 4-7B เขียนลาวผิดเพี้ยน) -> ควรใช้ API ออนไลน์"""
+    return dst == "lo"
+
+
 # ---------------------------------------------------------------- glossary
 def load_glossary():
-    """อ่าน glossary.txt -> list ของ (level หรือ None, term_th, term_en)"""
+    """อ่าน glossary.txt -> list ของ (level หรือ None, คำไทย, คำแปล, ภาษาของคำแปล "en"/"lo")
+    หัวข้อ [lao] = คู่ ไทย => ລາວ ใช้กับทุกระดับ; หัวข้อระดับอื่น/[all] กลับเป็นคู่ ไทย => อังกฤษ"""
     entries = []
     if not os.path.exists(GLOSSARY_FILE):
         return entries
-    level = None
+    level, pair = None, "en"
     with open(GLOSSARY_FILE, "r", encoding="utf-8-sig") as f:
         for raw in f:
             line = raw.strip()
@@ -167,28 +192,38 @@ def load_glossary():
                 continue
             m = re.match(r"^\[(\w+)\]$", line)
             if m:
-                level = m.group(1).lower()
-                level = None if level in ("all", "global") else level
+                tag = m.group(1).lower()
+                if tag in ("lao", "lo"):
+                    level, pair = None, "lo"
+                else:
+                    level, pair = (None if tag in ("all", "global") else tag), "en"
                 continue
             if "=>" not in line:
                 continue
             a, b = [s.strip() for s in line.split("=>", 1)]
             if a and b:
-                entries.append((level, a, b))
+                entries.append((level, a, b, pair))
     return entries
 
 
-def glossary_for(text, src, level, entries):
-    """คืนเฉพาะคำศัพท์ที่ปรากฏในข้อความ เพื่อให้ prompt สั้น"""
+def glossary_for(text, src, level, entries, dst=None):
+    """คืนเฉพาะคำศัพท์ที่ปรากฏในข้อความ เพื่อให้ prompt สั้น (เลือกคู่ภาษาให้ตรงกับ src/dst)"""
+    dst = dst or default_dst(src)
+    pair = "lo" if "lo" in (src, dst) else "en"
     low = text.lower()
     hits = []
-    for lv, th, en in entries:
+    for e in entries:
+        lv, th, other = e[0], e[1], e[2]
+        if (e[3] if len(e) > 3 else "en") != pair:
+            continue
         if lv and lv != level:
             continue
         if src == "th" and th in text:
-            hits.append((th, en))
-        elif src == "en" and en.lower() in low:
-            hits.append((en, th))
+            hits.append((th, other))
+        elif src == "en" and pair == "en" and other.lower() in low:
+            hits.append((other, th))
+        elif src == "lo" and other in text:
+            hits.append((other, th))
     return hits[:40]
 
 
@@ -205,6 +240,16 @@ def build_messages(text, src, dst, level, glossary_hits, variant=False):
         "- Do not translate proper names, URLs, emails, code, or product model numbers.\n"
         "- If a sentence is already in the target language, keep it as is.\n"
     )
+    if dst == "lo":
+        sys_prompt += (
+            "- The target language is Lao (ພາສາລາວ), the official language of Laos. Write the output in LAO SCRIPT ONLY "
+            "(Unicode block U+0E80-U+0EFF: ກ ຂ ຄ ງ ຈ ສ ຊ ຍ ດ ຕ ຖ ທ ນ ບ ປ ຜ ຝ ພ ຟ ມ ຢ ຣ ລ ວ ຫ ອ ຮ ...). "
+            "Thai script (ก ข ค ... U+0E00-U+0E7F) is a DIFFERENT writing system and must never appear in the output. "
+            "Use natural modern Lao vocabulary and spelling as used in Vientiane (e.g. ບໍ່ not ไม่, ເຮັດ not ทำ, ເຈົ້າ as the polite particle), "
+            "not Thai words transliterated into Lao letters.\n"
+        )
+    elif src == "lo":
+        sys_prompt += "- The source text is Lao (ພາສາລາວ), not Thai; read it as Lao even though the scripts look similar.\n"
     if glossary_hits:
         sys_prompt += "Use this terminology exactly:\n" + "\n".join(f"- {a} => {b}" for a, b in glossary_hits) + "\n"
     if variant:
@@ -326,6 +371,14 @@ API_PRESETS = {
         "models": ["typhoon-v2.5-30b-a3b-instruct"],
         "signup": "https://opentyphoon.ai",
         "note": "โมเดล Typhoon ปรับจูนภาษาไทยโดย SCB10X สมัครแล้วสร้าง API key ในหน้า API Keys (คีย์ขึ้นต้น sk-) · ก.ย. 2026 มีโมเดลแชทตัวเดียวคือ typhoon-v2.5-30b-a3b-instruct (v2.1 ถูกปลดแล้ว) กด 'โหลดรายการโมเดล' เพื่อดูตัวล่าสุด"},
+    "KKU gen.ai (มข.)": {
+        "base": "https://gen.ai.kku.ac.th/okmd/api/v1",
+        "models": ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gpt-5.4-mini", "deepseek-v4-flash", "claude-sonnet-5", "qwen3.7-plus"],
+        "signup": "",
+        "key_env": "KKU_API_KEY",
+        "note": "เกตเวย์ AI ของ มข. (ตัวเดียวกับ AI-Bridge-Launcher) ใช้คีย์จากตัวแปร KKU_API_KEY ของ Windows อัตโนมัติ ไม่ต้องกรอก "
+                "และไม่บันทึกคีย์ลงไฟล์ · แปลเร็วสุด: gemini-3.1-flash-lite (~1 วินาที) · คุณภาพสูง: claude-sonnet-5 / gpt-5.4-mini · "
+                "เลี่ยง qwen3.6-flash (คิดยาวเงียบๆ ช้า ~8 วินาทีและเปลืองเครดิต)"},
     "OpenRouter (หลายโมเดล มีแบบฟรี)": {
         "base": "https://openrouter.ai/api/v1",
         "models": ["google/gemma-4-26b-a4b-it:free", "google/gemma-4-31b-it:free", "qwen/qwen3.8-27b:free", "qwen/qwen3-30b-a3b-instruct-2507", "qwen/qwen3-235b-a22b-2507"],
@@ -348,11 +401,77 @@ API_PRESETS = {
         "note": "คุณภาพสูง คิดค่าใช้จ่ายตามโทเค็น"},
     "กำหนดเอง (OpenAI-compatible)": {"base": "", "models": [], "signup": "", "note": "ใส่ Base URL ที่ลงท้ายด้วย /v1 ของบริการที่รองรับรูปแบบ OpenAI"},
 }
+# ศูนย์ผู้ให้บริการ (ทะเบียนกลางที่ Multi Tools จัดการ — ลุงพี AI / ลุงพี Agent ใช้ไฟล์เดียวกัน) ไม่มีคีย์ในไฟล์:
+# คีย์อ่านจากตัวแปร Windows ตาม key_env · ผู้ให้บริการที่ไม่ใช้คีย์ (เช่น Pollinations) มี nokey=True
+HUB_FILE = os.environ.get("LUNGPEE_PROVIDERS") or r"F:\LocalAI\shared\providers.json"
+HUB_PREFIX = "🔗 "
+
+
+def load_hub_presets():
+    """เติมรายการจากทะเบียนกลางเข้า API_PRESETS (ชื่อขึ้นต้น 🔗) — เรียกซ้ำได้เมื่อเปิดหน้าต่างผู้ให้บริการ"""
+    for k in [k for k in API_PRESETS if k.startswith(HUB_PREFIX)]:
+        del API_PRESETS[k]
+    try:
+        with open(HUB_FILE, encoding="utf-8") as f:
+            items = json.load(f).get("providers") or []
+    except (OSError, ValueError):
+        return 0
+    n = 0
+    for p in items:
+        if not isinstance(p, dict) or not p.get("base") or p.get("enabled", True) is False or p.get("auth") == "anthropic":
+            continue   # anthropic: /models ต้องใช้ header พิเศษ ใช้ผ่าน Multi Tools/ลุงพี AI แทน
+        nokey = p.get("auth") == "none" or not p.get("key_env")
+        tag = "/".join(t for t, ok in (("ฟรี", p.get("free")), ("เสียเงิน", p.get("paid"))) if ok)
+        API_PRESETS[HUB_PREFIX + (p.get("name") or p["id"]) + (f" [{tag}]" if tag else "")] = {
+            "base": p["base"].rstrip("/"), "models": [m for m in (p.get("models") or []) if isinstance(m, str)],
+            "signup": p.get("signup") or "", "key_env": p.get("key_env") or "", "nokey": nokey,
+            "note": ("จากศูนย์ผู้ให้บริการ (จัดการรายชื่อ/คีย์ใน Multi Tools → ตั้งค่า) · "
+                     + ("ไม่ต้องใช้คีย์" if nokey else f"คีย์จากตัวแปร {p.get('key_env')} ของ Windows อัตโนมัติ ไม่ต้องกรอก"))}
+        n += 1
+    return n
+
+
+load_hub_presets()
 BACKEND = {"mode": "local", "base": "", "key": "", "model": ""}   # โหมดที่ใช้งานอยู่จริง (ตั้งโดย GUI)
 
 
+def env_key(name):
+    """อ่านคีย์จากตัวแปรผู้ใช้ของ Windows (โปรแกรมที่เปิดก่อนตั้งค่าตัวแปรจะไม่เห็นใน os.environ จึงอ่าน registry สำรอง)"""
+    if not name:
+        return ""
+    if os.environ.get(name):
+        return os.environ[name]
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+            return winreg.QueryValueEx(k, name)[0] or ""
+    except OSError:
+        return ""
+
+
+def resolve_api_key(api):
+    """คีย์ที่กรอกเองมาก่อน ถ้าเว้นว่างและผู้ให้บริการกำหนด key_env ไว้ ให้ใช้คีย์จากตัวแปร Windows นั้น"""
+    api = api or {}
+    return api.get("key") or env_key(API_PRESETS.get(api.get("preset"), {}).get("key_env"))
+
+
+def preset_nokey(name):
+    """ผู้ให้บริการที่ไม่ใช้คีย์ (เช่น Pollinations จากศูนย์ผู้ให้บริการ)"""
+    return bool(API_PRESETS.get(name or "", {}).get("nokey"))
+
+
+def api_ready(api):
+    """ตั้งค่า API ครบพอจะใช้ได้: มี base + โมเดล และมีคีย์ (หรือผู้ให้บริการไม่ใช้คีย์)"""
+    api = api or {}
+    return bool(api.get("base") and api.get("model") and (resolve_api_key(api) or preset_nokey(api.get("preset"))))
+
+
+def _auth_headers(key):
+    return {"Authorization": "Bearer " + key} if key else {}
+
+
 def list_models_openai(base, key, timeout=15):
-    req = urllib.request.Request(base.rstrip("/") + "/models", headers={"Authorization": "Bearer " + key, "User-Agent": "LocalTranslator/1.0"})
+    req = urllib.request.Request(base.rstrip("/") + "/models", headers={**_auth_headers(key), "User-Agent": "LocalTranslator/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         d = json.loads(r.read().decode("utf-8"))
     items = d.get("data") if isinstance(d, dict) else d
@@ -364,7 +483,7 @@ def stream_chat_openai(base, key, model, messages, temperature, stop_event=None)
     msgs = [dict(m, content=m["content"].replace("/no_think", "").rstrip()) for m in messages]
     body = json.dumps({"model": model, "messages": msgs, "stream": True, "temperature": temperature}).encode("utf-8")
     req = urllib.request.Request(base.rstrip("/") + "/chat/completions", data=body,
-                                 headers={"Content-Type": "application/json", "Authorization": "Bearer " + key, "User-Agent": "LocalTranslator/1.0",
+                                 headers={"Content-Type": "application/json", **_auth_headers(key), "User-Agent": "LocalTranslator/1.0",
                                           "HTTP-Referer": "https://localtranslator.local", "X-Title": "Local Translator"})
     try:
         resp = urllib.request.urlopen(req, timeout=180)
@@ -416,11 +535,102 @@ def pull_model(name, progress_cb=None):
     return True
 
 
-def chat_stream(model, messages, temperature, stop_event=None):
-    """ตัวเลือกเส้นทาง: โมเดลในเครื่อง (Ollama) หรือ API ออนไลน์ ตาม BACKEND ที่ GUI ตั้งไว้"""
-    if BACKEND["mode"] == "api":
-        return (yield from stream_chat_openai(BACKEND["base"], BACKEND["key"], BACKEND["model"], messages, temperature, stop_event))
+def chat_stream(model, messages, temperature, stop_event=None, backend=None):
+    """ตัวเลือกเส้นทาง: โมเดลในเครื่อง (Ollama) หรือ API ออนไลน์ ตาม BACKEND ที่ GUI ตั้งไว้
+    backend = dict รูปแบบเดียวกับ BACKEND เพื่อบังคับเส้นทางเฉพาะงานนี้ (เช่น ไทย→ลาว ต้องใช้ API)
+    โหมดอัตโนมัติ (BACKEND['fallback_model'] = โมเดลในเครื่อง): ถ้า API ล้มก่อนตอบอะไรออกมา ถอยไปแปลด้วยโมเดลในเครื่องแทน"""
+    b = backend or BACKEND
+    if b["mode"] == "api":
+        fallback = b.get("fallback_model")
+        if not fallback:
+            return (yield from stream_chat_openai(b["base"], b["key"], b["model"], messages, temperature, stop_event))
+        gen = stream_chat_openai(b["base"], b["key"], b["model"], messages, temperature, stop_event)
+        try:
+            first = next(gen)
+        except StopIteration as e:
+            return e.value
+        except Exception as e:
+            log.warning("API %s ล้ม (%s) — ถอยไปใช้โมเดลในเครื่อง %s", b.get("model"), str(e)[:120], fallback)
+            return (yield from stream_chat(fallback, messages, temperature, stop_event))
+        yield first
+        return (yield from gen)
     return (yield from stream_chat(model, messages, temperature, stop_event))
+
+
+# ---------------------------------------------------------------- เพิ่มผู้ให้บริการเข้าศูนย์ผู้ให้บริการ (ทะเบียนกลาง)
+HUB_PRESETS = {   # ชุดย่อของ Multi Tools core/provider_hub.py — ชื่อ/base/ตัวแปรคีย์ตรงกัน จึงใช้ร่วมกันได้
+    "openrouter": {"name": "OpenRouter (หลายโมเดล มีแบบฟรี)", "base": "https://openrouter.ai/api/v1", "key_env": "OPENROUTER_API_KEY",
+                   "free": True, "paid": True, "signup": "https://openrouter.ai/keys",
+                   "models": ["google/gemma-4-26b-a4b-it:free", "qwen/qwen3.8-27b:free", "qwen/qwen3-235b-a22b-2507"]},
+    "groq": {"name": "Groq (เร็วมาก ฟรีจำกัด)", "base": "https://api.groq.com/openai/v1", "key_env": "GROQ_API_KEY",
+             "free": True, "paid": True, "signup": "https://console.groq.com/keys", "models": ["llama-3.3-70b-versatile", "qwen/qwen3-32b"]},
+    "gemini": {"name": "Google Gemini (ฟรีจำกัด)", "base": "https://generativelanguage.googleapis.com/v1beta/openai", "key_env": "GEMINI_API_KEY",
+               "free": True, "paid": True, "signup": "https://aistudio.google.com/apikey", "models": ["gemini-2.5-flash", "gemini-2.5-flash-lite"]},
+    "openai": {"name": "OpenAI", "base": "https://api.openai.com/v1", "key_env": "OPENAI_API_KEY",
+               "free": False, "paid": True, "signup": "https://platform.openai.com/api-keys", "models": ["gpt-4o-mini", "gpt-4.1-mini"]},
+    "typhoon": {"name": "OpenTyphoon (SCB10X ภาษาไทย)", "base": "https://api.opentyphoon.ai/v1", "key_env": "TYPHOON_API_KEY",
+                "free": True, "paid": True, "signup": "https://opentyphoon.ai", "models": ["typhoon-v2.5-30b-a3b-instruct"]},
+    "custom": {"name": "", "base": "", "key_env": "", "free": False, "paid": False, "signup": "", "models": []},
+}
+_ENV_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,63}$")
+
+
+def set_windows_key(env, value):
+    """เก็บคีย์เป็นตัวแปรผู้ใช้ของ Windows (HKCU\\Environment) — ไม่ลงไฟล์/log"""
+    value = (value or "").strip()
+    if not _ENV_NAME_RE.match(env or ""):
+        raise ValueError("ชื่อตัวแปรคีย์ต้องเป็นตัวพิมพ์ใหญ่/ตัวเลข/_ เช่น OPENROUTER_API_KEY")
+    if not value or any(c in value for c in " \t\r\n\"'"):
+        raise ValueError("คีย์ต้องไม่ว่างและไม่มีช่องว่าง/อัญประกาศ")
+    import winreg
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0, winreg.KEY_SET_VALUE) as k:
+        winreg.SetValueEx(k, env, 0, winreg.REG_SZ, value)
+    os.environ[env] = value
+    try:
+        import ctypes
+        ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x1A, 0, "Environment", 2, 3000, None)
+    except Exception:
+        pass
+
+
+def hub_add_provider(preset, name="", base="", key_env="", key=""):
+    """เพิ่มผู้ให้บริการลงทะเบียนกลาง (รูปแบบเดียวกับ Multi Tools) + ตั้งคีย์ถ้าให้มา คืนชื่อรายการใน API_PRESETS"""
+    pre = HUB_PRESETS.get(preset) or HUB_PRESETS["custom"]
+    name = (name or "").strip() or pre["name"]
+    base = ((base or "").strip() or pre["base"]).rstrip("/")
+    key_env = (key_env or "").strip() or pre["key_env"]
+    if not name or not re.match(r"^https://|^http://(127\.0\.0\.1|localhost)[:/]", base):
+        raise ValueError("ใส่ชื่อ และ Base URL ที่ขึ้นต้นด้วย https:// (ลงท้าย /v1)")
+    if key_env and not _ENV_NAME_RE.match(key_env):
+        raise ValueError("ชื่อตัวแปรคีย์ต้องเป็นตัวพิมพ์ใหญ่/ตัวเลข/_ เช่น OPENROUTER_API_KEY")
+    try:
+        with open(HUB_FILE, encoding="utf-8") as f:
+            doc = json.load(f)
+        items = doc.get("providers") or []
+    except (OSError, ValueError):
+        doc, items = {"version": 1}, [{"id": "kku", "preset": "kku", "name": "KKU gen.ai (มข.)", "base": "https://gen.ai.kku.ac.th/okmd/api/v1",
+                                       "key_env": "KKU_API_KEY", "auth": "bearer", "models_url": None, "free": False, "paid": True,
+                                       "signup": "https://gen.ai.kku.ac.th", "enabled": True,
+                                       "models": ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gpt-5.4-mini", "deepseek-v4-flash", "claude-sonnet-5", "qwen3.7-plus"]}]
+    pid, n = (preset if preset in HUB_PRESETS else "custom"), 2
+    while any(p.get("id") == pid for p in items):
+        pid, n = f"{preset}-{n}", n + 1
+    item = {"id": pid, "preset": preset if preset in HUB_PRESETS else "custom", "name": name, "base": base, "key_env": key_env,
+            "auth": "bearer" if key_env else "none", "models_url": None, "models": list(pre["models"]), "free": pre["free"], "paid": pre["paid"],
+            "signup": pre["signup"], "enabled": True}
+    items.append(item)
+    doc.update(providers=items, updated=time.strftime("%Y-%m-%dT%H:%M:%S"), by="Local Translator",
+               note="no API keys here — keys live in Windows user environment variables named by key_env")
+    os.makedirs(os.path.dirname(HUB_FILE), exist_ok=True)
+    tmp = HUB_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, HUB_FILE)
+    if key and key_env:
+        set_windows_key(key_env, key)
+    load_hub_presets()
+    tag = "/".join(t for t, ok in (("ฟรี", pre["free"]), ("เสียเงิน", pre["paid"])) if ok)
+    return HUB_PREFIX + name + (f" [{tag}]" if tag else "")
 
 
 def clean_output(text):
@@ -443,21 +653,50 @@ def warm_up(model):
 
 
 # ---------------------------------------------------------------- CLI
+def api_backend(settings):
+    """คืน dict เส้นทาง API ออนไลน์จาก settings['api'] (รูปแบบเดียวกับ BACKEND) หรือ None ถ้ายังไม่ได้ตั้งค่าครบ"""
+    a = (settings or {}).get("api") or {}
+    if api_ready(a):
+        return {"mode": "api", "base": a["base"], "key": resolve_api_key(a), "model": a["model"]}
+    return None
+
+
+def load_settings_file():
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
 def run_cli(args):
-    models = ensure_ollama()   # เปิด Ollama ให้เองถ้ายังไม่ทำงาน (เหมือนโหมดหน้าต่าง)
-    if models is None:
-        print("เชื่อมต่อ Ollama ไม่ได้ที่", OLLAMA_URL, "- ติดตั้ง Ollama จาก https://ollama.com/download แล้วลองใหม่", file=sys.stderr)
-        return 2
-    model = args.model or pick_model(models)
+    for stream in (sys.stdout, sys.stderr):   # console ไทย (cp874) พิมพ์อักษรลาวไม่ได้ - บังคับ UTF-8 กันโปรแกรมล้มใน --cli
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     text = args.text or sys.stdin.read()
     src = args.src or detect_lang(text)
-    dst = args.to or ("en" if src == "th" else "th")
-    hits = glossary_for(text, src, args.level, load_glossary())
+    dst = args.to or default_dst(src)
+    api = api_backend(load_settings_file())
+    use_api = bool(api) and (needs_online(src, dst) or args.model == "api")
+    if use_api:   # ไทย/อังกฤษ→ลาว: ใช้ผู้ให้บริการออนไลน์ก่อนเสมอ (หรือบังคับด้วย --model api)
+        model = api["model"]
+        gen_fn = lambda msgs, temp: stream_chat_openai(api["base"], api["key"], api["model"], msgs, temp)
+        print(f"[ใช้ผู้ให้บริการออนไลน์ {api['base']}]", file=sys.stderr)
+    else:
+        models = ensure_ollama()   # เปิด Ollama ให้เองถ้ายังไม่ทำงาน (เหมือนโหมดหน้าต่าง)
+        if models is None:
+            print("เชื่อมต่อ Ollama ไม่ได้ที่", OLLAMA_URL, "- ติดตั้ง Ollama จาก https://ollama.com/download แล้วลองใหม่", file=sys.stderr)
+            return 2
+        model = (args.model if args.model and args.model != "api" else None) or pick_model(models)
+        gen_fn = lambda msgs, temp: stream_chat(model, msgs, temp)
+        if needs_online(src, dst):
+            print("คำเตือน: โมเดลในเครื่องแปลเป็นภาษาลาวได้ไม่ดี (เขียนผิดเพี้ยน) - ตั้งค่า ⚙ ผู้ให้บริการ (settings.json) เพื่อใช้ API ออนไลน์", file=sys.stderr)
+    hits = glossary_for(text, src, args.level, load_glossary(), dst)
     msgs = build_messages(text, src, dst, args.level, hits)
     print(f"[{model}] {src}->{dst} level={args.level} glossary={len(hits)}", file=sys.stderr)
     out = []
     t0 = time.time()
-    gen = stream_chat(model, msgs, LEVELS[args.level]["temp"])
+    gen = gen_fn(msgs, LEVELS[args.level]["temp"])
     try:
         while True:
             piece = next(gen)
@@ -472,7 +711,7 @@ def run_cli(args):
         translation = clean_output("".join(out))
         qmsgs = build_qa_messages(text, src, translation, dst, [], args.ask)
         print(f"\n[ask] {args.ask}", file=sys.stderr)
-        gen = stream_chat(model, qmsgs, 0.4)
+        gen = gen_fn(qmsgs, 0.4)
         try:
             while True:
                 sys.stdout.write(next(gen)); sys.stdout.flush()

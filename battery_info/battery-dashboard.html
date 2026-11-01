@@ -1,0 +1,1441 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Battery Dashboard · ThinkPad P16s Gen 2</title>
+<style>
+:root{
+  --bg:#0d0d12;--card:#16161f;--card2:#1e1e2a;--border:#252535;
+  --text:#e8e8f0;--muted:#6b6b88;--muted2:#9999b3;
+  --green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;
+  --blue:#38bdf8;--cyan:#11d8e8;--purple:#a855f7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── HEADER ── */
+#header{background:linear-gradient(135deg,#0a0a14,#12122a);border-bottom:1px solid var(--border);padding:12px 20px;flex-shrink:0}
+.hdr-top{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.hdr-icon{font-size:28px;flex:0 0 auto}
+.hdr-titles{flex:1;min-width:0}
+.hdr-titles h1{font-size:14px;font-weight:700;color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-titles .specs-line{font-size:10px;color:var(--muted2);margin-top:2px}
+.hdr-titles .specs-line span{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:3px;padding:0 5px;margin:1px 2px 1px 0;font-size:9.5px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.lang-btn{background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:20px;cursor:pointer;font-size:11px;transition:.2s}
+.lang-btn.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
+#srv-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+#srv-badge.ok{background:rgba(34,197,94,.12);color:var(--green);border-color:rgba(34,197,94,.3)}
+.ref-wrap{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.ref-wrap select{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:2px 4px;border-radius:5px;font-size:10px}
+
+/* ── TABS ── */
+#tab-bar{display:flex;background:#0a0a14;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab-btn{flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;user-select:none}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(17,216,232,.05)}
+
+/* ── ALERT BANNERS ── */
+.alert-strip{display:none;padding:8px 20px;text-align:center;font-size:12px;font-weight:700;flex-shrink:0;cursor:pointer;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
+#alert-full{background:linear-gradient(90deg,rgba(34,197,94,.18),rgba(34,197,94,.05));color:var(--green);border-bottom:1px solid var(--green)}
+#alert-low{background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fff;border-bottom:2px solid var(--red)}
+#alert-idle{background:rgba(239,68,68,.1);color:var(--red);border-bottom:1px solid rgba(239,68,68,.3)}
+
+/* ── TAB PANELS ── */
+.tab-panel{display:none;flex:1;overflow-y:auto;overflow-x:hidden}
+.tab-panel.active{display:block}
+#tab-proc.active{display:flex}
+.nt-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.nt-tbl th,.nt-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:left}
+.nt-tbl th{color:var(--muted2);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+#nt-sum{border-left:4px solid var(--sum-c,var(--muted));margin-bottom:12px}
+#nt-sum h3{font-size:15px;color:var(--sum-c,var(--text));margin-bottom:4px}
+.sum-fit{font-size:11.5px;color:var(--muted2);margin-bottom:8px}
+.sum-item{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.sum-item .ic{flex:0 0 18px;text-align:center}
+.sum-item .fx{color:var(--muted2);font-size:11px}
+.lv-ok{color:var(--green)}.lv-warn{color:var(--yellow)}.lv-bad{color:var(--red)}.lv-info{color:var(--muted2)}
+.mini-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer}
+.mini-btn:hover{border-color:var(--cyan)}
+.mini-btn.primary{background:var(--cyan);color:#000;border-color:var(--cyan);font-weight:700}
+.mini-btn:disabled{opacity:.5;cursor:default}
+.pw{font-family:Consolas,monospace;letter-spacing:.03em}
+.sig-bar{display:inline-block;width:46px;height:6px;background:#1e1e30;border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:5px}
+.sig-bar i{display:block;height:100%}
+.conn-badge{background:rgba(34,197,94,.15);color:var(--green);padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700}
+#wf-saved{max-height:340px;overflow-y:auto}
+#wf-saved .row{display:flex;align-items:center;gap:8px;padding:4px 2px;border-bottom:1px solid var(--border);font-size:11.5px}
+#wf-saved .row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#wf-saved .row .pw{flex:0 0 170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#wf-msg{font-size:11.5px;margin-top:8px;min-height:16px}
+.tab-panel::-webkit-scrollbar{width:5px}
+.tab-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ════════════════════════════════
+   TAB 1 — BATTERY
+   ════════════════════════════════ */
+#p-batt{padding:0 0 30px}
+
+/* summary cards */
+.b-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:16px 20px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-accent,transparent);border-radius:10px 10px 0 0}
+.c-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px}
+.s-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;margin-top:5px}
+.s-pill .dot{width:7px;height:7px;border-radius:50%;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+.pill-charging{background:rgba(234,179,8,.15);color:var(--yellow)}.pill-charging .dot{background:var(--yellow)}
+.pill-full{background:rgba(34,197,94,.15);color:var(--green)}.pill-full .dot{background:var(--green)}
+.pill-dc{background:rgba(56,189,248,.1);color:var(--blue)}.pill-dc .dot{background:var(--blue);animation:none}
+.pill-low{background:rgba(239,68,68,.15);color:var(--red)}.pill-low .dot{background:var(--red)}
+.pill-orange{background:rgba(249,115,22,.15);color:var(--orange)}.pill-orange .dot{background:var(--orange)}
+.ring-wrap{display:flex;align-items:center;gap:12px}
+.ring-svg{flex:0 0 66px}
+.ring-svg text{font-family:'Segoe UI',sans-serif;font-size:12px;font-weight:700;fill:var(--text)}
+.c-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+.h-score{font-size:28px;font-weight:700}
+.h-bar-track{height:12px;background:#1e1e30;border-radius:6px;overflow:hidden;margin:7px 0 4px}
+.h-bar-fill{height:100%;border-radius:6px;transition:width .9s;background:linear-gradient(90deg,var(--hs),var(--he))}
+.h-ticks{display:flex;justify-content:space-between;font-size:9px;color:var(--muted)}
+.cyc-wrap{display:flex;align-items:center;gap:12px}
+.donut-svg{flex:0 0 68px}
+.donut-svg text{font-family:'Segoe UI',sans-serif;font-size:9.5px;fill:var(--muted2)}
+.donut-svg .pct-txt{font-size:13px;font-weight:700;fill:var(--text)}
+.cyc-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.cyc-row span:first-child{color:var(--muted)}
+.cap-row{display:flex;align-items:center;gap:7px;margin-top:5px}
+.cap-bar-track{flex:1;height:7px;background:#1e1e30;border-radius:4px;overflow:hidden}
+.cap-bar-fill{height:100%;border-radius:4px}
+
+/* recommendation */
+#rec{margin:14px 20px 0;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--rec-c,var(--cyan));border-radius:10px;padding:14px 16px;display:flex;gap:10px}
+.rec-icon{font-size:22px;flex:0 0 auto}
+.rec-body h3{font-size:13px;font-weight:700;color:var(--rec-c,var(--cyan))}
+.rec-body p{font-size:11.5px;color:var(--muted2);margin-top:4px;line-height:1.7}
+
+/* spec grid */
+#spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:14px 20px 0}
+.sg{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:9px 12px}
+.sg .sl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.sg .sv{font-size:12px;font-weight:600;margin-top:2px}
+
+/* report toggle */
+#toggle-wrap{margin:14px 20px 0;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tog-hdr{padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--cyan);user-select:none}
+.tog-hdr:hover{background:var(--card2)}
+.tog-arr{transition:transform .3s}.tog-arr.open{transform:rotate(180deg)}
+#report-iframe{width:100%;height:600px;border:none;display:none;background:#181818}
+
+/* ════════════════════════════════
+   TAB 2 — PROCESSES
+   ════════════════════════════════ */
+#p-proc{display:flex;flex-direction:column;height:100%}
+
+/* mini battery strip */
+#mini-batt{display:flex;align-items:center;gap:10px;padding:6px 20px;background:#11111a;border-bottom:1px solid var(--border);flex-shrink:0}
+.mb-pct{font-size:16px;font-weight:700;min-width:42px}
+.mb-bar-wrap{flex:1;height:7px;background:#1e1e30;border-radius:4px;overflow:hidden}
+.mb-bar{height:100%;border-radius:4px;transition:width .6s,background .4s}
+.mb-info{font-size:10px;color:var(--muted2);text-align:right}
+
+/* toolbar */
+#proc-toolbar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+#proc-toolbar .lbl{font-size:11px;color:var(--muted);font-weight:600;flex:1}
+#search{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:5px;font-size:11px;width:120px}
+#search::placeholder{color:var(--muted)}
+#proc-toolbar select,#proc-toolbar input[type=number]{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:2px 5px;border-radius:4px;font-size:11px}
+#proc-toolbar button{background:var(--card2);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer}
+#proc-toolbar button:hover{color:var(--text)}
+#btn-cfg-proc.active{background:rgba(17,216,232,.1);color:var(--cyan);border-color:var(--cyan)}
+
+/* settings panel */
+#proc-settings{display:none;background:#0f0f1c;border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0}
+#proc-settings.open{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.sp-g{display:flex;align-items:center;gap:6px;font-size:11px}
+.sp-g label{color:var(--muted2);white-space:nowrap}
+.sp-g input{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:2px 5px;border-radius:4px;font-size:11px;width:50px;text-align:center}
+.sp-save{background:var(--cyan);color:#000;border:none;padding:3px 12px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer}
+
+/* process table */
+#proc-scroll{flex:1;overflow-y:auto;overflow-x:hidden}
+#proc-scroll::-webkit-scrollbar{width:5px}
+#proc-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#proc-table{width:100%;border-collapse:collapse;font-size:11.5px}
+#proc-table thead th{position:sticky;top:0;background:#0e0e1a;border-bottom:1px solid var(--border);padding:5px 8px;text-align:left;font-weight:600;color:var(--muted2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
+#proc-table thead th:hover{color:var(--text)}
+#proc-table tbody tr{border-bottom:1px solid rgba(37,37,53,.7)}
+#proc-table tbody tr:hover{background:var(--card2)}
+#proc-table tbody tr.idle-row{background:rgba(239,68,68,.05)}
+#proc-table td{padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}
+.td-name{width:140px}.td-title{width:200px;color:var(--muted2);font-size:10.5px}
+.p-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.cpu-bar{display:inline-block;height:4px;border-radius:2px;vertical-align:middle;margin-left:3px}
+.idle-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(239,68,68,.15);color:var(--red);animation:blink 1.2s infinite}
+
+/* proc footer */
+#proc-footer{display:flex;align-items:center;justify-content:space-between;padding:4px 14px;background:#0a0a14;border-top:1px solid var(--border);font-size:10px;color:var(--muted);flex-shrink:0}
+.x-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--card2);color:var(--muted2);cursor:pointer;font-size:11px;line-height:1;padding:0}
+.x-btn:hover{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red)}
+.x-btn.risk-os{color:var(--orange);border-color:rgba(249,115,22,.4)}
+.x-btn.risk-affects{color:var(--yellow);border-color:rgba(234,179,8,.4)}
+#kill-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px}
+#kill-modal.open{display:flex}
+.km-box{background:var(--card);border:1px solid var(--border);border-radius:12px;max-width:440px;width:100%;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.km-box h3{font-size:15px;margin-bottom:10px;color:var(--text)}
+.km-warn{font-size:12.5px;line-height:1.7;padding:10px 12px;border-radius:8px;margin-bottom:14px}
+.km-warn.w-critical{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:var(--red)}
+.km-warn.w-os{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.35);color:var(--orange)}
+.km-warn.w-affects{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.35);color:var(--yellow)}
+.km-warn.w-normal{background:var(--card2);border:1px solid var(--border);color:var(--muted2)}
+.km-btns{display:flex;gap:8px;justify-content:flex-end}
+.km-btns button{padding:7px 16px;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--border)}
+.km-cancel{background:var(--card2);color:var(--text)}
+.km-ok{background:var(--red);color:#fff;border-color:var(--red)}
+.km-ok:disabled{opacity:.5;cursor:default}
+#kill-msg{font-size:11.5px;min-height:15px;margin-top:4px}
+</style>
+    <script src="lungpee-pdpa.js"></script>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div id="header">
+  <div class="hdr-top">
+    <div class="hdr-icon">🔋</div>
+    <div class="hdr-titles">
+      <h1 id="t-title">รายงานแบตเตอรี่ของ Lenovo ThinkPad P16s Gen 2</h1>
+      <div class="specs-line">
+        <span>i7-1360P</span><span>32GB RAM</span><span>RTX A500</span><span>1TB NVMe</span><span>Win 11 Pro</span><span>SMP LiP 52,500mWh</span>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="lang-btn active" onclick="setLang('th')">ไทย</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <span id="srv-badge">Connecting…</span>
+      <div class="ref-wrap">
+        <span id="t-ref-lbl">รีเฟรช</span>
+        <select id="ref-sel" onchange="setRefresh(+this.value)">
+          <option value="5">5s</option><option value="10" selected>10s</option>
+          <option value="30">30s</option><option value="60">1m</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div id="tab-bar">
+  <div class="tab-btn active" onclick="switchTab('batt')" id="tab-batt-btn">🔋 <span id="t-tab1">แบตเตอรี่</span></div>
+  <div class="tab-btn" onclick="switchTab('proc')" id="tab-proc-btn">📊 <span id="t-tab2">โปรแกรม</span> <span id="idle-badge-tab" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:0 5px;border-radius:8px;margin-left:3px">0</span></div>
+  <div class="tab-btn" onclick="switchTab('net')" id="tab-net-btn">🌐 <span data-nt="tab">อินเทอร์เน็ต</span></div>
+  <div class="tab-btn" onclick="switchTab('tune')" id="tab-tune-btn">🧹 <span data-tu="tab">ปรับประสิทธิภาพ</span></div>
+</div>
+
+<!-- ── ALERT BANNERS (shared) ── -->
+<div id="alert-full" class="alert-strip" onclick="this.style.display='none'">
+  <span id="t-alert-full">🔔 แบตเตอรี่ชาร์จเต็มแล้ว! กรุณาถอดสายชาร์จเพื่อยืดอายุแบตเตอรี่</span>
+</div>
+<div id="alert-low" class="alert-strip" onclick="lowBattDismissed=true;this.style.display='none'">
+  <span id="t-alert-low">⚡ แบตเตอรี่เหลือน้อย! กรุณาเสียบชาร์จโดยด่วน</span>
+</div>
+<div id="alert-idle" class="alert-strip" onclick="idleDismissed=true;this.style.display='none'">
+  <span id="t-alert-idle">⚠️ มีโปรแกรมไม่ได้ใช้งานนาน — ควรปิดเพื่อประหยัดแบต</span>
+</div>
+
+<!-- ════ TAB 1: BATTERY ════ -->
+<div class="tab-panel active" id="tab-batt">
+<div id="p-batt">
+
+  <div class="b-cards">
+    <!-- Charge ring -->
+    <div class="card" style="--card-accent:var(--blue)">
+      <div class="c-lbl" id="t-lbl-charge">สถานะการชาร์จ</div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="28" fill="none" stroke="#1e1e30" stroke-width="8"/>
+          <circle id="ring-arc" cx="35" cy="35" r="28" fill="none" stroke="var(--blue)" stroke-width="8"
+            stroke-linecap="round" stroke-dasharray="175.9" stroke-dashoffset="175.9"
+            transform="rotate(-90 35 35)" style="transition:stroke-dashoffset .8s,stroke .4s"/>
+          <text x="35" y="39" text-anchor="middle" id="ring-txt">—</text>
+        </svg>
+        <div>
+          <div id="s-pill" class="s-pill pill-dc"><span class="dot"></span><span id="t-status">กำลังโหลด...</span></div>
+          <div class="c-sub" id="t-charge-sub">—</div>
+          <div class="c-sub" id="t-eta" style="color:var(--blue)">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Health bar -->
+    <div class="card" style="--card-accent:var(--orange)">
+      <div class="c-lbl" id="t-lbl-health">สุขภาพแบตเตอรี่</div>
+      <div class="h-score" id="h-score" style="color:var(--orange)">85.3%</div>
+      <div class="c-sub" id="t-health-grade" style="color:var(--orange);margin-bottom:5px">● เริ่มเสื่อม</div>
+      <div class="h-bar-track"><div class="h-bar-fill" id="h-bar" style="width:85.3%;--hs:#f97316;--he:#eab308"></div></div>
+      <div class="h-ticks"><span>0</span><span>50%</span><span>100%</span></div>
+      <div class="c-sub" style="margin-top:5px">44,800 / 52,500 mWh</div>
+    </div>
+
+    <!-- Cycle donut -->
+    <div class="card" style="--card-accent:var(--purple)">
+      <div class="c-lbl" id="t-lbl-cycles">รอบการชาร์จ</div>
+      <div class="cyc-wrap">
+        <svg class="donut-svg" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#1e1e30" stroke-width="10"/>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#f97316" stroke-width="10"
+            stroke-dasharray="175.9" stroke-dashoffset="105.5" transform="rotate(-90 36 36)"/>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#a855f7" stroke-width="10"
+            stroke-dasharray="175.9" stroke-dashoffset="176" transform="rotate(56.7 36 36)"/>
+          <text class="pct-txt" x="36" y="33" text-anchor="middle">59.3%</text>
+          <text x="36" y="46" text-anchor="middle" id="t-remain-short">เหลือ</text>
+        </svg>
+        <div class="cyc-wrap" style="flex-direction:column;gap:3px;align-items:stretch">
+          <div class="cyc-row"><span id="t-used-lbl">ใช้ไปแล้ว</span><span style="color:var(--orange);font-weight:700">407 รอบ</span></div>
+          <div class="cyc-row"><span id="t-remain-lbl">เหลืออยู่</span><span style="color:var(--purple);font-weight:700">593 รอบ</span></div>
+          <div class="cyc-row"><span id="t-rated-lbl">Rated</span><span style="color:var(--muted)">1,000 รอบ</span></div>
+          <div class="cap-row">
+            <span style="font-size:9.5px;color:var(--muted)" id="t-pct-used">ใช้ไป 40.7%</span>
+            <div class="cap-bar-track"><div class="cap-bar-fill" style="width:40.7%;background:linear-gradient(90deg,var(--orange),var(--purple))"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="b-cards" style="padding-top:12px">
+    <div class="card" id="th-card" style="--card-accent:var(--green)">
+      <div class="c-lbl" id="th-lbl">อุณหภูมิ CPU & พัดลมระบายความร้อน</div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div class="h-score" id="th-temp">—</div>
+          <div class="c-sub" id="th-load">—</div>
+        </div>
+        <div>
+          <div id="th-pill" class="s-pill pill-dc"><span class="dot"></span><span id="th-status">—</span></div>
+          <div class="c-sub" id="th-fan-note">—</div>
+        </div>
+      </div>
+      <div class="c-sub" id="th-throttle" style="margin-top:6px;color:var(--orange)"></div>
+      <div id="th-tip" style="display:none;margin-top:8px;font-size:11.5px;line-height:1.7;color:var(--muted2);white-space:pre-line"></div>
+      <div class="c-sub" id="th-note" style="margin-top:8px;font-size:9.5px"></div>
+    </div>
+  </div>
+
+  <div id="rec" style="--rec-c:#f97316">
+    <div class="rec-icon">💡</div>
+    <div class="rec-body"><h3 id="t-rec-title">คำแนะนำ</h3><p id="t-rec-body">กำลังวิเคราะห์...</p></div>
+  </div>
+
+  <div id="spec-grid">
+    <div class="sg"><div class="sl" id="t-sg1">แบรนด์ / ซีรีส์</div><div class="sv">Lenovo ThinkPad P16s Gen 2</div></div>
+    <div class="sg"><div class="sl" id="t-sg2">รุ่น</div><div class="sv">21HKS00Q00</div></div>
+    <div class="sg"><div class="sl" id="t-sg3">โปรเซสเซอร์</div><div class="sv">i7-1360P · 12C/16T</div></div>
+    <div class="sg"><div class="sl" id="t-sg4">หน่วยความจำ</div><div class="sv">32 GB DDR5</div></div>
+    <div class="sg"><div class="sl" id="t-sg5">การ์ดจอ</div><div class="sv">NVIDIA RTX A500 4GB</div></div>
+    <div class="sg"><div class="sl" id="t-sg6">พื้นที่เก็บข้อมูล</div><div class="sv">Samsung 1TB NVMe SSD</div></div>
+    <div class="sg"><div class="sl" id="t-sg7">ระบบปฏิบัติการ</div><div class="sv">Windows 11 Pro</div></div>
+    <div class="sg"><div class="sl" id="t-sg8">แบตเตอรี่</div><div class="sv">SMP LiP · S/N 526</div></div>
+  </div>
+
+  <div id="toggle-wrap">
+    <div class="tog-hdr" onclick="toggleReport()">
+      <span id="t-full-lbl">📄 รายงานฉบับเต็มจาก Windows (powercfg)</span>
+      <span class="tog-arr" id="tog-arr">▼</span>
+    </div>
+    <iframe id="report-iframe" src="battery-report.html" style="display:none;width:100%;height:600px;border:none;background:#181818"></iframe>
+  </div>
+
+  <div style="text-align:center;color:var(--muted);font-size:10px;padding:16px">
+    <span id="t-footer">Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W</span>
+  </div>
+</div>
+</div><!-- tab-batt -->
+
+<!-- ════ TAB 2: PROCESSES ════ -->
+<div class="tab-panel" id="tab-proc" style="flex-direction:column">
+
+  <!-- Mini battery strip -->
+  <div id="mini-batt">
+    <span style="font-size:16px" id="mb-ico">🔋</span>
+    <span class="mb-pct" id="mb-pct">—%</span>
+    <div class="mb-bar-wrap"><div class="mb-bar" id="mb-bar" style="width:0%;background:var(--blue)"></div></div>
+    <div class="mb-info">
+      <div id="mb-pill" class="s-pill pill-dc" style="margin-top:0"><span class="dot"></span><span id="mb-status">—</span></div>
+      <div id="mb-detail" style="margin-top:2px">สุขภาพ 85.3% · 407/1,000 รอบ</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div id="proc-toolbar">
+    <span class="lbl" id="t-proc-lbl">โปรแกรม (<span id="proc-count">0</span>)</span>
+    <input id="search" type="search" placeholder="ค้นหา…" oninput="renderProcTable()">
+    <select id="sort-sel" onchange="procSort=this.value;renderProcTable()">
+      <option value="mem" id="t-sort-mem">RAM ↓</option>
+      <option value="cpu">CPU ↓</option>
+      <option value="idle" id="t-sort-idle">Idle ↓</option>
+      <option value="name">ชื่อ</option>
+    </select>
+    <button onclick="fetchProc()" title="Refresh">⟳</button>
+    <button id="btn-cfg-proc" onclick="toggleProcSettings()">⚙ <span id="t-set-lbl">ตั้งค่า</span></button>
+  </div>
+
+  <!-- Settings panel -->
+  <div id="proc-settings">
+    <div class="sp-g"><label id="t-sp-idle">ไม่ใช้งานนาน</label><input type="number" id="sp-idle" value="30" min="1"><span id="t-sp-min">นาที</span></div>
+    <div class="sp-g"><label>CPU ≤</label><input type="number" id="sp-cpu" value="2" min="0" step="0.5"><span>%</span></div>
+    <button class="sp-save" onclick="saveProcSettings()" id="t-sp-save">บันทึก</button>
+  </div>
+
+  <!-- Table -->
+  <div id="proc-scroll">
+    <table id="proc-table">
+      <thead><tr>
+        <th class="td-name" onclick="procSort='name';renderProcTable()" id="th-name">ชื่อ</th>
+        <th class="td-title" id="th-title">Title</th>
+        <th style="width:60px" onclick="procSort='cpu';renderProcTable()" id="th-cpu">CPU%</th>
+        <th style="width:60px" onclick="procSort='mem';renderProcTable()" id="th-mem">RAM</th>
+        <th style="width:52px" onclick="procSort='runtime';renderProcTable()" id="th-run">เวลา</th>
+        <th style="width:72px" onclick="procSort='idle';renderProcTable()" id="th-idle">ไม่ใช้งาน</th>
+        <th style="width:48px;text-align:center" id="th-close">ปิด</th>
+      </tr></thead>
+      <tbody id="proc-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">กำลังเชื่อมต่อ server…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div id="proc-footer">
+    <span id="proc-srv-status">—</span>
+    <span id="proc-ts">—</span>
+    <span style="color:var(--muted)">localhost:8765</span>
+  </div>
+</div><!-- tab-proc -->
+
+<!-- ════ TAB 3: INTERNET ════ -->
+<div class="tab-panel" id="tab-net">
+<div style="padding:14px 20px 30px">
+  <div class="card" id="nt-sum">
+    <div class="c-lbl" data-wf="sumT">สรุปสถานะการทำงาน</div>
+    <h3 id="sum-head">—</h3>
+    <div class="sum-fit" id="sum-fit"></div>
+    <div id="sum-list"></div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="sp-save" id="btn-speed" onclick="runSpeedTest()">▶ <span data-nt="run">ทดสอบความเร็ว</span></button>
+    <label class="c-sub" style="display:flex;align-items:center;gap:5px;margin:0;cursor:pointer"><input type="checkbox" id="auto-speed"> <span data-nt="auto">ทดสอบทุกรอบรีเฟรช (ใช้ data มาก)</span></label>
+    <span class="c-sub" id="nt-last" style="margin-left:auto">—</span>
+  </div>
+
+  <div class="b-cards">
+    <div class="card" style="--card-accent:var(--cyan)">
+      <div class="c-lbl" data-nt="down">ดาวน์โหลด</div>
+      <div class="h-score" id="nt-down">—</div>
+      <div class="c-sub">Mbps</div>
+      <svg id="spark-down" viewBox="0 0 260 40" preserveAspectRatio="none" style="width:100%;height:40px;margin-top:6px"></svg>
+    </div>
+    <div class="card" style="--card-accent:var(--purple)">
+      <div class="c-lbl" data-nt="up">อัปโหลด</div>
+      <div class="h-score" id="nt-up">—</div>
+      <div class="c-sub">Mbps</div>
+      <svg id="spark-up" viewBox="0 0 260 40" preserveAspectRatio="none" style="width:100%;height:40px;margin-top:6px"></svg>
+    </div>
+    <div class="card" style="--card-accent:var(--yellow)">
+      <div class="c-lbl" data-nt="ping">Ping (เฉลี่ย)</div>
+      <div class="h-score" id="nt-ping">—</div>
+      <div class="c-sub" id="nt-ping-sub">—</div>
+      <div class="c-sub" id="nt-dns-line">—</div>
+      <svg id="spark-ping" viewBox="0 0 260 40" preserveAspectRatio="none" style="width:100%;height:40px;margin-top:6px"></svg>
+    </div>
+    <div class="card" style="--card-accent:var(--blue)">
+      <div class="c-lbl" data-nt="conn">การเชื่อมต่อ</div>
+      <div class="cyc-row"><span data-nt="adapter">อแดปเตอร์</span><span id="nt-adapter">—</span></div>
+      <div class="cyc-row"><span data-nt="link">ความเร็วลิงก์</span><span id="nt-link">—</span></div>
+      <div class="cyc-row"><span data-nt="lip">IP ภายใน</span><span id="nt-lip">—</span></div>
+      <div class="cyc-row"><span data-nt="pip">IP สาธารณะ</span><span id="nt-pip">—</span></div>
+      <div class="cyc-row"><span data-nt="gw">Gateway</span><span id="nt-gw">—</span></div>
+      <div class="cyc-row"><span data-nt="dnsS">DNS</span><span id="nt-dnss">—</span></div>
+    </div>
+    <div class="card" id="conn-detail-card" style="--card-accent:var(--green)">
+      <div class="c-lbl" id="conn-detail-lbl">Wi-Fi</div>
+      <div id="conn-detail-body"></div>
+    </div>
+    <div class="card" style="--card-accent:var(--orange)">
+      <div class="c-lbl" data-nt="traffic">ปริมาณข้อมูลตั้งแต่เปิดเครื่อง</div>
+      <div class="cyc-row"><span data-nt="sent">ส่งแล้ว</span><span id="nt-tx">—</span></div>
+      <div class="cyc-row"><span data-nt="recv">รับแล้ว</span><span id="nt-rx">—</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-nt="tblT">Ping ตามปลายทาง</div>
+    <table class="nt-tbl">
+      <thead><tr><th data-nt="tgt">ปลายทาง</th><th data-nt="min">ต่ำสุด</th><th data-nt="avg">เฉลี่ย</th><th data-nt="max">สูงสุด</th><th data-nt="jit">Jitter</th><th data-nt="loss">Packet loss</th></tr></thead>
+      <tbody id="nt-ptbl"><tr><td colspan="6" style="color:var(--muted);text-align:center">—</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div class="c-lbl" style="margin:0;flex:1" data-wf="topT">Wi-Fi ใกล้เคียง — สัญญาณแรงสุด 5 อันดับ</div>
+      <button class="mini-btn" data-act="scan" data-wf="scan">สแกนใหม่</button>
+    </div>
+    <table class="nt-tbl">
+      <thead><tr><th>#</th><th>SSID</th><th data-wf="thSig">สัญญาณ</th><th data-wf="thBand">ย่าน / ช่อง</th><th data-wf="thSec">ความปลอดภัย</th><th data-wf="thSaved">เคยใช้</th><th></th></tr></thead>
+      <tbody id="wf-top"><tr><td colspan="7" style="color:var(--muted);text-align:center">—</td></tr></tbody>
+    </table>
+    <div id="wf-msg"></div>
+  </div>
+</div>
+</div>
+
+<!-- ════ TAB 4: TUNE-UP ════ -->
+<div class="tab-panel" id="tab-tune">
+<div style="padding:14px 20px 30px">
+
+  <!-- Live stats -->
+  <div class="b-cards" style="padding-top:0">
+    <div class="card" style="--card-accent:var(--cyan)">
+      <div class="c-lbl" data-tu="ramTitle">แรม (RAM)</div>
+      <div class="h-score"><span id="tu-free">—</span><span style="font-size:14px;color:var(--muted2)"> / <span id="tu-total">—</span></span></div>
+      <div class="h-bar-track" style="margin-top:7px"><div class="h-bar-fill" id="tu-bar" style="width:0%;background:linear-gradient(90deg,var(--green),var(--yellow))"></div></div>
+      <div class="c-sub" style="margin-top:4px"><span data-tu="used">ใช้ไป</span> <span id="tu-pct">—</span> · <span data-tu="atRefresh">อัปเดต</span> <span id="tu-at">—</span></div>
+    </div>
+    <div class="card" style="--card-accent:var(--purple)">
+      <div class="c-lbl" data-tu="diskTitle">พื้นที่ดิสก์</div>
+      <div id="tu-disks" class="c-sub" style="line-height:1.9;font-size:12px">—</div>
+    </div>
+    <div class="card" style="--card-accent:var(--orange)">
+      <div class="c-lbl" data-tu="summaryTitle">ผลรวมที่คืนได้</div>
+      <div class="h-score" style="color:var(--green)"><span id="tu-total-freed">0</span><span style="font-size:14px;color:var(--muted2)"> MB</span></div>
+      <div class="c-sub" id="tu-run-count" style="margin-top:4px">—</div>
+      <button class="mini-btn" style="margin-top:6px" onclick="clearTuneLog()" data-tu="clearLog">ล้างบันทึก</button>
+    </div>
+  </div>
+
+  <!-- Action list -->
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-tu="actionsTitle">การปรับประสิทธิภาพ</div>
+    <div id="tune-list" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Log -->
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-tu="logTitle">บันทึกผลการทำงาน</div>
+    <div id="tune-log" style="margin-top:6px;font-family:Consolas,monospace;font-size:11.5px;line-height:1.8;color:var(--muted2);max-height:300px;overflow-y:auto"></div>
+  </div>
+</div>
+</div>
+
+<!-- Close-program confirmation -->
+<div id="kill-modal" onclick="if(event.target===this)closeKillModal()">
+  <div class="km-box">
+    <h3 id="km-head">—</h3>
+    <div id="km-warn" class="km-warn w-normal">—</div>
+    <div class="km-btns">
+      <button class="km-cancel" id="km-cancel" onclick="closeKillModal()">ยกเลิก</button>
+      <button class="km-ok" id="km-ok">ปิดเลย</button>
+    </div>
+    <div id="kill-msg"></div>
+  </div>
+</div>
+
+<script>
+// ════ CONSTANTS ════
+const DESIGN=52500,FULL=44800,CYCLES=407,RATED=1000;
+const HEALTH=+(FULL/DESIGN*100).toFixed(1);
+const CYC_REMAIN=RATED-CYCLES, CYC_PCT_USED=+(CYCLES/RATED*100).toFixed(1), CYC_PCT_REMAIN=+(CYC_REMAIN/RATED*100).toFixed(1);
+const API='http://localhost:8765';
+const LOW_BATT=20;
+
+// ════ STATE ════
+let lang='th', activeTab='batt';
+let battObj=null, refreshTimer=null;
+let allProcs=[], procSort='mem';
+let alertFullPlayed=false, alertLowPlayed=false, alertLowDismissed=false;
+let idleDismissed=false, alertedPids=new Set(), lowBattDismissed=false;
+
+// ════ LANG ════
+const T={
+  th:{
+    title:'รายงานแบตเตอรี่ของ Lenovo ThinkPad P16s Gen 2',
+    tab1:'แบตเตอรี่',tab2:'โปรแกรม',
+    lblCharge:'สถานะการชาร์จ',lblHealth:'สุขภาพแบตเตอรี่',lblCycles:'รอบการชาร์จ',
+    recTitle:'คำแนะนำ',fullLbl:'📄 รายงานฉบับเต็มจาก Windows (powercfg)',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.3.0 · โดย ลุงพี',
+    sg1:'แบรนด์ / ซีรีส์',sg2:'รุ่น',sg3:'โปรเซสเซอร์',sg4:'หน่วยความจำ',
+    sg5:'การ์ดจอ',sg6:'พื้นที่เก็บข้อมูล',sg7:'ระบบปฏิบัติการ',sg8:'แบตเตอรี่',
+    usedLbl:'ใช้ไปแล้ว',remainLbl:'เหลืออยู่',ratedLbl:'Rated',remainShort:'เหลือ',
+    pctUsed:`ใช้ไป ${CYC_PCT_USED}%`,
+    refLbl:'รีเฟรช',
+    statusCharging:p=>`กำลังชาร์จ ${p}%`,statusFull:'ชาร์จเต็มแล้ว ✓',
+    statusDC:p=>`กำลังใช้งาน ${p}%`,statusLow:p=>`แบตต่ำ! ${p}%`,
+    chargeSub:(p,plug)=>plug?(p>=100?'เสียบปลั๊ก · ชาร์จเต็มแล้ว':`เสียบปลั๊ก · ชาร์จแล้ว ${p}%`):`ไม่ได้เสียบปลั๊ก · เหลือ ${p}%`,
+    etaCharge:m=>m>0?`คาดว่าชาร์จเต็มใน ~${m} นาที`:'',etaDC:m=>m>0&&m<1000?`คาดว่าใช้ได้อีก ~${m} นาที`:'',
+    hGrade:g=>({good:'● สุขภาพดี',fair:'● เริ่มเสื่อม — ควรดูแล',warn:'● เริ่มแย่ — ควรพิจารณาเปลี่ยน',bad:'● แย่มาก — ควรเปลี่ยนด่วน'}[g]),
+    alertFull:'🔔 แบตเตอรี่ชาร์จเต็มแล้ว! กรุณาถอดสายชาร์จเพื่อยืดอายุแบตเตอรี่',
+    alertLow:p=>`⚡ แบตเตอรี่เหลือ ${p}%! กรุณาเสียบชาร์จโดยด่วน`,
+    alertIdle:n=>`⚠️ ${n} โปรแกรมไม่ได้ใช้งานนาน — คลิกเพื่อปิด`,
+    procLbl:'โปรแกรม',sortMem:'RAM ↓',sortIdle:'Idle ↓',
+    thName:'ชื่อ',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'เวลา',thIdle:'ไม่ใช้งาน',thClose:'ปิด',
+    closeBtn:'ปิด',closing:'กำลังปิด…',closedOk:n=>`ปิด "${n}" แล้ว`,closeFail:n=>`ปิด "${n}" ไม่สำเร็จ`,
+    closeDenied:n=>`ปิด "${n}" ไม่ได้ (สิทธิ์ไม่พอ ลองเปิดโปรแกรมด้วยสิทธิ์ผู้ดูแล)`,
+    closeCriticalBlock:n=>`"${n}" เป็นโปรแกรมหลักของระบบปฏิบัติการ ปิดไม่ได้ (อาจทำให้เครื่องค้างหรือจอฟ้า)`,
+    confHead:n=>`ยืนยันปิด "${n}" ?`,
+    warnCritical:'⛔ เป็นระบบปฏิบัติการหลัก ไม่ควรปิด — อาจทำให้ Windows ค้างหรือจอฟ้า',
+    warnOs:'⚠️ เป็นส่วนหนึ่งของ Windows (เดสก์ท็อป/ทาสก์บาร์/เมนู) การปิดจะทำให้หน้าจอรวนชั่วคราว (มักกลับมาเองหรือรีสตาร์ตเครื่องแก้ได้)',
+    warnAffects:(n,list)=>`⚠️ โปรแกรมนี้มีโปรแกรมย่อย ${n} ตัวทำงานอยู่ (${list}) การปิดจะปิดโปรแกรมย่อยเหล่านี้ด้วย งานที่ยังไม่บันทึกอาจหาย`,
+    warnNormal:'งานที่ยังไม่ได้บันทึกในโปรแกรมนี้อาจหายไป',
+    btnConfirm:'ปิดเลย',btnCancel:'ยกเลิก',
+    setLbl:'ตั้งค่า',spIdle:'ไม่ใช้งานนาน',spMin:'นาที',spSave:'บันทึก',
+    srvOk:'เชื่อมต่อแล้ว',srvErr:'ไม่ได้เชื่อมต่อ',
+    rec:(h,c)=>{
+      if(h>=90)return`แบตอยู่ในสภาพดีเยี่ยม ความจุเหลือ <strong>${h}%</strong> ใช้ไป <strong>${c}</strong> จาก 1,000 รอบ เหลือ ~<strong>${CYC_REMAIN} รอบ</strong>`;
+      if(h>=80)return`ใช้ไปแล้ว <strong>${c} รอบ</strong> ความจุเหลือ <strong>${h}%</strong> (~${CYC_REMAIN} รอบ หรือ ${CYC_PCT_REMAIN}%) อยู่ในระดับ "เริ่มเสื่อม" ควรวางแผนเปลี่ยนภายใน 12–18 เดือน และรักษาระดับแบตที่ 20–80%`;
+      if(h>=60)return`ความจุเหลือ <strong>${h}%</strong> ควรวางแผนเปลี่ยนแบตภายใน 3–6 เดือน`;
+      return`แบตเสื่อมมาก ความจุเหลือ <strong>${h}%</strong> ควรเปลี่ยนโดยเร็ว`;
+    }
+  },
+  en:{
+    title:'Battery Report — Lenovo ThinkPad P16s Gen 2',
+    tab1:'Battery',tab2:'Processes',
+    lblCharge:'Charge Status',lblHealth:'Battery Health',lblCycles:'Charge Cycles',
+    recTitle:'Recommendation',fullLbl:'📄 Full Windows Battery Report',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.3.0 · by LungPee',
+    sg1:'Brand / Series',sg2:'Model',sg3:'Processor',sg4:'Memory',
+    sg5:'GPU',sg6:'Storage',sg7:'Operating System',sg8:'Battery',
+    usedLbl:'Used',remainLbl:'Remaining',ratedLbl:'Rated',remainShort:'Left',
+    pctUsed:`${CYC_PCT_USED}% used`,refLbl:'Refresh',
+    statusCharging:p=>`Charging ${p}%`,statusFull:'Fully Charged ✓',
+    statusDC:p=>`Discharging ${p}%`,statusLow:p=>`Low Battery! ${p}%`,
+    chargeSub:(p,plug)=>plug?(p>=100?'Plugged in · Fully charged':`Plugged in · ${p}% charged`):`On battery · ${p}% remaining`,
+    etaCharge:m=>m>0?`~${m} min until full`:'',etaDC:m=>m>0&&m<1000?`~${m} min remaining`:'',
+    hGrade:g=>({good:'● Good — Excellent',fair:'● Fair — Starting to degrade',warn:'● Warning — Consider replacing',bad:'● Poor — Replace ASAP'}[g]),
+    alertFull:'🔔 Battery fully charged! Please unplug the charger to extend lifespan.',
+    alertLow:p=>`⚡ Battery low at ${p}%! Please plug in charger immediately.`,
+    alertIdle:n=>`⚠️ ${n} program${n>1?'s':''} idle — click to dismiss`,
+    procLbl:'Programs',sortMem:'RAM ↓',sortIdle:'Idle ↓',
+    thName:'Name',thTitle:'Title',thCpu:'CPU%',thMem:'RAM',thRun:'Runtime',thIdle:'Idle',thClose:'Close',
+    closeBtn:'Close',closing:'Closing…',closedOk:n=>`Closed "${n}"`,closeFail:n=>`Failed to close "${n}"`,
+    closeDenied:n=>`Can't close "${n}" (insufficient rights — try running it as administrator)`,
+    closeCriticalBlock:n=>`"${n}" is a core OS process and cannot be closed (could freeze the PC or cause a blue screen)`,
+    confHead:n=>`Close "${n}"?`,
+    warnCritical:'⛔ Core operating-system process — do not close. May freeze Windows or cause a blue screen.',
+    warnOs:'⚠️ Part of Windows (desktop/taskbar/menu). Closing will briefly disrupt the screen (usually recovers on its own, or restart the PC).',
+    warnAffects:(n,list)=>`⚠️ This program has ${n} child program(s) running (${list}). Closing it will also close them; unsaved work may be lost.`,
+    warnNormal:'Unsaved work in this program may be lost.',
+    btnConfirm:'Close it',btnCancel:'Cancel',
+    setLbl:'Settings',spIdle:'Idle after',spMin:'min',spSave:'Save',
+    srvOk:'Connected',srvErr:'Server offline',
+    rec:(h,c)=>{
+      if(h>=90)return`Battery is in excellent shape. <strong>${h}%</strong> capacity after <strong>${c} cycles</strong>. ~<strong>${CYC_REMAIN} cycles</strong> remaining.`;
+      if(h>=80)return`<strong>${h}%</strong> capacity after <strong>${c} cycles</strong> (~${CYC_REMAIN} cycles / ${CYC_PCT_REMAIN}% remaining). Starting to degrade — plan replacement in 12–18 months. Keep at 20–80%.`;
+      if(h>=60)return`Capacity at <strong>${h}%</strong>. Plan replacement within 3–6 months.`;
+      return`Battery severely degraded at <strong>${h}%</strong>. Replace ASAP.`;
+    }
+  }
+};
+
+const TM={
+  th:{
+    lbl:'อุณหภูมิ CPU & พัดลมระบายความร้อน',
+    st:{normal:'ทำงานปกติ',warn:'ควรระวัง',abnormal:'ไม่ปกติ',critical:'วิกฤต'},
+    fan:{normal:'พัดลมระบายความร้อนทำงานปกติ',warn:'ระบายความร้อนเริ่มไม่ทัน',abnormal:'พัดลมอาจไม่ทำงาน หรือช่องระบายอากาศอุดตัน',critical:'ตรวจสอบด่วน'},
+    load:l=>`CPU ใช้งาน ${l}%`,
+    thr:'⚠ CPU ถูกลดความเร็วเพื่อป้องกันความร้อน (throttling)',
+    tip:{
+      warn:'แนวทางแก้ไข:\n1) ตรวจว่าช่องระบายอากาศด้านข้าง/ด้านหลังไม่ถูกปิด\n2) อย่าวางเครื่องบนผ้าห่มหรือหมอน ควรใช้พื้นแข็ง\n3) ปิดโปรแกรมที่ใช้ CPU สูงค้างอยู่ (ดูแท็บโปรแกรม)',
+      abnormal:'แนวทางแก้ไข (อุณหภูมิสูงทั้งที่ CPU ไม่หนัก):\n1) ปิดเครื่อง เสียบชาร์จทิ้งไว้ 5 นาทีให้เย็นลง\n2) เปิดเครื่องแล้วฟังว่าพัดลมหมุนหรือไม่\n3) เป่าฝุ่นช่องระบายอากาศด้วยลมเย็นหรือกระป๋องลม\n4) ตั้งโหมดพลังงานเป็น Balanced ใน Lenovo Vantage\n5) ถ้ายังร้อนผิดปกติหรือพัดลมเงียบ ให้ส่งศูนย์บริการตรวจพัดลม',
+      critical:'อุณหภูมิวิกฤต! ปิดเครื่องทันทีและปล่อยให้เย็นก่อนใช้งาน\nถ้าเครื่องดับเองหรือร้อนซ้ำ ให้ส่งศูนย์บริการตรวจพัดลมและระบบระบายความร้อนโดยเร็ว'
+    },
+    note:'หมายเหตุ: เครื่องนี้ไม่เปิดค่า RPM ของพัดลมผ่าน WMI จึงประเมินจากอุณหภูมิและการทำงานของ CPU'
+  },
+  en:{
+    lbl:'CPU Temperature & Cooling Fan',
+    st:{normal:'Normal',warn:'Watch',abnormal:'Abnormal',critical:'Critical'},
+    fan:{normal:'Cooling fan operating normally',warn:'Cooling is starting to fall behind',abnormal:'Fan may not be spinning, or vents are blocked',critical:'Check urgently'},
+    load:l=>`CPU load ${l}%`,
+    thr:'⚠ CPU is being throttled to prevent overheating',
+    tip:{
+      warn:'Suggested fixes:\n1) Make sure side/rear vents are not blocked\n2) Do not place the laptop on blankets or pillows; use a hard surface\n3) Close high-CPU programs (see Processes tab)',
+      abnormal:'Suggested fixes (hot although CPU is not busy):\n1) Shut down and leave on charger for 5 minutes to cool\n2) Power on and listen whether the fan spins\n3) Blow dust out of the vents with cool air or compressed air\n4) Set power mode to Balanced in Lenovo Vantage\n5) If still overheating or fan is silent, send to service center to check the fan',
+      critical:'Critical temperature! Shut down immediately and let it cool before use.\nIf it shuts off by itself or overheats again, send to a service center to check fan and cooling system.'
+    },
+    note:'Note: RPM is not exposed via WMI on this machine; status is estimated from temperature and CPU activity.'
+  }
+};
+
+function renderThermal(th){
+  window._th=th;
+  const t=TM[lang];
+  set('th-lbl',t.lbl); set('th-note',t.note);
+  if(!th){ set('th-temp','—'); set('th-status','—'); return; }
+  const cls={normal:'pill-full',warn:'pill-charging',abnormal:'pill-orange',critical:'pill-low'}[th.status];
+  const acc={normal:'var(--green)',warn:'var(--yellow)',abnormal:'var(--orange)',critical:'var(--red)'}[th.status];
+  document.getElementById('th-card').style.setProperty('--card-accent',acc);
+  const tEl=document.getElementById('th-temp'); tEl.textContent=th.tempC+'°C'; tEl.style.color=acc;
+  document.getElementById('th-pill').className='s-pill '+cls;
+  set('th-status',t.st[th.status]);
+  set('th-fan-note',t.fan[th.status]);
+  set('th-load',t.load(th.cpuLoad));
+  set('th-throttle',th.throttled?t.thr:'');
+  const tip=document.getElementById('th-tip');
+  tip.textContent=t.tip[th.status]||'';
+  tip.style.display=t.tip[th.status]?'block':'none';
+}
+
+const NT={
+  th:{
+    tab:'อินเทอร์เน็ต',run:'ทดสอบความเร็ว',auto:'ทดสอบทุกรอบรีเฟรช (ใช้ data มาก)',
+    down:'ดาวน์โหลด',up:'อัปโหลด',ping:'Ping (เฉลี่ย)',jit:'Jitter',loss:'Packet loss',
+    conn:'การเชื่อมต่อ',adapter:'อแดปเตอร์',link:'ความเร็วลิงก์',lip:'IP ภายใน',pip:'IP สาธารณะ',gw:'Gateway',dnsS:'DNS',
+    wifi:'Wi-Fi',ssid:'SSID',band:'ย่านความถี่',sig:'สัญญาณ',rssi:'RSSI',rate:'อัตรา รับ/ส่ง',auth:'การยืนยันตัวตน',
+    lanTitle:'LAN (สายแลน)',lanName:'ชื่ออแดปเตอร์',lanSpeed:'ความเร็วลิงก์',lanDuplex:'โหมดดูเพล็กซ์',lanMtu:'MTU',lanMac:'MAC Address',lanDriver:'เวอร์ชันไดรเวอร์',lanState:'สถานะ',lanConnected:'เชื่อมต่อแล้ว',
+    traffic:'ปริมาณข้อมูลตั้งแต่เปิดเครื่อง',sent:'ส่งแล้ว',recv:'รับแล้ว',
+    tblT:'Ping ตามปลายทาง',tgt:'ปลายทาง',min:'ต่ำสุด',avg:'เฉลี่ย',max:'สูงสุด',
+    none:'ยังไม่เคยทดสอบความเร็ว',busy:'กำลังทดสอบ…',fail:'ทดสอบไม่สำเร็จ ตรวจสอบการเชื่อมต่อ',
+    last:t=>`ทดสอบล่าสุด ${t}`,dnsLbl:'DNS lookup',wired:'ไม่ใช่ Wi-Fi',offline:'เชื่อมต่อ server ไม่ได้'
+  },
+  en:{
+    tab:'Internet',run:'Run speed test',auto:'Test every refresh (uses data)',
+    down:'Download',up:'Upload',ping:'Ping (avg)',jit:'Jitter',loss:'Packet loss',
+    conn:'Connection',adapter:'Adapter',link:'Link speed',lip:'Local IP',pip:'Public IP',gw:'Gateway',dnsS:'DNS',
+    wifi:'Wi-Fi',ssid:'SSID',band:'Band',sig:'Signal',rssi:'RSSI',rate:'Rate rx/tx',auth:'Authentication',
+    lanTitle:'LAN (Ethernet)',lanName:'Adapter name',lanSpeed:'Link speed',lanDuplex:'Duplex',lanMtu:'MTU',lanMac:'MAC Address',lanDriver:'Driver version',lanState:'State',lanConnected:'Connected',
+    traffic:'Traffic since boot',sent:'Sent',recv:'Received',
+    tblT:'Ping by target',tgt:'Target',min:'Min',avg:'Avg',max:'Max',
+    none:'No speed test yet',busy:'Testing…',fail:'Test failed — check connection',
+    last:t=>`Last test ${t}`,dnsLbl:'DNS lookup',wired:'Not Wi-Fi',offline:'Server offline'
+  }
+};
+
+let netHist={ping:[],down:[],up:[]}, lastSpeed=null, speedBusy=false, netBusy=false, revealedKeys={};
+
+function trimHist(){
+  for(const k of Object.keys(netHist)) if(netHist[k].length>40) netHist[k].splice(0,netHist[k].length-40);
+}
+
+function spark(id,arr,color){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(arr.length<2){ el.innerHTML=''; return; }
+  const mn=Math.min(...arr), mx=Math.max(...arr), span=(mx-mn)||1;
+  const pts=arr.map((v,i)=>`${(i/(arr.length-1)*260).toFixed(1)},${(38-((v-mn)/span)*34).toFixed(1)}`).join(' ');
+  el.innerHTML=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+}
+
+const WF={
+  th:{sumT:'สรุปสถานะการทำงาน',topT:'Wi-Fi ใกล้เคียง — สัญญาณแรงสุด 5 อันดับ',scan:'สแกนใหม่',
+    thSig:'สัญญาณ',thBand:'ย่าน / ช่อง',thSec:'ความปลอดภัย',thSaved:'เคยใช้',
+    connect:'เชื่อมต่อ',connected:'กำลังใช้',reveal:'ดูรหัส',hide:'ซ่อน',open:'ไม่มีรหัส (เปิด)',
+    pwPrompt:s=>`ใส่รหัสผ่านของ "${s}"`,connecting:'กำลังเชื่อมต่อ…',
+    connOk:s=>`เชื่อมต่อ "${s}" สำเร็จ`,connFail:'เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสผ่าน',
+    noKey:'เครื่องนี้ไม่มีรหัสของเครือข่ายนี้บันทึกไว้',
+    scanning:'กำลังสแกน…',
+    ex:'ดีมาก',good:'ดี',fair:'พอใช้',poor:'อ่อน',
+    hAll:'ระบบทั้งหมดทำงานปกติ',hWarn:'มีบางจุดควรดูแล',hBad:'พบปัญหาที่ควรแก้ไข',
+    noTest:'กดปุ่ม "ทดสอบความเร็ว" เพื่อวัด Download/Upload'},
+  en:{sumT:'Overall status',topT:'Nearby Wi-Fi — top 5 by signal',scan:'Rescan',
+    thSig:'Signal',thBand:'Band / CH',thSec:'Security',thSaved:'Known',
+    connect:'Connect',connected:'In use',reveal:'Show key',hide:'Hide',open:'No key (open)',
+    pwPrompt:s=>`Enter password for "${s}"`,connecting:'Connecting…',
+    connOk:s=>`Connected to "${s}"`,connFail:'Connection failed — check the password',
+    noKey:'This PC has no saved key for that network',
+    scanning:'Scanning…',
+    ex:'Excellent',good:'Good',fair:'Fair',poor:'Weak',
+    hAll:'All systems normal',hWarn:'A few things to watch',hBad:'Issues need attention',
+    noTest:'Press "Run speed test" to measure Download/Upload'}
+};
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function applyNetLabels(){
+  const t=NT[lang], w=WF[lang], tu=TU[lang];
+  document.querySelectorAll('[data-nt]').forEach(el=>{ if(t[el.dataset.nt]!==undefined) el.textContent=t[el.dataset.nt]; });
+  document.querySelectorAll('[data-wf]').forEach(el=>{ if(w[el.dataset.wf]!==undefined) el.textContent=w[el.dataset.wf]; });
+  document.querySelectorAll('[data-tu]').forEach(el=>{ if(tu[el.dataset.tu]!==undefined) el.textContent=tu[el.dataset.tu]; });
+  if(document.getElementById('tune-list')) renderTuneList();
+  set('tu-run-count',tu.runCount(tuneRunCount));
+}
+
+// Parallel streams: a single connection underestimates throughput on high-latency links.
+async function measureDown(){
+  const streams=4, bytes=5000000, t0=performance.now();
+  const sizes=await Promise.all(Array.from({length:streams},(_,i)=>
+    fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}&n=${i}${Date.now()}`,{cache:'no-store'}).then(r=>r.arrayBuffer()).then(b=>b.byteLength)));
+  return +(sizes.reduce((a,b)=>a+b,0)*8/((performance.now()-t0)/1000)/1e6).toFixed(2);
+}
+
+async function measureUp(){
+  const streams=3, bytes=2000000, t0=performance.now();
+  await Promise.all(Array.from({length:streams},()=>
+    fetch('https://speed.cloudflare.com/__up',{method:'POST',body:new Uint8Array(bytes),cache:'no-store'})));
+  return +(streams*bytes*8/((performance.now()-t0)/1000)/1e6).toFixed(2);
+}
+
+async function runSpeedTest(){
+  if(speedBusy) return;
+  speedBusy=true;
+  set('nt-last',NT[lang].busy);
+  try{
+    const down=await measureDown();
+    const up=await measureUp();
+    lastSpeed={down,up,at:new Date()};
+    netHist.down.push(down); netHist.up.push(up); trimHist();
+  }catch(e){
+    lastSpeed={error:true,at:new Date()};
+  }
+  speedBusy=false;
+  renderSpeed();
+  renderSummary();
+}
+
+function speedColor(v){ return v>=50?'var(--green)':v>=10?'var(--yellow)':'var(--red)'; }
+
+function renderSpeed(){
+  const t=NT[lang];
+  if(!lastSpeed){ set('nt-last',t.none); return; }
+  if(lastSpeed.error){ set('nt-last',t.fail); return; }
+  const dEl=document.getElementById('nt-down'), uEl=document.getElementById('nt-up');
+  dEl.textContent=lastSpeed.down; dEl.style.color=speedColor(lastSpeed.down);
+  uEl.textContent=lastSpeed.up; uEl.style.color=speedColor(lastSpeed.up);
+  set('nt-last',t.last(lastSpeed.at.toLocaleTimeString(lang==='th'?'th-TH':'en-US')));
+  spark('spark-down',netHist.down,'#22d3ee');
+  spark('spark-up',netHist.up,'#a855f7');
+}
+
+function renderNet(d){
+  window._net=d;
+  const t=NT[lang];
+  const pings=d.pings||[];
+  const main=pings.find(p=>p.target==='1.1.1.1')||pings[0]||{};
+  const pingEl=document.getElementById('nt-ping');
+  pingEl.textContent=main.avg!=null?main.avg+' ms':'—';
+  pingEl.style.color=main.avg==null?'var(--red)':main.avg<60?'var(--green)':main.avg<120?'var(--yellow)':'var(--red)';
+  set('nt-ping-sub',`${t.jit} ${main.jitter??'—'} ms · ${t.loss} ${main.loss??'—'}%`);
+  set('nt-dns-line',`${t.dnsLbl} ${d.dnsMs??'—'} ms`);
+  if(main.avg!=null){ netHist.ping.push(main.avg); trimHist(); }
+  spark('spark-ping',netHist.ping,'#eab308');
+
+  document.getElementById('nt-ptbl').innerHTML=pings.map(p=>
+    `<tr><td>${p.target}</td><td>${p.min??'—'}</td><td>${p.avg??'—'}</td><td>${p.max??'—'}</td><td>${p.jitter??'—'}</td><td style="color:${p.loss>0?'var(--red)':'var(--green)'}">${p.loss}%</td></tr>`
+  ).join('');
+
+  set('nt-adapter',d.adapter||'—');
+  set('nt-link',d.linkSpeed||'—');
+  set('nt-lip',d.localIp||'—');
+  set('nt-pip',d.publicIp||'—');
+  set('nt-gw',d.gateway||'—');
+  set('nt-dnss',[].concat(d.dns||[]).join(', ')||'—');
+
+  // adaptive connection-detail card: Wi-Fi or LAN
+  const w=d.wifi, wl=d.wired;
+  const lbl=document.getElementById('conn-detail-lbl');
+  const rows=(pairs)=>pairs.map(([k,v])=>`<div class="cyc-row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('');
+  if(wl){
+    lbl.textContent=t.lanTitle;
+    document.getElementById('conn-detail-card').style.setProperty('--card-accent','var(--cyan)');
+    document.getElementById('conn-detail-body').innerHTML=rows([
+      [t.lanName,wl.name||'—'],
+      [t.lanSpeed,wl.linkSpeed||'—'],
+      [t.lanDuplex,wl.duplex||'—'],
+      [t.lanMtu,wl.mtu!=null?wl.mtu+' bytes':'—'],
+      [t.lanMac,wl.mac||'—'],
+      [t.lanDriver,wl.driver||'—'],
+      [t.lanState,(/up|connected/i.test(wl.state)?t.lanConnected:(wl.state||'—'))]
+    ]);
+  } else {
+    lbl.textContent=t.wifi;
+    document.getElementById('conn-detail-card').style.setProperty('--card-accent','var(--green)');
+    document.getElementById('conn-detail-body').innerHTML=rows([
+      [t.ssid,w?w.ssid:t.wired],
+      [t.band,w?`${w.band} · CH ${w.channel}`:'—'],
+      [t.sig,w?w.signal:'—'],
+      [t.rssi,w?`${w.rssi} dBm`:'—'],
+      [t.rate,w?`${w.rxRate} / ${w.txRate} Mbps`:'—'],
+      [t.auth,w?w.auth:'—']
+    ]);
+  }
+  set('nt-rx',d.rxMB!=null?d.rxMB+' MB':'—');
+  set('nt-tx',d.txMB!=null?d.txMB+' MB':'—');
+  renderSpeed();
+}
+
+async function fetchNet(){
+  if(netBusy) return;
+  netBusy=true;
+  try{
+    const r=await fetch(API+'/api/net',{cache:'no-store'});
+    renderNet(await r.json());
+  }catch(e){
+    set('nt-adapter',NT[lang].offline);
+  }
+  netBusy=false;
+  renderSummary();
+}
+
+// ════ STATUS SUMMARY ════
+function renderSummary(){
+  const w=WF[lang], d=window._net, items=[];
+  if(!d){ set('sum-head','—'); return; }
+  const pings=d.pings||[], net=pings.find(p=>p.target==='1.1.1.1')||pings[1]||{};
+  const gw=pings.find(p=>p.target===d.gateway)||pings[0]||{};
+  let bad=0, warn=0;
+  const add=(lv,txt,fix)=>{ items.push({lv,txt,fix}); if(lv==='bad')bad++; else if(lv==='warn')warn++; };
+  const ic={ok:'✅',warn:'⚠️',bad:'⛔',info:'ℹ️'};
+
+  // download/upload
+  if(lastSpeed&&!lastSpeed.error){
+    const dn=lastSpeed.down, up=lastSpeed.up;
+    const lv=dn>=50?'ok':dn>=10?'warn':'bad';
+    add(lv, (lang==='th'?`ดาวน์โหลด ${dn} Mbps · อัปโหลด ${up} Mbps`:`Download ${dn} Mbps · Upload ${up} Mbps`),
+        lv==='ok'?'':(lang==='th'?'ความเร็วต่ำ ลองเข้าใกล้เราเตอร์ หรือทดสอบซ้ำหลายครั้ง':'Low speed — move closer to the router or retest a few times'));
+  } else {
+    add('info', w.noTest, '');
+  }
+
+  // ping / latency
+  if(net.avg!=null){
+    const lv=net.avg<60?'ok':net.avg<120?'warn':'bad';
+    add(lv, (lang==='th'?`หน่วงเวลาไปอินเทอร์เน็ต ${net.avg} ms`:`Internet latency ${net.avg} ms`),
+        lv==='ok'?'':(lang==='th'?'หน่วงสูง เกมหรือวิดีโอคอลอาจสะดุด':'High latency — games/calls may lag'));
+  } else {
+    add('bad', (lang==='th'?'ออกอินเทอร์เน็ตไม่ได้':'No internet reachability'),
+        (lang==='th'?'ping ไป 1.1.1.1 ไม่สำเร็จ ตรวจสอบเราเตอร์/ISP':'ping to 1.1.1.1 failed — check router/ISP'));
+  }
+
+  // packet loss
+  const loss=net.loss!=null?net.loss:0;
+  if(loss>0){
+    const gwLoss=gw.loss!=null?gw.loss:0;
+    const where=gwLoss>0?(lang==='th'?'ตั้งแต่ในบ้าน/Wi-Fi':'from Wi-Fi/LAN'):(lang==='th'?'นอกบ้าน (ISP)':'outside home (ISP)');
+    add(loss>=20?'bad':'warn', (lang==='th'?`แพ็กเก็ตหาย ${loss}% (${where})`:`Packet loss ${loss}% (${where})`),
+        gwLoss>0?(lang==='th'?'สัญญาณ Wi-Fi อ่อนหรือสัญญาณรบกวน ลองเข้าใกล้เราเตอร์':'Weak Wi-Fi or interference — move closer to the router')
+                :(lang==='th'?'ปัญหาที่ ISP ถ้าเกิดบ่อยให้แจ้งผู้ให้บริการ':'ISP-side issue — report to provider if frequent'));
+  }
+
+  // dns
+  if(d.dnsMs!=null){
+    if(d.dnsMs>1000) add('warn',(lang==='th'?`DNS ตอบช้า ${Math.round(d.dnsMs)} ms`:`Slow DNS ${Math.round(d.dnsMs)} ms`),
+      (lang==='th'?'ลองเปลี่ยน DNS เป็น 1.1.1.1 หรือ 8.8.8.8':'Try DNS 1.1.1.1 or 8.8.8.8'));
+  }
+
+  // connection: Wi-Fi signal/security, or LAN
+  const wf=d.wifi, wl=d.wired;
+  if(wl){
+    add('ok',(lang==='th'?`เชื่อมต่อผ่านสาย LAN · ${wl.linkSpeed} · ${wl.duplex}`:`Wired LAN · ${wl.linkSpeed} · ${wl.duplex}`),
+        /full/i.test(wl.duplex)?'':(lang==='th'?'ลิงก์เป็น Half Duplex ตรวจสายแลนหรือพอร์ตสวิตช์':'Half duplex link — check the cable or switch port'));
+  } else if(wf){
+    const sig=parseInt(wf.signal)||0;
+    const slv=sig>=70?'ok':sig>=45?'warn':'bad';
+    add(slv,(lang==='th'?`สัญญาณ Wi-Fi ${wf.signal} (${wf.ssid})`:`Wi-Fi signal ${wf.signal} (${wf.ssid})`),
+        slv==='ok'?'':(lang==='th'?'สัญญาณอ่อน ลองเข้าใกล้เราเตอร์หรือเลี่ยงสิ่งกีดขวาง':'Weak signal — move closer or clear obstacles'));
+    if(/open/i.test(wf.auth)){
+      add('warn',(lang==='th'?'เครือข่ายนี้ไม่เข้ารหัส (Open)':'This network is unencrypted (Open)'),
+          (lang==='th'?'หลีกเลี่ยงการกรอกรหัสผ่าน/ธุรกรรมสำคัญ ใช้ VPN หากจำเป็น':'Avoid logins/banking here — use a VPN if needed'));
+    }
+  }
+
+  const head=bad>0?w.hBad:warn>0?w.hWarn:w.hAll;
+  const col=bad>0?'var(--red)':warn>0?'var(--yellow)':'var(--green)';
+  const sumEl=document.getElementById('nt-sum');
+  sumEl.style.setProperty('--sum-c',col);
+  set('sum-head',head);
+  document.getElementById('sum-list').innerHTML=items.map(it=>
+    `<div class="sum-item"><span class="ic">${ic[it.lv]}</span><div><div class="lv-${it.lv==='ok'?'ok':it.lv==='warn'?'warn':it.lv==='bad'?'bad':'info'}">${esc(it.txt)}</div>${it.fix?`<div class="fx">${esc(it.fix)}</div>`:''}</div></div>`
+  ).join('');
+}
+
+// ════ WI-FI PICKER ════
+function secIcon(auth){
+  if(/open/i.test(auth)) return '🔓';
+  return '🔒';
+}
+function sigColor(s){ return s>=70?'var(--green)':s>=45?'var(--yellow)':'var(--red)'; }
+
+function renderWifi(d){
+  window._wifi=d;
+  const w=WF[lang];
+  const nets=d.networks||[];
+  const body=document.getElementById('wf-top');
+  if(!nets.length){ body.innerHTML=`<tr><td colspan="7" style="color:var(--muted);text-align:center">—</td></tr>`; return; }
+  body.innerHTML=nets.map((n,i)=>{
+    const isOpen=/open/i.test(n.auth);
+    const act = n.connected
+      ? `<span class="conn-badge">${w.connected}</span>`
+      : `<button class="mini-btn primary" data-act="conn" data-ssid="${esc(n.ssid)}" data-open="${isOpen?1:0}" data-saved="${n.saved?1:0}">${w.connect}</button>`;
+    const keyCell = n.saved
+      ? `<button class="mini-btn" data-act="key" data-ssid="${esc(n.ssid)}">${w.reveal}</button> <span class="pw" data-key="${esc(n.ssid)}"></span>`
+      : isOpen ? `<span class="lv-info">${w.open}</span>` : `<span style="color:var(--muted)">—</span>`;
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${esc(n.ssid)}</td>
+      <td><span class="sig-bar"><i style="width:${n.signal}%;background:${sigColor(n.signal)}"></i></span>${n.signal}%</td>
+      <td>${esc(n.band||'—')}${n.channel?' · CH '+esc(n.channel):''}</td>
+      <td>${secIcon(n.auth)} <span style="font-size:10px;color:var(--muted2)">${esc(n.auth||'—')}</span></td>
+      <td>${n.saved?'✓':'—'}</td>
+      <td style="white-space:nowrap">${act} ${keyCell}</td>
+    </tr>`;
+  }).join('');
+  // restore keys the user already revealed this session
+  Object.keys(revealedKeys).forEach(ssid=>{
+    const span=body.querySelector(`[data-key="${CSS.escape(ssid)}"]`);
+    if(span) span.textContent=revealedKeys[ssid];
+  });
+}
+
+async function fetchWifi(){
+  try{
+    const r=await fetch(API+'/api/wifi',{cache:'no-store'});
+    renderWifi(await r.json());
+  }catch(e){}
+}
+
+async function revealKey(ssid,span){
+  const w=WF[lang];
+  span.textContent='…';
+  try{
+    const r=await fetch(API+'/api/wifi/key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ssid})});
+    const d=await r.json();
+    if(d.found&&d.key){
+      span.textContent=d.key; span.classList.add('pw'); revealedKeys[ssid]=d.key;
+    } else { span.textContent=w.noKey; span.style.color='var(--muted)'; }
+  }catch(e){ span.textContent=w.noKey; }
+}
+
+async function connectWifi(ssid,isOpen,saved){
+  const w=WF[lang], msg=document.getElementById('wf-msg');
+  let password='';
+  if(!isOpen&&!saved){
+    password=prompt(w.pwPrompt(ssid));
+    if(password==null) return;
+  }
+  msg.textContent=w.connecting; msg.style.color='var(--yellow)';
+  try{
+    const r=await fetch(API+'/api/wifi/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ssid,password})});
+    const d=await r.json();
+    if(d.ok){ msg.textContent=w.connOk(ssid); msg.style.color='var(--green)'; fetchWifi(); fetchNet(); }
+    else { msg.textContent=w.connFail; msg.style.color='var(--red)'; }
+  }catch(e){ msg.textContent=w.connFail; msg.style.color='var(--red)'; }
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const act=b.dataset.act;
+  if(act==='scan'){ const m=document.getElementById('wf-msg'); m.textContent=WF[lang].scanning; m.style.color='var(--muted2)'; fetchWifi().then(()=>{m.textContent='';}); }
+  else if(act==='key'){ const span=b.parentElement.querySelector('[data-key]'); revealKey(b.dataset.ssid,span); }
+  else if(act==='conn'){ connectWifi(b.dataset.ssid,b.dataset.open==='1',b.dataset.saved==='1'); }
+});
+
+// ════ CLOSE PROGRAM ════
+let killTarget=null;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-kill]'); if(!b) return;
+  openKillModal({pid:+b.dataset.kill,name:b.dataset.pname,risk:b.dataset.prisk,kids:+b.dataset.pkids,list:b.dataset.pklist});
+});
+function openKillModal(p){
+  killTarget=p; const t=T[lang];
+  set('km-head',t.confHead(p.name));
+  const warn=document.getElementById('km-warn');
+  let cls,txt;
+  if(p.risk==='os'){cls='w-os';txt=t.warnOs;}
+  else if(p.risk==='affects'){cls='w-affects';txt=t.warnAffects(p.kids,p.list||'');}
+  else{cls='w-normal';txt=t.warnNormal;}
+  warn.className='km-warn '+cls; warn.textContent=txt;
+  set('km-cancel',t.btnCancel); set('km-ok',t.btnConfirm);
+  document.getElementById('km-ok').disabled=false;
+  set('kill-msg','');
+  document.getElementById('kill-modal').classList.add('open');
+}
+function closeKillModal(){ document.getElementById('kill-modal').classList.remove('open'); killTarget=null; }
+document.getElementById('km-ok').addEventListener('click',async()=>{
+  if(!killTarget) return;
+  const t=T[lang], msg=document.getElementById('kill-msg'), ok=document.getElementById('km-ok');
+  ok.disabled=true; msg.style.color='var(--yellow)'; msg.textContent=t.closing;
+  try{
+    const r=await fetch(API+'/api/process/kill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pid:killTarget.pid})});
+    const d=await r.json();
+    if(d.ok){ msg.style.color='var(--green)'; msg.textContent=t.closedOk(killTarget.name); setTimeout(closeKillModal,700); fetchProc(); }
+    else if(d.code==='critical'){ msg.style.color='var(--red)'; msg.textContent=t.closeCriticalBlock(killTarget.name); }
+    else if(d.code==='denied'){ msg.style.color='var(--red)'; msg.textContent=t.closeDenied(killTarget.name); }
+    else { msg.style.color='var(--red)'; msg.textContent=t.closeFail(killTarget.name); }
+  }catch(e){ msg.style.color='var(--red)'; msg.textContent=t.closeFail(killTarget.name); }
+  ok.disabled=false;
+});
+
+// ════ TUNE-UP ════
+const TU={
+  th:{
+    tab:'ปรับประสิทธิภาพ',
+    ramTitle:'แรม (RAM)',diskTitle:'พื้นที่ดิสก์',summaryTitle:'ผลรวมที่คืนได้ในหน้านี้',
+    used:'ใช้ไป',atRefresh:'อัปเดต',runCount:n=>n?`ทำงานไปแล้ว ${n} ครั้ง`:'ยังไม่ได้ปรับอะไร',
+    actionsTitle:'การปรับประสิทธิภาพ',logTitle:'บันทึกผลการทำงาน',clearLog:'ล้างบันทึก',
+    btnRun:'ทำเลย',btnBusy:'กำลังทำ…',btnOpen:'เปิด',
+    freed:n=>n>=0?`คืนแรมได้ ${n} MB`:`แรมเปลี่ยน ${n} MB`,
+    none:'(ไม่มีการเปลี่ยนแปลง)',failMsg:'ทำไม่สำเร็จ',
+    items:[
+      {k:'emptyws',   icon:'🧠',t:'ล้าง Working Set ของทุกโปรแกรม',d:'สั่งทุกโปรแกรมคายแรมที่ไม่ได้ใช้คืนให้ระบบ (คล้ายรีสตาร์ตแต่ไม่ปิดโปรแกรม)',risk:'ปลอดภัย'},
+      {k:'restartshell',icon:'🖥',t:'รีสตาร์ต Explorer',d:'ปิด Taskbar/Desktop แล้วเปิดใหม่ ล้าง handle ของ shell',risk:'หน้าจอกะพริบ 1-2 วิ'},
+      {k:'cleartemp', icon:'🗑',t:'ล้างโฟลเดอร์ TEMP',d:'ลบไฟล์ชั่วคราวใน %TEMP% ของผู้ใช้ (ไฟล์ที่โปรแกรมเปิดอยู่จะข้าม)',risk:'ปลอดภัย'},
+      {k:'stopsearch',icon:'🔍',t:'หยุด Windows Search Indexer',d:'ลด disk I/O เบื้องหลัง (เปิดกลับได้ด้วย Start-Service wsearch)',risk:'ค้นหาใน Explorer จะช้าลงชั่วคราว'},
+      {k:'stoponedrive',icon:'☁',t:'หยุด OneDrive sync',d:'ปิดโปรแกรม OneDrive คืนแรม + ลด I/O (เปิดใหม่จาก Start Menu ได้)',risk:'ไฟล์จะไม่ sync จนกว่าจะเปิดใหม่'},
+      {k:'storagesense',icon:'🧹',t:'สั่ง Windows Storage Sense ล้างขยะ',d:'เรียกงาน SilentCleanup ของ Windows ล้าง Temp/Recycle Bin/Windows Update เก่า (รันพื้นหลัง)',risk:'ปลอดภัย'},
+      {k:'chrome_tm', icon:'📑',t:'เปิด Chrome Task Manager',d:'เปิดในหน้าต่าง Chrome: จัดเรียงตาม Memory แล้วปิดแท็บหนัก (ต้องเปิด Chrome อยู่)',risk:'ต้องทำเอง',url:'chrome://task-manager'},
+      {k:'chrome_disc',icon:'💤',t:'พักแท็บ Chrome ทั้งหมด',d:'เปิด chrome://discards แล้วกด Urgent Discard แท็บที่ไม่ได้ดู',risk:'ต้องทำเอง',url:'chrome://discards'}
+    ]
+  },
+  en:{
+    tab:'Tune-up',
+    ramTitle:'RAM',diskTitle:'Disk space',summaryTitle:'Total freed this session',
+    used:'Used',atRefresh:'At',runCount:n=>n?`${n} action(s) run`:'No actions yet',
+    actionsTitle:'Performance actions',logTitle:'Action log',clearLog:'Clear log',
+    btnRun:'Run',btnBusy:'Running…',btnOpen:'Open',
+    freed:n=>n>=0?`Freed ${n} MB`:`RAM changed ${n} MB`,
+    none:'(no change)',failMsg:'Action failed',
+    items:[
+      {k:'emptyws',   icon:'🧠',t:'Trim working set of every process',d:'Ask every process to release unused RAM back to the OS (like a restart without closing programs).',risk:'Safe'},
+      {k:'restartshell',icon:'🖥',t:'Restart Explorer',d:'Close taskbar/desktop and reopen; frees shell handles.',risk:'Screen flashes 1–2s'},
+      {k:'cleartemp', icon:'🗑',t:'Clear %TEMP% folder',d:'Delete leftover temp files in the user TEMP (locked files are skipped).',risk:'Safe'},
+      {k:'stopsearch',icon:'🔍',t:'Stop Windows Search Indexer',d:'Reduce background disk I/O (restart with Start-Service wsearch).',risk:'Explorer search is slower meanwhile'},
+      {k:'stoponedrive',icon:'☁',t:'Stop OneDrive sync',d:'Kill OneDrive to free RAM + I/O (restart via Start Menu).',risk:'Files won\'t sync until restarted'},
+      {k:'storagesense',icon:'🧹',t:'Run Windows Storage Sense cleanup',d:'Trigger SilentCleanup to clear Temp/Recycle Bin/old Updates (runs in background).',risk:'Safe'},
+      {k:'chrome_tm', icon:'📑',t:'Open Chrome Task Manager',d:'Opens Chrome: sort by Memory and close heavy tabs (requires Chrome open).',risk:'Manual',url:'chrome://task-manager'},
+      {k:'chrome_disc',icon:'💤',t:'Discard all Chrome tabs',d:'Open chrome://discards then hit Urgent Discard on tabs you\'re not viewing.',risk:'Manual',url:'chrome://discards'}
+    ]
+  }
+};
+
+let tuneTotalFreed=0, tuneRunCount=0, tuneLog=[];
+
+function tuneTs(d){ return d.toLocaleTimeString(lang==='th'?'th-TH':'en-US'); }
+
+async function fetchTuneStats(){
+  try{
+    const r=await fetch(API+'/api/tune/stats',{cache:'no-store'});
+    const d=await r.json(); renderTuneStats(d);
+  }catch(e){}
+}
+
+function renderTuneStats(d){
+  const freeGB=(d.freeMB/1024).toFixed(1), totGB=(d.totalMB/1024).toFixed(1);
+  set('tu-free',freeGB+' GB'); set('tu-total',totGB+' GB');
+  set('tu-pct',d.usedPct+'%'); set('tu-at',d.at);
+  document.getElementById('tu-bar').style.width=d.usedPct+'%';
+  const col=d.usedPct>85?'linear-gradient(90deg,var(--orange),var(--red))':d.usedPct>65?'linear-gradient(90deg,var(--yellow),var(--orange))':'linear-gradient(90deg,var(--green),var(--yellow))';
+  document.getElementById('tu-bar').style.background=col;
+  document.getElementById('tu-disks').innerHTML=(d.disks||[]).map(x=>{
+    const c=x.freePct<15?'var(--red)':x.freePct<25?'var(--yellow)':'var(--green)';
+    return `<div class="cyc-row"><span>${x.drive}</span><span style="color:${c}">${x.freeGB} / ${x.totalGB} GB (${x.freePct}%)</span></div>`;
+  }).join('');
+}
+
+function renderTuneList(){
+  const t=TU[lang];
+  document.getElementById('tune-list').innerHTML=t.items.map(it=>`
+    <div class="sum-item" style="padding:10px 0;align-items:flex-start">
+      <span class="ic" style="font-size:18px">${it.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:12.5px">${esc(it.t)}</div>
+        <div class="fx" style="margin-top:2px">${esc(it.d)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">${esc(it.risk)}</div>
+      </div>
+      <button class="mini-btn primary" data-tune="${it.k}" ${it.url?`data-url="${esc(it.url)}"`:''}>${it.url?('▶ '+t.btnOpen):('▶ '+t.btnRun)}</button>
+    </div>`).join('');
+}
+
+function appendTuneLog(line,color){
+  tuneLog.unshift({t:tuneTs(new Date()),msg:line,color:color||'var(--muted2)'});
+  if(tuneLog.length>50) tuneLog.length=50;
+  document.getElementById('tune-log').innerHTML=tuneLog.map(x=>`<div><span style="color:var(--muted)">${x.t}</span> <span style="color:${x.color}">${esc(x.msg)}</span></div>`).join('');
+  set('tu-total-freed',tuneTotalFreed);
+  set('tu-run-count',TU[lang].runCount(tuneRunCount));
+}
+
+function clearTuneLog(){ tuneLog=[]; tuneTotalFreed=0; tuneRunCount=0; appendTuneLog('—','var(--muted)'); tuneLog=[]; document.getElementById('tune-log').innerHTML=''; set('tu-total-freed',0); set('tu-run-count',TU[lang].runCount(0)); }
+
+async function runTune(key,btn){
+  const t=TU[lang], it=t.items.find(x=>x.k===key); if(!it) return;
+  if(it.url){ window.open(it.url,'_blank'); appendTuneLog(`${it.icon} ${it.t} — ${t.btnOpen}: ${it.url}`,'var(--cyan)'); return; }
+  btn.disabled=true; const prev=btn.textContent; btn.textContent='⋯ '+t.btnBusy;
+  try{
+    const r=await fetch(API+'/api/tune/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:key})});
+    const d=await r.json();
+    const freed=d.freedMB||0; tuneRunCount++; if(freed>0) tuneTotalFreed+=freed;
+    renderTuneStats(d.after);
+    let msg='',col='var(--green)';
+    if(key==='emptyws') msg=`${it.icon} ${t.freed(freed)} (${d.result.cleared} โปรเซส, ล้มเหลว ${d.result.failed})`;
+    else if(key==='cleartemp') msg=`${it.icon} TEMP: ลบ ${d.result.removed} รายการ (ล็อก ${d.result.locked}), คืนที่ว่าง ${d.result.freedMB} MB · ${t.freed(freed)}`;
+    else if(key==='restartshell') msg=`${it.icon} Explorer รีสตาร์ต (${d.result.killed} โปรเซส) · ${t.freed(freed)}`;
+    else if(key==='stopsearch') { msg=`${it.icon} ${d.result.msg||''} · ${t.freed(freed)}`; if(!d.result.ok) col='var(--yellow)'; }
+    else if(key==='stoponedrive') { msg=`${it.icon} OneDrive: ปิด ${d.result.killed||0} โปรเซส · ${t.freed(freed)}`; if(d.result.already) msg=`${it.icon} ${d.result.msg}`; }
+    else if(key==='storagesense') { msg=`${it.icon} ${d.result.msg||''}`; if(!d.result.ok) col='var(--red)'; }
+    else msg=`${it.icon} ${t.freed(freed)}`;
+    appendTuneLog(msg,col);
+  }catch(e){ appendTuneLog(`${it.icon} ${t.failMsg}: ${e.message||e}`,'var(--red)'); }
+  btn.disabled=false; btn.textContent=prev;
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-tune]'); if(!b) return;
+  runTune(b.dataset.tune,b);
+});
+
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+function setHTML(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v}
+
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&l==='th')||(i===1&&l==='en')));
+  const t=T[l];
+  set('t-title',t.title);set('t-tab1',t.tab1);set('t-tab2',t.tab2);
+  set('t-ref-lbl',t.refLbl);
+  set('t-lbl-charge',t.lblCharge);set('t-lbl-health',t.lblHealth);set('t-lbl-cycles',t.lblCycles);
+  set('t-rec-title',t.recTitle);set('t-full-lbl',t.fullLbl);set('t-footer',t.footer);
+  set('t-sg1',t.sg1);set('t-sg2',t.sg2);set('t-sg3',t.sg3);set('t-sg4',t.sg4);
+  set('t-sg5',t.sg5);set('t-sg6',t.sg6);set('t-sg7',t.sg7);set('t-sg8',t.sg8);
+  set('t-used-lbl',t.usedLbl);set('t-remain-lbl',t.remainLbl);set('t-rated-lbl',t.ratedLbl);
+  set('t-remain-short',t.remainShort);set('t-pct-used',t.pctUsed);
+  set('t-proc-lbl',t.procLbl);set('t-set-lbl',t.setLbl);
+  set('t-sp-idle',t.spIdle);set('t-sp-min',t.spMin);set('t-sp-save',t.spSave);
+  set('th-name',t.thName);set('th-title',t.thTitle);set('th-cpu',t.thCpu);
+  set('th-mem',t.thMem);set('th-run',t.thRun);set('th-idle',t.thIdle);set('th-close',t.thClose);
+  document.getElementById('sort-sel').options[0].text=t.sortMem;
+  document.getElementById('sort-sel').options[2].text=t.sortIdle;
+  renderHealth();
+  if(window._bs) renderBatt(window._bs);
+  if(window._th) renderThermal(window._th);
+  applyNetLabels();
+  if(window._net){ renderNet(window._net); renderSummary(); }
+  if(window._wifi) renderWifi(window._wifi);
+  renderProcTable();
+}
+
+// ════ TAB SWITCH ════
+function switchTab(tab){
+  activeTab=tab;
+  ['batt','proc','net','tune'].forEach(k=>{
+    document.getElementById('tab-'+k).classList.toggle('active',k===tab);
+    document.getElementById('tab-'+k+'-btn').classList.toggle('active',k===tab);
+  });
+  if(tab==='proc') fetchProc();
+  if(tab==='net'){ fetchNet(); fetchWifi(); }
+  if(tab==='tune') fetchTuneStats();
+}
+
+// ════ BATTERY ════
+function healthGrade(h){
+  if(h>=90)return{g:'good',c:'var(--green)',s:'#22c55e',e:'#16a34a'};
+  if(h>=80)return{g:'fair',c:'var(--orange)',s:'#f97316',e:'#eab308'};
+  if(h>=60)return{g:'warn',c:'var(--yellow)',s:'#eab308',e:'#ca8a04'};
+  return{g:'bad',c:'var(--red)',s:'#ef4444',e:'#b91c1c'};
+}
+function renderHealth(){
+  const{g,c,s,e}=healthGrade(HEALTH);
+  const t=T[lang];
+  document.getElementById('h-score').textContent=HEALTH+'%';
+  document.getElementById('h-score').style.color=c;
+  set('t-health-grade',t.hGrade(g));
+  document.getElementById('t-health-grade').style.color=c;
+  document.getElementById('h-bar').style.width=HEALTH+'%';
+  document.getElementById('h-bar').style.setProperty('--hs',s);
+  document.getElementById('h-bar').style.setProperty('--he',e);
+  document.getElementById('rec').style.setProperty('--rec-c',c);
+  setHTML('t-rec-body',t.rec(HEALTH,CYCLES));
+}
+
+function renderBatt(bs){
+  window._bs=bs;
+  const pct=Math.round(bs.level*100), plug=bs.charging;
+  const full=pct>=100&&plug, low=pct<=LOW_BATT&&!plug;
+  const t=T[lang];
+
+  // ring (tab1)
+  const circ=2*Math.PI*28, off=circ-(pct/100)*circ;
+  const arc=document.getElementById('ring-arc');
+  arc.setAttribute('stroke-dashoffset',off.toFixed(1));
+  const rc=full?'var(--green)':plug?'var(--yellow)':low?'var(--red)':'var(--blue)';
+  arc.setAttribute('stroke',rc);
+  set('ring-txt',pct+'%');
+  const pill=document.getElementById('s-pill');
+  const cls=full?'pill-full':plug?'pill-charging':low?'pill-low':'pill-dc';
+  pill.className='s-pill '+cls;
+  const stTxt=full?t.statusFull:plug?t.statusCharging(pct):low?t.statusLow(pct):t.statusDC(pct);
+  set('t-status',stTxt); set('t-charge-sub',t.chargeSub(pct,plug));
+  const rem=bs.chargingTime&&bs.chargingTime!==Infinity?Math.round(bs.chargingTime/60):0;
+  const dis=bs.dischargingTime&&bs.dischargingTime!==Infinity?Math.round(bs.dischargingTime/60):0;
+  const eta=document.getElementById('t-eta');
+  eta.textContent=plug?t.etaCharge(rem):t.etaDC(dis);
+  eta.style.color=plug?'var(--yellow)':'var(--blue)';
+
+  // mini strip (tab2)
+  set('mb-pct',pct+'%');
+  document.getElementById('mb-bar').style.width=pct+'%';
+  document.getElementById('mb-bar').style.background=rc;
+  document.getElementById('mb-ico').textContent=full?'🟢':plug?'⚡':'🔋';
+  const mbp=document.getElementById('mb-pill');
+  mbp.className='s-pill '+cls;
+  set('mb-status',stTxt);
+
+  // alert: full
+  const af=document.getElementById('alert-full');
+  af.style.display=full?'block':'none';
+  set('t-alert-full',t.alertFull);
+  if(full&&!alertFullPlayed){playChime([523,659,784,1047],'sine');alertFullPlayed=true}
+  if(!full)alertFullPlayed=false;
+
+  // alert: low
+  const al=document.getElementById('alert-low');
+  if(low&&!lowBattDismissed){
+    al.style.display='block';
+    set('t-alert-low',t.alertLow(pct));
+    if(!alertLowPlayed){playChime([880,660,440,880,660,440],'square');alertLowPlayed=true}
+  } else {
+    al.style.display='none';
+    if(!low){alertLowPlayed=false;}
+  }
+}
+
+// ════ CHIME ════
+function playChime(freqs,type='sine'){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type=type;o.frequency.value=f;
+      g.gain.setValueAtTime(.22,ctx.currentTime+i*.2);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.2+.18);
+      o.start(ctx.currentTime+i*.2);o.stop(ctx.currentTime+i*.2+.2);
+    });
+  }catch(e){}
+}
+
+// ════ PROCESSES ════
+function fmtTime(m){return m<60?`${m}m`:`${Math.floor(m/60)}h${m%60?m%60+'m':''}`}
+
+function renderProcTable(){
+  const t=T[lang];
+  const q=document.getElementById('search').value.toLowerCase();
+  let procs=[...allProcs].filter(p=>!q||p.name.toLowerCase().includes(q)||p.title.toLowerCase().includes(q));
+  procs.sort((a,b)=>({mem:b.memMB-a.memMB,cpu:b.cpu-a.cpu,idle:b.idleMin-a.idleMin,runtime:b.runtimeMin-a.runtimeMin,name:a.name.localeCompare(b.name)})[procSort]||0);
+  set('proc-count',procs.length);
+
+  const tb=document.getElementById('proc-body');
+  if(!procs.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">—</td></tr>`;return}
+  tb.innerHTML=procs.map(p=>{
+    const cpuC=p.cpu>50?'var(--red)':p.cpu>20?'var(--orange)':p.cpu>5?'var(--yellow)':'var(--green)';
+    const memStr=p.memMB>=1024?`${(p.memMB/1024).toFixed(1)}G`:`${p.memMB}M`;
+    const idleCell=p.isIdle
+      ?`<span class="idle-badge">⚠ ${fmtTime(p.idleMin)}</span>`
+      :p.idleMin>0?`<span style="color:var(--muted);font-size:10px">${fmtTime(p.idleMin)}</span>`
+      :`<span style="color:var(--border)">—</span>`;
+    const dotC=p.cpu>10?'var(--orange)':p.isIdle?'var(--red)':'var(--green)';
+    const closeCell=p.blocked
+      ? `<span title="OS" style="color:var(--red);cursor:not-allowed">🔒</span>`
+      : `<button class="x-btn risk-${p.risk||'normal'}" data-kill="${p.pid}" data-pname="${esc(p.name)}" data-prisk="${p.risk||'normal'}" data-pkids="${p.childCount||0}" data-pklist="${esc((p.children||[]).join(', '))}" title="${esc(p.name)}">✕</button>`;
+    return `<tr class="${p.isIdle?'idle-row':''}">
+      <td class="td-name"><span class="p-dot" style="background:${dotC}"></span>${esc(p.name)}</td>
+      <td class="td-title">${esc(p.title||'—')}</td>
+      <td><span style="color:${cpuC};font-weight:600">${p.cpu.toFixed(1)}</span><span class="cpu-bar" style="width:${Math.min(40,p.cpu*1.5)}px;background:${cpuC}"></span></td>
+      <td style="color:var(--muted2)">${memStr}</td>
+      <td style="color:var(--muted)">${fmtTime(p.runtimeMin)}</td>
+      <td>${idleCell}</td>
+      <td style="text-align:center">${closeCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function fetchProc(){
+  try{
+    const r=await fetch(API+'/api/status',{cache:'no-store'});
+    const d=await r.json();
+    allProcs=d.processes||[];
+    if(d.battery) renderBattFromServer(d.battery);
+    if(d.thermal) renderThermal(d.thermal);
+    renderProcTable();
+
+    // idle alert
+    const ic=d.idleCount||0;
+    const badge=document.getElementById('idle-badge-tab');
+    badge.style.display=ic>0?'inline':'none';
+    badge.textContent=ic;
+    const ai=document.getElementById('alert-idle');
+    if(ic>0&&!idleDismissed){
+      ai.style.display='block';
+      set('t-alert-idle',T[lang].alertIdle(ic));
+      const newIdle=(d.processes||[]).filter(p=>p.isIdle&&!alertedPids.has(p.pid));
+      if(newIdle.length){playChime([440,350,300],'sawtooth');newIdle.forEach(p=>alertedPids.add(p.pid));}
+    } else { ai.style.display='none'; }
+    const livePids=new Set((d.processes||[]).filter(p=>p.isIdle).map(p=>p.pid));
+    alertedPids.forEach(pid=>{if(!livePids.has(pid))alertedPids.delete(pid)});
+
+    // server badge
+    const sb=document.getElementById('srv-badge');
+    sb.textContent=T[lang].srvOk; sb.className='ok';
+    set('proc-srv-status',T[lang].srvOk);
+    set('proc-ts',d.timestamp);
+    if(d.settings){document.getElementById('sp-idle').value=d.settings.idleMinutes||30;document.getElementById('sp-cpu').value=d.settings.cpuThreshold||2;}
+  }catch(e){
+    const sb=document.getElementById('srv-badge');
+    sb.textContent='Offline'; sb.className='';
+    set('proc-srv-status',T[lang].srvErr);
+  }
+}
+function renderBattFromServer(b){
+  // only update if Battery API not available
+  if(!battObj) renderBatt({level:b.level/100||b.level,charging:b.charging,chargingTime:Infinity,dischargingTime:b.runtime*60||Infinity});
+}
+
+function toggleProcSettings(){
+  document.getElementById('proc-settings').classList.toggle('open');
+  document.getElementById('btn-cfg-proc').classList.toggle('active');
+}
+async function saveProcSettings(){
+  const idle=+document.getElementById('sp-idle').value, cpu=+document.getElementById('sp-cpu').value;
+  try{await fetch(API+'/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idleMinutes:idle,cpuThreshold:cpu})});}catch(e){}
+  alertedPids.clear(); idleDismissed=false; fetchProc();
+}
+
+// ════ REFRESH ════
+function setRefresh(sec){
+  clearInterval(refreshTimer);
+  refreshTimer=setInterval(()=>{
+    if(battObj) renderBatt(battObj);
+    fetchProc();
+    if(activeTab==='net'){
+      fetchNet();
+      fetchWifi();
+      if(document.getElementById('auto-speed').checked) runSpeedTest();
+    }
+  },sec*1000);
+}
+
+// ════ TOGGLE REPORT ════
+function toggleReport(){
+  const f=document.getElementById('report-iframe'),a=document.getElementById('tog-arr');
+  const open=f.style.display==='block';
+  f.style.display=open?'none':'block';
+  a.classList.toggle('open',!open);
+}
+
+// ════ INIT ════
+renderHealth();
+
+// Battery API
+if('getBattery' in navigator){
+  navigator.getBattery().then(b=>{
+    battObj=b;
+    renderBatt(b);
+    b.addEventListener('chargingchange',()=>renderBatt(b));
+    b.addEventListener('levelchange',()=>renderBatt(b));
+  }).catch(()=>{});
+}
+
+// Process fetch loop
+fetchProc();
+renderTuneList(); set('tu-run-count',TU.th.runCount(0));
+setRefresh(10);
+</script>
+</body>
+</html>

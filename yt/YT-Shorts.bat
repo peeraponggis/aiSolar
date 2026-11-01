@@ -27,7 +27,7 @@ if errorlevel 1 (
 REM --- Start FastAPI server ---
 echo [*] Starting YT Shorts server on port 5000...
 cd /d "%ROOT%"
-start "YT Shorts Server" /min python -m uvicorn app.app:app --host 127.0.0.1 --port 5000 --reload
+start "YT Shorts Server" /min python -m uvicorn app.app:app --host 127.0.0.1 --port 5000 --reload --reload-dir app --reload-dir core --reload-dir scripts
 
 echo [*] Waiting for server to start...
 timeout /t 4 /nobreak >nul

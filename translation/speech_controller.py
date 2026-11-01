@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -18,7 +27,7 @@ import time
 from engine import clean_output, detect_lang
 from tts_engine import (
     EN_VOICES, TTS_RATES, TTS_TMP, TTS_VOICES, TtsPipeline,
-    apply_replacements, clean_for_tts, load_replacements, pop_sentences, split_tts_chunks, warm_up_tts,
+    apply_replacements, clean_for_tts, load_replacements, pop_sentences, split_lang_runs, split_tts_chunks, warm_up_tts,
 )
 
 log = logging.getLogger(__name__)
@@ -62,7 +71,12 @@ class SpeechController:
         name = self.tts_voice_var.get()
         clone_id = self.clone_ids.get(name)
         base_voice = TTS_VOICES.get(name, ("th-TH-PremwadeeNeural", "th"))[0] if not clone_id else "th-TH-NiwatNeural"
-        voice = base_voice if lang == "th" else EN_VOICES.get(base_voice, "en-US-JennyNeural")
+        if lang == "th":
+            voice = base_voice
+        elif lang == "lo":   # เสียงลาวของ edge-tts (หญิง Keomany / ชาย Chanthavong) เลือกเพศตามเสียงไทยที่ตั้งไว้
+            voice = "lo-LA-ChanthavongNeural" if "Niwat" in base_voice else "lo-LA-KeomanyNeural"
+        else:
+            voice = EN_VOICES.get(base_voice, "en-US-JennyNeural")
         return voice, TTS_RATES.get(self.tts_rate_var.get(), "+0%"), (clone_id if lang == "th" else None), name
 
     def feed_sentence(self, text, lang, display=None):
@@ -72,6 +86,13 @@ class SpeechController:
             return
         if lang == "th":
             spoken = apply_replacements(spoken, self.replacements)
+        if lang == "lo":
+            # เสียงลาวของ edge-tts ไม่อ่านคำอังกฤษที่ปนมา -> แยกคำอังกฤษไปให้เสียงอังกฤษอ่าน แล้วเล่นต่อกันตามลำดับ
+            en_voice = self.speech_config("en")[0]
+            for run_text, run_lang in split_lang_runs(spoken, "lo"):
+                if self.pipeline.feed(run_text, voice=en_voice if run_lang == "en" else None):
+                    self.spans.append(display)   # ทุกท่อนย่อยไฮไลท์ประโยคเดิมบนจอ
+            return
         if self.pipeline.feed(spoken):
             self.spans.append(display)
 

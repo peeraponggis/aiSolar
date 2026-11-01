@@ -424,5 +424,29 @@
   "level": "science",
   "src": "Online pharmacoeconomic platforms show potential for reimbursement and HTA use in China, but their policy adoption remains contingent on localization and regulatory acceptability. Future development should prioritize local parameter databases and standardized model templates that incorporate Chinese patient characteristics, clinical pathways, drug prices, medical service costs, and the reimbursement environment. In parallel, platforms should support structured reporting, version control, traceable parameter updates, expert review, and result reproducibility to meet the needs of reimbursement negotiations and HTA review. With further alignment among modeling methods, data infrastructure,",
   "dst": "แพลตฟอร์มเภสัชเศรษฐศาสตร์ออนไลน์แสดงศักยภาพในการใช้เพื่อการจ่ายค่ารักษาพยาบาลและการประเมินเทคโนโลยีทางการแพทย์ในจีน แต่การนำไปใช้ตามนโยบายยังคงขึ้นอยู่กับการปรับให้เหมาะสมกับบริบทท้องถิ่นและยอมรับตามระเบียบข้อบังคับ การพัฒนาในอนาคตควรให้ความสำคัญกับการสร้างฐานข้อมูลพารามิเตอร์ท้องถิ่น และเทมเพลตแบบจำลองที่เป็นมาตรฐาน ซึ่งรวมถึงลักษณะของผู้ป่วยชาวจีน แนวทางการรักษาทางคลินิก ราคาของยา ค่าใช้จ่ายด้านบริการทางการแพทย์ และสภาพแวดล้อมการจ่ายค่ารักษาพยาบาล ในขณะเดียวกัน แพลตฟอร์มควรมีความสามารถรองรับการรายงานอย่างเป็นระบบ การควบคุมเวอร์ชัน การอัปเดตพารามิเตอร์ที่ติดตามได้ กระบวนการตรวจสอบจากผู้เชี่ยวชาญ และความสามารถในการทำซ้ำผลลัพธ์ เพื่อตอบสนองความต้องการในการเจรจาเรื่องการจ่ายค่ารักษาพยาบาลและการทบทวน HTA พร้อมการประสานงานให้สอดคล้องกันระหว่างวิธีการจำลอง โครงสร้างพื้นฐานข้อมูล"
+ },
+ {
+  "ts": "2026-10-01 12:20",
+  "level": "science",
+  "src": "Hello, this is a quick test of the speech pipeline after refactoring.",
+  "dst": "สวัสดี นี่คือการทดสอบระบบประมวลผลเสียงอย่างรวดเร็วหลังจากการปรับโครงสร้างใหม่"
+ },
+ {
+  "ts": "2026-10-01 12:21",
+  "level": "science",
+  "src": "Hello, this is a quick test of the speech pipeline after refactoring.",
+  "dst": "สวัสดี นี่คือการทดสอบระบบประมวลผลเสียงอย่างรวดเร็วหลังจากการปรับโครงสร้างใหม่"
+ },
+ {
+  "ts": "2026-10-01 12:23",
+  "level": "science",
+  "src": "Testing the refactored model connection and speech controller together.",
+  "dst": "การทดสอบการเชื่อมต่อโมเดลที่ปรับโครงสร้างใหม่และตัวควบคุมเสียงพร้อมกัน"
+ },
+ {
+  "ts": "2026-10-01 12:24",
+  "level": "science",
+  "src": "Testing the refactored model connection and speech controller together.",
+  "dst": "การทดสอบการเชื่อมต่อโมเดลที่ปรับโครงสร้างใหม่และตัวควบคุมเสียงร่วมกัน"
  }
 ]

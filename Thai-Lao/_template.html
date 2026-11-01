@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>พจนานุกรมลาว</title>
+<style>
+:root{--bg:#fafafa;--fg:#1d1d1f;--mut:#6b6b70;--line:#e3e3e6;--acc:#2563eb;--card:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111214;--fg:#ececef;--mut:#9a9aa3;--line:#2c2d33;--acc:#60a5fa;--card:#1a1b1f}}
+:root[data-theme="dark"]{--bg:#111214;--fg:#ececef;--mut:#9a9aa3;--line:#2c2d33;--acc:#60a5fa;--card:#1a1b1f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,"Noto Sans Lao","Leelawadee UI",sans-serif}
+header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 16px;z-index:2}
+h1{font-size:18px;margin:0 0 8px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:6px 12px;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select{flex:1;min-width:160px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);font:inherit}
+main{padding:12px 16px;max-width:900px;margin:0 auto}
+.meta{color:var(--mut);font-size:13px;margin:4px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.word{font-size:20px;font-weight:600}
+.sub{color:var(--mut);font-size:14px}
+.badge{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mut);margin-left:6px}
+.high{color:#16a34a}.medium{color:#d97706}.low{color:#dc2626}
+button.more{width:100%;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;cursor:pointer}
+.note{font-size:13px;color:var(--mut);margin-top:16px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.spk{flex:none;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:14px}
+.spk:active{background:var(--acc);color:#fff}
+@media (max-width:480px){main{padding:10px}.word{font-size:18px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>พจนานุกรมลาว</h1>
+  <div class="tabs" role="group">
+    <button data-tab="lo" aria-pressed="true">ลาว</button>
+    <button data-tab="en" aria-pressed="false">อังกฤษ</button>
+    <button data-tab="rom" aria-pressed="false">คำอ่าน</button>
+    <button data-tab="th" aria-pressed="false">ไทย↔ลาว</button>
+  </div>
+  <div class="row">
+    <input id="q" type="search" placeholder="ค้นหา..." autocomplete="off">
+    <select id="conf" hidden>
+      <option value="">ทุกระดับความมั่นใจ</option>
+      <option value="high">high</option>
+      <option value="medium">medium</option>
+      <option value="low">low</option>
+    </select>
+  </div>
+</header>
+<main>
+  <div class="meta" id="meta"></div>
+  <div class="note" id="voiceinfo"></div>
+  <details class="note"><summary>ตั้งค่าเสียง Azure (เก็บในเบราว์เซอร์นี้เท่านั้น ไม่ลงไฟล์)</summary>
+    <div class="row" style="margin-top:8px">
+      <input id="azkey" type="password" placeholder="Azure Speech key" autocomplete="off">
+      <input id="azregion" placeholder="region เช่น southeastasia">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="azvoice">
+        <option value="lo-LA-ChanthavongNeural">lo-LA-ChanthavongNeural</option>
+        <option value="lo-LA-KeomanyNeural">lo-LA-KeomanyNeural</option>
+      </select>
+      <button id="azsave" class="spk">บันทึก</button>
+      <button id="azclear" class="spk">ลบ</button>
+    </div>
+    <div class="sub" id="azstatus" style="margin-top:6px"></div>
+  </details>
+  <div id="list"></div>
+  <button class="more" id="more" hidden>แสดงเพิ่ม</button>
+  <div class="note" id="appinfo"></div>
+  <details class="note"><summary>บันทึกการเปลี่ยนแปลง</summary><ul id="changelog"></ul></details>
+  <p class="note">ที่มา: LaoNLP lao-eng-dictionary.csv (MIT), FREELANG romanization ผ่าน LaoNLP, kaikki.org (Wiktionary, CC BY-SA) สำหรับคู่ไทย↔ลาว (จับคู่ผ่านคำแปลอังกฤษ — ความแม่นยำตามระดับ confidence)</p>
+</main>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const PAGE = 100;
+let tab = 'lo', shown = 0, results = [];
+const $ = id => document.getElementById(id);
+const low = s => (s || '').toString().toLowerCase();
+
+function match(hay, q) { return hay.includes(q); }
+
+function compute() {
+  const q = low($('q').value.trim());
+  const conf = $('conf').value;
+  const lo = D.lao;
+  const th = D.th;
+  if (tab === 'th') {
+    results = th.filter(r => (!conf || r[5] === conf) &&
+      (!q || match(low(r[1]), q) || match(low(r[2]), q) || match(low(r[3]), q)));
+  } else if (tab === 'en') {
+    results = lo.filter(r => !q || match(low(r[2]), q));
+  } else if (tab === 'rom') {
+    results = lo.filter(r => !q || match(low(r[3]), q));
+  } else {
+    results = lo.filter(r => !q || match(low(r[1]), q) || match(low(r[2]), q) || match(low(r[3]), q));
+  }
+  shown = 0;
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+const LAO2TH = __MAP__;
+const hasTTS = 'speechSynthesis' in window;
+let voices = [];
+
+function toThai(s) {
+  let o = '';
+  for (const ch of s) o += LAO2TH[ch] || ch;
+  return o;
+}
+
+function findVoice(re) {
+  return voices.find(v => re.test(v.name)) || null;
+}
+
+function pickVoice() {
+  const prem = findVoice(/premwadee|เปรมวดี/i);
+  if (prem) return { voice: prem, lang: 'th-TH', thai: true, mode: 'prem' };
+  const lo = voices.find(v => /^lo/i.test(v.lang));
+  if (lo) return { voice: lo, lang: 'lo-LA', thai: false, mode: 'lo' };
+  const th = voices.find(v => /^th/i.test(v.lang));
+  if (th) return { voice: th, lang: 'th-TH', thai: true, mode: 'th' };
+  return { voice: null, lang: 'th-TH', thai: true, mode: 'none' };
+}
+
+function updateVoiceInfo() {
+  const info = $('voiceinfo');
+  if (!hasTTS) { info.textContent = 'เบราว์เซอร์นี้ไม่รองรับการอ่านออกเสียง'; return; }
+  const m = pickVoice().mode;
+  info.textContent = {
+    prem: 'เสียงที่ใช้: เปรมวดี (ไทย) อ่านคำลาวที่แปลงเป็นอักษรไทยโดยอัตโนมัติ',
+    lo: 'เสียงที่ใช้: เสียงภาษาลาว (lo-LA)',
+    th: 'ไม่พบเสียงเปรมวดี ใช้เสียงภาษาไทยทั่วไปแทน อ่านคำลาวได้ไม่ตรงนัก',
+    none: 'ไม่พบเสียงภาษาไทยหรือลาวในเครื่องนี้ (Windows: ติดตั้ง Thai speech ใน Settings > Time & language > Speech)'
+  }[m];
+}
+
+function loadVoices() {
+  if (!hasTTS) return;
+  voices = speechSynthesis.getVoices();
+  updateVoiceInfo();
+}
+
+const AZ_KEY = 'lao_dict_azure';
+function loadAzure() {
+  try { return JSON.parse(localStorage.getItem(AZ_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveAzure(cfg) {
+  try { localStorage.setItem(AZ_KEY, JSON.stringify(cfg)); } catch (e) {}
+}
+let azure = loadAzure();
+
+function escXml(s) {
+  return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c]);
+}
+
+async function azureSpeak(word) {
+  const url = 'https://' + azure.region + '.tts.speech.microsoft.com/cognitiveservices/v1';
+  const ssml = "<speak version='1.0' xml:lang='lo-LA'><voice xml:lang='lo-LA' name='" +
+    escXml(azure.voice) + "'>" + escXml(word) + '</voice></speak>';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Ocp-Apim-Subscription-Key': azure.key,
+      'Content-Type': 'application/ssml+xml',
+      'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
+    },
+    body: ssml
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const audio = new Audio(URL.createObjectURL(await res.blob()));
+  await audio.play();
+}
+
+function speakSystem(word) {
+  speechSynthesis.cancel();
+  const p = pickVoice();
+  const u = new SpeechSynthesisUtterance(p.thai ? toThai(word) : word);
+  if (p.voice) u.voice = p.voice;
+  u.lang = p.lang;
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function speak(word) {
+  if (azure.key && azure.region && azure.voice) {
+    azureSpeak(word).catch(err => {
+      $('azstatus').textContent = 'Azure ใช้ไม่ได้ (' + err.message + ') ใช้เสียงในเครื่องแทน';
+      if (hasTTS) speakSystem(word);
+    });
+    return;
+  }
+  if (hasTTS) speakSystem(word);
+}
+
+function initAzureForm() {
+  $('azregion').value = azure.region || 'southeastasia';
+  if (azure.voice) $('azvoice').value = azure.voice;
+  $('azstatus').textContent = azure.key ? 'บันทึก Azure ไว้ในเบราว์เซอร์นี้แล้ว (ไม่ได้เก็บในไฟล์)' : '';
+}
+$('azsave').addEventListener('click', () => {
+  const key = $('azkey').value.trim();
+  azure = { key: key || azure.key || '', region: $('azregion').value.trim(), voice: $('azvoice').value };
+  saveAzure(azure);
+  $('azkey').value = '';
+  $('azstatus').textContent = 'บันทึกแล้ว ลองกดฟังคำใดก็ได้';
+});
+$('azclear').addEventListener('click', () => {
+  azure = {};
+  saveAzure(azure);
+  $('azkey').value = '';
+  $('azstatus').textContent = 'ลบการตั้งค่า Azure แล้ว';
+});
+initAzureForm();
+
+function speakBtn(word) {
+  const b = el('button', 'spk', 'ฟัง');
+  b.type = 'button';
+  b.dataset.w = word;
+  return b;
+}
+
+if (hasTTS) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function card(r) {
+  const c = el('div', 'card');
+  if (tab === 'th') {
+    const head = el('div', 'head');
+    head.append(el('span', 'word', r[1]), speakBtn(r[1]));
+    c.append(head, el('div', 'sub', 'ไทย: ' + r[2]), el('div', 'sub', 'แปลผ่านอังกฤษ: ' + r[3] + ' · ' + r[4]));
+  } else {
+    const head = el('div', 'head');
+    head.append(el('span', 'word', r[1]), speakBtn(r[1]));
+    c.append(head, el('div', 'sub', r[2]));
+    const extra = [];
+    if (r[3]) extra.push('คำอ่าน: ' + r[3]);
+    if (r[4]) extra.push('ประเภท: ' + r[4]);
+    if (extra.length) c.append(el('div', 'sub', extra.join('  ·  ')));
+  }
+  return c;
+}
+
+function render(reset) {
+  if (reset) { $('list').replaceChildren(); compute(); }
+  const list = $('list');
+  const end = Math.min(shown + PAGE, results.length);
+  for (let i = shown; i < end; i++) list.append(card(results[i]));
+  shown = end;
+  $('meta').textContent = 'พบ ' + results.length.toLocaleString('th-TH') + ' รายการ' + (results.length ? ' · แสดง ' + shown.toLocaleString('th-TH') : '');
+  $('more').hidden = shown >= results.length;
+}
+
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  tab = b.dataset.tab;
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  $('conf').hidden = tab !== 'th';
+  render(true);
+}));
+let t = null;
+$('q').addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => render(true), 150); });
+$('conf').addEventListener('change', () => render(true));
+$('more').addEventListener('click', () => render(false));
+$('list').addEventListener('click', e => {
+  const b = e.target.closest('.spk');
+  if (b) speak(b.dataset.w);
+});
+render(true);
+
+const APP_INFO={name:'พจนานุกรมลาว',author:'ลุงพี',version:'1.2.0',created:'2026-10-18',updated:'2026-10-18'};
+const APP_CHANGELOG=[
+  ['1.2.0','2026-10-18','เพิ่มเสียง Azure Speech (lo-LA) เก็บคีย์ในเบราว์เซอร์ ไม่บันทึกลงไฟล์'],
+  ['1.1.0','2026-10-18','เพิ่มเวอร์ชัน วันที่สร้าง วันที่ปรับปรุงล่าสุด และบันทึกการเปลี่ยนแปลง'],
+  ['1.0.0','2026-10-18','สร้างพจนานุกรมลาว ค้นหาไทย/อังกฤษ/คำอ่าน และปุ่มฟังเสียง'],
+];
+function thaiDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('th-TH-u-ca-buddhist', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+$('appinfo').textContent = APP_INFO.name + ' เวอร์ชัน ' + APP_INFO.version + ' · สร้าง ' + thaiDate(APP_INFO.created) + ' · ปรับปรุงล่าสุด ' + thaiDate(APP_INFO.updated) + ' · โดย' + APP_INFO.author;
+for (const [v, d, n] of APP_CHANGELOG) {
+  const li = document.createElement('li');
+  li.textContent = 'v' + v + ' (' + thaiDate(d) + ') ' + n;
+  $('changelog').append(li);
+}
+</script>
+</body>
+</html>

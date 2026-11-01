@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/img/robot.png">
+<title>แกลเลอรีคลิป — YT Shorts</title>
+<link rel="stylesheet" href="/static/css/style.css?v=20261101b">
+</head>
+<body class="gallery-page">
+<div class="app">
+  <header class="app-header">
+    <h1>แกลเลอรีคลิป</h1>
+    <span id="galleryStats" class="subtitle">กำลังโหลด...</span>
+    <a class="nav-link" id="backLink" href="/">← กลับไปสร้างคลิป</a>
+  </header>
+
+  <div class="gallery-toolbar">
+    <input id="gSearch" type="search" placeholder="ค้นหาหัวข้อ..." autocomplete="off">
+    <div class="voice-toggle" id="gRatio">
+      <button class="voice-btn active" data-ratio="all">ทั้งหมด</button>
+      <button class="voice-btn" data-ratio="9:16">แนวตั้ง 9:16</button>
+      <button class="voice-btn" data-ratio="16:9">แนวนอน 16:9</button>
+    </div>
+    <select id="gSort">
+      <option value="newest">ใหม่สุดก่อน</option>
+      <option value="oldest">เก่าสุดก่อน</option>
+      <option value="longest">ยาวสุดก่อน</option>
+      <option value="shortest">สั้นสุดก่อน</option>
+    </select>
+  </div>
+
+  <div id="galleryGrid" class="gallery-grid"></div>
+  <p id="galleryEmpty" class="no-results hidden">ไม่พบคลิปที่ตรงกับเงื่อนไข</p>
+</div>
+
+<footer id="appVersion" class="app-footer"></footer>
+
+<div id="playerModal" class="help-modal hidden">
+  <div class="gallery-player">
+    <div class="help-header">
+      <span id="gpTitle"></span>
+      <button class="help-close" id="gpClose" title="ปิด (Esc)">&times;</button>
+    </div>
+    <div id="gpRatios" class="ratio-tabs"></div>
+    <div class="gp-stage">
+      <button class="gp-nav" id="gpPrev" title="คลิปก่อนหน้า (←)">&#8249;</button>
+      <video id="gpVideo" controls autoplay playsinline></video>
+      <button class="gp-nav" id="gpNext" title="คลิปถัดไป (→)">&#8250;</button>
+    </div>
+    <div id="gpMeta" class="gp-meta"></div>
+    <div class="result-actions">
+      <div id="gpDownloads" class="download-btns"></div>
+      <a id="gpOpen" class="tool-btn" href="/">เปิดในหน้าหลัก</a>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/gallery.js?v=20261101b"></script>
+</body>
+</html>
