@@ -136,7 +136,8 @@ class Orchestrator:
                        aspect_ratios: list[str] | None = None, mode: str = "narration",
                        voice_b: str = "", overlay_opts: dict | None = None,
                        duration_preset: str = "short", media_durations: list[float] | None = None,
-                       run_mode: str = "semi", media_source: str = "pexels", ai_engine: str = "flux"):
+                       run_mode: str = "semi", media_source: str = "pexels", ai_engine: str = "flux",
+                       graphics: bool = False):
         vs = voice_settings or VoiceSettings()
         status = self.projects[project_id]
         status.run_mode = run_mode if run_mode in RUN_MODES else "semi"
@@ -183,7 +184,7 @@ class Orchestrator:
             await self._generate_scenes(status, project_id, topic, vs, preset, persona,
                                         custom_script, mode, voice_b, duration_preset,
                                         skip_media_fetch, orientation, media_source, ai_engine,
-                                        render_params, clone_name)
+                                        render_params, clone_name, graphics)
 
         except Exception:
             error_msg = traceback.format_exc()[-500:]
@@ -248,7 +249,7 @@ class Orchestrator:
 
     async def _generate_scenes(self, status, project_id, topic, vs, preset, persona, custom_script,
                                mode, voice_b, duration_preset, skip_media_fetch, orientation,
-                               media_source, ai_engine, render_params, clone_name):
+                               media_source, ai_engine, render_params, clone_name, graphics=False):
         """Review / auto modes: the script is a list of scenes, each with its own media."""
         from core.quality import check_before_render
         from scripts.utils import get_audio_duration
@@ -261,7 +262,8 @@ class Orchestrator:
         res = await generate_scene_script(project_id, topic, voice=vs.voice, persona=persona,
                                           custom_script=custom_script, mode=mode,
                                           duration_preset=duration_preset,
-                                          scene_count=len(uploaded) or None, log=status.log)
+                                          scene_count=len(uploaded) or None, log=status.log,
+                                          want_stats=graphics and not uploaded)
         scenes = res["scenes"]
         status.scenes = scenes
         status.post = {"title": res["title"], "description": res["description"],
@@ -284,7 +286,7 @@ class Orchestrator:
             status.update("creating_video", 75)
             media = await fetch_scene_media(project_id, scenes, topic, orientation=orientation,
                                             source=media_source, ai_engine=ai_engine,
-                                            durations=spans, log=status.log)
+                                            durations=spans, log=status.log, graphics=graphics)
             got = sum(1 for r in media if r["file"])
             status.log(f"ได้สื่อ {got}/{len(scenes)} ฉาก", "success" if got == len(scenes) else "warning")
 
@@ -369,6 +371,8 @@ class Orchestrator:
                 status.log(p, "warning")
             post_txt = write_post(output_dir, post)
             media = sorted(glob.glob(os.path.join("projects", project_id, "media", "[0-9][0-9]_*")))
+            # A stat card already carries big text; the title reads better over footage.
+            media = [m for m in media if "_card" not in os.path.basename(m)] or media
             ratio = next(iter(video_paths))
             size = (1080, 1920) if ratio == "9:16" else (1920, 1080)
             source = media[0] if media else next(iter(video_paths.values()))

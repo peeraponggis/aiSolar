@@ -1471,3 +1471,19 @@ a.tool-btn { text-decoration: none; display: inline-block; }
 .queue-error { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
 .input-group .queue-add-btn { background: var(--surface2); border: 1px solid var(--accent); color: var(--text); padding: 12px 14px; }
 .input-group .queue-add-btn:hover { background: var(--accent); }
+.sb-card {
+  position: absolute; top: 74px; right: 6px; width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 0.85rem;
+  opacity: 0.55; transition: opacity 0.15s, border-color 0.15s;
+}
+.sb-scene:hover .sb-card { opacity: 1; }
+.sb-card:hover { border-color: var(--accent); }
+.sb-scene:has(.sb-card) { padding-right: 44px; min-height: 108px; }
+.card-dialog { max-width: 460px; }
+.card-form { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; }
+.card-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--text-dim); }
+.card-form input {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font: inherit; font-size: 0.95rem;
+}
+.card-hint { font-size: 0.78rem; color: var(--text-dim); }

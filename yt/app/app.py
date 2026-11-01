@@ -130,6 +130,7 @@ class GenerateRequest(BaseModel):
     run_mode: str = "semi"
     media_source: str = "pexels"
     ai_engine: str = "flux"
+    graphics: str = "off"
 
 
 def _prepare_generation(req: GenerateRequest):
@@ -237,7 +238,8 @@ def _prepare_generation(req: GenerateRequest):
                               media_durations=dur_list,
                               run_mode=req.run_mode if req.run_mode in ("semi", "review", "auto") else "semi",
                               media_source=req.media_source if req.media_source in ("pexels", "ai", "mixed") else "pexels",
-                              ai_engine=req.ai_engine if req.ai_engine in ("flux", "flux-fast", "gemini") else "flux")
+                              ai_engine=req.ai_engine if req.ai_engine in ("flux", "flux-fast", "gemini") else "flux",
+                              graphics=req.graphics == "on")
     )
 
 
@@ -384,6 +386,8 @@ def _apply_media_order(project_id: str, order: list[str]):
         tmp = media_dir / f"__reorder_{i:03d}{src.suffix}"
         os.replace(src, tmp)
         kind = "clip" if src.suffix.lower() in VIDEO_EXTS else "img"
+        if "_card" in fname:
+            kind = "clip_card"  # keeps stat cards recognisable (e.g. skipped for the thumbnail)
         staged.append((tmp, media_dir / f"{i:02d}_{kind}{src.suffix}"))
     for tmp, final in staged:
         os.replace(tmp, final)
@@ -537,6 +541,56 @@ async def project_ai_image(project_id: str, request: Request):
     name = f"99_img_{_uuid.uuid4().hex[:6]}{Path(paths[0]).suffix}"
     shutil.copy2(paths[0], media_dir / name)
     return {"filename": name, "type": "image"}
+
+
+@app.get("/api/graphics/status")
+async def graphics_status():
+    from scripts.graphic_cards import is_available
+    return {"available": await asyncio.to_thread(is_available)}
+
+
+@app.post("/api/project/{project_id}/graphic-card")
+async def project_graphic_card(project_id: str, request: Request):
+    """Render one stat card for a storyboard scene from numbers the user typed."""
+    from scripts.graphic_cards import render_stat_card
+
+    status = orchestrator.projects.get(project_id)
+    if not status:
+        return JSONResponse({"error": "Project not found"}, status_code=404)
+    body = await request.json()
+    raw = str(body.get("value", "")).replace(",", "").strip()
+    try:
+        value = float(raw)
+    except ValueError:
+        return JSONResponse({"error": "ใส่ตัวเลขให้ถูกต้อง"}, status_code=400)
+    stat = {"value": value, "decimals": min(len(raw.split(".")[1]), 2) if "." in raw else 0,
+            **{k: str(body.get(k) or "").strip()[:70] for k in ("label", "unit", "badge", "caption")}}
+    try:
+        seconds = float(body.get("duration") or 0)
+    except (TypeError, ValueError):
+        seconds = 0
+    if seconds <= 0:
+        durs = (status.render_params or {}).get("media_durations") or []
+        idx = int(body.get("index") or 0)
+        seconds = durs[idx] if 0 <= idx < len(durs) and durs[idx] else 0
+    if seconds <= 0:
+        # No per-scene timing (semi mode splits evenly): an even share plus margin,
+        # since a clip shorter than its slot would loop and replay the count-up.
+        from scripts.utils import get_audio_duration
+        media_dir = BASE_DIR / "projects" / project_id / "media"
+        count = len(status.scenes or []) or len(list(media_dir.glob("[0-9][0-9]_*"))) or 1
+        try:
+            total = get_audio_duration(status.audio_path) if status.audio_path else 0
+        except RuntimeError:
+            total = 0
+        seconds = min(60.0, total / count * 1.5) if total else 8
+    ratio = ((status.render_params or {}).get("aspect_ratios") or ["9:16"])[0]
+    name = f"99_clip_card_{_uuid.uuid4().hex[:6]}.mp4"
+    out = BASE_DIR / "projects" / project_id / "media" / name
+    if not await render_stat_card(stat, str(out), seconds,
+                                  "landscape" if ratio == "16:9" else "portrait"):
+        return JSONResponse({"error": "สร้างการ์ดไม่สำเร็จ (ดู logs/graphic_cards.log)"}, status_code=500)
+    return {"filename": name, "type": "video", "duration": round(seconds + 1, 2)}
 
 
 @app.get("/api/project/{project_id}/thumbnail")

@@ -301,8 +301,21 @@ def _scene_problems(data: dict | None, n: int, preset: dict, mode: str) -> list[
     return problems
 
 
+def max_stat_cards(n: int) -> int:
+    return max(1, n // 3)
+
+
+def _stat_rule(n: int) -> str:
+    return (f"- ฉากที่พูดถึงตัวเลขสำคัญ (สถิติ ราคา เปอร์เซ็นต์ จำนวน) ไม่เกิน {max_stat_cards(n)} ฉาก "
+            "และไม่ใช่ฉากสุดท้าย: เขียนตัวเลขใน text เป็นเลขอารบิก แล้วใส่ "
+            '"stat": {"value": ตัวเลขเดียวกับใน text, "unit": "หน่วย", '
+            '"label": "หัวเรื่องสั้นไม่เกิน 30 ตัวอักษร", "badge": "ป้ายสั้น เช่น +37% (ถ้ามีใน text)", '
+            '"caption": "สรุปสั้นไม่เกิน 50 ตัวอักษร"} ฉากอื่นใส่ "stat": null '
+            "ห้ามใช้ตัวเลขที่ไม่มีใน text\n")
+
+
 def _scene_prompt(topic: str, n: int, preset: dict, mode: str, particle: str,
-                  persona: str, context: str) -> str:
+                  persona: str, context: str, want_stats: bool = False) -> str:
     target = (preset["char_warn"] + preset["char_over"]) // 2
     if mode == "dialogue":
         speech_rule = ("แต่ละฉาก text เป็นบทสนทนาหลายบรรทัด ขึ้นต้นด้วย A: (คนอธิบาย) "
@@ -325,17 +338,25 @@ def _scene_prompt(topic: str, n: int, preset: dict, mode: str, particle: str,
         f"- ภาษาไทยเท่านั้น ห้ามมีอักษรจีน ใช้ภาษาพูดเข้าใจง่าย มีตัวเลขหรือตัวอย่างจริง{persona_rule}\n"
         "- visual: ภาษาอังกฤษ 2-5 คำ บอกสิ่งที่ถ่ายเป็นภาพได้จริงตรงกับเนื้อหาฉากนั้น "
         "(คน สิ่งของ การกระทำ สถานที่) ห้ามเป็นคำนามธรรม แต่ละฉากต้องไม่ซ้ำกัน\n"
-        "- hashtags 5-8 อัน"
+        + (_stat_rule(n) if want_stats else "")
+        + "- hashtags 5-8 อัน"
     )
 
 
-async def _custom_scene_meta(topic: str, texts: list[str], log: Callable | None) -> dict:
+async def _custom_scene_meta(topic: str, texts: list[str], log: Callable | None,
+                             want_stats: bool = False) -> dict:
     numbered = "\n".join(f"{i + 1}. {t[:400]}" for i, t in enumerate(texts))
+    stats = ""
+    if want_stats:
+        stats = (f' และ "stats": [หนึ่งรายการต่อฉาก] แต่ละรายการเป็น null หรือ '
+                 '{"value": ตัวเลขที่มีอยู่แล้วในข้อความฉากนั้น, "unit": "หน่วย", "label": "หัวเรื่องสั้น", '
+                 '"badge": "ป้ายสั้น (ถ้ามี)", "caption": "สรุปสั้น"} '
+                 f"ใส่เฉพาะฉากที่มีตัวเลขสำคัญ ไม่เกิน {max_stat_cards(len(texts))} ฉาก ห้ามแต่งตัวเลขเอง")
     prompt = (
         f"สำหรับสคริปต์วิดีโอหัวข้อ \"{topic}\" ที่แบ่งเป็นฉากด้านล่าง ตอบ JSON object รูปแบบ "
         '{"visuals": ["English stock footage query, 2-5 concrete visual words, one per scene"], '
         '"title": "ชื่อคลิปภาษาไทย ไม่เกิน 60 ตัวอักษร", "description": "คำอธิบาย 2-3 บรรทัด", '
-        '"hashtags": ["#..."]} '
+        f'"hashtags": ["#..."]}}{stats} '
         f"visuals ต้องมี {len(texts)} รายการตามลำดับฉาก\n\n{numbered}"
     )
     return await _llm_json(prompt, log) or {}
@@ -345,10 +366,12 @@ async def generate_scene_script(project_id: str, topic: str, voice: str = "femal
                                 persona: str = "", custom_script: str = "",
                                 mode: str = "narration", duration_preset: str = "short",
                                 scene_count: int | None = None,
-                                log: Callable | None = None) -> dict:
-    """Returns {"scenes": [{"text", "visual"}], "title", "description", "hashtags",
-    "problems", "script"}. Scene text is already normalised for speech."""
+                                log: Callable | None = None, want_stats: bool = False) -> dict:
+    """Returns {"scenes": [{"text", "visual", "stat"?}], "title", "description", "hashtags",
+    "problems", "script"}. Scene text is already normalised for speech; "stat"
+    (want_stats only) is a checked stat-card spec whose numbers are in the scene."""
     import json
+    from scripts.graphic_cards import clean_stat
     from scripts.script_tools import normalize_for_speech, split_scenes
 
     preset = DURATION_PRESETS.get(duration_preset, DURATION_PRESETS["short"])
@@ -361,10 +384,12 @@ async def generate_scene_script(project_id: str, topic: str, voice: str = "femal
             texts = [p.strip() for p in re.split(r"\n\s*\n", custom) if p.strip()]
         else:
             texts = split_scenes(custom, n)
-        meta = await _custom_scene_meta(topic, texts, log)
+        meta = await _custom_scene_meta(topic, texts, log, want_stats)
         visuals = meta.get("visuals") if isinstance(meta.get("visuals"), list) else []
+        stats = meta.get("stats") if isinstance(meta.get("stats"), list) else []
         data = {
-            "scenes": [{"text": t, "visual": str(visuals[i]) if i < len(visuals) else topic}
+            "scenes": [{"text": t, "visual": str(visuals[i]) if i < len(visuals) else topic,
+                        "stat": stats[i] if i < len(stats) else None}
                        for i, t in enumerate(texts)],
             "title": meta.get("title") or topic,
             "description": meta.get("description") or "",
@@ -375,7 +400,7 @@ async def generate_scene_script(project_id: str, topic: str, voice: str = "femal
             log(f"ใช้สคริปต์กำหนดเอง — แบ่งเป็น {len(texts)} ฉาก")
     else:
         context = await generate_brainstorm(topic, duration_preset=duration_preset) or f"Topic: {topic}"
-        prompt = _scene_prompt(topic, n, preset, mode, particle, persona, context)
+        prompt = _scene_prompt(topic, n, preset, mode, particle, persona, context, want_stats)
         data = await _llm_json(prompt, log)
         problems = _scene_problems(data, n, preset, mode)
         for round_no in range(2):
@@ -404,8 +429,20 @@ async def generate_scene_script(project_id: str, topic: str, voice: str = "femal
         text = str(s["text"]).strip()
         if mode != "dialogue":
             text = re.sub(r"\s*\n\s*", " ", text)
-        scenes.append({"text": normalize_for_speech(text, dictionary),
-                       "visual": str(s.get("visual") or topic).strip()})
+        scene = {"text": normalize_for_speech(text, dictionary),
+                 "visual": str(s.get("visual") or topic).strip()}
+        stat = clean_stat(s.get("stat"), text) if want_stats else None
+        if stat:
+            scene["stat"] = stat
+        scenes.append(scene)
+    if want_stats:
+        # Never the closing CTA scene, and not more cards than the prompt allowed.
+        if scenes:
+            scenes[-1].pop("stat", None)
+        for s in [s for s in scenes if "stat" in s][max_stat_cards(len(scenes)):]:
+            s.pop("stat")
+        if log:
+            log(f"ฉากที่จะทำเป็นการ์ดตัวเลข: {sum('stat' in s for s in scenes)} ฉาก")
     if mode != "dialogue" and scenes and not custom:
         last = scenes[-1]["text"].rstrip(" .!?")
         wrong = "ครับ" if particle == "ค่ะ" else "ค่ะ"
