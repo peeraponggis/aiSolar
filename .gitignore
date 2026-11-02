@@ -95,3 +95,10 @@ project_plan_spa/
 *.xlsx
 *.mkv
 *.avi
+
+# Local Translator: ข้อมูลของแต่ละเครื่อง (ประวัติการแปล · ค่าตั้ง + API key) — ห้ามขึ้น git (ลุงพีสั่ง 2 พ.ย. 2569 หลังประวัติหลุดขึ้น repo public)
+translation/history.json
+translation/settings.json
+translation/dist/LocalTranslator/history.json
+translation/dist/LocalTranslator/settings.json
+translation/_keep_local/
