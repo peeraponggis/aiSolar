@@ -61,6 +61,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | ASC Studio (ASCS) | 4.5.0 | `LocalAI\git\asc` | peeraponggis/asc |
 | courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
 | webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.0.0 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
+| Project Plan SPA (โปรแกรมบริหารโครงการ) | 1.1.0 | `LocalAI\project_plan_spa` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/plan/ |
 
 **3.3 repo `ai` — โปรแกรมเล็ก เฉพาะโค้ด** → `LocalAI\git\ai\<ชื่อโปรแกรม>\` · peeraponggis/ai
 
@@ -82,7 +83,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 - ไม่ขึ้น: ConstructCAD (ของ francisreboucas · GPL) · Carport-CM (มีแค่รูป)
 
 **3.4 repo ที่ยังไม่ได้ clone ลงเครื่องนี้** (clone เฉพาะตัวที่จะแก้)
-aisolar2 · envi_pi · peechat · solar-relay · 3DPVs · deepseek · fs · present · carport_cm · pi-boq-dev · esri-leaflet-doc (pi-boq-dev มีฉบับใน picode ด้วย)
+envi_pi · peechat · solar-relay · 3DPVs · deepseek · fs · present · carport_cm · pi-boq-dev · esri-leaflet-doc (pi-boq-dev มีฉบับใน picode ด้วย)
 
 ## หมวด 4 · ⛔ ห้ามขึ้น git ทุกกรณี — คัดลอกผ่าน Tailscale/SSH เท่านั้น
 
