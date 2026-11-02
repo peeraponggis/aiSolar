@@ -68,7 +68,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | sub folder | ต้นฉบับ (ยังทำงานที่นี่) | เวอร์ชัน |
 |---|---|---|
 | Trading | `LocalAI\Trading` | 1.0.0 |
-| HomeGuard | `LocalAI\tools\homeguard` | 2.0.3 |
+| HomeGuard | `LocalAI\tools\homeguard` | 2.0.5 |
 | Multi-Tools | `LocalAI\multi-tools` | – |
 | CCTV | `LocalAI\cctv` | – |
 | Desktop-App | `LocalAI\desktop_app` | – |
