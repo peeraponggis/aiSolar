@@ -1,47 +1,47 @@
-﻿# เธ—เธฐเน€เธเธตเธขเธเนเธเธฃเนเธเธฃเธกเธเธญเธเธฅเธธเธเธเธต (เธจเธนเธเธขเนเธเธฅเธฒเธ ยท เธ—เธฑเนเธ Laptop + Home server)
+# ทะเบียนโปรแกรมของลุงพี (ศูนย์กลาง · ทั้ง Laptop + Home server)
 
-เธญเธฑเธเน€เธ”เธ• 1 เธ.เธข. 2569 ยท laptop เนเธเน `F:\` ยท home server เนเธเน `C:\` (เนเธเธฃเธเธชเธฃเนเธฒเธเนเธเธฅเน€เธ”เธญเธฃเนเน€เธซเธกเธทเธญเธเธเธฑเธ)
-เนเธเนเธ 4 เธซเธกเธงเธ”เธ•เธฒเธก **"เนเธเธฃเน€เธซเนเธเนเธ”เน"** โ€” เน€เธเนเธเธซเธกเธงเธ”เธเนเธญเธเนเธเนเธซเธฃเธทเธญ push เธ—เธธเธเธเธฃเธฑเนเธ
+อัปเดต 1 พ.ย. 2569 · laptop ใช้ `F:\` · home server ใช้ `C:\` (โครงสร้างโฟลเดอร์เหมือนกัน)
+แบ่ง 4 หมวดตาม **"ใครเห็นได้"** — เช็กหมวดก่อนแก้หรือ push ทุกครั้ง
 
-## โก เธเธเน€เธซเธฅเนเธ 2 เน€เธเธฃเธทเนเธญเธ (เธฅเธธเธเธเธตเธชเธฑเนเธ 31 เธ•.เธ. 2569 ยท เนเธเนเธเธฑเธเธ—เธธเธ repo ยท เธ—เธฑเนเธเธเธเนเธฅเธฐ Claude เธ—เธธเธ session)
+## ⚡ กฎเหล็ก 2 เครื่อง (ลุงพีสั่ง 31 ต.ค. 2569 · ใช้กับทุก repo · ทั้งคนและ Claude ทุก session)
 
-1. **เน€เธฃเธดเนเธกเธเธฒเธเธเธเน€เธเธฃเธทเนเธญเธเนเธซเธ โ’ pull เธเนเธญเธเธ—เธธเธเธเธฃเธฑเนเธ** เธเนเธญเธเนเธ•เธฐเนเธเธฅเนเนเธ”เน
-   `git -C <repo> pull --rebase --autostash` (เน€เธเนเธเธเธฒเธเธ—เธตเนเธขเธฑเธเนเธกเน commit เนเธงเนเนเธซเน เนเธฅเนเธงเธเธทเธเธเธฅเธฑเธเน€เธญเธ)
-2. **เธเธเธเธฒเธ โ’ commit + push เธ—เธฑเธเธ—เธต** เธเนเธญเธเธชเธฅเธฑเธเน€เธเธฃเธทเนเธญเธ/เธเธดเธ”เน€เธเธฃเธทเนเธญเธ โ€” เธซเนเธฒเธกเธ—เธดเนเธ commit เธเนเธฒเธเนเธงเนเน€เธเธฃเธทเนเธญเธเน€เธ”เธตเธขเธง
-3. **เธเนเธญเธ push repo public** (aiSolar ยท asc ยท online ยท ai) โ’ เธ•เธฃเธงเธเธงเนเธฒเนเธกเนเธกเธต API key / เธฃเธซเธฑเธชเธเนเธฒเธ / เธเนเธญเธกเธนเธฅเธฅเธนเธเธเนเธฒ (เธ”เธนเธซเธกเธงเธ” 4)
-4. **เธ–เนเธฒ pull เธเธถเนเธ diverged** โ’ `pull --rebase --autostash` ยท **เธ–เนเธฒ CONFLICT โ’ เธซเธขเธธเธ”** เธซเนเธฒเธก `--force` ยท เธ–เธฒเธก Claude เนเธ session เธจเธนเธเธขเนเธเธฅเธฒเธ
+1. **เริ่มงานบนเครื่องไหน → pull ก่อนทุกครั้ง** ก่อนแตะไฟล์ใดๆ
+   `git -C <repo> pull --rebase --autostash` (เก็บงานที่ยังไม่ commit ไว้ให้ แล้วคืนกลับเอง)
+2. **จบงาน → commit + push ทันที** ก่อนสลับเครื่อง/ปิดเครื่อง — ห้ามทิ้ง commit ค้างไว้เครื่องเดียว
+3. **ก่อน push repo public** (aiSolar · asc · online · ai) → ตรวจว่าไม่มี API key / รหัสผ่าน / ข้อมูลลูกค้า (ดูหมวด 4)
+4. **ถ้า pull ขึ้น diverged** → `pull --rebase --autostash` · **ถ้า CONFLICT → หยุด** ห้าม `--force` · ถาม Claude ใน session ศูนย์กลาง
 
-เน€เธซเธ•เธธเธ—เธตเนเธ•เนเธญเธเธกเธตเธเธ: 31 เธ•.เธ. 2569 laptop เธกเธต commit Free AI API Finder เธ—เธตเนเธขเธฑเธเนเธกเน push เธเธ“เธฐเธ—เธตเน home server push PROGRAMS.md เธเธถเนเธเนเธเธเนเธญเธ โ’ เธชเธญเธเธเธฑเนเธเนเธขเธเธ—เธฒเธ `pull --ff-only` เนเธเนเนเธกเนเนเธ”เน เธ•เนเธญเธเนเธเนเธ”เนเธงเธขเธกเธทเธญ
+เหตุที่ต้องมีกฎ: 31 ต.ค. 2569 laptop มี commit Free AI API Finder ที่ยังไม่ push ขณะที่ home server push PROGRAMS.md ขึ้นไปก่อน → สองฝั่งแยกทาง `pull --ff-only` ใช้ไม่ได้ ต้องแก้ด้วยมือ
 
-เธญเธทเนเธเน: bump VERSION.json + CHANGELOG เธ—เธธเธเธเธฃเธฑเนเธเธ—เธตเนเนเธเน ยท Claude เธเธ home server push/pull เน€เธญเธเนเธ”เน (GCM dpapi store ยท memory project_central_session)
+อื่นๆ: bump VERSION.json + CHANGELOG ทุกครั้งที่แก้ · Claude บน home server push/pull เองได้ (GCM dpapi store · memory project_central_session)
 
 ---
 
-## เธซเธกเธงเธ” 1 ยท ๐”’ เธเธฒเธเธเธฃเธดเธฉเธฑเธ— ProInventive โ€” private ยท org `proinventive`
+## หมวด 1 · 🔒 งานบริษัท ProInventive — private · org `proinventive`
 
-| เนเธเธฃเนเธเธฃเธก | เนเธเธฅเน€เธ”เธญเธฃเน (เนเธ•เน `<เนเธ”เธฃเธเน>:\`) | repo |
+| โปรแกรม | โฟลเดอร์ (ใต้ `<ไดรฟ์>:\`) | repo |
 |---|---|---|
 | solar-engine + asc-enterprises + digitize-kit | `enterprise\solar-project-complete` | proinventive/solar-project-complete (private) |
-| picode monorepo (aiSolar ยท asc ยท pi-boq-dev ยท solar-saas ยท webproinventive) | `LocalAI\git\picode` | proinventive/picode (private) |
-| picode-cdn | โ€“ (เธขเธฑเธเนเธกเน clone) | proinventive/picode-cdn (**public**) |
-| **CRM-Pi / Pi System 1.2.2** (pi_crm_erp + pi_boq_app) | **เธ•เนเธเธเธเธฑเธเธเธฃเธดเธ:** monorepo picode เนเธเธฅเน€เธ”เธญเธฃเน `pi-system\` โ’ laptop `F:\enterprise\picode\pi-system\` ยท home `C:\LocalAI\git\picode\pi-system\` | proinventive/picode (private) |
+| picode monorepo (aiSolar · asc · pi-boq-dev · solar-saas · webproinventive) | `LocalAI\git\picode` | proinventive/picode (private) |
+| picode-cdn | – (ยังไม่ clone) | proinventive/picode-cdn (**public**) |
+| **CRM-Pi / Pi System 1.2.2** (pi_crm_erp + pi_boq_app) | **ต้นฉบับจริง:** monorepo picode โฟลเดอร์ `pi-system\` → laptop `F:\enterprise\picode\pi-system\` · home `C:\LocalAI\git\picode\pi-system\` | proinventive/picode (private) |
 
-โ ๏ธ **CRM-Pi เธกเธตเธชเธณเน€เธเธฒเน€เธเนเธฒเธญเธตเธเธเธธเธ”** โ€” `F:\enterprise\pi-system\` (laptop) = repo `proinventive/pi-system` (private ยท เธชเธฃเนเธฒเธ 31 เธ•.เธ. 2569) ยท clone เนเธงเนเธ—เธตเน home `C:\enterprise\pi-system\` ยท **เธเนเธฒเธเธ—เธตเนเธเนเธญเธเธกเธตเธเธนเนเธเนเธงเธข AI** โ€” เธซเนเธฒเธกเนเธเนเธ—เธตเนเธเธตเน เนเธเน picode เน€เธ—เนเธฒเธเธฑเนเธ ยท **เธฅเธธเธเธเธตเนเธซเนเน€เธเนเธเนเธงเนเน€เธเนเธเธชเธณเธฃเธญเธ** (1 เธ.เธข. 2569 ยท เนเธกเนเธฅเธ เนเธกเน push เน€เธเธดเนเธก)
+⚠️ **CRM-Pi มีสำเนาเก่าอีกชุด** — `F:\enterprise\pi-system\` (laptop) = repo `proinventive/pi-system` (private · สร้าง 31 ต.ค. 2569) · clone ไว้ที่ home `C:\enterprise\pi-system\` · **ค้างที่ก่อนมีผู้ช่วย AI** — ห้ามแก้ที่นี่ ใช้ picode เท่านั้น · **ลุงพีให้เก็บไว้เป็นสำรอง** (1 พ.ย. 2569 · ไม่ลบ ไม่ push เพิ่ม)
 
-CRM-Pi: เน€เธงเนเธ `pi-system.pages.dev` (Cloudflare Pages) ยท **deploy เธเธฒเธ laptop เน€เธ—เนเธฒเธเธฑเนเธ** (เธฅเธธเธเธเธตเธชเธฑเนเธ 1 เธ.เธข. 2569): เนเธ `F:\enterprise\picode\pi-system` โ’ `node pi_crm_erp/scripts/build_pages.mjs` โ’ `npx wrangler pages deploy dist_pages --project-name pi-system --branch production` ยท เนเธเธเน€เธเธทเนเธญเธก ASC Studio: `design-auto\docs\crm-pi-integration.md`
+CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จาก laptop เท่านั้น** (ลุงพีสั่ง 1 พ.ย. 2569): ใน `F:\enterprise\picode\pi-system` → `node pi_crm_erp/scripts/build_pages.mjs` → `npx wrangler pages deploy dist_pages --project-name pi-system --branch production` · แผนเชื่อม ASC Studio: `design-auto\docs\crm-pi-integration.md`
 
-## เธซเธกเธงเธ” 2 ยท ๐”’ เธเธฅเธดเธ•เธ เธฑเธ“เธ‘เนเธเธญเธเธฅเธธเธเธเธต โ€” private ยท `peeraponggis`
+## หมวด 2 · 🔒 ผลิตภัณฑ์ของลุงพี — private · `peeraponggis`
 
-| เนเธเธฃเนเธเธฃเธก | เน€เธงเธญเธฃเนเธเธฑเธ | เนเธเธฅเน€เธ”เธญเธฃเน | repo |
+| โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
 | Design Auto (Auto Solar Co-pilot Studio) | 0.140.2 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
-| ASC Architect (ASCA) | 0.23.0 | `LocalAI\pee_architec` | peeraponggis/pee_architec (เธซเนเธฒเธกเธเธเธเธฑเธ aiSolar) |
+| ASC Architect (ASCA) | 0.23.0 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
 
-## เธซเธกเธงเธ” 3 ยท ๐ เนเธเนเธ”เน€เธเธดเธ”เน€เธเธขเนเธ”เน โ€” public ยท `peeraponggis`
+## หมวด 3 · 🌐 โค้ดเปิดเผยได้ — public · `peeraponggis`
 
-**3.1 repo เธซเธฅเธฑเธ `C:\LocalAI` โ’ peeraponggis/aiSolar (branch master)**
+**3.1 repo หลัก `C:\LocalAI` → peeraponggis/aiSolar (branch master)**
 
-| เนเธเธฃเนเธเธฃเธก | เน€เธงเธญเธฃเนเธเธฑเธ | เนเธเธฅเน€เธ”เธญเธฃเน |
+| โปรแกรม | เวอร์ชัน | โฟลเดอร์ |
 |---|---|---|
 | Local Translator | 1.9.0 | `LocalAI\translation` |
 | Lungpee AI Gateway | 1.6.0 | `LocalAI\gateway` |
@@ -50,58 +50,58 @@ CRM-Pi: เน€เธงเนเธ `pi-system.pages.dev` (Cloudflare Pag
 | Thai-Lao Dictionary | 1.0.0 | `LocalAI\Thai-Lao` |
 | Battery & System Dashboard | 1.3.0 | `LocalAI\battery_info` |
 | GAS Monitor | 2.4.0 | `LocalAI\gas_monitor` |
-| RemoteAIR (เธฃเธตเนเธกเธ—เนเธญเธฃเน Android/iOS) | 1.0.0 | `LocalAI\remoterAIR` |
-| YT Shorts Automation (เธเธฅเธดเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธด 3 เนเธซเธกเธ” ยท เธเธดเธง ยท เธ เธฒเธ AI ยท เธเธฒเธฃเนเธ”เธ•เธฑเธงเน€เธฅเธ) | 2.3.0 | `LocalAI\yt` |
-| Free AI API Finder (เธจเธนเธเธขเนเธฃเธงเธก AI API เธเธฃเธต 87 เธฃเธฒเธข) | 1.1.0 | `LocalAI\free-ai-api` |
+| RemoteAIR (รีโมทแอร์ Android/iOS) | 1.0.0 | `LocalAI\remoterAIR` |
+| YT Shorts Automation (คลิปอัตโนมัติ 3 โหมด · คิว · ภาพ AI · การ์ดตัวเลข) | 2.3.0 | `LocalAI\yt` |
+| Free AI API Finder (ศูนย์รวม AI API ฟรี 87 ราย) | 1.1.0 | `LocalAI\free-ai-api` |
 
-**3.2 repo เนเธขเธ**
+**3.2 repo แยก**
 
-| เนเธเธฃเนเธเธฃเธก | เน€เธงเธญเธฃเนเธเธฑเธ | เนเธเธฅเน€เธ”เธญเธฃเน | repo |
+| โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
 | ASC Studio (ASCS) | 4.6.0 | `LocalAI\git\asc` | peeraponggis/asc |
-| courseweb (เน€เธงเนเธเธเธญเธฃเนเธชเธญเธญเธเนเธฅเธเน) | โ€“ | `LocalAI\courseweb` | peeraponggis/online |
-| webproinventive (เน€เธงเนเธ PROINVENTIVE + Pi Console) | 1.0.0 | home `C:\LocalAI\pi\webproinventive` ยท laptop เนเธเธฅเน€เธ”เธญเธฃเน Pi-web เน€เธ”เธดเธก (เธ”เธน HANDOFF.md เธเนเธญ 4) | peeraponggis/webproinventive ยท live peeraponggis.github.io/webproinventive (เธกเธตเธเธเธฑเธเนเธ picode เธ”เนเธงเธข) |
-| Project Plan SPA (เนเธเธฃเนเธเธฃเธกเธเธฃเธดเธซเธฒเธฃเนเธเธฃเธเธเธฒเธฃ) | 1.5.1 | `LocalAI\project_plan_spa` ยท home clone `LocalAI\git\aisolar2` | peeraponggis/aisolar2 ยท live peeraponggis.github.io/aisolar2/plan/ ยท เธฃเธฒเธขเธเธฒเธ Pi monitor (เธฃเธซเธฑเธช PLAN) |
+| courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
+| webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.0.0 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
+| Project Plan SPA (โปรแกรมบริหารโครงการ) | 1.5.1 | `LocalAI\project_plan_spa` · home clone `LocalAI\git\aisolar2` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/plan/ · รายงาน Pi monitor (รหัส PLAN) |
 
-**3.3 repo `ai` โ€” เนเธเธฃเนเธเธฃเธกเน€เธฅเนเธ เน€เธเธเธฒเธฐเนเธเนเธ”** โ’ `LocalAI\git\ai\<เธเธทเนเธญเนเธเธฃเนเธเธฃเธก>\` ยท peeraponggis/ai
+**3.3 repo `ai` — โปรแกรมเล็ก เฉพาะโค้ด** → `LocalAI\git\ai\<ชื่อโปรแกรม>\` · peeraponggis/ai
 
-| sub folder | เธ•เนเธเธเธเธฑเธ (เธขเธฑเธเธ—เธณเธเธฒเธเธ—เธตเนเธเธตเน) | เน€เธงเธญเธฃเนเธเธฑเธ |
+| sub folder | ต้นฉบับ (ยังทำงานที่นี่) | เวอร์ชัน |
 |---|---|---|
 | Trading | `LocalAI\Trading` | 1.0.0 |
 | HomeGuard | `LocalAI\tools\homeguard` | 2.0.5 |
-| Multi-Tools | `LocalAI\multi-tools` | โ€“ |
-| CCTV | `LocalAI\cctv` | โ€“ |
-| Desktop-App | `LocalAI\desktop_app` | โ€“ |
-| Tune-PC | `LocalAI\tools\Tune-PC` (เธ•เนเธเธเธเธฑเธ J:) | โ€“ |
-| EV-Charger-Research | `LocalAI\aiSolar\EV_Charger_Research` (เธ•เนเธเธเธเธฑเธ I:) | โ€“ |
-| AMI-Fetcher ยท AMR-Fetcher ยท PEA-Build | `LocalAI\AMI_Fetcher` ยท `AMR_Fetcher` ยท `PEA_build` | โ€“ |
-| FB-Fetcher ยท FB-Extension | `LocalAI\FB_Fetcher` ยท `FB_Extension` | โ€“ |
+| Multi-Tools | `LocalAI\multi-tools` | – |
+| CCTV | `LocalAI\cctv` | – |
+| Desktop-App | `LocalAI\desktop_app` | – |
+| Tune-PC | `LocalAI\tools\Tune-PC` (ต้นฉบับ J:) | – |
+| EV-Charger-Research | `LocalAI\aiSolar\EV_Charger_Research` (ต้นฉบับ I:) | – |
+| AMI-Fetcher · AMR-Fetcher · PEA-Build | `LocalAI\AMI_Fetcher` · `AMR_Fetcher` · `PEA_build` | – |
+| FB-Fetcher · FB-Extension | `LocalAI\FB_Fetcher` · `FB_Extension` | – |
 
-- เธญเธฑเธเน€เธ”เธ•: `bash LocalAI/git/ai/tools/sync_from_localai.sh` โ’ commit + push ยท เธชเธเธฃเธดเธเธ•เนเธเธฑเธ”เน€เธเธเธฒเธฐเนเธเนเธ” เธฅเนเธฒเธเธเธฑเธเธเธต/เธฃเธซเธฑเธชเธเนเธฒเธ/เธญเธตเน€เธกเธฅ เนเธฅเธฐเธซเธขเธธเธ”เธ–เนเธฒเน€เธเธญเธฃเธซเธฑเธชเธเนเธฒเธเน€เธซเธฅเธทเธญ
-- เนเธเนเธเธ laptop เนเธฅเนเธงเธ•เนเธญเธเธเธฑเธ”เธฅเธญเธเธเธฅเธฑเธเนเธเธฅเน€เธ”เธญเธฃเนเธ•เนเธเธเธเธฑเธเน€เธญเธ
-- โ… push เธเธถเนเธ GitHub เนเธฅเนเธง (31 เธ•.เธ. 2569 ยท commit 6caf209)
-- เนเธกเนเธเธถเนเธ: ConstructCAD (เธเธญเธ francisreboucas ยท GPL) ยท Carport-CM (เธกเธตเนเธเนเธฃเธนเธ)
+- อัปเดต: `bash LocalAI/git/ai/tools/sync_from_localai.sh` → commit + push · สคริปต์คัดเฉพาะโค้ด ล้างบัญชี/รหัสผ่าน/อีเมล และหยุดถ้าเจอรหัสผ่านเหลือ
+- แก้บน laptop แล้วต้องคัดลอกกลับโฟลเดอร์ต้นฉบับเอง
+- ✅ push ขึ้น GitHub แล้ว (31 ต.ค. 2569 · commit 6caf209)
+- ไม่ขึ้น: ConstructCAD (ของ francisreboucas · GPL) · Carport-CM (มีแค่รูป)
 
-**3.4 repo เธ—เธตเนเธขเธฑเธเนเธกเนเนเธ”เน clone เธฅเธเน€เธเธฃเธทเนเธญเธเธเธตเน** (clone เน€เธเธเธฒเธฐเธ•เธฑเธงเธ—เธตเนเธเธฐเนเธเน)
-envi_pi ยท peechat ยท solar-relay ยท 3DPVs ยท deepseek ยท fs ยท present ยท carport_cm ยท pi-boq-dev ยท esri-leaflet-doc (pi-boq-dev เธกเธตเธเธเธฑเธเนเธ picode เธ”เนเธงเธข)
+**3.4 repo ที่ยังไม่ได้ clone ลงเครื่องนี้** (clone เฉพาะตัวที่จะแก้)
+envi_pi · peechat · solar-relay · 3DPVs · deepseek · fs · present · carport_cm · pi-boq-dev · esri-leaflet-doc (pi-boq-dev มีฉบับใน picode ด้วย)
 
-## เธซเธกเธงเธ” 4 ยท โ” เธซเนเธฒเธกเธเธถเนเธ git เธ—เธธเธเธเธฃเธ“เธต โ€” เธเธฑเธ”เธฅเธญเธเธเนเธฒเธ Tailscale/SSH เน€เธ—เนเธฒเธเธฑเนเธ
+## หมวด 4 · ⛔ ห้ามขึ้น git ทุกกรณี — คัดลอกผ่าน Tailscale/SSH เท่านั้น
 
-| เธญเธฐเนเธฃ | เธญเธขเธนเนเธ—เธตเน | เน€เธซเธ•เธธเธเธฅ |
+| อะไร | อยู่ที่ | เหตุผล |
 |---|---|---|
-| เธเธฅเธเธฒเธ Design Auto (~3.8 GB) | `design-auto\out` | เนเธซเธเน |
-| เธเนเธญเธกเธนเธฅ server Design Auto | `design-auto\server\data` | เธเนเธญเธกเธนเธฅเธเธนเนเนเธเน |
-| เธ เธฒเธเธชเนเธเธเธกเธฒเธ•เธฃเธเธฒเธ เธงเธชเธ—. | `solar-project-complete\eit` | เธฅเธดเธเธชเธดเธ—เธเธดเน |
-| เธเนเธญเธกเธนเธฅเธฅเธนเธเธเนเธฒ + เธกเธดเน€เธ•เธญเธฃเน | `AMR_Fetcher\data` | เธเนเธญเธกเธนเธฅเธฅเธนเธเธเนเธฒเธเธฃเธดเธ |
-| เธงเธดเธ”เธตเนเธญเธเธฅเนเธญเธ | `cctv\` (mp4) | เธเธงเธฒเธกเน€เธเนเธเธชเนเธงเธเธ•เธฑเธง |
-| เธเธฑเธเธเธต/เธฃเธซเธฑเธชเธเนเธฒเธ PEA | เธ•เนเธเธเธเธฑเธ `AMI_Fetcher` ยท `AMR_Fetcher` ยท `PEA_build` | เธฃเธซเธฑเธชเธเนเธฒเธเธเธฃเธดเธ (เธเธงเธฃเน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธช เธ–เนเธฒเน€เธเธขเธชเนเธเธ•เนเธญ) |
-| เธเธตเธขเน API เธเธนเนเธเนเธงเธข AI | localStorage เนเธเน€เธเธฃเธฒเธงเนเน€เธเธญเธฃเน | เธซเนเธฒเธกเธฅเธเนเธเธฅเน |
+| ผลงาน Design Auto (~3.8 GB) | `design-auto\out` | ใหญ่ |
+| ข้อมูล server Design Auto | `design-auto\server\data` | ข้อมูลผู้ใช้ |
+| ภาพสแกนมาตรฐาน วสท. | `solar-project-complete\eit` | ลิขสิทธิ์ |
+| ข้อมูลลูกค้า + มิเตอร์ | `AMR_Fetcher\data` | ข้อมูลลูกค้าจริง |
+| วิดีโอกล้อง | `cctv\` (mp4) | ความเป็นส่วนตัว |
+| บัญชี/รหัสผ่าน PEA | ต้นฉบับ `AMI_Fetcher` · `AMR_Fetcher` · `PEA_build` | รหัสผ่านจริง (ควรเปลี่ยนรหัส ถ้าเคยส่งต่อ) |
+| คีย์ API ผู้ช่วย AI | localStorage ในเบราว์เซอร์ | ห้ามลงไฟล์ |
 
-**เธ”เนเธฒเธเธเธฑเธเธเธฅเธฒเธ”:** `C:\LocalAI\.gitignore` (repo aiSolar เธเธถเนเธเน€เธเนเธ public) เธเธฅเนเธญเธเนเธเธฅเน€เธ”เธญเธฃเนเธซเธกเธงเธ” 4 + เนเธเธฃเนเธเธฃเธกเธซเธกเธงเธ” 3.3 เธ•เนเธเธเธเธฑเธ + repo เนเธขเธเนเธ•เน `git\` + `config.ini` `.env` `*.key` `*.pem` `*.db` `*.xls(x)` เธงเธดเธ”เธตเนเธญ โ€” เนเธเธฅเนเธ—เธตเน track เธญเธขเธนเนเนเธฅเนเธงเนเธกเนเนเธ”เนเธฃเธฑเธเธเธฅ
+**ด่านกันพลาด:** `C:\LocalAI\.gitignore` (repo aiSolar ซึ่งเป็น public) บล็อกโฟลเดอร์หมวด 4 + โปรแกรมหมวด 3.3 ต้นฉบับ + repo แยกใต้ `git\` + `config.ini` `.env` `*.key` `*.pem` `*.db` `*.xls(x)` วิดีโอ — ไฟล์ที่ track อยู่แล้วไม่ได้รับผล
 
 ---
 
-## เธเธฒเธฃเน€เธเนเธฒเธ–เธถเธเธเนเธฒเธกเน€เธเธฃเธทเนเธญเธ
-- home server: Tailscale (IP เธ”เธนเนเธ memory project_homeserver_ssh ยท เนเธกเนเนเธชเนเนเธ repo public) ยท session เธจเธนเธเธขเนเธเธฅเธฒเธเน€เธเธดเธ” Remote Control โ’ เธชเธฑเนเธเธเธฒเธเธเธฒเธ claude.ai/code เธซเธฃเธทเธญเนเธญเธเธกเธทเธญเธ–เธทเธญ
-- laptop: `tools\git-autopull.ps1` pull เธญเธฑเธ•เนเธเธกเธฑเธ•เธดเธ•เธญเธ login (Design Auto + solar-project-complete) ยท home server เธขเธฑเธเนเธกเนเธกเธต auto-pull
-- เนเธกเนเธเธเธเธฑเธเธเธตเธเธ GitLab / Bitbucket / Codeberg
+## การเข้าถึงข้ามเครื่อง
+- home server: Tailscale (IP ดูใน memory project_homeserver_ssh · ไม่ใส่ใน repo public) · session ศูนย์กลางเปิด Remote Control → สั่งงานจาก claude.ai/code หรือแอปมือถือ
+- laptop: `tools\git-autopull.ps1` pull อัตโนมัติตอน login (Design Auto + solar-project-complete) · home server ยังไม่มี auto-pull
+- ไม่พบบัญชีบน GitLab / Bitbucket / Codeberg
