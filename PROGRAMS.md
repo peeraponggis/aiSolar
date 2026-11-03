@@ -61,7 +61,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | ASC Studio (ASCS) | 4.6.0 | `LocalAI\git\asc` | peeraponggis/asc |
 | courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
 | webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.0.0 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
-| Project Plan SPA (โปรแกรมบริหารโครงการ) | 1.6.0 | `LocalAI\project_plan_spa` · home clone `LocalAI\git\aisolar2` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/plan/ · รายงาน Pi monitor (รหัส PLAN) |
+| Project Plan SPA (โปรแกรมบริหารโครงการ) | 1.6.1 | `LocalAI\project_plan_spa` · home clone `LocalAI\git\aisolar2` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/plan/ · รายงาน Pi monitor (รหัส PLAN) |
 
 **3.3 repo `ai` — โปรแกรมเล็ก เฉพาะโค้ด** → `LocalAI\git\ai\<ชื่อโปรแกรม>\` · peeraponggis/ai
 
