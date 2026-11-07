@@ -18,7 +18,7 @@
 | `09-homeguard.bat` | HomeGuard (ไม่อยู่ใน git · ตัวจริงรันบน home): build → `dist\HomeGuard-Setup.exe` · คัดลอกไป `installers\` · เทียบไฟล์กับ home (hash) · ส่ง+เปิดตัวติดตั้งบน home |
 | `lib\config.ps1` | **path และค่าตั้งทั้งหมด** — ย้ายโฟลเดอร์/เปลี่ยน project/เพิ่มไฟล์ SQL แก้ที่นี่ที่เดียว |
 | `lib\*.ps1` | ตัวทำงานจริง (bat เป็นแค่ตัวเรียก) · `logs\<วันที่>.txt` ทุกคำสั่ง · `logs\sql-done.json` SQL ที่รันแล้ว |
-| `installers\` | วางชุดติดตั้งที่จะพกไปเครื่องใหม่ (08 หาในนี้ด้วย) |
+| `F:\LocalAI\setup_prg\installers\` | **ชุดติดตั้งรุ่นล่าสุดทุกโปรแกรม** (ASCS exe · ASCA exe · HomeGuard exe · Translator zip) — สำเนามาให้เองหลัง build ทุกครั้ง และลบรุ่นเก่าออก · พกโฟลเดอร์นี้ + `ASC\` ไปเครื่องใหม่ · ไม่ขึ้น git |
 
 ## กฎที่ bat ทุกตัวถือ
 - **ถามก่อน** commit/push/deploy ทุกครั้ง (ค่าเริ่ม = ไม่) · เว็บที่คนใช้จริงเตือนซ้ำ

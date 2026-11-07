@@ -23,14 +23,14 @@ try {
   if ($exe) { Log "ชุดติดตั้ง: dist\HomeGuard-Setup.exe ($([math]::Round($exe.Length/1MB,1)) MB · $($exe.LastWriteTime.ToString('d MMM HH:mm')))" } else { Warn 'ยังไม่มี dist\HomeGuard-Setup.exe' }
   Write-Host ''
   Write-Host '  [1] build (build.ps1): HomeGuard.exe · DiskCare.exe · dist\HomeGuard-Setup.zip/.exe'
-  Write-Host '  [2] คัดลอกชุดติดตั้งไป setup_prg\ASC\installers\ (พกไปเครื่องใหม่)'
+  Write-Host '  [2] สำเนาชุดติดตั้งทุกโปรแกรมไป setup_prg\installers\ (ลบรุ่นเก่า · พกไปเครื่องใหม่)'
   Write-Host '  [3] เทียบไฟล์กับ home server (hash) — ดูว่าฝั่งไหนใหม่กว่า'
   Write-Host '  [4] ดึงตัวจริงจาก home → tools\homeguard\from-home\ (ไม่ทับตัวพัฒนา)'
   Write-Host '  [5] ส่งชุดติดตั้งไป home แล้วเปิดตัวติดตั้งบน home (ผ่าน ssh · ถามก่อน)'
   Write-Host '  [0] กลับ'
   switch (Read-Host 'เลือก') {
-    '1' { Run 'build.ps1' powershell @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "$d\build.ps1") $d | Out-Null; Get-ChildItem "$d\dist\HomeGuard-Setup.*" | ForEach-Object { Ok "$($_.Name) $([math]::Round($_.Length/1MB,1)) MB" } }
-    '2' { if (-not $exe) { throw 'ยังไม่มีชุดติดตั้ง — เลือก [1] ก่อน' }; New-Item -ItemType Directory -Force "$Here\installers" | Out-Null; Copy-Item $exe.FullName "$Here\installers\HomeGuard-Setup-$v.exe" -Force; Ok "→ $Here\installers\HomeGuard-Setup-$v.exe" }
+    '1' { Run 'build.ps1' powershell @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "$d\build.ps1") $d | Out-Null; Get-ChildItem "$d\dist\HomeGuard-Setup.*" | ForEach-Object { Ok "$($_.Name) $([math]::Round($_.Length/1MB,1)) MB" }; Sync-Installers | ForEach-Object { Ok "พกไปเครื่องใหม่: $($_.dst)" } }
+    '2' { Sync-Installers | ForEach-Object { Ok "$($_.dst) ($($_.mb) MB)" } }
     '3' { Compare-Home }
     '4' { $to = "$d\from-home"; New-Item -ItemType Directory -Force $to | Out-Null; Run 'scp HomeGuard จาก home' scp @('-r', "${SshHost}:$homeDir\*", "$to\") | Out-Null; Ok "→ $to" }
     '5' { if (-not $exe) { throw 'ยังไม่มีชุดติดตั้ง — เลือก [1] ก่อน' }

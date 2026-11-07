@@ -18,6 +18,7 @@ try {
       $items = Get-ChildItem "$d\dist\LocalTranslator" | Where-Object { $_.Name -notmatch '\.bak' }
       Compress-Archive -LiteralPath $items.FullName -DestinationPath $zip -CompressionLevel Optimal
       Ok "$zip ($([math]::Round((Get-Item $zip).Length/1MB,1)) MB) — ภายในมี Install-LocalTranslator.bat"
+      Sync-Installers | ForEach-Object { Ok "พกไปเครื่องใหม่: $($_.dst)" }
     }
     '3' { if (-not (Test-Path -LiteralPath $zip)) { throw 'ยังไม่มี zip — เลือก [2] ก่อน' }; Run 'scp → home' scp @($zip, "${SshHost}:$HomeRoot\translation\") | Out-Null }
     default { return }

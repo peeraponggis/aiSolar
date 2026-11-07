@@ -28,6 +28,7 @@ function Step-Setup {
   if (-not (Test-Path -LiteralPath $KeyASCS)) { Warn "ยังไม่มีกุญแจ $KeyASCS — build-setup จะสร้างใหม่ (เครื่องที่ติดตั้งแล้วจะอัปเดตไม่ได้ถ้ากุญแจเปลี่ยน)"; if (-not (Ask 'สร้างกุญแจใหม่?')) { throw 'ยกเลิก' } }
   $o = Run 'build-setup.ps1' powershell @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "$d\installer\build-setup.ps1") $d
   $o | Where-Object { $_ -match 'สร้างแล้ว|ชุดอัปเดต' } | ForEach-Object { Ok $_ }
+  Sync-Installers | ForEach-Object { Ok "พกไปเครื่องใหม่: $($_.dst)" }
 }
 function Step-Web {
   Title 'เว็บ: build-cloud → asc\docs\studio + หัวลิขสิทธิ์ + kb:sql'

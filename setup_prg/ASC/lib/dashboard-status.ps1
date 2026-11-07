@@ -46,6 +46,7 @@ function Status {
   $missing = @($Needs | Where-Object { -not (Test-Path -LiteralPath $_) })
   $log = if (Test-Path -LiteralPath $LogFile) { @(Get-Content -LiteralPath $LogFile -Encoding UTF8 -Tail 12) } else { @() }
   $script:cache = @{ at = (& $ThaiDate); here = $Here; programs = @($progs); homeOk = $h.ok
+    installers = @(Sync-Installers | ForEach-Object { @{ kind = $_.kind; src = $_.src; dst = $_.dst; mb = $_.mb; when = $_.when } })
     installer = @{ ascs = $(if ($exe) { @{ name = $exe.Name; when = $exe.LastWriteTime.ToString('d/M HH:mm'); mb = [math]::Round($exe.Length / 1MB, 1) } }); asca = $(if ($asca) { @{ name = $asca.Name; when = $asca.LastWriteTime.ToString('d/M HH:mm') } }); hg = $(if ($hg) { @{ name = "HomeGuard-Setup.exe ($(Ver 'hg'))"; when = $hg.LastWriteTime.ToString('d/M HH:mm') } }); release = $rel; live = $live }
     order = @($InstallOrder | ForEach-Object { @{ n = $_.n; name = $_.name; what = $_.what } })
     sql = $sql; sqlPending = @($sql | Where-Object { $_.pending }).Count; missing = $missing; log = $log

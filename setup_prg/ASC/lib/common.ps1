@@ -103,3 +103,27 @@ function CommitPush([string]$key, [string]$msg, [string[]]$paths) {
 function Http([string]$u) { try { (Invoke-WebRequest -Uri $u -UseBasicParsing -TimeoutSec 20).StatusCode } catch { 0 } }
 function HomeSsh([string]$cmd, [int]$timeout = 15) { $ErrorActionPreference = 'Continue'; ssh.exe -o ConnectTimeout=$timeout -o BatchMode=yes $SshHost $cmd 2>&1 | ForEach-Object { "$_" } }
 function Tool([string]$exe) { [bool](Get-Command $exe -ErrorAction SilentlyContinue) }
+
+# สำเนาชุดติดตั้งล่าสุดทุกโปรแกรมไป <LocalAI>\setup_prg\installers\ และลบรุ่นเก่าของชนิดเดียวกันออก (ลุงพีสั่ง 7 พ.ย. 2569)
+#   → โฟลเดอร์นี้มีแค่รุ่นล่าสุดชุดเดียว พกไปเครื่องใหม่ได้เลย · ไม่ขึ้น git (.gitignore)
+$script:InstDir = "$LocalAI\setup_prg\installers"
+function Sync-Installers {
+  New-Item -ItemType Directory -Force $InstDir | Out-Null
+  $kinds = @(
+    @{ pat = 'ASC-Studio-Setup-*.exe';  src = "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe";         name = $null }
+    @{ pat = 'ASCA-Setup-*.exe';        src = "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe";            name = $null }
+    @{ pat = 'HomeGuard-Setup-*.exe';   src = "$($P.hg.dir)\dist\HomeGuard-Setup.exe";                    name = "HomeGuard-Setup-$(Ver 'hg').exe" }
+    @{ pat = 'LocalTranslator-setup-*.zip'; src = "$($P.tr.dir)\LocalTranslator-setup*.zip";               name = $null }
+  )
+  $out = @()
+  foreach ($k in $kinds) {
+    $latest = Get-ChildItem $k.src -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+    if (-not $latest) { continue }
+    $dst = Join-Path $InstDir ($(if ($k.name) { $k.name } else { $latest.Name }))
+    $same = (Test-Path -LiteralPath $dst) -and ((Get-Item $dst).Length -eq $latest.Length) -and ((Get-Item $dst).LastWriteTime -eq $latest.LastWriteTime)
+    if (-not $same) { Copy-Item $latest.FullName $dst -Force; Log "สำเนา $($latest.Name) → $dst" }
+    Get-ChildItem (Join-Path $InstDir $k.pat) -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne $dst } | ForEach-Object { Remove-Item $_.FullName -Force; Log "ลบรุ่นเก่า $($_.Name)" }
+    $out += @{ kind = $k.pat; src = $latest.FullName; dst = $dst; mb = [math]::Round($latest.Length / 1MB, 1); when = $latest.LastWriteTime.ToString('d/M HH:mm') }
+  }
+  $out
+}

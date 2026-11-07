@@ -17,10 +17,10 @@ try {
     'Ollama' = Has ollama @('--version'); 'Tailscale' = TsVer; '.NET 4 csc' = $(if (Test-Path "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe") { 'มี' } else { $null })
   }
   foreach ($k in $tools.Keys) { if ($tools[$k]) { Ok "$k : $($tools[$k])" } else { Bad "$k : ไม่มี" } }
-  $setupAscs = Get-ChildItem "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe", "$Here\installers\ASC-Studio-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
-  $setupAsca = Get-ChildItem "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe", "$Here\installers\ASCA-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
-  $zipTr     = Get-ChildItem "$($P.tr.dir)\LocalTranslator-setup*.zip", "$Here\installers\LocalTranslator-setup*.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
-  $setupHg   = Get-ChildItem "$($P.hg.dir)\dist\HomeGuard-Setup.exe", "$Here\installers\HomeGuard-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+  $setupAscs = Get-ChildItem "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe", "$InstDir\ASC-Studio-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+  $setupAsca = Get-ChildItem "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe", "$InstDir\ASCA-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+  $zipTr     = Get-ChildItem "$($P.tr.dir)\LocalTranslator-setup*.zip", "$InstDir\LocalTranslator-setup*.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+  $setupHg   = Get-ChildItem "$($P.hg.dir)\dist\HomeGuard-Setup.exe", "$InstDir\HomeGuard-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
   Write-Host ''
   Write-Host '  ลำดับติดตั้ง desktop app บนเครื่องใหม่:' -ForegroundColor White
   foreach ($o in $InstallOrder) { Write-Host ("   {0}. {1,-26} {2}" -f $o.n, $o.name, $o.what) -ForegroundColor DarkGray }

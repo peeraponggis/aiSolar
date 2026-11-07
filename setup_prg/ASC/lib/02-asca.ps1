@@ -10,6 +10,7 @@ function Step-Installer {
   $exe = Get-ChildItem "$LocalAI\apps\ASCA-release\$v\ASCA-Setup-$v.exe" -ErrorAction SilentlyContinue
   if ($exe) { Ok "$($exe.FullName) ($([math]::Round($exe.Length/1MB,1)) MB) · รหัสอยู่ที่ $KeyASCA (ไม่แสดง)" } else { Warn 'ไม่พบไฟล์ exe ที่คาดไว้ — ดู log' }
   Ok "asc\docs\asca-release: $((Get-ChildItem "$asc\docs\asca-release" -Name) -join ' · ')"
+  Sync-Installers | ForEach-Object { Ok "พกไปเครื่องใหม่: $($_.dst)" }
 }
 function Step-Web { Title 'เว็บ: build_cloud.py → asc\docs\architec'; Run 'build_cloud.py --to' $py @("$d\scripts\build_cloud.py", '--to', "$asc\docs\architec") $d | Out-Null }
 function Step-Push {
