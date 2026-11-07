@@ -1,24 +1,28 @@
 @echo off
 setlocal
-title Local Translator - Install (Ollama + Thai model)
+title Local Translator - Install (Ollama + Thai model, all automatic)
 
 REM ============================================================
-REM  Install-LocalTranslator.bat  (run once on a new PC)
-REM  1) find Ollama (install it first from ollama.com if missing)
+REM  Install-LocalTranslator.bat  (run once on a new PC - fully automatic)
+REM  1) find Ollama; if missing: download OllamaSetup.exe (~1.7 GB) and
+REM     install it silently (no questions) for the current user
 REM  2) start the Ollama server
 REM  3) download the Thai translation model (~2.5 GB, first time only)
 REM  4) create a Desktop shortcut and start Local Translator
-REM  Needs: Windows 10/11, internet for step 3, ~3 GB free disk
+REM  Needs: Windows 10/11 64-bit, internet for steps 1+3, ~5 GB free disk
 REM  Better with an NVIDIA GPU (4 GB VRAM or more); works on CPU but slower
+REM  ProInventive - by Lungpee - v1.10.0 (2026-11-07)
 REM ============================================================
 
 set "MODEL=scb10x/typhoon2.5-qwen3-4b:latest"
 set "MODELKEY=typhoon2.5-qwen3-4b"
 set "APP=%~dp0LocalTranslator.exe"
+set "OLLAMA_URL=https://ollama.com/download/OllamaSetup.exe"
+set "SETUP=%TEMP%\OllamaSetup.exe"
 set "OLLAMA_EXE="
 
 echo ============================================================
-echo   Local Translator - Setup
+echo   Local Translator - Setup (automatic)
 echo   Model: %MODEL%
 echo ============================================================
 echo.
@@ -28,20 +32,35 @@ if not exist "%APP%" (
 )
 
 echo [1/4] Looking for Ollama ...
-where ollama >nul 2>nul
-if not errorlevel 1 set "OLLAMA_EXE=ollama"
+call :detect
 if defined OLLAMA_EXE goto found
-if exist "%LOCALAPPDATA%\Programs\Ollama\ollama.exe" set "OLLAMA_EXE=%LOCALAPPDATA%\Programs\Ollama\ollama.exe"
+
+echo     Ollama is not installed - installing it now (no questions asked).
+echo     Downloading OllamaSetup.exe (~1.7 GB, needs internet) ...
+if exist "%SETUP%" del /q "%SETUP%" >nul 2>&1
+where curl >nul 2>nul
+if errorlevel 1 goto dl_ps
+curl -L -# --retry 3 --retry-delay 5 -o "%SETUP%" "%OLLAMA_URL%"
+goto dl_check
+:dl_ps
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; (New-Object Net.WebClient).DownloadFile('%OLLAMA_URL%','%SETUP%')"
+:dl_check
+if not exist "%SETUP%" goto dl_fail
+for %%A in ("%SETUP%") do set "SZ=%%~zA"
+if %SZ% LSS 50000000 goto dl_fail
+echo     [OK] downloaded (%SZ% bytes)
+echo     Installing Ollama silently (1-3 minutes, a tray icon may appear) ...
+start "" /wait "%SETUP%" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
+del /q "%SETUP%" >nul 2>&1
+call :detect
 if defined OLLAMA_EXE goto found
-if exist "%ProgramFiles%\Ollama\ollama.exe" set "OLLAMA_EXE=%ProgramFiles%\Ollama\ollama.exe"
-if defined OLLAMA_EXE goto found
-if exist "%~dp0ollama\ollama.exe" set "OLLAMA_EXE=%~dp0ollama\ollama.exe"
-if defined OLLAMA_EXE goto found
-echo     [!] Ollama is not installed on this PC.
-echo         1. Download OllamaSetup.exe from https://ollama.com/download/windows
-echo         2. Install it (default options)
-echo         3. Run this file again
-echo.
+echo     [!] Ollama installer finished but ollama.exe was not found.
+echo         Install it by hand from https://ollama.com/download/windows then run this file again.
+goto fail
+:dl_fail
+if exist "%SETUP%" del /q "%SETUP%" >nul 2>&1
+echo     [!] Could not download the Ollama installer. Check internet / firewall / proxy.
+echo         Or install it by hand from https://ollama.com/download/windows then run this file again.
 echo     Press Enter to open the download page.
 pause >nul
 start "" "https://ollama.com/download/windows"
@@ -92,6 +111,19 @@ echo   Keep Ollama running in the background (it starts itself).
 echo ============================================================
 echo.
 pause
+exit /b 0
+
+:detect
+REM sets OLLAMA_EXE when ollama.exe is found (PATH, per-user install, all-users install, portable copy)
+set "OLLAMA_EXE="
+where ollama >nul 2>nul
+if not errorlevel 1 set "OLLAMA_EXE=ollama"
+if defined OLLAMA_EXE exit /b 0
+if exist "%LOCALAPPDATA%\Programs\Ollama\ollama.exe" set "OLLAMA_EXE=%LOCALAPPDATA%\Programs\Ollama\ollama.exe"
+if defined OLLAMA_EXE exit /b 0
+if exist "%ProgramFiles%\Ollama\ollama.exe" set "OLLAMA_EXE=%ProgramFiles%\Ollama\ollama.exe"
+if defined OLLAMA_EXE exit /b 0
+if exist "%~dp0ollama\ollama.exe" set "OLLAMA_EXE=%~dp0ollama\ollama.exe"
 exit /b 0
 
 :fail

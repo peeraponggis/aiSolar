@@ -1,4 +1,4 @@
-﻿# ============================================================================
+# ============================================================================
 # ProInventive Suite
 # Copyright (C) 2024-2569 ProInventive. All rights reserved.
 #
@@ -19,6 +19,7 @@ provider_dialog.py - กล่องโต้ตอบ "⚙ ผู้ให้�
 หลักเชื่อมต่อใหม่ (ส่งเข้ามาเป็น callback)
 """
 import logging
+import os
 import threading
 import time
 import tkinter as tk
@@ -26,7 +27,7 @@ import webbrowser
 from tkinter import ttk
 
 from engine import (
-    API_PRESETS, DEFAULT_MODEL, HUB_PRESETS, clean_output, env_key, find_ollama_exe, hub_add_provider, list_models, load_hub_presets, preset_nokey,
+    API_PRESETS, BASE, DEFAULT_MODEL, HUB_PRESETS, clean_output, env_key, find_ollama_exe, hub_add_provider, list_models, load_hub_presets, preset_nokey,
     list_models_openai, pull_model, stream_chat_openai,
 )
 
@@ -138,7 +139,8 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
         exe = find_ollama_exe(); ms = list_models()
         if ms is None:
             local_info.set(("พบ Ollama ที่ " + exe + " แต่เซิร์ฟเวอร์ยังไม่ทำงาน (กด F5 ในหน้าหลักเพื่อให้โปรแกรมเปิดให้)") if exe
-                           else "ไม่พบ Ollama ในเครื่อง: ติดตั้งจาก https://ollama.com/download/windows หรือรัน Install-LocalTranslator.bat แล้วกลับมากดดาวน์โหลดที่นี่")
+                           else "ไม่พบ Ollama ในเครื่อง: กดปุ่ม \"ติดตั้ง Ollama + โมเดล\" ด้านล่าง โปรแกรมจะเปิดตัวติดตั้งให้ (ดาวน์โหลด Ollama ~1.7 GB + โมเดล ~2.5 GB อัตโนมัติ ไม่ต้องตอบคำถาม)")
+            pull_btn.config(text="ดาวน์โหลด/ติดตั้ง" if exe else "ติดตั้ง Ollama + โมเดล")
         else:
             local_info.set(f"Ollama ทำงานอยู่ · มีโมเดลในเครื่อง {len(ms)} ตัว" + (": " + ", ".join(ms[:4]) + (" ..." if len(ms) > 4 else "") if ms else " (ยังไม่มี) กดดาวน์โหลดด้านล่าง ~2.5 GB ต้องต่ออินเทอร์เน็ต"))
     refresh_local_info()
@@ -148,7 +150,16 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
         if not name:
             return
         if list_models() is None:
-            pull_msg.set("Ollama ยังไม่ทำงาน กด F5 ในหน้าหลักก่อน หรือติดตั้ง Ollama"); return
+            bat = os.path.join(BASE, "Install-LocalTranslator.bat")
+            if not find_ollama_exe():
+                if os.path.exists(bat):   # ตัวติดตั้งข้างโปรแกรม: ดาวน์โหลด+ติดตั้ง Ollama เงียบๆ แล้วดึงโมเดลให้เอง
+                    os.startfile(bat)
+                    pull_msg.set("เปิดตัวติดตั้งแล้ว (หน้าต่างดำ): กำลังดาวน์โหลด Ollama ~1.7 GB และโมเดล ~2.5 GB — เสร็จแล้วกด F5 ในหน้าหลัก")
+                else:
+                    webbrowser.open("https://ollama.com/download/windows")
+                    pull_msg.set("ไม่พบ Ollama และไม่พบ Install-LocalTranslator.bat ข้างโปรแกรม — เปิดหน้าดาวน์โหลด Ollama ให้แล้ว ติดตั้งเสร็จกลับมากดปุ่มนี้อีกครั้ง")
+                return
+            pull_msg.set("Ollama ยังไม่ทำงาน กด F5 ในหน้าหลักก่อน"); return
         pull_btn.state(["disabled"]); pull_msg.set(f"กำลังดาวน์โหลด {name} ...")
 
         def prog(status, pct, done, tot):
