@@ -38,6 +38,7 @@ description: กฎการทำงานของลุงพี (Peerapong �
   · หลังปล่อย: ตรวจว่า working tree เหลือเฉพาะไฟล์ที่ห้าม commit (เช่น `out/usermanual/_pdfs.json` · `scripts/sync-home-gui.ps1`) และแจ้งทุก session ว่าปล่อยแล้วในรุ่นไหน
 - **เว็บที่ขึ้น GitHub Pages: ทดสอบบนเว็บจริงทุกครั้งก่อนปิดงาน** (ลุงพีสั่ง 2 พ.ย. 2569) — push แล้วรอ deploy เสร็จ (`gh run watch`) → เปิด URL GitHub Pages ในเบราว์เซอร์ → ตรวจเลขเวอร์ชันใหม่ + ลองฟีเจอร์ที่แก้ (คลิก/พิมพ์/สั่ง PDF) + ดู console ไม่มี error → แนบภาพผลในสรุป · ไม่ต้องรอให้ลุงพีสั่ง
 - โปรแกรมใหม่ทุกตัว: **ไอคอน .ico ของตัวเอง + shortcut .lnk บน Desktop** (สคริปต์ make-shortcut รันซ้ำได้ทั้ง 2 เครื่อง)
+- **ชุด bat ปล่อยรุ่น `LocalAI\setup_prg\ASC`** (ลุงพีสั่ง 7 พ.ย. 2569): ถ้าแก้/เปลี่ยนชื่อสคริปต์ปล่อยรุ่น-ติดตั้ง-ซิงก์ของโปรแกรมไหน (`build-setup.ps1` `build-cloud.mjs` `build_installer.py` `build_pages.mjs` `pull-home.ps1` `sync-home*.ps1` ไฟล์ SQL ที่ต้องรัน ฯลฯ) หรือย้ายโฟลเดอร์/เปลี่ยน Supabase project ต้องแก้ `setup_prg\ASC\lib\config.ps1` (+ README) ให้ตรงในรอบเดียวกัน · bat ไม่ bump เวอร์ชัน · ใช้เมนู 06 แจ้ง SQL ที่ต้องรัน (มีลิงก์ SQL Editor เสมอ)
 - อัปเดตเวอร์ชันใน `PROGRAMS.md` แล้ว push repo aiSolar ด้วย
 - เครื่อง home RAM 8 GB: เปิด Claude ≤ 2 session · ไม่รัน test/build 2 session พร้อมกัน (HomeGuard ให้รอ ไม่ต้องหาทางเลี่ยง) · ปิดเซิร์ฟเวอร์ทดสอบ/แท็บเบราว์เซอร์ทันทีที่ตรวจเสร็จ
 - ไดรฟ์ I: และ J: สายมีปัญหา — ห้ามใช้จนลุงพีแจ้ง
