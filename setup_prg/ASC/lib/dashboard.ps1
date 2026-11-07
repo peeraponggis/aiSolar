@@ -10,7 +10,7 @@ function HomeInfo {
   if (((Get-Date) - $script:homeAt).TotalSeconds -lt 120 -and $script:homeCache) { return $script:homeCache }
   $r = @{ ok = $false }
   # ssh ครั้งเดียว อ่าน 3 ไฟล์ (คั่นด้วย ###) — เร็วกว่าเรียก 4 รอบ
-  $keys = @('ascs', 'asca', 'crm'); $files = @('aiSolar\design-auto\VERSION.json', 'pee_architec\VERSION.json', 'git\picode\pi-system\pi_crm_erp\VERSION.json')
+  $keys = @('ascs', 'asca', 'crm', 'hg'); $files = @('aiSolar\design-auto\VERSION.json', 'pee_architec\VERSION.json', 'git\picode\pi-system\pi_crm_erp\VERSION.json', 'tools\homeguard\VERSION.json')
   $cmd = 'echo ok & ' + (($files | ForEach-Object { "echo ### & type $HomeRoot\$_" }) -join ' & ')
   $out = (HomeSsh $cmd 6) -join "`n"
   if ($out -match '^ok') {
@@ -35,7 +35,7 @@ function SqlList {
 function Status {
   if (((Get-Date) - $script:cacheAt).TotalSeconds -lt 45 -and $script:cache) { return $script:cache }
   $h = HomeInfo
-  $progs = foreach ($k in 'ascs', 'asca', 'asc', 'crm', 'tr') {
+  $progs = foreach ($k in 'ascs', 'asca', 'asc', 'crm', 'tr', 'hg') {
     $gs = GitState $k
     # ไฟล์ค้างที่ "ไม่ commit ตามกฎ" (out\usermanual\_pdfs.json · sync-home-gui.ps1) ไม่นับเป็นงานค้าง
     if ($k -eq 'ascs' -and $gs -match 'ค้าง') { $real = @(git -C $P[$k].dir status --porcelain --untracked-files=no | Where-Object { $_ -notmatch '_pdfs\.json|sync-home-gui\.ps1' }).Count; $gs = ($gs -replace 'ค้าง \d+', $(if ($real) { "ค้าง $real" } else { '' })).Trim(' ·'); if (-not $gs) { $gs = '✓ ตรง origin' } }
@@ -43,18 +43,20 @@ function Status {
   }
   $exe = Get-ChildItem "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
   $asca = Get-ChildItem "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+  $hg = Get-Item "$($P.hg.dir)\dist\HomeGuard-Setup.exe" -ErrorAction SilentlyContinue
   $rel = try { (Get-Content "$($P.asc.dir)\docs\ascs-release\latest.json" -Raw -Encoding UTF8 | ConvertFrom-Json).version } catch { '-' }
   $live = try { (Invoke-RestMethod "$($P.asc.url)/ascs-release/latest.json?t=$(Get-Random)" -TimeoutSec 8).version } catch { '-' }
   $sql = @(SqlList)
   $missing = @($Needs | Where-Object { -not (Test-Path -LiteralPath $_) })
   $log = if (Test-Path -LiteralPath $LogFile) { @(Get-Content -LiteralPath $LogFile -Encoding UTF8 -Tail 12) } else { @() }
   $script:cache = @{ at = (& $ThaiDate); here = $Here; programs = @($progs); homeOk = $h.ok
-    installer = @{ ascs = $(if ($exe) { @{ name = $exe.Name; when = $exe.LastWriteTime.ToString('d/M HH:mm'); mb = [math]::Round($exe.Length / 1MB, 1) } }); asca = $(if ($asca) { @{ name = $asca.Name; when = $asca.LastWriteTime.ToString('d/M HH:mm') } }); release = $rel; live = $live }
+    installer = @{ ascs = $(if ($exe) { @{ name = $exe.Name; when = $exe.LastWriteTime.ToString('d/M HH:mm'); mb = [math]::Round($exe.Length / 1MB, 1) } }); asca = $(if ($asca) { @{ name = $asca.Name; when = $asca.LastWriteTime.ToString('d/M HH:mm') } }); hg = $(if ($hg) { @{ name = "HomeGuard-Setup.exe ($(Ver 'hg'))"; when = $hg.LastWriteTime.ToString('d/M HH:mm') } }); release = $rel; live = $live }
+    order = @($InstallOrder | ForEach-Object { @{ n = $_.n; name = $_.name; what = $_.what } })
     sql = $sql; sqlPending = @($sql | Where-Object { $_.pending }).Count; missing = $missing; log = $log
     keys = @{ ascs = (Test-Path -LiteralPath $KeyASCS); asca = (Test-Path -LiteralPath $KeyASCA) } }
   $script:cacheAt = Get-Date; $script:cache
 }
-$bats = @{ menu = 'ASC-Menu.bat'; '01' = '01-ascs-release.bat'; '02' = '02-asca-release.bat'; '03' = '03-cloud-deploy.bat'; '04' = '04-crm-deploy.bat'; '05' = '05-translator-build.bat'; '06' = '06-sql-todo.bat'; '07' = '07-home.bat'; '08' = '08-new-pc.bat' }
+$bats = @{ menu = 'ASC-Menu.bat'; '01' = '01-ascs-release.bat'; '02' = '02-asca-release.bat'; '03' = '03-cloud-deploy.bat'; '04' = '04-crm-deploy.bat'; '05' = '05-translator-build.bat'; '06' = '06-sql-todo.bat'; '07' = '07-home.bat'; '08' = '08-new-pc.bat'; '09' = '09-homeguard.bat' }
 
 $l = [System.Net.HttpListener]::new(); $l.Prefixes.Add("http://127.0.0.1:$port/")
 try { $l.Start() } catch { Write-Host "เปิดพอร์ต $port ไม่ได้ (อาจเปิดอยู่แล้ว) — เปิดหน้าเว็บแทน"; Start-Process "http://127.0.0.1:$port/"; exit 0 }

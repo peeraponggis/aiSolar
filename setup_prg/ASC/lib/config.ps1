@@ -12,6 +12,7 @@ $script:P = [ordered]@{
   asc  = @{ name = 'ASC Cloud';       dir = "$LocalAI\git\asc";              ver = 'VERSION.json'; repo = 'peeraponggis/asc'; url = 'https://peeraponggis.github.io/asc' }
   crm  = @{ name = 'CRM-Pi';          dir = "$Ent\picode\pi-system";         ver = 'pi_crm_erp\VERSION.json'; git = "$Ent\picode"; url = 'https://pi-system.pages.dev' }
   tr   = @{ name = 'Local Translator'; dir = "$LocalAI\translation";         ver = 'VERSION.json'; git = $LocalAI }
+  hg   = @{ name = 'HomeGuard';        dir = "$LocalAI\tools\homeguard";     ver = 'VERSION.json'; nogit = $true }   # ไม่อยู่ใน git · ตัวจริงรันบน home C:\LocalAI\tools\homeguard
 }
 $script:Programs = "$LocalAI\PROGRAMS.md"
 $script:KeyASCS  = "$LocalAI\apps\ASCS-release\password.txt"
@@ -44,5 +45,15 @@ $script:Needs = @(
   "$($P.ascs.dir)\installer\build-setup.ps1", "$($P.ascs.dir)\scripts\build-cloud.mjs", "$($P.ascs.dir)\scripts\kb-build.mjs",
   "$($P.ascs.dir)\scripts\pull-home.ps1", "$($P.ascs.dir)\scripts\sync-home.ps1", "$($P.ascs.dir)\scripts\send-laptop-data.ps1", "$($P.ascs.dir)\scripts\sync-home-gui.ps1",
   "$($P.asca.dir)\scripts\build_installer.py", "$($P.asca.dir)\scripts\build_cloud.py",
-  "$($P.crm.dir)\pi_crm_erp\scripts\build_pages.mjs", "$($P.tr.dir)\LocalTranslator.spec"
+  "$($P.crm.dir)\pi_crm_erp\scripts\build_pages.mjs", "$($P.tr.dir)\LocalTranslator.spec",
+  "$($P.hg.dir)\build.ps1", "$($P.hg.dir)\pack.ps1", "$($P.hg.dir)\Install-HomeGuard.cmd"
+)
+# ลำดับติดตั้ง desktop app บนเครื่องใหม่ (08 [9]) — ลุงพีสั่ง 7 พ.ย. 2569
+$script:InstallOrder = @(
+  @{ n = 1; name = 'เครื่องมือพื้นฐาน';  what = 'Python 3.12+ (ASCS) · Tailscale (ถ้าต้องต่อ home/ใช้ ASCA ผ่าน Tailscale) · git+gh เฉพาะเครื่องพัฒนา · .NET 4 มีใน Windows แล้ว' }
+  @{ n = 2; name = 'HomeGuard';          what = 'ดูแลเครื่อง (RAM · ดิสก์ · เฝ้าโปรแกรม) ลงก่อนเพื่อให้เห็นสถานะเครื่องตั้งแต่ต้น — HomeGuard-Setup.exe' }
+  @{ n = 3; name = 'ASC Studio';         what = 'ชุดติดตั้ง ASC-Studio-Setup-<v>.exe (ใส่ update.key ให้ อัปเดตเองได้) · เปิดครั้งแรกใช้เวลา pip/playwright' }
+  @{ n = 4; name = 'ASC Architect';      what = 'ASCA-Setup-<v>.exe (ใส่รหัส) · มี Python ในตัว · ส่งงานจาก ASCS ได้หลังลงทั้งคู่' }
+  @{ n = 5; name = 'Ollama + Local Translator'; what = 'เฉพาะเครื่องที่ใช้ AI ในเครื่อง: Ollama → แตก zip → Install-LocalTranslator.bat (ดึงโมเดล 2.5 GB)' }
+  @{ n = 6; name = 'ไอคอน Desktop + ล็อกอิน'; what = 'ไอคอนทุกโปรแกรม · เปิด ASC Studio ล็อกอิน ASC Cloud · CRM-Pi ใช้ผ่านเว็บไม่ต้องติดตั้ง' }
 )

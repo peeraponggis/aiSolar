@@ -14,7 +14,8 @@
 | `05-translator-build.bat` | Local Translator: PyInstaller → zip ชุดติดตั้ง → ส่ง home |
 | `06-sql-todo.bat` | SQL ที่ต้องรันใน Supabase: **แสดงลิงก์ SQL Editor ทุกครั้ง** · คัดลอกไฟล์เข้า clipboard · เปิดลิงก์ · จำว่ารันแล้ว |
 | `07-home.bat` | home server ผ่าน `ssh home`: ดูรุ่น · อัปเดต ASCS บน home · ดึง/ส่ง `out` · HomeGuard · laptop-data · Remote Control |
-| `08-new-pc.bat` | ติดตั้งบนเครื่องใหม่: ตรวจเครื่องมือ · เปิดชุดติดตั้งล่าสุด · winget ที่ขาด · ไอคอน Desktop |
+| `08-new-pc.bat` | ติดตั้งบนเครื่องใหม่: ตรวจเครื่องมือ · **[9] ติดตั้งตามลำดับทั้งหมด** · เปิดชุดติดตั้งล่าสุด · winget ที่ขาด · ไอคอน Desktop |
+| `09-homeguard.bat` | HomeGuard (ไม่อยู่ใน git · ตัวจริงรันบน home): build → `dist\HomeGuard-Setup.exe` · คัดลอกไป `installers\` · เทียบไฟล์กับ home (hash) · ส่ง+เปิดตัวติดตั้งบน home |
 | `lib\config.ps1` | **path และค่าตั้งทั้งหมด** — ย้ายโฟลเดอร์/เปลี่ยน project/เพิ่มไฟล์ SQL แก้ที่นี่ที่เดียว |
 | `lib\*.ps1` | ตัวทำงานจริง (bat เป็นแค่ตัวเรียก) · `logs\<วันที่>.txt` ทุกคำสั่ง · `logs\sql-done.json` SQL ที่รันแล้ว |
 | `installers\` | วางชุดติดตั้งที่จะพกไปเครื่องใหม่ (08 หาในนี้ด้วย) |
@@ -41,7 +42,19 @@
 
 home server: `C:\LocalAI` · `C:\enterprise` (ไม่มี F:) · `ssh home` (Tailscale 100.118.18.110) · Python ใช้ `py` · RAM 8 GB ห้าม build ซ้อน
 
-## 2. ติดตั้งครั้งแรก
+## 2. ลำดับติดตั้ง desktop app บนเครื่องใหม่ (ลุงพีกำหนด 7 พ.ย. 2569)
+พกโฟลเดอร์ `setup_prg\ASC` + ชุดติดตั้งใน `installers\` ไปเครื่องใหม่ → เปิด `08-new-pc.bat` → กด **9** (ถามทีละขั้น ข้ามได้)
+
+| ลำดับ | ติดตั้ง | เหตุผล / หมายเหตุ |
+|---|---|---|
+| 1 | **เครื่องมือพื้นฐาน** — Python 3.12+ · Tailscale (ถ้าต้องต่อ home หรือใช้ ASCA ผ่าน Tailscale) · git + gh เฉพาะเครื่องพัฒนา | .NET Framework 4 มีใน Windows 10/11 แล้ว · Node ไม่จำเป็น (ชุดติดตั้งมี dist มาให้) |
+| 2 | **HomeGuard** `HomeGuard-Setup.exe` → `C:\LocalAI\tools\homeguard` | ลงก่อนเพื่อเห็นสถานะเครื่อง (RAM · ดิสก์ · เฝ้าโปรแกรม) ตั้งแต่ขั้นถัดไป |
+| 3 | **ASC Studio** `ASC-Studio-Setup-<v>.exe` | ใส่ `update.key` ให้ → อัปเดตเองได้ · เปิดครั้งแรกรอ pip + playwright |
+| 4 | **ASC Architect** `ASCA-Setup-<v>.exe` (ใส่รหัส) | มี Python ในตัว · ลงหลัง ASCS เพื่อให้ "ส่งไป ASCA" หาเจอ |
+| 5 | **Ollama + Local Translator** (เฉพาะเครื่องที่ใช้ AI ในเครื่อง) | Ollama ก่อน → แตก zip → `Install-LocalTranslator.bat` ดึงโมเดล 2.5 GB |
+| 6 | **ไอคอน Desktop + ล็อกอิน** | เปิด ASC Studio ล็อกอิน ASC Cloud · CRM-Pi ใช้ผ่านเว็บ ไม่ต้องติดตั้ง |
+
+## 3. ติดตั้งครั้งแรก (รายละเอียดแต่ละโปรแกรม)
 
 **ASC Cloud (Supabase)** — เปิด https://supabase.com/dashboard/project/rcaslesvgilknupqmwrp/sql/new วางทีละไฟล์จาก `F:\LocalAI\git\asc\supabase\` ตามลำดับ (ใน 06 กด F แล้วพิมพ์ `asc-1` … เพื่อคัดลอก+เปิดลิงก์ให้):
 1. `schema.sql` 2. `kb.sql` 3. `ascs-studio.sql` 4. `ascs-release.sql` 5. `ai-install.sql` 6. `allow-domains.sql` 7. `devices.sql` 8. `menu-access.sql` 9. `presence.sql` 10. `pi-monitor-telegram.sql` 11. `presence-ingest.sql` 12. `presence-device.sql` 13. `presence-apps.sql` 14. `device-menus.sql`
@@ -60,14 +73,14 @@ home server: `C:\LocalAI` · `C:\enterprise` (ไม่มี F:) · `ssh home` 
 
 **Local Translator**: แตก `LocalTranslator-setup-<รุ่น>.zip` → `Install-LocalTranslator.bat` (หา/เปิด Ollama · ดึงโมเดล typhoon 2.5 GB · ไอคอน) · ไม่มีระบบอัปเดต = ติดตั้งทับ
 
-## 3. ปล่อยรุ่นใหม่ (ลำดับ)
+## 4. ปล่อยรุ่นใหม่ (ลำดับ)
 1. Claude: ตรวจโค้ดค้างทุกงาน → แสดงตัวอย่างให้ลุงพีอนุมัติ → bump เวอร์ชัน + CHANGELOG + KB
 2. `01` (ASCS) หรือ `02` (ASCA) เลือก [1] ทำครบ — หยุดถามก่อน push
 3. `06` รัน SQL ที่ขึ้น ● ค้าง (kb-data ทุกรุ่น · key เมื่อกุญแจเปลี่ยน · standards เมื่อตารางเปลี่ยน)
 4. `07` [1] อัปเดต home server ให้ตามรุ่น
 5. เครื่องลูกค้าอัปเดตเองผ่านแถบรุ่นใหม่
 
-## 4. กุญแจ/รหัส (ห้ามขึ้น git · สำรองไว้นอกเครื่อง)
+## 5. กุญแจ/รหัส (ห้ามขึ้น git · สำรองไว้นอกเครื่อง)
 | ไฟล์ | ใช้กับ | หายแล้ว |
 |---|---|---|
 | `F:\LocalAI\apps\ASCS-release\password.txt` | เข้ารหัสชุดอัปเดต/ชุดติดตั้ง ASCS · ตาราง `app_release_keys` | เครื่องที่ติดตั้งแล้วอัปเดตไม่ได้ ต้องติดตั้งชุดใหม่ทับทุกเครื่อง |
@@ -75,7 +88,7 @@ home server: `C:\LocalAI` · `C:\enterprise` (ไม่มี F:) · `ssh home` 
 | `F:\LocalAI\notify\notify.json` | Telegram/WhatsApp แจ้งเตือน | ตั้งใหม่ด้วย `scripts\notify-setup.ps1` |
 | `~\.ssh\id_ed25519` | ssh home | ลงทะเบียนคีย์ใหม่ที่ `C:\ProgramData\ssh\administrators_authorized_keys` บน home |
 
-## 5. ปัญหาที่เจอบ่อย
+## 6. ปัญหาที่เจอบ่อย
 - **ssh home ไม่ตอบ**: Tailscale ทั้งสองเครื่องเปิดอยู่ไหม · ลอง `ssh home-lan` ในบ้าน
 - **gh run watch ค้าง/ไม่ login**: `gh auth login` · ดูที่ https://github.com/peeraponggis/asc/actions
 - **เว็บจริงยังรุ่นเก่า**: แคช Service Worker — reload 2 ครั้ง หรือถ้า `docs/sw.js` SHELL เปลี่ยนต้อง bump VERSION ใน sw.js

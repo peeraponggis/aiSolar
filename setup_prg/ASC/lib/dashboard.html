@@ -72,6 +72,12 @@ pre{font:12px/1.4 Consolas,monospace;background:#0c0c0c;color:#ccc;border-radius
 </div>
 
 <div class="card" style="margin-top:12px">
+  <h2>ลำดับติดตั้ง desktop app บนเครื่องใหม่ <span class="sp"></span><button class="btn pri" onclick="run('08')">▶ เปิด 08 → กด 9 ติดตั้งตามลำดับ</button></h2>
+  <div class="steps" id="order"></div>
+  <p class="note">พกโฟลเดอร์ <code>setup_prg\ASC</code> + ชุดติดตั้งใน <code>installers\</code> ไปเครื่องใหม่ แล้วเปิด 08 — แต่ละขั้นถามก่อน ข้ามได้ · CRM-Pi และ ASC Cloud ใช้ผ่านเว็บ ไม่ต้องติดตั้ง</p>
+</div>
+
+<div class="card" style="margin-top:12px">
   <h2>เครื่องมือทั้งหมด</h2>
   <div class="steps" id="tools"></div>
 </div>
@@ -91,7 +97,8 @@ const TOOLS=[
  ['05','Local Translator build','PyInstaller → zip ชุดติดตั้ง → ส่ง home'],
  ['06','SQL ที่ต้องรัน','ลิงก์ SQL Editor ทุกครั้ง · คัดลอกไฟล์ · จำว่ารันแล้ว'],
  ['07','Home server','ดูรุ่น · อัปเดต ASCS บน home · ดึง/ส่ง out · HomeGuard · Remote Control'],
- ['08','ติดตั้งบนเครื่องใหม่','ตรวจเครื่องมือ · เปิดชุดติดตั้งล่าสุด · winget · ไอคอน Desktop'],
+ ['08','ติดตั้งบนเครื่องใหม่','ตรวจเครื่องมือ · [9] ติดตั้งตามลำดับทั้งหมด · เปิดชุดติดตั้งล่าสุด · winget · ไอคอน Desktop'],
+ ['09','HomeGuard','build → HomeGuard-Setup.exe · เทียบไฟล์กับ home (hash) · ส่ง/ติดตั้งบน home'],
 ];
 let S=null;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -105,12 +112,14 @@ function render(){
   document.getElementById('missing').innerHTML=S.missing.length?`<div class="card" style="border-color:#e3a6a6;background:var(--badbg);margin-bottom:12px"><b>✗ สคริปต์ที่ bat เรียกหายไป — แก้ lib\\config.ps1</b><br>${S.missing.map(m=>`<span class="path">${esc(m)}</span>`).join('<br>')}</div>`:'';
   document.getElementById('progs').innerHTML=S.programs.map(p=>{
     const hv=p.home?(p.home===p.ver?b('ok',p.home+' ✓'):b('warn',p.home+' ≠')):'';
-    const act=p.key==='ascs'?'01':p.key==='asca'?'02':p.key==='asc'?'03':p.key==='crm'?'04':'05';
-    return `<tr><td><b>${esc(p.name)}</b>${p.url?`<br><a href="${esc(p.url)}" target="_blank" style="font-size:12px">${esc(p.url.replace('https://',''))}</a>`:''}</td><td><b>${esc(p.ver)}</b></td><td>${p.dirty?b('warn',p.git):b('ok',p.git)}</td><td>${hv}</td><td><button class="btn" onclick="run('${act}')">▶ ${act}</button></td></tr>`}).join('');
+    const act=p.key==='ascs'?'01':p.key==='asca'?'02':p.key==='asc'?'03':p.key==='crm'?'04':p.key==='hg'?'09':'05';
+    const g=/ไม่อยู่ใน git/.test(p.git)?b('acc',p.git):p.dirty?b('warn',p.git):b('ok',p.git);
+    return `<tr><td><b>${esc(p.name)}</b>${p.url?`<br><a href="${esc(p.url)}" target="_blank" style="font-size:12px">${esc(p.url.replace('https://',''))}</a>`:''}</td><td><b>${esc(p.ver)}</b></td><td>${g}</td><td>${hv}</td><td><button class="btn" onclick="run('${act}')">▶ ${act}</button></td></tr>`}).join('');
   const i=S.installer;
   document.getElementById('inst').innerHTML=`
    <tr><th>ASC Studio Setup</th><td>${i.ascs?esc(i.ascs.name)+' · '+i.ascs.mb+' MB · '+esc(i.ascs.when):b('bad','ยังไม่มี — กด 01 ข้อ 3')}</td></tr>
    <tr><th>ASC Architect Setup</th><td>${i.asca?esc(i.asca.name)+' · '+esc(i.asca.when):b('bad','ยังไม่มี — กด 02 ข้อ 2')}</td></tr>
+   <tr><th>HomeGuard Setup</th><td>${i.hg?esc(i.hg.name)+' · '+esc(i.hg.when):b('bad','ยังไม่มี — กด 09 ข้อ 1')}</td></tr>
    <tr><th>ชุดอัปเดต ASCS</th><td>ในเครื่อง ${esc(i.release)} · บนเว็บ ${i.live===i.release?b('ok',i.live):b('warn',i.live+' (ยังไม่ push)')}</td></tr>
    <tr><th>กุญแจ</th><td>ASCS ${S.keys.ascs?b('ok','มี'):b('bad','หาย!')} · ASCA ${S.keys.asca?b('ok','มี'):b('bad','หาย!')} <span class="note">(apps\\ASCS-release · apps\\ASCA-release\\password.txt)</span></td></tr>`;
   // todo
@@ -120,12 +129,14 @@ function render(){
   S.programs.filter(p=>/ตามหลัง/.test(p.git)&&p.key!=='ascs').forEach(p=>todo.push([p.key==='asca'?'02':p.key==='asc'?'03':p.key==='crm'?'04':'05',p.name+' ตามหลัง origin','git pull ก่อนทำงาน ('+p.git+')']));
   if(i.live!==i.release)todo.push(['03','ชุดอัปเดตบนเว็บยังไม่ตรง','ในเครื่อง '+i.release+' · เว็บ '+i.live+' — กด 03 deploy']);
   if(S.sqlPending)todo.push(['06','SQL ค้าง '+S.sqlPending+' ไฟล์','กด 06 → เลือกเลข → วาง Run ใน Supabase → กด D']);
-  S.programs.filter(p=>p.home&&p.home!==p.ver).forEach(p=>todo.push(['07',p.name+' บน home ยังรุ่น '+p.home,'laptop '+p.ver+' — กด 07 → [1] อัปเดต ASCS บน home'+(p.key!=='ascs'?' (ตัวอื่น pull เอง)':'')]));
+  S.programs.filter(p=>p.home&&p.home!==p.ver).forEach(p=>todo.push([p.key==='hg'?'09':'07',p.name+' บน home ยังรุ่น '+p.home,'laptop '+p.ver+(p.key==='hg'?' — กด 09 → [3] เทียบไฟล์ก่อน แล้ว [5] ส่งติดตั้งบน home':' — กด 07 → [1] อัปเดต ASCS บน home'+(p.key!=='ascs'?' (ตัวอื่น pull เอง)':''))]));
+  if(!S.installer.hg)todo.push(['09','ยังไม่มีชุดติดตั้ง HomeGuard','กด 09 → [1] build']);
   if(!S.homeOk)todo.push(['07','home server ไม่ตอบ','ตรวจ Tailscale/เครื่อง home เปิดอยู่ไหม']);
-  if(!S.keys.ascs||!S.keys.asca)todo.push(['08','กุญแจชุดติดตั้งหาย','ดู README หัวข้อ 4 กุญแจ/รหัส']);
+  if(!S.keys.ascs||!S.keys.asca)todo.push(['08','กุญแจชุดติดตั้งหาย','ดู README หัวข้อ 5 กุญแจ/รหัส']);
   document.getElementById('todoSum').textContent=todo.length?todo.length+' รายการ':'';
   document.getElementById('todo').innerHTML=todo.length?todo.map(t=>`<div class="step todo"><div class="n">${t[0]}</div><div><b>${esc(t[1])}</b><small>${esc(t[2])}</small></div><button class="btn pri" onclick="run('${t[0]}')">▶ เปิด ${t[0]}</button></div>`).join(''):'<div class="step"><div class="n">✓</div><div><b>ไม่มีอะไรค้าง</b><small>ทุกอย่างตรงกัน</small></div><div></div></div>';
   document.getElementById('sql').innerHTML=S.sql.map((s,k)=>`<tr><td>${k+1}</td><td><b>${esc(s.project)}</b><br><a href="${esc(s.url)}" target="_blank" style="font-size:12px">${esc(s.url)}</a></td><td><span class="path">${esc(s.file)}</span><br><span class="note">${esc(s.note)}${s.secret?' 🔒':''}</span></td><td>${s.pending?b('warn','● '+s.status):b('ok',s.status)}</td></tr>`).join('');
+  document.getElementById('order').innerHTML=S.order.map(o=>`<div class="step"><div class="n">${o.n}</div><div><b>${esc(o.name)}</b><small>${esc(o.what)}</small></div><div></div></div>`).join('');
   document.getElementById('tools').innerHTML=TOOLS.map(t=>`<div class="step"><div class="n">${t[0]}</div><div><b>${esc(t[1])}</b><small>${esc(t[2])}</small></div><button class="btn" onclick="run('${t[0]}')">▶ เปิด</button></div>`).join('');
   document.getElementById('log').textContent=S.log.length?S.log.join('\n'):'(ยังไม่มี log วันนี้)';
 }

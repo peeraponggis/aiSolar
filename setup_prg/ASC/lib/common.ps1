@@ -52,6 +52,7 @@ function Ver([string]$key) {
 function GitDir([string]$key) { $p = $P[$key]; if ($p.git) { $p.git } else { $p.dir } }
 # สถานะ git สั้น ๆ: ค้าง n ไฟล์ · ตามหลัง/นำหน้า origin
 function GitState([string]$key) {
+  if ($P[$key].nogit) { return 'ไม่อยู่ใน git' }
   $d = GitDir $key
   if (-not (Test-Path -LiteralPath "$d\.git")) { return 'ไม่ใช่ git' }
   $dirty = @(git -C $d status --porcelain --untracked-files=no 2>$null).Count
