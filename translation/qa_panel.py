@@ -1,4 +1,4 @@
-﻿# ============================================================================
+# ============================================================================
 # ProInventive Suite
 # Copyright (C) 2024-2569 ProInventive. All rights reserved.
 #
@@ -28,7 +28,7 @@ from tkinter import ttk
 
 from engine import DEFAULT_QUESTIONS, build_qa_messages, chat_stream, clean_output, detect_lang
 from flow_layout import Flow
-from voice_input import VoiceInput
+from voice_input import VOICE_AVAILABLE, VOICE_UNAVAILABLE_REASON, VoiceInput
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +63,8 @@ class QAPanel:
         self.inp = ttk.Entry(row, width=48); row.add(self.inp, padx=(0, 8))
         self.ask_btn = ttk.Button(row, text="ถาม", command=lambda: self.ask(self.inp.get())); row.add(self.ask_btn)
         self.mic_btn = ttk.Button(row, text="🎤 พูดถาม", command=self.toggle_voice); row.add(self.mic_btn)
+        if not VOICE_AVAILABLE:
+            self.mic_btn.state(["disabled"])
         row.add(ttk.Button(row, text="+ บันทึกเป็นปุ่ม", command=lambda: self.add_question(self.inp.get())))
         self.edit_btn = ttk.Button(row, text="แก้ไขปุ่ม", command=self.toggle_edit); row.add(self.edit_btn)
         bar = Flow(self.frame); bar.pack(fill="x", pady=(4, 0), side="bottom")   # แถวปุ่มอยู่ล่างสุดเสมอ ไม่ถูกช่องคำตอบดันหลุด
@@ -148,7 +150,7 @@ class QAPanel:
     def set_busy(self, busy):
         self.state["busy"] = busy
         self.ask_btn.state(["disabled"] if busy else ["!disabled"])
-        self.mic_btn.state(["disabled"] if busy else ["!disabled"])
+        self.mic_btn.state(["disabled"] if (busy or not VOICE_AVAILABLE) else ["!disabled"])
         for b in self.pill_widgets:
             try:
                 b.state(["disabled"] if busy else ["!disabled"])
@@ -164,6 +166,8 @@ class QAPanel:
 
     # ---------- ถามด้วยเสียง (push-to-talk ดู voice_input.py)
     def toggle_voice(self):
+        if not VOICE_AVAILABLE:
+            self.set_status(VOICE_UNAVAILABLE_REASON); return
         if self.state["busy"]:
             self.set_status("กำลังตอบคำถามก่อนหน้าอยู่ รอให้เสร็จก่อนถามด้วยเสียง"); return
         self.voice.toggle()

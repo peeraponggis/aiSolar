@@ -102,3 +102,9 @@ translation/settings.json
 translation/dist/LocalTranslator/history.json
 translation/dist/LocalTranslator/settings.json
 translation/_keep_local/
+
+# Local Translator build outputs (ชุดเต็ม zip ใหญ่เกิน 100 MB ของ GitHub)
+translation/dist_lite/
+translation/build_dist/
+translation/build_lite/
+translation/LocalTranslator-full.zip

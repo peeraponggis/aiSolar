@@ -11,7 +11,7 @@ REM  3) download the Thai translation model (~2.5 GB, first time only)
 REM  4) create a Desktop shortcut and start Local Translator
 REM  Needs: Windows 10/11 64-bit, internet for steps 1+3, ~5 GB free disk
 REM  Better with an NVIDIA GPU (4 GB VRAM or more); works on CPU but slower
-REM  ProInventive - by Lungpee - v1.10.0 (2026-11-07)
+REM  ProInventive - by Lungpee - v1.11.0 (2026-11-07)
 REM ============================================================
 
 set "MODEL=scb10x/typhoon2.5-qwen3-4b:latest"

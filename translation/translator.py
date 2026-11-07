@@ -1,4 +1,4 @@
-﻿# ============================================================================
+# ============================================================================
 # ProInventive Suite
 # Copyright (C) 2024-2569 ProInventive. All rights reserved.
 #
@@ -575,6 +575,9 @@ if __name__ == "__main__":
     if a.cli:
         sys.exit(run_cli(a))
     if a.stt_selftest:
+        from voice_input import VOICE_AVAILABLE
+        if not VOICE_AVAILABLE:
+            sys.exit("ชุดนี้ไม่มีพูดถามด้วยเสียง (ชุดแจกจ่าย) ทดสอบได้เฉพาะชุดเต็ม")
         import numpy as np
         from scipy.io import wavfile
         from scipy.signal import resample_poly
