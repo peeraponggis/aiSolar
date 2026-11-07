@@ -625,6 +625,159 @@ function Get-NetReport {
     }
 }
 
+# ── Power tab: live watts + history, brightness, sleep/wake drain, crash history ──
+$script:PowerHist   = New-Object System.Collections.ArrayList   # {t, w} signed watts: + charging, - discharging
+$script:PowerHistAt = [datetime]::MinValue
+$script:SleepCache = $null; $script:SleepAt = [datetime]::MinValue
+$script:CrashCache = $null; $script:CrashAt = [datetime]::MinValue
+
+function Get-PowerNow {
+    try {
+        $s = Get-CimInstance -Namespace root/wmi -ClassName BatteryStatus -ErrorAction Stop | Select-Object -First 1
+        $full = (Get-CimInstance -Namespace root/wmi -ClassName BatteryFullChargedCapacity -ErrorAction SilentlyContinue | Select-Object -First 1).FullChargedCapacity
+    } catch { return $null }
+    if (-not $s) { return $null }
+    $w = if ($s.ChargeRate -gt 0) { $s.ChargeRate / 1000 } elseif ($s.DischargeRate -gt 0) { -$s.DischargeRate / 1000 } else { 0 }
+    $mins = $null
+    if ($w -lt 0 -and $s.RemainingCapacity) { $mins = [int]($s.RemainingCapacity / $s.DischargeRate * 60) }
+    elseif ($w -gt 0 -and $full -and $full -gt $s.RemainingCapacity) { $mins = [int](($full - $s.RemainingCapacity) / $s.ChargeRate * 60) }
+    [PSCustomObject]@{
+        watts    = [math]::Round($w, 1)
+        online   = [bool]$s.PowerOnline
+        remainWh = [math]::Round($s.RemainingCapacity / 1000, 1)
+        fullWh   = if ($full) { [math]::Round($full / 1000, 1) } else { $null }
+        pct      = if ($full) { [math]::Round(100 * $s.RemainingCapacity / $full) } else { $null }
+        volts    = [math]::Round($s.Voltage / 1000, 2)
+        minutes  = $mins          # minutes to empty (discharging) or to full (charging)
+        at       = (Get-Date -Format 'HH:mm:ss')
+    }
+}
+
+# One sample every 15 s at most, keep 2 hours. Called from /api/status (polled by every tab) and /api/power.
+function Add-PowerSample {
+    if (((Get-Date) - $script:PowerHistAt).TotalSeconds -lt 15) { return }
+    $script:PowerHistAt = Get-Date
+    $n = Get-PowerNow
+    if (-not $n) { return }
+    [void]$script:PowerHist.Add(@{ t = $n.at; ms = [long]((Get-Date).ToUniversalTime() - [datetime]'1970-01-01').TotalMilliseconds; w = $n.watts })
+    while ($script:PowerHist.Count -gt 480) { $script:PowerHist.RemoveAt(0) }
+}
+
+function Get-Brightness {
+    try {
+        $b = Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorBrightness -ErrorAction Stop | Select-Object -First 1
+        if ($b) { return @{ supported = $true; level = [int]$b.CurrentBrightness } }
+    } catch {}
+    @{ supported = $false; level = $null }
+}
+
+function Set-Brightness([int]$level) {
+    $level = [math]::Max(0, [math]::Min(100, $level))
+    try {
+        $m = Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorBrightnessMethods -ErrorAction Stop | Select-Object -First 1
+        Invoke-CimMethod -InputObject $m -MethodName WmiSetBrightness -Arguments @{ Timeout = [uint32]1; Brightness = [byte]$level } -ErrorAction Stop | Out-Null
+        Start-Sleep -Milliseconds 150
+        return @{ ok = $true; level = (Get-Brightness).level }
+    } catch { return @{ ok = $false; msg = $_.Exception.Message } }
+}
+
+function Get-EventData($e) {
+    $h = @{}
+    try { foreach ($d in ([xml]$e.ToXml()).Event.EventData.Data) { $h[$d.Name] = $d.'#text' } } catch {}
+    $h
+}
+
+# Sleep sessions of the last 7 days with battery used while asleep.
+#   Modern Standby: Kernel-Power 506 (enter) / 507 (exit, same BootId + ScenarioInstanceIdV2)
+#   S3 / hibernate : Power-Troubleshooter 1 (SleepTime, WakeTime, WakeSourceText)
+function Get-SleepSessions {
+    if ($script:SleepCache -and ((Get-Date) - $script:SleepAt).TotalSeconds -lt 120) { return $script:SleepCache }
+    $since = (Get-Date).AddDays(-7)
+    $out = New-Object System.Collections.ArrayList
+    $kp = @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-Power'; Id = 506, 507; StartTime = $since } -ErrorAction SilentlyContinue)
+    $enters = @{}
+    foreach ($e in ($kp | Where-Object Id -eq 506)) {
+        $d = Get-EventData $e
+        $enters["$($d.BootId)-$($d.ScenarioInstanceIdV2)"] = @{ e = $e; d = $d }
+    }
+    foreach ($e in ($kp | Where-Object Id -eq 507)) {
+        $d = Get-EventData $e
+        $en = $enters["$($d.BootId)-$($d.ScenarioInstanceIdV2)"]
+        $durSec = [double]$d.DurationInUs / 1e6
+        if ($durSec -lt 60) { continue }   # screen-off blips under a minute are noise
+        $startCap = if ($en) { [double]$en.d.BatteryRemainingCapacityOnEnter } else { $null }
+        $endCap = [double]$d.BatteryRemainingCapacityOnExit
+        $fullCap = [double]$d.BatteryFullChargeCapacityOnExit
+        $drain = if ($startCap) { $startCap - $endCap } else { $null }
+        $why = if ("$($e.Message)" -match 'Reason:\s*([^\r\n]+?)\.?\s*$') { $Matches[1].Trim() } else { "code $($d.Reason)" }
+        $whyIn = if ($en -and "$($en.e.Message)" -match 'Reason:\s*([^\r\n]+?)\.?\s*$') { $Matches[1].Trim() } else { $null }
+        [void]$out.Add([PSCustomObject]@{
+            kind      = 'standby'
+            start     = $e.TimeCreated.AddSeconds(-$durSec).ToString('yyyy-MM-dd HH:mm')
+            end       = $e.TimeCreated.ToString('yyyy-MM-dd HH:mm')
+            minutes   = [int]($durSec / 60)
+            onAc      = ($d.PowerStateAc -eq 'true')
+            drainMWh  = if ($drain -ne $null) { [int]$drain } else { $null }
+            drainPct  = if ($drain -ne $null -and $fullCap) { [math]::Round(100 * $drain / $fullCap, 1) } else { $null }
+            deepPct   = if ([double]$d.DurationInUs) { [math]::Round(100 * [double]$d.DripsResidencyInUs / [double]$d.DurationInUs) } else { $null }
+            audio     = ($d.AudioPlaying -eq 'true')
+            sleepWhy  = $whyIn
+            wakeWhy   = $why
+        })
+    }
+    foreach ($e in @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-Power-Troubleshooter'; Id = 1; StartTime = $since } -ErrorAction SilentlyContinue)) {
+        $d = Get-EventData $e
+        try { $s = ([datetime]$d.SleepTime).ToLocalTime(); $w = ([datetime]$d.WakeTime).ToLocalTime() } catch { continue }
+        [void]$out.Add([PSCustomObject]@{
+            kind     = if ($d.TargetState -eq '5') { 'hibernate' } else { 'sleep' }
+            start    = $s.ToString('yyyy-MM-dd HH:mm')
+            end      = $w.ToString('yyyy-MM-dd HH:mm')
+            minutes  = [int]($w - $s).TotalMinutes
+            onAc     = $null; drainMWh = $null; drainPct = $null; deepPct = $null; audio = $false
+            sleepWhy = $null
+            wakeWhy  = if ($d.WakeSourceText) { $d.WakeSourceText } else { 'Unknown' }
+        })
+    }
+    $script:SleepCache = @($out | Sort-Object end -Descending)
+    $script:SleepAt = Get-Date
+    $script:SleepCache
+}
+
+# Unexpected shutdowns / blue screens of the last 90 days, grouped per incident (41/1001/6008 of one crash land within seconds).
+function Get-CrashHistory {
+    if ($script:CrashCache -and ((Get-Date) - $script:CrashAt).TotalSeconds -lt 300) { return $script:CrashCache }
+    $since = (Get-Date).AddDays(-90)
+    $ev = @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-Power'; Id = 41; StartTime = $since } -ErrorAction SilentlyContinue) +
+          @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'EventLog'; Id = 6008; StartTime = $since } -ErrorAction SilentlyContinue) +
+          @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-WER-SystemErrorReporting'; Id = 1001; StartTime = $since } -ErrorAction SilentlyContinue) +
+          @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-WHEA-Logger'; Level = 1, 2; StartTime = $since } -ErrorAction SilentlyContinue)
+    $groups = New-Object System.Collections.ArrayList
+    foreach ($e in ($ev | Where-Object { $_ } | Sort-Object TimeCreated)) {
+        $g = $null
+        if ($groups.Count -and ($e.TimeCreated - $groups[$groups.Count - 1].last).TotalMinutes -le 2) { $g = $groups[$groups.Count - 1] }
+        else { $g = @{ first = $e.TimeCreated; last = $e.TimeCreated; code = $null; params = $null; whea = $false; kp = $false }; [void]$groups.Add($g) }
+        $g.last = $e.TimeCreated
+        if ($e.Id -eq 1001 -and "$($e.Message)" -match '0x([0-9a-fA-F]{8})\s*\(([^)]*)\)') { $g.code = '0x{0:X}' -f [Convert]::ToInt64($Matches[1], 16); $g.params = $Matches[2] }
+        if ($e.Id -eq 41) {
+            $g.kp = $true
+            $bc = [long]$e.Properties[0].Value
+            if (-not $g.code -and $bc) { $g.code = '0x{0:X}' -f $bc }
+        }
+        if ($e.ProviderName -like '*WHEA*') { $g.whea = $true }
+    }
+    $script:CrashCache = @($groups | Sort-Object first -Descending | ForEach-Object {
+        [PSCustomObject]@{
+            at     = $_.first.ToString('yyyy-MM-dd HH:mm')
+            days   = [int]((Get-Date) - $_.first).TotalDays
+            kind   = if ($_.code) { 'bsod' } elseif ($_.whea) { 'hardware' } else { 'unexpected' }
+            code   = $_.code
+            params = $_.params
+        }
+    })
+    $script:CrashAt = Get-Date
+    $script:CrashCache
+}
+
 # ── HTTP helpers ─────────────────────────────────────────────
 function Send-Response($res, $status, $mime, $body, [switch]$Private) {
     $res.StatusCode = $status
@@ -664,13 +817,13 @@ while ($listener.IsListening) {
         $path = $req.Url.LocalPath
 
         # Sensitive endpoints (reveal Wi-Fi passwords, switch network, close programs, tune actions) are same-origin only.
-        $isPriv = ($path -like '/api/wifi*') -or ($path -like '/api/process*') -or ($path -like '/api/tune*')
+        $isPriv = ($path -like '/api/wifi*') -or ($path -like '/api/process*') -or ($path -like '/api/tune*') -or ($path -like '/api/power*')
         if ($req.HttpMethod -eq 'OPTIONS') {
             if ($isPriv) { Send-Response $res 403 'text/plain' '' -Private } else { Send-Response $res 200 'text/plain' '' }
             continue
         }
         if ($isPriv -and -not (Test-SameOrigin $req)) { Send-Response $res 403 'text/plain' 'Forbidden' -Private; continue }
-        if ($isPriv -and $path -notin @('/api/wifi','/api/tune/stats') -and ($req.HttpMethod -ne 'POST' -or $req.ContentType -notlike 'application/json*')) {
+        if ($isPriv -and $path -notin @('/api/wifi','/api/tune/stats','/api/power') -and ($req.HttpMethod -ne 'POST' -or $req.ContentType -notlike 'application/json*')) {
             Send-Response $res 405 'text/plain' 'POST application/json only' -Private; continue
         }
 
@@ -702,7 +855,23 @@ while ($listener.IsListening) {
                 $r = Connect-Wifi ([string]$b.ssid) ([string]$b.password)
                 Send-Response $res 200 'application/json; charset=utf-8' ($r | ConvertTo-Json -Compress) -Private
             }
+            '/api/power' {
+                Add-PowerSample
+                $out = @{
+                    now        = Get-PowerNow
+                    history    = @($script:PowerHist)
+                    brightness = Get-Brightness
+                    sleeps     = @(Get-SleepSessions)
+                    crashes    = @(Get-CrashHistory)
+                }
+                Send-Response $res 200 'application/json; charset=utf-8' ($out | ConvertTo-Json -Depth 5 -Compress) -Private
+            }
+            '/api/power/brightness' {
+                $b = Read-JsonBody $req
+                Send-Response $res 200 'application/json; charset=utf-8' ((Set-Brightness ([int]$b.level)) | ConvertTo-Json -Compress) -Private
+            }
             '/api/status' {
+                Add-PowerSample
                 $procs = Get-Processes
                 $data  = @{
                     battery   = Get-Battery

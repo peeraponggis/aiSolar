@@ -48,7 +48,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | Lungpee Agent | 1.6.0 | `LocalAI\lungpee-agent` |
 | Lek Dang (Yeekee) | 1.0.0 | `LocalAI\yk` |
 | Thai-Lao Dictionary | 1.0.0 | `LocalAI\Thai-Lao` |
-| Battery & System Dashboard | 1.4.0 | `LocalAI\battery_info` |
+| Battery & System Dashboard | 1.5.0 | `LocalAI\battery_info` |
 | GAS Monitor | 2.4.0 | `LocalAI\gas_monitor` |
 | RemoteAIR (รีโมทแอร์ Android/iOS) | 1.0.0 | `LocalAI\remoterAIR` |
 | YT Shorts Automation (คลิปอัตโนมัติ 3 โหมด · คิว · ภาพ AI · การ์ดตัวเลข) | 2.3.0 | `LocalAI\yt` |

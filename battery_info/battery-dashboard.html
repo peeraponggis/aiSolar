@@ -103,6 +103,13 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 .donut-svg{flex:0 0 68px}
 .donut-svg text{font-family:'Segoe UI',sans-serif;font-size:9.5px;fill:var(--muted2)}
 .donut-svg .pct-txt{font-size:13px;font-weight:700;fill:var(--text)}
+.pw-tbl{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
+.pw-tbl th,.pw-tbl td{padding:5px 7px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.pw-tbl th{color:var(--muted2);font-size:10px;font-weight:600}
+.pw-tbl tr.hot td{background:rgba(249,115,22,.08)}
+.pw-note{font-size:11.5px;line-height:1.7;color:var(--muted2);margin-top:6px}
+.pw-pre{display:inline-flex;gap:4px;margin-top:6px}
+#pw-range{width:100%;margin-top:8px;accent-color:var(--yellow)}
 .cyc-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
 .cyc-row span:first-child{color:var(--muted)}
 .cap-row{display:flex;align-items:center;gap:7px;margin-top:5px}
@@ -231,6 +238,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
   <div class="tab-btn" onclick="switchTab('proc')" id="tab-proc-btn">📊 <span id="t-tab2">โปรแกรม</span> <span id="idle-badge-tab" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:0 5px;border-radius:8px;margin-left:3px">0</span></div>
   <div class="tab-btn" onclick="switchTab('net')" id="tab-net-btn">🌐 <span data-nt="tab">อินเทอร์เน็ต</span></div>
   <div class="tab-btn" onclick="switchTab('tune')" id="tab-tune-btn">🧹 <span data-tu="tab">ปรับประสิทธิภาพ</span></div>
+  <div class="tab-btn" onclick="switchTab('power')" id="tab-power-btn">⚡ <span data-pw="tab">พลังงาน</span></div>
 </div>
 
 <!-- ── ALERT BANNERS (shared) ── -->
@@ -348,7 +356,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <div style="text-align:center;color:var(--muted);font-size:10px;padding:16px">
-    <span id="t-footer">Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.4.0 · โดย ลุงพี</span>
+    <span id="t-footer">Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.5.0 · โดย ลุงพี</span>
   </div>
 </div>
 </div><!-- tab-batt -->
@@ -528,6 +536,52 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 </div>
 </div>
 
+<div class="tab-panel" id="tab-power">
+<div style="padding:14px 20px 30px">
+  <div class="b-cards" style="padding-top:0">
+    <div class="card" style="--card-accent:var(--yellow)">
+      <div class="c-lbl" data-pw="nowTitle">กำลังไฟตอนนี้</div>
+      <div class="h-score" id="pw-watts">—</div>
+      <div class="c-sub" id="pw-state" style="margin-top:4px">—</div>
+      <div class="c-sub" id="pw-time">—</div>
+    </div>
+    <div class="card" style="--card-accent:var(--green)">
+      <div class="c-lbl" data-pw="whTitle">พลังงานในแบตเตอรี่</div>
+      <div class="h-score"><span id="pw-wh">—</span><span style="font-size:14px;color:var(--muted2)"> / <span id="pw-full">—</span> Wh</span></div>
+      <div class="c-sub" id="pw-volt" style="margin-top:4px">—</div>
+    </div>
+    <div class="card" style="--card-accent:var(--cyan)">
+      <div class="c-lbl" data-pw="brTitle">ความสว่างจอ</div>
+      <div class="h-score"><span id="pw-bright">—</span><span style="font-size:14px;color:var(--muted2)">%</span></div>
+      <input type="range" id="pw-range" min="0" max="100" step="5">
+      <div class="pw-pre">
+        <button class="mini-btn" onclick="setBright(30)">30%</button><button class="mini-btn" onclick="setBright(50)">50%</button>
+        <button class="mini-btn" onclick="setBright(70)">70%</button><button class="mini-btn" onclick="setBright(100)">100%</button>
+      </div>
+      <div class="c-sub" id="pw-br-tip" style="margin-top:6px">—</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-pw="chartTitle">กำลังไฟย้อนหลัง 2 ชั่วโมง</div>
+    <svg id="pw-chart" width="100%" height="150" style="display:block;margin-top:8px"></svg>
+    <div class="pw-note" data-pw="chartNote">เส้นเขียว = ไฟเข้าแบต (ชาร์จ) · เส้นส้ม = แบตจ่ายไฟให้เครื่อง (ใช้แบต) · เก็บค่าทุก 15 วินาทีขณะเปิดแดชบอร์ดอยู่</div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-pw="sleepTitle">พักเครื่อง / จอดับ 7 วันล่าสุด</div>
+    <div class="pw-note" id="pw-sleep-sum">—</div>
+    <label class="pw-note" style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" id="pw-show-hib" onchange="if(pwData)renderSleep(pwData.sleeps||[])"> <span data-pw="showHib">แสดงไฮเบอร์เนตด้วย</span></label>
+    <div style="max-height:340px;overflow-y:auto"><table class="pw-tbl" id="pw-sleep"></table></div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="c-lbl" data-pw="crashTitle">ความเสถียร: เครื่องดับเอง / จอฟ้า 90 วันล่าสุด</div>
+    <div id="pw-crash" class="pw-note">—</div>
+  </div>
+</div>
+</div>
+
 <!-- Close-program confirmation -->
 <div id="kill-modal" onclick="if(event.target===this)closeKillModal()">
   <div class="km-box">
@@ -563,7 +617,7 @@ const T={
     tab1:'แบตเตอรี่',tab2:'โปรแกรม',
     lblCharge:'สถานะการชาร์จ',lblHealth:'สุขภาพแบตเตอรี่',lblCycles:'รอบการชาร์จ',
     recTitle:'คำแนะนำ',fullLbl:'📄 รายงานฉบับเต็มจาก Windows (powercfg)',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.4.0 · โดย ลุงพี',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.5.0 · โดย ลุงพี',
     sg1:'แบรนด์ / ซีรีส์',sg2:'รุ่น',sg3:'โปรเซสเซอร์',sg4:'หน่วยความจำ',
     sg5:'การ์ดจอ',sg6:'พื้นที่เก็บข้อมูล',sg7:'ระบบปฏิบัติการ',sg8:'แบตเตอรี่',
     usedLbl:'ใช้ไปแล้ว',remainLbl:'เหลืออยู่',ratedLbl:'Rated',remainShort:'เหลือ',
@@ -602,7 +656,7 @@ const T={
     tab1:'Battery',tab2:'Processes',
     lblCharge:'Charge Status',lblHealth:'Battery Health',lblCycles:'Charge Cycles',
     recTitle:'Recommendation',fullLbl:'📄 Full Windows Battery Report',
-    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.4.0 · by LungPee',
+    footer:'Lenovo ThinkPad P16s Gen 2 · S/N: PF4RS4YJ · BIOS N3QET52W · v1.5.0 · by LungPee',
     sg1:'Brand / Series',sg2:'Model',sg3:'Processor',sg4:'Memory',
     sg5:'GPU',sg6:'Storage',sg7:'Operating System',sg8:'Battery',
     usedLbl:'Used',remainLbl:'Remaining',ratedLbl:'Rated',remainShort:'Left',
@@ -755,6 +809,8 @@ function applyNetLabels(){
   document.querySelectorAll('[data-nt]').forEach(el=>{ if(t[el.dataset.nt]!==undefined) el.textContent=t[el.dataset.nt]; });
   document.querySelectorAll('[data-wf]').forEach(el=>{ if(w[el.dataset.wf]!==undefined) el.textContent=w[el.dataset.wf]; });
   document.querySelectorAll('[data-tu]').forEach(el=>{ if(tu[el.dataset.tu]!==undefined) el.textContent=tu[el.dataset.tu]; });
+  document.querySelectorAll('[data-pw]').forEach(el=>{ const v=PW[lang][el.dataset.pw]; if(typeof v==='string') el.textContent=v; });
+  if(pwData) renderPower();
   if(document.getElementById('tune-list')) renderTuneList();
   set('tu-run-count',tu.runCount(tuneRunCount));
 }
@@ -1211,16 +1267,176 @@ function setLang(l){
   renderProcTable();
 }
 
+// ════ POWER (watts · brightness · sleep drain · crashes) ════
+const PW={
+  th:{
+    tab:'พลังงาน',showHib:'แสดงไฮเบอร์เนตด้วย (ไม่มีข้อมูลแบต)',nowTitle:'กำลังไฟตอนนี้',whTitle:'พลังงานในแบตเตอรี่',brTitle:'ความสว่างจอ',
+    chartTitle:'กำลังไฟย้อนหลัง 2 ชั่วโมง',sleepTitle:'พักเครื่อง / จอดับ 7 วันล่าสุด',crashTitle:'ความเสถียร: เครื่องดับเอง / จอฟ้า 90 วันล่าสุด',
+    chartNote:'เส้นเขียว = ไฟเข้าแบต (ชาร์จ) · เส้นส้ม = แบตจ่ายไฟให้เครื่อง (ใช้แบต) · เก็บค่าทุก 15 วินาทีขณะเปิดแดชบอร์ดอยู่',
+    charging:'กำลังชาร์จเข้าแบต',discharging:'เครื่องใช้ไฟจากแบต',idle:'เสียบปลั๊ก แบตไม่ได้ชาร์จ/จ่ายไฟ',
+    toFull:m=>`เต็มในอีก ~${m}`,toEmpty:m=>`ใช้ได้อีก ~${m} (ตามการใช้ไฟตอนนี้)`,
+    volt:(v,p)=>`แรงดัน ${v} V · ${p}% ของความจุที่เต็มได้จริง`,
+    brTip:l=>l>=80?'ลดเหลือ 50–60% ช่วยยืดเวลาใช้แบตได้ราว 10–20%':l>=50?'ระดับประหยัดแบตที่ดี':'ประหยัดแบตมาก · ถ้าอ่านยากให้เพิ่มขึ้น',
+    brNo:'จอนี้ปรับความสว่างจากโปรแกรมไม่ได้ (จอภายนอก ปรับที่ปุ่มจอ)',brFail:'ปรับไม่สำเร็จ',
+    hm:m=>m<60?`${m} นาที`:`${Math.floor(m/60)} ชม. ${m%60} นาที`,
+    hdr:['ช่วงเวลา','นาน','แบบ','แบตลด','หลับลึก','เข้าเพราะ → ตื่นเพราะ'],
+    kind:{standby:'จอดับ (Modern Standby)',hibernate:'ไฮเบอร์เนต',sleep:'พักเครื่อง (Sleep)'},
+    onAc:'เสียบปลั๊ก',perH:r=>`${r}%/ชม.`,audio:'มีเสียงเล่นอยู่',
+    why:{'Lid':'ปิด/เปิดฝา','Input Keyboard':'กดคีย์บอร์ด','Input Mouse':'ขยับเมาส์','Input Touchpad':'แตะทัชแพด','Idle Timeout':'ไม่ได้ใช้งาน (หมดเวลา)','Power Button':'กดปุ่มเปิด','Unknown':'ไม่ทราบ','AC/DC Display Burst':'เสียบ/ถอดสายชาร์จ','Sleep, Hibernate, or Shutdown':'สั่งพัก/ปิดเครื่อง','Battery':'แบตต่ำ'},
+    sleepSum:(n,h,s)=>`ไฮเบอร์เนต ${h} ครั้ง (แทบไม่ใช้แบต — บันทึกงานลงดิสก์แล้วปิดเครื่อง) · จอดับ/พักบนแบต ${s} ครั้ง · ทั้งหมด ${n} ครั้ง`,
+    advAudio:'⚠️ มีเพลง/วิดีโอเล่นค้างตอนจอดับ เครื่องจึงไม่หลับลึก แบตลดเร็ว — ปิดเสียง/แท็บที่เล่นอยู่ก่อนพักเครื่อง',
+    advNoDeep:'⚠️ จอดับแต่เครื่องแทบไม่ได้หลับลึก (โปรแกรมเบื้องหลังยังทำงาน) — ถ้าจะทิ้งไว้นาน ใช้ไฮเบอร์เนตหรือปิดเครื่อง',
+    advOk:'✅ จอดับ/พักเครื่องไม่กินแบตผิดปกติ',noSleep:'ไม่มีการพักเครื่องใน 7 วัน',
+    crashNone30:'✅ ไม่มีเครื่องดับเองหรือจอฟ้าใน 30 วันล่าสุด',crashNone:'✅ ไม่มีเครื่องดับเองหรือจอฟ้าใน 90 วันล่าสุด',
+    daysAgo:d=>d===0?'วันนี้':`${d} วันก่อน`,bsod:'จอฟ้า (Blue Screen)',unexpected:'ดับเองไม่ปกติ (ไฟดับ/แบตหมด/ค้างจนกดปิด)',hardware:'ฮาร์ดแวร์แจ้งข้อผิดพลาด (WHEA)',
+    nvidia:' · การ์ดจอ NVIDIA',
+    advBsod:'แนวทาง: อัปเดตไดรเวอร์จาก Lenovo Vantage (ไดรเวอร์การ์ดจอ · chipset · BIOS) ถ้าเกิดซ้ำบ่อยให้จดรหัสไว้ส่งช่าง',
+    advUnexp:'แนวทาง: ดูว่าแบตหมดหรือสายชาร์จหลุดช่วงนั้นไหม ถ้าเครื่องค้างบ่อยให้ดูความร้อนในแท็บแบตเตอรี่'
+  },
+  en:{
+    tab:'Power',showHib:'Also show hibernate (no battery data)',nowTitle:'Power now',whTitle:'Battery energy',brTitle:'Screen brightness',
+    chartTitle:'Power, last 2 hours',sleepTitle:'Sleep / screen-off, last 7 days',crashTitle:'Stability: unexpected shutdowns / blue screens, last 90 days',
+    chartNote:'Green = power into the battery (charging) · Orange = battery powering the laptop · sampled every 15 s while the dashboard is open',
+    charging:'Charging',discharging:'Running on battery',idle:'Plugged in, battery idle',
+    toFull:m=>`Full in ~${m}`,toEmpty:m=>`~${m} left at the current draw`,
+    volt:(v,p)=>`${v} V · ${p}% of full-charge capacity`,
+    brTip:l=>l>=80?'Lowering to 50–60% adds roughly 10–20% battery time':l>=50?'Good battery-saving level':'Very power-saving; raise it if hard to read',
+    brNo:'This display cannot be dimmed by software (external monitor: use its buttons)',brFail:'Could not change brightness',
+    hm:m=>m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`,
+    hdr:['When','Length','Type','Battery used','Deep sleep','Why in → why out'],
+    kind:{standby:'Screen off (Modern Standby)',hibernate:'Hibernate',sleep:'Sleep'},
+    onAc:'plugged in',perH:r=>`${r}%/h`,audio:'audio playing',
+    why:{},
+    sleepSum:(n,h,s)=>`Hibernate ${h}× (uses almost no battery) · screen-off/sleep on battery ${s}× · ${n} total`,
+    advAudio:'⚠️ Audio/video kept playing while the screen was off, so the laptop never reached deep sleep and drained fast — stop playback before sleeping',
+    advNoDeep:'⚠️ Screen off but almost no deep sleep (background apps kept working) — for long breaks use Hibernate or shut down',
+    advOk:'✅ Sleep and screen-off are not draining the battery abnormally',noSleep:'No sleep in the last 7 days',
+    crashNone30:'✅ No unexpected shutdowns or blue screens in the last 30 days',crashNone:'✅ No unexpected shutdowns or blue screens in the last 90 days',
+    daysAgo:d=>d===0?'today':`${d} days ago`,bsod:'Blue screen',unexpected:'Unexpected shutdown (power loss / empty battery / forced off)',hardware:'Hardware error reported (WHEA)',
+    nvidia:' · NVIDIA graphics',
+    advBsod:'Next step: update drivers via Lenovo Vantage (graphics · chipset · BIOS); if it repeats, note the code for a technician',
+    advUnexp:'Next step: check whether the battery ran out or the charger was unplugged; if it freezes often, check temperatures on the Battery tab'
+  }
+};
+// Common blue-screen codes: [name, Thai meaning, English meaning]
+const BUGCHECK={
+  '0x113':['VIDEO_DXGKRNL_FATAL_ERROR','ระบบกราฟิกของ Windows ล่ม มักเกิดจากไดรเวอร์การ์ดจอ','Windows graphics kernel failed, usually a graphics driver'],
+  '0x116':['VIDEO_TDR_FAILURE','การ์ดจอค้างแล้วกู้คืนไม่ได้ (ไดรเวอร์/ความร้อนการ์ดจอ)','GPU hung and could not recover (driver or GPU heat)'],
+  '0x117':['VIDEO_TDR_TIMEOUT_DETECTED','การ์ดจอไม่ตอบสนอง','GPU stopped responding'],
+  '0x101':['CLOCK_WATCHDOG_TIMEOUT','แกน CPU ค้างไม่ตอบ มักแก้ด้วยอัปเดต BIOS / chipset หรือเครื่องร้อนจัด','A CPU core stopped responding; often fixed by BIOS/chipset updates, or overheating'],
+  '0x133':['DPC_WATCHDOG_VIOLATION','ไดรเวอร์ทำงานนานเกิน (มักเป็นไดรเวอร์ดิสก์/SSD)','A driver ran too long (often storage/SSD driver)'],
+  '0x9F':['DRIVER_POWER_STATE_FAILURE','ไดรเวอร์ค้างตอนพักเครื่อง/ตื่น','A driver hung while sleeping or waking'],
+  '0x1A':['MEMORY_MANAGEMENT','หน่วยความจำผิดพลาด (RAM หรือไดรเวอร์)','Memory management error (RAM or driver)'],
+  '0x50':['PAGE_FAULT_IN_NONPAGED_AREA','อ่านหน่วยความจำผิดตำแหน่ง (ไดรเวอร์/RAM)','Invalid memory access (driver or RAM)'],
+  '0x3B':['SYSTEM_SERVICE_EXCEPTION','ไดรเวอร์หรือบริการระบบผิดพลาด','A system service or driver crashed'],
+  '0x7E':['SYSTEM_THREAD_EXCEPTION_NOT_HANDLED','ไดรเวอร์ผิดพลาด','A driver crashed'],
+  '0xD1':['DRIVER_IRQL_NOT_LESS_OR_EQUAL','ไดรเวอร์เข้าถึงหน่วยความจำผิด (มักเป็นไดรเวอร์เน็ต/Wi-Fi)','A driver touched invalid memory (often network/Wi-Fi)'],
+  '0xA':['IRQL_NOT_LESS_OR_EQUAL','ไดรเวอร์เข้าถึงหน่วยความจำผิด','A driver touched invalid memory'],
+  '0x124':['WHEA_UNCORRECTABLE_ERROR','ฮาร์ดแวร์ผิดพลาด (CPU/RAM/ความร้อน)','Hardware error (CPU/RAM/heat)'],
+  '0xEF':['CRITICAL_PROCESS_DIED','โปรแกรมหลักของ Windows หยุดทำงาน','A critical Windows process died'],
+  '0x139':['KERNEL_SECURITY_CHECK_FAILURE','ข้อมูลในระบบเสียหาย (ไดรเวอร์/ไฟล์ระบบ)','Kernel data corruption (driver/system files)']
+};
+let pwData=null, pwDragging=false;
+async function fetchPower(){
+  try{ const r=await fetch(API+'/api/power',{cache:'no-store'}); pwData=await r.json(); renderPower(); }catch(e){}
+}
+function pwWhy(w){ const m=PW[lang].why; return w?(m[w]||w):'—'; }
+function renderPower(){
+  const t=PW[lang], d=pwData; if(!d) return;
+  const n=d.now;
+  if(n){
+    const w=n.watts, col=w>0?'var(--green)':w<0?'var(--orange)':'var(--muted2)';
+    setHTML('pw-watts',`<span style="color:${col}">${w>0?'+':''}${w} W</span>`);
+    set('pw-state',w>0?t.charging:w<0?t.discharging:t.idle);
+    set('pw-time',n.minutes==null?'':(w>0?t.toFull(t.hm(n.minutes)):w<0?t.toEmpty(t.hm(n.minutes)):''));
+    set('pw-wh',n.remainWh); set('pw-full',n.fullWh??'—'); set('pw-volt',t.volt(n.volts,n.pct));
+  }
+  const br=d.brightness||{}, rg=document.getElementById('pw-range');
+  if(br.supported){ set('pw-bright',br.level); if(!pwDragging) rg.value=br.level; rg.disabled=false; set('pw-br-tip',t.brTip(br.level)); }
+  else { set('pw-bright','—'); rg.disabled=true; set('pw-br-tip',t.brNo); }
+  drawPowerChart(d.history||[]);
+  renderSleep(d.sleeps||[]);
+  renderCrash(d.crashes||[]);
+}
+function drawPowerChart(h){
+  const svg=document.getElementById('pw-chart'), W=svg.clientWidth||800, H=150, L=34, R=8, T=8, B=20;
+  if(!h.length){ svg.innerHTML=''; return; }
+  const now=Date.now(), x0=now-2*3600e3;
+  const max=Math.max(10,Math.ceil(Math.max(...h.map(p=>Math.abs(p.w)))/10)*10);
+  const hasNeg=h.some(p=>p.w<0), hasPos=h.some(p=>p.w>0);
+  const top=hasPos||!hasNeg?max:0, bot=hasNeg?-max:0;
+  const X=ms=>L+(Math.max(ms,x0)-x0)/(now-x0)*(W-L-R), Y=v=>T+(top-v)/(top-bot||1)*(H-T-B);
+  let g='';
+  [top,0,bot].filter((v,i,a)=>a.indexOf(v)===i).forEach(v=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--border)" ${v===0?'':'stroke-dasharray="3 3"'}/><text x="${L-4}" y="${Y(v)+3}" fill="var(--muted)" font-size="9" text-anchor="end">${v} W</text>`; });
+  for(let k=0;k<=4;k++){ const ms=x0+k*1800e3, dt=new Date(ms); g+=`<text x="${X(ms)}" y="${H-5}" fill="var(--muted)" font-size="9" text-anchor="${k===0?'start':k===4?'end':'middle'}">${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}</text>`; }
+  const pts=h.filter(p=>p.ms>=x0);
+  const seg=(f,c)=>{ if(!pts.length) return ''; const p=pts.map(q=>`${X(q.ms).toFixed(1)},${Y(f(q.w)).toFixed(1)}`);
+    const area=`M${X(pts[0].ms).toFixed(1)},${Y(0)} L${p.join(' L')} L${X(pts[pts.length-1].ms).toFixed(1)},${Y(0)} Z`;
+    return `<path d="${area}" fill="${c}" fill-opacity=".18"/><polyline points="${p.join(' ')}" fill="none" stroke="${c}" stroke-width="1.8"/>`; };
+  if(hasPos) g+=seg(w=>Math.max(0,w),'#22c55e');
+  if(hasNeg) g+=seg(w=>Math.min(0,w),'#f97316');
+  const last=pts[pts.length-1]; if(last) g+=`<circle cx="${X(last.ms)}" cy="${Y(last.w)}" r="3" fill="${last.w>=0?'#22c55e':'#f97316'}"/>`;
+  svg.innerHTML=g;
+}
+function renderSleep(rows){
+  const t=PW[lang], tb=document.getElementById('pw-sleep');
+  if(!rows.length){ tb.innerHTML=''; set('pw-sleep-sum',t.noSleep); return; }
+  const onBatt=rows.filter(r=>r.kind==='standby'&&r.onAc===false);
+  const audioBad=onBatt.some(r=>r.audio&&r.deepPct<10&&r.drainPct>=2);
+  const noDeep=onBatt.filter(r=>r.minutes>=10).some(r=>r.deepPct<20&&r.drainPct/(r.minutes/60)>5);
+  const adv=audioBad?t.advAudio:noDeep?t.advNoDeep:t.advOk;
+  setHTML('pw-sleep-sum',esc(t.sleepSum(rows.length,rows.filter(r=>r.kind==='hibernate').length,onBatt.length))+'<br>'+esc(adv));
+  let html='<tr>'+t.hdr.map(x=>`<th>${x}</th>`).join('')+'</tr>';
+  const showHib=document.getElementById('pw-show-hib').checked;
+  rows.filter(r=>showHib||r.kind!=='hibernate').slice(0,40).forEach(r=>{
+    const rate=r.drainPct!=null&&r.minutes>0?Math.round(r.drainPct/(r.minutes/60)*10)/10:null;
+    const hot=r.kind==='standby'&&r.onAc===false&&rate!=null&&rate>10&&r.drainPct>=2;
+    const used=r.drainPct==null?'—':(r.onAc?`${r.drainPct}% · ${t.onAc}`:`<b style="color:${hot?'var(--orange)':'var(--text)'}">${r.drainPct}%</b> <span style="color:var(--muted2)">(${t.perH(rate)})</span>`);
+    const deep=r.deepPct==null?'—':`${r.deepPct}%`+(r.audio?` <span style="color:var(--orange)">· ${t.audio}</span>`:'');
+    html+=`<tr class="${hot?'hot':''}"><td style="white-space:nowrap">${esc(r.start.slice(5))} → ${esc(r.end.slice(11))}</td><td style="white-space:nowrap">${t.hm(r.minutes)}</td><td>${esc(t.kind[r.kind]||r.kind)}</td><td>${used}</td><td>${deep}</td><td>${esc(pwWhy(r.sleepWhy))} → ${esc(pwWhy(r.wakeWhy))}</td></tr>`;
+  });
+  tb.innerHTML=html;
+}
+function renderCrash(list){
+  const t=PW[lang], el=document.getElementById('pw-crash');
+  if(!list.length){ el.textContent=t.crashNone; return; }
+  let html=list.some(c=>c.days<=30)?'':`<div style="color:var(--green);margin-bottom:6px">${esc(t.crashNone30)}</div>`;
+  html+='<table class="pw-tbl">';
+  list.forEach(c=>{
+    const key=c.code?'0x'+c.code.slice(2).toUpperCase():null, bc=key?BUGCHECK[key]:null;
+    const gpu=c.params&&/0x0*10de\b/i.test(c.params)?t.nvidia:'';
+    const kind=c.kind==='bsod'?t.bsod:c.kind==='hardware'?t.hardware:t.unexpected;
+    const what=c.code?`<b>${esc(c.code)}</b>${bc?' '+bc[0]:''}${gpu}<br><span style="color:var(--muted2)">${bc?esc(lang==='th'?bc[1]:bc[2]):''}</span>`:'';
+    html+=`<tr><td style="white-space:nowrap">${esc(c.at)}<br><span style="color:var(--muted)">${t.daysAgo(c.days)}</span></td><td style="color:${c.kind==='bsod'?'var(--red)':'var(--orange)'}">${esc(kind)}</td><td>${what}</td></tr>`;
+  });
+  html+='</table>';
+  html+=`<div style="margin-top:6px">${esc(list.some(c=>c.kind==='bsod')?t.advBsod:t.advUnexp)}</div>`;
+  el.innerHTML=html;
+}
+async function setBright(level){
+  try{
+    const r=await fetch(API+'/api/power/brightness',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({level})});
+    const d=await r.json();
+    if(d.ok){ if(pwData) pwData.brightness={supported:true,level:d.level}; renderPower(); }
+    else set('pw-br-tip',PW[lang].brFail);
+  }catch(e){ set('pw-br-tip',PW[lang].brFail); }
+}
+(()=>{ const rg=document.getElementById('pw-range'); if(!rg) return;
+  rg.addEventListener('input',()=>{ pwDragging=true; set('pw-bright',rg.value); });
+  rg.addEventListener('change',()=>{ pwDragging=false; setBright(+rg.value); });
+})();
+
 // ════ TAB SWITCH ════
 function switchTab(tab){
   activeTab=tab;
-  ['batt','proc','net','tune'].forEach(k=>{
+  ['batt','proc','net','tune','power'].forEach(k=>{
     document.getElementById('tab-'+k).classList.toggle('active',k===tab);
     document.getElementById('tab-'+k+'-btn').classList.toggle('active',k===tab);
   });
   if(tab==='proc') fetchProc();
   if(tab==='net'){ fetchNet(); fetchWifi(); }
   if(tab==='tune') fetchTuneStats();
+  if(tab==='power') fetchPower();
 }
 
 // ════ BATTERY ════
@@ -1403,6 +1619,7 @@ function setRefresh(sec){
   refreshTimer=setInterval(()=>{
     if(battObj) renderBatt(battObj);
     fetchProc();
+    if(activeTab==='power') fetchPower();
     if(activeTab==='net'){
       fetchNet();
       fetchWifi();
