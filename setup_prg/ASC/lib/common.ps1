@@ -24,15 +24,16 @@ function Ask([string]$q) {
   return $yes
 }
 # รันคำสั่งภายนอก · ไม่ผ่าน = throw (หยุดทั้งขั้น) · แสดง 20 บรรทัดท้ายเมื่อพลาด
-function Run([string]$label, [string]$exe, [string[]]$args, [string]$cwd = $null) {
+function Run([string]$label, [string]$exe, [string[]]$argv, [string]$cwd = $null) {   # ห้ามชื่อ $args (ตัวแปรอัตโนมัติของ PowerShell — ทำให้คำสั่งรันโดยไม่มีพารามิเตอร์)
   Log "> $label" DarkCyan
-  Add-Content -LiteralPath $LogFile -Value ("    {0} {1}" -f $exe, ($args -join ' ')) -Encoding UTF8
+  Add-Content -LiteralPath $LogFile -Value ("    {0} {1}" -f $exe, ($argv -join ' ')) -Encoding UTF8
   $out = New-Object System.Collections.Generic.List[string]
   Push-Location ($(if ($cwd) { $cwd } else { Get-Location }))
+  $eap = $ErrorActionPreference; $ErrorActionPreference = 'Continue'   # โปรแกรมภายนอกเขียน warning ทาง stderr ได้ — ตัดสินจาก exit code เท่านั้น
   try {
-    & $exe @args 2>&1 | ForEach-Object { $s = "$_"; $out.Add($s); Add-Content -LiteralPath $LogFile -Value "    $s" -Encoding UTF8 }
+    & $exe @argv 2>&1 | ForEach-Object { $s = "$_"; $out.Add($s); Add-Content -LiteralPath $LogFile -Value "    $s" -Encoding UTF8 }
     $code = $LASTEXITCODE
-  } finally { Pop-Location }
+  } finally { Pop-Location; $ErrorActionPreference = $eap }
   if ($code -ne 0) {
     Bad "$label ไม่ผ่าน (exit $code) — 20 บรรทัดท้าย:"
     $out | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
@@ -65,7 +66,8 @@ function GitState([string]$key) {
 # เริ่มงานทุก repo: pull --rebase --autostash · CONFLICT = หยุด
 function GitPull([string]$key) {
   $d = GitDir $key
-  $o = git -C $d pull --rebase --autostash 2>&1 | Out-String
+  $eap = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+  $o = (git -C $d pull --rebase --autostash 2>&1 | ForEach-Object { "$_" }) -join "`n"; $ErrorActionPreference = $eap
   Add-Content -LiteralPath $LogFile -Value $o -Encoding UTF8
   if ($o -match 'CONFLICT') { Bad "git pull ชน (CONFLICT) ใน $d — หยุด ให้แก้ด้วยมือ/Claude ก่อน"; throw 'CONFLICT' }
   Ok "git pull $($P[$key].name)"
@@ -87,16 +89,21 @@ function ScanSecrets([string]$dir, [string[]]$extraLiteral = @()) {
 # commit + push หลังถาม · แสดงรายการไฟล์ก่อน
 function CommitPush([string]$key, [string]$msg, [string[]]$paths) {
   $d = GitDir $key
-  git -C $d add -- @paths 2>&1 | Out-Null
+  if ($paths -and $paths.Count) { git -C $d add -- @paths 2>&1 | Out-Null }   # ไม่มี path = ใช้ที่ stage ไว้แล้ว
   $stat = git -C $d diff --cached --stat | Out-String
   if (-not $stat.Trim()) { Warn "$($P[$key].name): ไม่มีอะไรเปลี่ยน"; return $false }
   Write-Host $stat -ForegroundColor DarkGray
   if ($P[$key].url) { Warn "push แล้วเว็บจริงเปลี่ยนทันที ($($P[$key].url))" }
   if (-not (Ask "commit + push $($P[$key].name): `"$msg`" ?")) { git -C $d reset -q; Warn 'ยกเลิก (unstage แล้ว)'; return $false }
-  $full = "$msg`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
-  git -C $d commit -q -m $full; if ($LASTEXITCODE) { throw 'commit ไม่ผ่าน' }
-  $o = git -C $d push 2>&1 | Out-String; Add-Content -LiteralPath $LogFile -Value $o -Encoding UTF8
-  if ($LASTEXITCODE) { Bad "push ไม่ผ่าน: $o"; throw 'push' }
+  # ข้อความมีเครื่องหมายคำพูด/ขึ้นบรรทัด → ส่งผ่านไฟล์ (-F) กัน PowerShell 5.1 ตัดเป็นหลาย argument
+  $mf = Join-Path $env:TEMP "asc-commit-$PID.txt"
+  [IO.File]::WriteAllText($mf, "$msg`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`n", [Text.UTF8Encoding]::new($false))
+  git -C $d commit -q -F $mf; $rc = $LASTEXITCODE; Remove-Item $mf -ErrorAction SilentlyContinue
+  if ($rc) { throw 'commit ไม่ผ่าน' }
+  $eap = $ErrorActionPreference; $ErrorActionPreference = 'Continue'   # git เขียนความคืบหน้าทาง stderr — ไม่ใช่ error
+  $o = (git -C $d push 2>&1 | ForEach-Object { "$_" }) -join "`n"; $rc = $LASTEXITCODE; $ErrorActionPreference = $eap
+  Add-Content -LiteralPath $LogFile -Value $o -Encoding UTF8
+  if ($rc) { Bad "push ไม่ผ่าน: $o"; throw 'push' }
   Ok ("push {0} {1}" -f $P[$key].name, (git -C $d log --oneline -1))
   return $true
 }
