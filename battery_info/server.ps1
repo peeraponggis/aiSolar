@@ -645,7 +645,7 @@ function Send-File($res, $filePath) {
     if (Test-Path $filePath) {
         $bytes = [System.IO.File]::ReadAllBytes($filePath)
         $ext   = [System.IO.Path]::GetExtension($filePath).ToLower()
-        $mime  = switch ($ext) { '.html'{'text/html; charset=utf-8'} '.ico'{'image/x-icon'} default{'application/octet-stream'} }
+        $mime  = switch ($ext) { '.html'{'text/html; charset=utf-8'} '.ico'{'image/x-icon'} '.js'{'text/javascript; charset=utf-8'} default{'application/octet-stream'} }
         $res.StatusCode = 200
         $res.ContentType = $mime
         $res.Headers.Add('Cache-Control','no-cache')
@@ -732,6 +732,7 @@ while ($listener.IsListening) {
             '/api/net'     { Send-Response $res 200 'application/json; charset=utf-8' ((Get-NetReport) | ConvertTo-Json -Depth 6 -Compress) }
             '/battery-report.html' { Send-File $res (Join-Path $ScriptDir 'battery-report.html') }
             '/favicon.ico' { Send-File $res (Join-Path $ScriptDir 'battery.ico') }
+            '/lungpee-pdpa.js' { Send-File $res (Join-Path $ScriptDir 'lungpee-pdpa.js') }
             default        { Send-Response $res 404 'text/plain' 'Not found' }
         }
     } catch {
