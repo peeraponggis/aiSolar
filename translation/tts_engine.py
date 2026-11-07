@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -20,8 +29,31 @@ log = logging.getLogger(__name__)
 FROZEN = bool(getattr(sys, "frozen", False))          # รันจาก exe ที่สร้างด้วย PyInstaller
 BASE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # ---- เสียงอ่าน: ใช้ของโปรเจกต์ yt (edge-tts + replacements.json + โคลนเสียง OpenVoice)
-YT_DIR = os.path.normpath(os.path.join(BASE, "..", "yt"))
+def _find_yt_dir():
+    """หาโฟลเดอร์ yt ให้เจอเสมอ ไม่ว่ารันเป็น .py หรือ .exe (PyInstaller) หรือ HDD เปลี่ยนไดรฟ์
+    เพราะตอนแพ็กเป็น exe, BASE = โฟลเดอร์ exe (…/dist/LocalTranslator) ทำให้ ../yt ผิด
+    ตรวจหลายตำแหน่ง แล้วเลือกตัวแรกที่มี config/replacements.json จริง"""
+    cands = []
+    env = os.environ.get("LOCALAI_YT_DIR")
+    if env:
+        cands.append(env)
+    for up in range(1, 6):   # ../yt, ../../yt, … เผื่อ exe ซ้อนหลายชั้น
+        cands.append(os.path.normpath(os.path.join(BASE, *([".."] * up), "yt")))
+    this_drive = os.path.splitdrive(os.path.abspath(__file__))[0] or "F:"
+    for drive in (this_drive, "F:", "E:", "D:", "G:", "H:"):
+        cands.append(os.path.join(drive, os.sep, "LocalAI", "yt"))
+    for c in cands:
+        try:
+            if os.path.isfile(os.path.join(c, "config", "replacements.json")):
+                return c
+        except Exception:
+            pass
+    return cands[1] if len(cands) > 1 else os.path.normpath(os.path.join(BASE, "..", "yt"))
+
+
+YT_DIR = _find_yt_dir()
 REPLACEMENTS_FILE = os.path.join(YT_DIR, "config", "replacements.json")
+log.info("YT_DIR = %s | replacements = %s", YT_DIR, REPLACEMENTS_FILE)
 TTS_TMP = os.path.join(os.environ.get("TEMP", BASE), "thai-translator-tts")
 TTS_VOICES = {  # ชื่อที่แสดง -> (ชื่อเสียง edge-tts หรือ sapi:ชื่อเสียง Windows, ภาษา)
     "เปรมวดี (หญิง)": ("th-TH-PremwadeeNeural", "th"),
@@ -70,6 +102,51 @@ def list_clone_profiles():
         return []
 
 
+def _enhance_sapi_wav(path, target_sr=24000):
+    """ปรับคุณภาพเสียงในเครื่อง (Pattara ออก 16kHz เสียงเบา/พร่า):
+    upsample -> 24kHz, high-shelf EQ (+5dB ย่านแหลมให้ชัดขึ้น), แล้ว normalize ความดัง (ดังขึ้นสม่ำเสมอ)
+    ถ้าทำไม่สำเร็จคืนไฟล์เดิมไว้เหมือนเดิม (เสียงต้องออกเสมอ สำคัญกว่าความคมชัด)"""
+    try:
+        import math
+        import numpy as np
+        from scipy.io import wavfile
+        from scipy.signal import lfilter, resample_poly
+
+        sr, x = wavfile.read(path)
+        x = x.astype(np.float32)
+        x = x / 32768.0 if x.size and np.max(np.abs(x)) > 1.5 else x
+        if x.ndim > 1:
+            x = x.mean(axis=1)
+        if x.size < 10:
+            return path
+        if sr != target_sr:                                   # 16000 -> 24000 (ให้หัว EQ มีที่หายใจ + เข้ากับ neural)
+            g = math.gcd(int(sr), target_sr)
+            x = resample_poly(x, target_sr // g, int(sr) // g)
+            sr = target_sr
+        # high-shelf +5dB ที่ ~3kHz (RBJ biquad) ดึงย่านแหลมที่หายไปจากการสังเคราะห์ 16kHz กลับมาบ้าง
+        f0, gain_db, S = 3000.0, 5.0, 0.8
+        A = 10 ** (gain_db / 40.0)
+        w0 = 2 * math.pi * f0 / sr
+        cw, sw = math.cos(w0), math.sin(w0)
+        alpha = sw / 2.0 * math.sqrt((A + 1 / A) * (1 / S - 1) + 2)
+        sa = 2 * math.sqrt(A) * alpha
+        b0 = A * ((A + 1) + (A - 1) * cw + sa)
+        b1 = -2 * A * ((A - 1) + (A + 1) * cw)
+        b2 = A * ((A + 1) + (A - 1) * cw - sa)
+        a0 = (A + 1) - (A - 1) * cw + sa
+        a1 = 2 * ((A - 1) - (A + 1) * cw)
+        a2 = (A + 1) - (A - 1) * cw - sa
+        x = lfilter([b0 / a0, b1 / a0, b2 / a0], [1.0, a1 / a0, a2 / a0], x).astype(np.float32)
+        # normalize ความดัง: ดัน RMS ขึ้นไป ~0.13 แล้ว soft-limit (tanh) กันแตก -> ดังขึ้นชัดเจน ไม่คลิป
+        rms = float(np.sqrt(np.mean(x ** 2))) + 1e-9
+        x = x * min(0.13 / rms, 8.0)
+        x = np.tanh(x) * 0.97
+        wavfile.write(path, sr, np.clip(x, -1.0, 1.0).astype(np.float32).__mul__(32767).astype(np.int16))
+    except Exception:
+        log.debug("ปรับปรุงเสียงในเครื่องไม่สำเร็จ ใช้ไฟล์เดิม", exc_info=True)
+    return path
+
+
 def sapi_synthesize(text, voice_name, rate, out_wav):
     """เสียงในเครื่องของ Windows (OneCore เช่น Microsoft Pattara) ผ่าน WinRT ใน PowerShell: ออฟไลน์ เร็วมาก (~0.2 วินาที)
     แต่ธรรมชาติน้อยกว่าเสียง Neural ของ edge-tts"""
@@ -94,7 +171,7 @@ def sapi_synthesize(text, voice_name, rate, out_wav):
                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if not (os.path.exists(out_wav) and os.path.getsize(out_wav) > 100):
         raise RuntimeError(f"เสียง {voice_name} ในเครื่องไม่ทำงาน")
-    return out_wav
+    return _enhance_sapi_wav(out_wav)
 
 
 def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_retries=5, deadline=None):
@@ -123,6 +200,12 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
                 log.debug("edge-tts ลองครั้งที่ %d ไม่สำเร็จ (%s): %s", attempt + 1, voice, e)
             await asyncio.sleep(0.4 * (attempt + 1))   # ข้อผิดพลาดชั่วคราวของ edge-tts มักผ่านเมื่อลองซ้ำทันที ไม่ต้องรอนาน
         raise last or RuntimeError("edge-tts ไม่ส่งเสียงกลับมา")
+    # เสียงสำรองในเครื่องมีเฉพาะไทย (ปัตตรา) และอังกฤษ (Zira) — Windows ไม่มีเสียงลาว Zira อ่านอักษรลาวไม่ได้
+    # ภาษาที่ไม่มีเสียงสำรอง: รอ edge-tts นานขึ้นแทนการสลับไปเสียงที่อ่านไม่ได้
+    fallback = "Pattara" if voice.startswith("th") else "Zira" if voice.startswith("en") else None
+    if fallback is None and deadline:
+        deadline = max(deadline, NO_LOCAL_VOICE_DEADLINE_S)
+
     async def run_with_deadline():
         if deadline:
             await asyncio.wait_for(run(), timeout=deadline)
@@ -131,8 +214,11 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
     try:
         asyncio.run(run_with_deadline())
     except Exception as e:
+        if fallback is None:
+            log.warning("edge-tts (%s) ไม่ส่งเสียงภายใน %s วินาที และไม่มีเสียงสำรองในเครื่องสำหรับภาษานี้", voice, deadline,
+                        exc_info=not isinstance(e, asyncio.TimeoutError))
+            raise RuntimeError(f"เสียง {voice} ต้องใช้อินเทอร์เน็ต (edge-tts) และยังไม่ตอบ — ลองกดอ่านอีกครั้ง") from e
         # บริการ edge-tts ล่ม/ช้าชั่วคราว -> ใช้เสียงในเครื่องของ Windows แทน เพื่อให้ยังได้ยินเสียง (ปัตตรา/Zira)
-        fallback = "Pattara" if voice.startswith("th") else "Zira"
         if isinstance(e, asyncio.TimeoutError):
             log.info("edge-tts (%s) ช้าเกิน %.1f วินาที - ใช้เสียงในเครื่อง %s แทนสำหรับท่อนนี้", voice, deadline, fallback)
         else:
@@ -153,6 +239,31 @@ def tts_synthesize(text, voice, rate="+0%", pitch="+0Hz", clone_id=None, max_ret
         except Exception:
             pass
     return out
+
+
+LATIN_RUN_RE = re.compile(r"[A-Za-z0-9&'./+\-]+(?:\s+[A-Za-z0-9&'./+\-]+)*")   # คำละติน/ตัวเลขที่ติดกัน เช่น "PV 5 kW"
+
+
+def split_lang_runs(text, main_lang):
+    """แยกข้อความเป็นท่อนตามภาษา: คำอังกฤษ (อักษรละตินติดกัน) เป็นท่อน 'en' ที่เหลือเป็น main_lang
+    ใช้กับเสียงลาวของ edge-tts (Keomany/Chanthavong) ซึ่งข้ามคำอังกฤษไปเลยไม่ยอมอ่าน
+    ต่างจากเสียงไทยที่อ่านอังกฤษปนได้ คืน [(ข้อความ, ภาษา), ...] เรียงตามลำดับเดิม"""
+    runs, pos = [], 0
+
+    def add(part, lang):
+        # ท่อนที่มีแต่เครื่องหมาย เช่น "." ท้ายประโยคที่หลุดออกมาหลังคำอังกฤษ: ไม่มีอะไรให้อ่าน
+        # และ edge-tts ตอบ "No audio was received" ทำให้การอ่านทั้งข้อความหยุด -> ข้าม
+        part = part.strip()
+        if re.search(r"\w", part):
+            runs.append((part, lang))
+
+    for m in LATIN_RUN_RE.finditer(text):
+        add(text[pos:m.start()], main_lang)
+        # ท่อนที่เป็นตัวเลขล้วน (ไม่มีอักษรละติน) ให้เสียงหลักอ่านตามปกติ
+        add(m.group(0), "en" if re.search(r"[A-Za-z]", m.group(0)) else main_lang)
+        pos = m.end()
+    add(text[pos:], main_lang)
+    return runs or [(text, main_lang)]
 
 
 def split_tts_chunks(text, max_len=140):
@@ -204,6 +315,7 @@ def pop_sentences(buf, final=False, min_len=60, max_len=140):
 
 _warmed = {}
 EDGE_DEADLINE_S = 4.0
+NO_LOCAL_VOICE_DEADLINE_S = 25.0   # ลาว ฯลฯ: ท่อนยาวที่สร้างพร้อมกันหลายท่อนใช้ 4-10 วินาที
 
 
 def warm_up_tts(voice, min_interval=120):
@@ -256,24 +368,32 @@ class TtsPipeline:
         ev, jobs, pool, sid = self.stop_event, self.jobs, self.pool, self.session
 
         def run():
-            played = 0
+            played, idx, failed, last_err = 0, -1, 0, None
             try:
                 while not ev.is_set():
                     fut = jobs.get()
                     if fut is None:
                         break
-                    path = fut.result()
+                    idx += 1   # ลำดับท่อนตามที่ feed (ไฮไลท์อ้างอิงลำดับนี้ แม้ข้ามบางท่อน)
+                    try:
+                        path = fut.result()
+                    except Exception as e:   # ท่อนเดียวสร้างเสียงไม่ได้: ข้ามไปท่อนถัดไป ไม่หยุดทั้งข้อความ
+                        failed, last_err = failed + 1, e
+                        log.warning("ข้ามท่อนที่ %d เพราะสร้างเสียงไม่ได้: %s", idx + 1, e)
+                        continue
                     if ev.is_set():
                         break
                     played += 1
-                    self.on_event("status", f"กำลังอ่านท่อนที่ {played} ...")
-                    self.on_event("playing", (sid, played - 1))
+                    self.on_event("status", f"กำลังอ่านท่อนที่ {idx + 1} ...")
+                    self.on_event("playing", (sid, idx))
                     self.player.play(path)
                     while self.player.is_playing() and not ev.is_set():
                         time.sleep(0.1)
                     self.player.stop()
                 if not ev.is_set():
-                    self.on_event("done", f"อ่านเสียงจบแล้ว ({played} ท่อน)")
+                    if failed and not played:
+                        raise last_err
+                    self.on_event("done", f"อ่านเสียงจบแล้ว ({played} ท่อน" + (f" · ข้าม {failed} ท่อนที่สร้างเสียงไม่ได้)" if failed else ")"))
             except Exception as e:
                 log.exception("TtsPipeline เล่นเสียงผิดพลาด")
                 self.player.stop()
@@ -282,14 +402,16 @@ class TtsPipeline:
                 pool.shutdown(wait=False, cancel_futures=True)
         self.thread = threading.Thread(target=run, daemon=True); self.thread.start()
 
-    def feed(self, text):
-        """คืน True ถ้ารับท่อนนี้เข้าคิว (ลำดับท่อนตรงกับลำดับ 'playing' ที่จะส่งออกมา)"""
+    def feed(self, text, voice=None):
+        """คืน True ถ้ารับท่อนนี้เข้าคิว (ลำดับท่อนตรงกับลำดับ 'playing' ที่จะส่งออกมา)
+        voice: ใช้เสียงอื่นเฉพาะท่อนนี้ (เช่น คำอังกฤษที่ปนในประโยคลาว) ท่อนที่ระบุเสียงเองไม่ผ่านการโคลน"""
         if self.jobs is None or self.stop_event.is_set() or not text.strip():
             return False
         self.count += 1
+        clone_id = None if voice else self.clone_id
         # เสียงโคลนต้องใช้ edge-tts ก่อนแปลงเสียง จึงไม่ตัดเวลา (ช้าเป็นปกติอยู่แล้ว)
-        deadline = None if self.clone_id else EDGE_DEADLINE_S
-        self.jobs.put(self.pool.submit(tts_synthesize, text, self.voice, self.rate, "+0Hz", self.clone_id,
+        deadline = None if clone_id else EDGE_DEADLINE_S
+        self.jobs.put(self.pool.submit(tts_synthesize, text, voice or self.voice, self.rate, "+0Hz", clone_id,
                                        deadline=deadline))
         return True
 

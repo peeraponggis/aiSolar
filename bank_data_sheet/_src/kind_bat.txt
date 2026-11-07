@@ -1,0 +1,116 @@
+@@NAME
+BAT
+@@TITLE
+แบตเตอรี่ / ระบบกักเก็บพลังงาน (Battery / ESS)
+@@TEMPLATE
+BATTERY_ESS_STRUCTURE.txt
+@@1
+   BAT = แบตเตอรี่ / ESS → BATTERY_ESS_STRUCTURE.txt (หัวไฟล์ [BATTERY_ESS_STRUCTURE])
+   รู้จากคำ: kWh, DoD, cycle life, BMS, SoC
+@@FORMULAS
+       - Usable_Capacity_kWh = Nominal_Capacity_kWh x Recommended_DoD_Pct หาร 100
+         (เฉพาะเอกสารไม่ระบุ Usable โดยตรง และระบุ DoD)
+       - Nominal_Capacity_kWh = Module_Capacity_kWh x Number_of_Modules_Recorded
+         (เฉพาะเอกสารไม่ระบุ Total/Nominal โดยตรง)
+       - Max_Continuous_Charge_Power_kw = Max_Continuous_Charge_Current_A x Nominal_Voltage_V หาร 1000
+         (เฉพาะเอกสารไม่ระบุกำลัง แต่ระบุกระแสและแรงดัน · ใช้ทำนองเดียวกันกับ Discharge)
+@@5
+   BAT (ขาดแล้วคิดการชาร์จ-คายประจุไม่ได้)
+       Nominal_Capacity_kWh         ← เอกสารมีแต่ค่าต่อโมดูล ให้คำนวณตามข้อ 4.7
+                                      (ว่างทั้งคู่ = โปรแกรมไม่รับเป็นแบตเตอรี่)
+       Usable_Capacity_kWh
+       Nominal_Voltage_V            ← ว่าง = โปรแกรมใช้ 400 V (HV) หรือ 51.2 V (LV)
+       Battery_Voltage_Class
+       Max_Continuous_Charge_Power_kw, Max_Continuous_Discharge_Power_kw
+                                    ← ว่าง = โปรแกรมใช้ 2.5 kW
+       Operating_Voltage_Min_V, Operating_Voltage_Max_V
+       BMS_Communication_Protocol, Compatible_Inverter_Models   ← ใช้จับคู่กับอินเวอร์เตอร์
+   ฟิลด์ที่โปรแกรมใช้เพิ่ม (กรอกให้ได้ถ้าเอกสารมี):
+       Max_Continuous_Charge_Current_A, Max_Continuous_Discharge_Current_A,
+       Recommended_DoD_Pct, Round_Trip_Efficiency_Pct,
+       Min_Modules_Per_Stack, Max_Modules_Per_Stack, Max_Parallel_Stacks (คิดจำนวนโมดูลที่ต่อได้)
+       Module_Capacity_kWh, Width_mm, Height_mm, Depth_mm, Weight_kg, IP_Rating, Warranty_Years,
+       Thai_Distributor, Datasheet_URL
+   หมายเหตุ ชื่อฟิลด์กำลังของแบตลงท้าย _kw ตัวเล็ก (Max_Continuous_Charge_Power_kw) ตามแม่แบบ
+   ห้ามแก้เป็น _kW
+@@6
+   BAT:
+   - Usable Energy / Usable Capacity → Usable_Capacity_kWh
+     Total Energy / Nominal Energy / Rated Energy → Nominal_Capacity_kWh
+   - เอกสารระบุเฉพาะความจุต่อโมดูล: กรอก Module_Capacity_kWh แล้วคำนวณ Nominal_Capacity_kWh
+     ตามข้อ 4.7 ห้ามปล่อยความจุว่างทั้งหมด เพราะโปรแกรมจะไม่รับไฟล์เป็นแบตเตอรี่
+   - ค่าใน [CAPACITY_VOLTAGE] และ [OPERATIONAL_LIMITS] = ระดับ System
+     ไฟล์ของ "รุ่น" ที่เป็นชุดหลายโมดูล (เช่น LUNA2000-15-S1 = 3 โมดูล) ใช้ค่าของชุดนั้น
+     ค่าต่อโมดูลใส่ [MODULE_CONFIGURATION] · Spec_Level = "System"
+     เอกสารมีแต่ค่าโมดูลเดียว Spec_Level = "Single Module"
+   - Battery_Voltage_Class ตามข้อ 11: "HV" ถ้า Nominal_Voltage_V มากกว่า 100 / "LV" ถ้าประมาณ 48-51.2 V
+   - BMS_Communication_Protocol และ Compatible_Inverter_Models สำคัญที่สุดสำหรับการจับคู่
+     ค้นทุกหน้า รวมหมายเหตุท้ายตาราง · รุ่นอินเวอร์เตอร์คั่นด้วยจุลภาค กระจายชื่อย่อเหมือนข้อ 6 INV
+   - แบตที่ต้องมี Power Module / Control Module แยก (LUNA2000 Power Module, SigenStor EC)
+     ให้ Requires_Control_Module = True และระบุรุ่นใน Control_Module_Model
+   - Min/Max_Modules_Per_Stack, Max_Parallel_Stacks ต้องมาจากเอกสาร (แม่แบบตั้ง 1 ไว้ = ไม่ใช่ข้อมูล)
+   - ค่าที่แม่แบบตั้งไว้ไม่ใช่ศูนย์ (Battery_Chemistry "LFP" · Recommended_DoD_Pct 90 ·
+     Expected_Cycle_Life 6000 · Calendar_Life_Years 10 · Warranty_Years 10 · ช่วงอุณหภูมิ ·
+     End_of_Life_SoH_Pct 70) ต้องมี SRC ทุกค่า ไม่พบ = ว่าง + [ไม่มีข้อมูล]
+@@7
+   BAT:
+   - Usable_Capacity_kWh ไม่เกิน Nominal_Capacity_kWh
+   - Operating_Voltage_Min_V น้อยกว่า Nominal_Voltage_V น้อยกว่า Operating_Voltage_Max_V
+   - Nominal_Capacity_kWh ประมาณ Nominal_Voltage_V x Nominal_Capacity_Ah หาร 1000 บวกลบ 5%
+   - Module_Capacity_kWh x Number_of_Modules_Recorded ประมาณ Nominal_Capacity_kWh บวกลบ 5%
+   - Round_Trip_Efficiency_Pct น้อยกว่า 100
+   - Min_Modules_Per_Stack ไม่เกิน Max_Modules_Per_Stack
+@@10
+   [BAT]
+   Total Energy / Nominal Energy / Rated Energy / Battery Capacity / Energy Capacity → Nominal_Capacity_kWh
+   Usable Energy / Usable Capacity / Available Energy / Effective Capacity → Usable_Capacity_kWh
+   Rated Capacity (Ah) / Nominal Capacity (Ah)                            → Nominal_Capacity_Ah
+   Nominal Voltage / Rated Voltage / Battery Voltage                      → Nominal_Voltage_V
+   Operating Voltage Range / Voltage Range / DC Voltage Range             → Operating_Voltage_Min_V, Operating_Voltage_Max_V
+   Max. Charge Power / Max Charging Power / Rated Charge Power            → Max_Continuous_Charge_Power_kw
+   Max. Discharge Power / Max Discharging Power / Rated Output Power / Rated Power → Max_Continuous_Discharge_Power_kw
+   Peak Power / Peak Output / Max Output Power (10s / 30s)                → Peak_Discharge_Power_kW, Peak_Power_Duration_Sec
+   Max. Charge/Discharge Current / Rated Current                          → Max_Continuous_Charge_Current_A, _Discharge_Current_A
+   Depth of Discharge / DoD / Recommended DoD                             → Recommended_DoD_Pct
+   Cycle Life / Cycles / Life Cycles / Expected Cycles                    → Expected_Cycle_Life
+   Round-trip Efficiency / RTE / DC Efficiency / System Efficiency        → Round_Trip_Efficiency_Pct
+   Battery Type / Cell Chemistry / Chemistry / Cell Type                  → Battery_Chemistry, Cell_Type
+   Communication / Communication Interface / Protocol / BMS Interface     → BMS_Communication_Protocol
+   Compatible Inverters / Supported Inverters / Inverter Compatibility / Works with → Compatible_Inverter_Models
+   Number of Modules / Modules per Tower / Stack Configuration / Expandable → Min/Max_Modules_Per_Stack, Max_Parallel_Stacks
+   Module Energy / Energy per Module / Unit Capacity                      → Module_Capacity_kWh
+   Max. Capacity / Max System Capacity / Scalable up to                   → Max_Expandable_Capacity_kWh
+   Operating Temperature (Charge / Discharge)                             → Charge_Temp_Range_*, Discharge_Temp_Range_*
+   Storage Temperature                                                    → Storage_Temp_Min_C, Storage_Temp_Max_C
+   Thermal Management / Cooling / Heating                                 → Thermal_Management, Integrated_Heater
+   Warranty / Performance Warranty / Throughput Warranty                  → Warranty_Years, Warranty_Energy_Throughput_MWh, Warranty_End_SoH_Pct
+   Certification / Safety Standard / Compliance                           → Certifications
+   Ingress Protection / IP Rating / Protection Degree                     → IP_Rating
+   Installation / Mounting / Placement                                    → Mounting_Type, Installation_Location
+@@11
+   ฟิลด์ (BAT)                    ค่าที่ยอมรับ                       โปรแกรมใช้ทำอะไร
+   Battery_Voltage_Class          "HV" / "LV"                        จับคู่อินเวอร์เตอร์ · แรงดันเริ่มต้น
+   Spec_Level                     "System" / "Single Module"         ระดับของค่าในไฟล์
+   Requires_Control_Module        True / False                       ต้องมีโมดูลควบคุมแยก
+   Compatible_Inverter_Models     "รุ่น1, รุ่น2" คั่นด้วยจุลภาค        เสนออินเวอร์เตอร์ที่เข้ากันได้
+   IP_Rating                      "IP65"                             ตรวจตำแหน่งติดตั้ง
+@@12
+   [CAPACITY_VOLTAGE]
+   ; ความจุพลังงานตามสเปกชีต (kWh) (Total / Nominal Energy)
+   ; [CALCULATED: Module_Capacity_kWh คูณ จำนวนโมดูล 3 ชุด]
+   ; [SRC: หน้า 2 · Technical Specifications · Battery module 5 kWh, LUNA2000-15-S1 3 modules]
+   Nominal_Capacity_kWh = 15.0
+   ; ความจุไฟฟ้าตามสเปกชีต (Ampere-Hour)
+   ; [ไม่มีข้อมูล]
+   Nominal_Capacity_Ah =
+   ; แรงดันไฟฟ้าต่ำสุดก่อนตัดการจ่ายไฟ (โวลต์)
+   ; [SRC: หน้า 2 · Technical Specifications · Operating voltage range 350-560 V]
+   Operating_Voltage_Min_V = 350.0
+
+   [BMS_COMMUNICATION]
+   ; โพรโทคอลสื่อสารของ BMS กับอินเวอร์เตอร์
+   ; [SRC: หน้า 2 · Communication · RS485]
+   BMS_Communication_Protocol = "RS485"
+   ; รายชื่อยี่ห้อ/รุ่นอินเวอร์เตอร์ที่ผู้ผลิตระบุว่าใช้ร่วมกันได้
+   ; [SRC: หน้า 2 · Compatible Inverter · SUN2000-2-6KTL-L1, SUN2000-3-10KTL-M1]
+   Compatible_Inverter_Models = "SUN2000-2-6KTL-L1, SUN2000-3-10KTL-M1"

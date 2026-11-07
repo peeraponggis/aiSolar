@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -12,10 +21,11 @@ model_connection.py - เชื่อมต่อ/สลับเส้นทา
 import logging
 import threading
 
-from engine import BACKEND, ensure_ollama, pick_model, warm_up
+from engine import BACKEND, api_ready, ensure_ollama, list_models, pick_model, resolve_api_key, warm_up
 
 log = logging.getLogger(__name__)
 
+RETRY_MS = 10_000   # เชื่อมต่อ Ollama ไม่ได้: ลองใหม่เบื้องหลังทุก 10 วินาที
 API_TAG = "☁ "   # รายการโมเดลออนไลน์ในช่องโมเดลขึ้นต้นด้วยเครื่องหมายนี้
 
 
@@ -35,12 +45,12 @@ class ModelConnection:
 
     def api_configured(self):
         a = self.settings.get("api") or {}
-        return bool(a.get("base") and a.get("key") and a.get("model"))
+        return api_ready(a)
 
     def use_backend(self, mode):
         """สลับเส้นทางที่ใช้จริง: 'local' หรือ 'api'"""
         a = self.settings.get("api") or {}
-        BACKEND.update(mode=mode, base=a.get("base", ""), key=a.get("key", ""), model=a.get("model", ""))
+        BACKEND.update(mode=mode, base=a.get("base", ""), key=resolve_api_key(a), model=a.get("model", ""), fallback_model="")
         self.st["backend"] = mode
         if mode == "api":
             self.st["model"] = a.get("model", "")   # ให้ปุ่มแปล/ถามผ่านการตรวจ "มีโมเดล" (chat_stream ใช้ BACKEND['model'] เอง)
@@ -64,10 +74,17 @@ class ModelConnection:
         api_entry = (API_TAG + a.get("model", "")) if api_ok else None
         values = list(models or []) + ([api_entry] if api_entry else [])
         self.st["models"] = list(models or []); self.model_cb["values"] = values
-        want_api = (mode == "api" and api_ok) or (mode == "auto" and not local_ok and api_ok)
+        # อัตโนมัติ = ใช้ API ก่อน (เร็ว/คุณภาพสูงกว่าโมเดล 4B ในเครื่อง) ถ้ายังไม่ได้ตั้ง API ค่อยใช้โมเดลในเครื่อง
+        want_api = (mode == "api" and api_ok) or (mode == "auto" and api_ok)
         if want_api:
             self.use_backend("api"); self.model_var.set(api_entry)
-            why = "" if mode == "api" else " (ไม่พบโมเดลในเครื่อง จึงสลับให้อัตโนมัติ)"
+            why = ""
+            if mode == "auto" and local_ok:   # API ล้มเมื่อไร chat_stream ถอยไปใช้โมเดลในเครื่องตัวนี้เอง
+                saved = self.settings.get("model", "")
+                BACKEND["fallback_model"] = saved if saved in models else pick_model(models)
+                why = f" (อัตโนมัติ · ถ้า API ล้มจะใช้ {BACKEND['fallback_model']} ในเครื่องแทน)"
+            elif mode == "auto":
+                why = " (อัตโนมัติ · ไม่พบโมเดลในเครื่อง)"
             self.set_status(f"พร้อมใช้งาน · โมเดลออนไลน์ {a.get('model')} ผ่าน API{why}")
         elif local_ok:
             self.use_backend("local")
@@ -81,8 +98,10 @@ class ModelConnection:
         else:
             self.use_backend("local"); self.st["model"] = ""
             self.model_var.set("ไม่พบโมเดล" if models is None else "ยังไม่มีโมเดลในเครื่อง")
-            self.set_status(("เชื่อมต่อ Ollama ไม่ได้" if models is None else "Ollama ทำงานแต่ยังไม่มีโมเดล")
+            self.set_status(("เชื่อมต่อ Ollama ไม่ได้ (จะลองใหม่เองทุก 10 วินาที)" if models is None else "Ollama ทำงานแต่ยังไม่มีโมเดล")
                             + " - กด ⚙ ผู้ให้บริการ เพื่อดาวน์โหลดโมเดลในเครื่อง หรือใส่ API key ใช้โมเดลออนไลน์")
+            if models is None:   # เช่น เปิดเครื่องตอน Ollama กำลังอัปเดต/ยังไม่ขึ้น: เดิมต้องกด F5 เอง
+                self.root.after(RETRY_MS, self.retry_quietly)
             return
         if self.on_ready:
             self.on_ready(models)
@@ -90,3 +109,15 @@ class ModelConnection:
     def connect(self):
         self.set_status("กำลังเชื่อมต่อ Ollama (ถ้ายังไม่เปิดจะเปิดให้เอง) ...")
         threading.Thread(target=lambda: self.q.put(("models", ensure_ollama())), daemon=True).start()
+
+    def retry_quietly(self):
+        """ลองเชื่อมต่อ Ollama ใหม่เบื้องหลังโดยไม่เปลี่ยนข้อความสถานะ — สำเร็จเมื่อไรก็พร้อมใช้ทันที"""
+        if self.st.get("model") or BACKEND.get("mode") == "api":
+            return
+
+        def check():   # เธรดเบื้องหลัง: ส่งผลกลับผ่านคิว (on_models ทำงานบนเธรดหลัก และนัดลองใหม่ถ้ายังไม่ได้)
+            models = list_models()
+            if models is not None:
+                log.info("เชื่อมต่อ Ollama ได้แล้ว (ลองใหม่อัตโนมัติ) พบ %d โมเดล", len(models))
+            self.q.put(("models", models))
+        threading.Thread(target=check, daemon=True).start()
