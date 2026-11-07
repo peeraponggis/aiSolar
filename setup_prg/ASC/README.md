@@ -11,14 +11,14 @@
 | `02-asca-release.bat` | ASC Architect: ชุดติดตั้ง Inno + ชุดอัปเดต → เว็บ → push |
 | `03-cloud-deploy.bat` | ASC Cloud: push `docs/` → รอ GitHub Pages → ตรวจ URL |
 | `04-crm-deploy.bat` | CRM-Pi: build_pages → ตรวจคีย์ → wrangler deploy **production** (laptop เท่านั้น) |
-| `05-translator-build.bat` | Local Translator: PyInstaller → zip ชุดติดตั้ง → ส่ง home |
+| `05-translator-build.bat` | Local Translator: `build_exe.bat` → zip 2 ชุด (`LocalTranslator-setup.zip` แจกจ่าย 31 MB ไม่มีพูดถามด้วยเสียง · `LocalTranslator-full.zip` เต็ม 181 MB) → `installers\` → ส่งชุดเต็มไป home |
 | `06-sql-todo.bat` | SQL ที่ต้องรันใน Supabase: **แสดงลิงก์ SQL Editor ทุกครั้ง** · คัดลอกไฟล์เข้า clipboard · เปิดลิงก์ · จำว่ารันแล้ว |
 | `07-home.bat` | home server ผ่าน `ssh home`: ดูรุ่น · อัปเดต ASCS บน home · ดึง/ส่ง `out` · HomeGuard · laptop-data · Remote Control |
 | `08-new-pc.bat` | ติดตั้งบนเครื่องใหม่: ตรวจเครื่องมือ · **[9] ติดตั้งตามลำดับทั้งหมด** · เปิดชุดติดตั้งล่าสุด · winget ที่ขาด · ไอคอน Desktop |
 | `09-homeguard.bat` | HomeGuard (ไม่อยู่ใน git · ตัวจริงรันบน home): build → `dist\HomeGuard-Setup.exe` · คัดลอกไป `installers\` · เทียบไฟล์กับ home (hash) · ส่ง+เปิดตัวติดตั้งบน home |
 | `lib\config.ps1` | **path และค่าตั้งทั้งหมด** — ย้ายโฟลเดอร์/เปลี่ยน project/เพิ่มไฟล์ SQL แก้ที่นี่ที่เดียว |
 | `lib\*.ps1` | ตัวทำงานจริง (bat เป็นแค่ตัวเรียก) · `logs\<วันที่>.txt` ทุกคำสั่ง · `logs\sql-done.json` SQL ที่รันแล้ว |
-| `F:\LocalAI\setup_prg\installers\` | **ชุดติดตั้งรุ่นล่าสุดทุกโปรแกรม** (ASCS exe · ASCA exe · HomeGuard exe · Translator zip) — สำเนามาให้เองหลัง build ทุกครั้ง และลบรุ่นเก่าออก · พกโฟลเดอร์นี้ + `ASC\` ไปเครื่องใหม่ · ไม่ขึ้น git |
+| `F:\LocalAI\setup_prg\installers\` | **ชุดติดตั้งรุ่นล่าสุดทุกโปรแกรม** (ASCS exe · ASCA exe · HomeGuard exe · Translator zip แจกจ่าย+เต็ม) — สำเนามาให้เองหลัง build ทุกครั้ง และลบรุ่นเก่าออก · พกโฟลเดอร์นี้ + `ASC\` ไปเครื่องใหม่ · ไม่ขึ้น git |
 
 ## กฎที่ bat ทุกตัวถือ
 - **ถามก่อน** commit/push/deploy ทุกครั้ง (ค่าเริ่ม = ไม่) · เว็บที่คนใช้จริงเตือนซ้ำ
@@ -51,7 +51,7 @@ home server: `C:\LocalAI` · `C:\enterprise` (ไม่มี F:) · `ssh home` 
 | 2 | **HomeGuard** `HomeGuard-Setup.exe` → `C:\LocalAI\tools\homeguard` | ลงก่อนเพื่อเห็นสถานะเครื่อง (RAM · ดิสก์ · เฝ้าโปรแกรม) ตั้งแต่ขั้นถัดไป |
 | 3 | **ASC Studio** `ASC-Studio-Setup-<v>.exe` | ใส่ `update.key` ให้ → อัปเดตเองได้ · เปิดครั้งแรกรอ pip + playwright |
 | 4 | **ASC Architect** `ASCA-Setup-<v>.exe` (ใส่รหัส) | มี Python ในตัว · ลงหลัง ASCS เพื่อให้ "ส่งไป ASCA" หาเจอ |
-| 5 | **Ollama + Local Translator** (เฉพาะเครื่องที่ใช้ AI ในเครื่อง) | Ollama ก่อน → แตก zip → `Install-LocalTranslator.bat` ดึงโมเดล 2.5 GB |
+| 5 | **Ollama + Local Translator** (เฉพาะเครื่องที่ใช้ AI ในเครื่อง) | แตก `LocalTranslator-setup-<v>.zip` (ชุดแจกจ่าย) → `Install-LocalTranslator.bat` ลง Ollama (1.7 GB) + ดึงโมเดล 2.5 GB ให้เองทั้งหมด |
 | 6 | **ไอคอน Desktop + ล็อกอิน** | เปิด ASC Studio ล็อกอิน ASC Cloud · CRM-Pi ใช้ผ่านเว็บ ไม่ต้องติดตั้ง |
 
 ## 3. ติดตั้งครั้งแรก (รายละเอียดแต่ละโปรแกรม)
@@ -71,7 +71,7 @@ home server: `C:\LocalAI` · `C:\enterprise` (ไม่มี F:) · `ssh home` 
 
 **CRM-Pi**: Supabase CRM https://supabase.com/dashboard/project/zloxphgxhttrtgqlafsz/sql/new รัน `pi_crm_erp\supabase\pi_system_full_install.sql` → `20261031_asc_studio.sql` → `20261031_admin_users.sql` (รันซ้ำทุกครั้งหลัง full_install) · เว็บ deploy ด้วย 04 · Pi_BoQ ใช้ `pi_boq_app\supabase\migrations\` + `deploy\*.sql` seeds 1–5
 
-**Local Translator**: แตก `LocalTranslator-setup-<รุ่น>.zip` → `Install-LocalTranslator.bat` (หา/เปิด Ollama · ดึงโมเดล typhoon 2.5 GB · ไอคอน) · ไม่มีระบบอัปเดต = ติดตั้งทับ
+**Local Translator**: แตก `LocalTranslator-setup-<รุ่น>.zip` (ชุดแจกจ่าย 31 MB · ชุดเต็ม `LocalTranslator-full-<รุ่น>.zip` มีพูดถามด้วยเสียง ใช้เครื่องตัวเอง/home) → `Install-LocalTranslator.bat` (ไม่มี Ollama = ดาวน์โหลด+ลงเงียบให้เอง · เปิด Ollama · ดึงโมเดล typhoon 2.5 GB · ไอคอน) · ไม่มีระบบอัปเดต = ติดตั้งทับ (เก็บ settings.json/history.json) · build ด้วย `translation\build_exe.bat [full|lite|all]` เท่านั้น
 
 ## 4. ปล่อยรุ่นใหม่ (ลำดับ)
 1. Claude: ตรวจโค้ดค้างทุกงาน → แสดงตัวอย่างให้ลุงพีอนุมัติ → bump เวอร์ชัน + CHANGELOG + KB

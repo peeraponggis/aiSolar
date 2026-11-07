@@ -120,7 +120,8 @@ function Sync-Installers {
     @{ pat = 'ASC-Studio-Setup-*.exe';  src = "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe";         name = $null }
     @{ pat = 'ASCA-Setup-*.exe';        src = "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe";            name = $null }
     @{ pat = 'HomeGuard-Setup-*.exe';   src = "$($P.hg.dir)\dist\HomeGuard-Setup.exe";                    name = "HomeGuard-Setup-$(Ver 'hg').exe" }
-    @{ pat = 'LocalTranslator-setup-*.zip'; src = "$($P.tr.dir)\LocalTranslator-setup*.zip";               name = $null }
+    @{ pat = 'LocalTranslator-setup-*.zip'; src = "$($P.tr.dir)\LocalTranslator-setup.zip";                name = "LocalTranslator-setup-$(Ver 'tr').zip" }   # ชุดแจกจ่าย (ไม่มีพูดถามด้วยเสียง)
+    @{ pat = 'LocalTranslator-full-*.zip';  src = "$($P.tr.dir)\LocalTranslator-full.zip";                 name = "LocalTranslator-full-$(Ver 'tr').zip" }    # ชุดเต็ม
   )
   $out = @()
   foreach ($k in $kinds) {

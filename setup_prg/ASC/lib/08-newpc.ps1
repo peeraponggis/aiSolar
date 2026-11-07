@@ -19,7 +19,7 @@ try {
   foreach ($k in $tools.Keys) { if ($tools[$k]) { Ok "$k : $($tools[$k])" } else { Bad "$k : ไม่มี" } }
   $setupAscs = Get-ChildItem "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe", "$InstDir\ASC-Studio-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
   $setupAsca = Get-ChildItem "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe", "$InstDir\ASCA-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
-  $zipTr     = Get-ChildItem "$($P.tr.dir)\LocalTranslator-setup*.zip", "$InstDir\LocalTranslator-setup*.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+  $zipTr     = Get-ChildItem "$($P.tr.dir)\LocalTranslator-setup.zip", "$InstDir\LocalTranslator-setup-*.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
   $setupHg   = Get-ChildItem "$($P.hg.dir)\dist\HomeGuard-Setup.exe", "$InstDir\HomeGuard-Setup-*.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
   Write-Host ''
   Write-Host '  ลำดับติดตั้ง desktop app บนเครื่องใหม่:' -ForegroundColor White
@@ -52,7 +52,7 @@ try {
       } elseif ($setupAscs) { Ok "เปิด $($setupAscs.FullName)"; Start-Process $setupAscs.FullName } else { Bad 'ไม่มีชุดติดตั้ง — สร้างจากเมนู [1] บน laptop ก่อน' }
     }
     '2' { if ($setupAsca) { Log "รหัสชุดติดตั้งอยู่ในไฟล์ $KeyASCA (เปิดดูเองบน laptop ลุงพี)"; Start-Process $setupAsca.FullName } else { Bad 'ไม่มีชุดติดตั้ง — สร้างจากเมนู [2] ก่อน' } }
-    '3' { if (-not (Get-Command ollama -ErrorAction SilentlyContinue) -and (Ask 'ยังไม่มี Ollama — ติดตั้งด้วย winget (Ollama.Ollama)?')) { Run 'winget Ollama' winget @('install', '-e', '--id', 'Ollama.Ollama', '--accept-source-agreements', '--accept-package-agreements') | Out-Null }
+    '3' { if (-not (Get-Command ollama -ErrorAction SilentlyContinue) -and (Ask 'ยังไม่มี Ollama — ติดตั้งด้วย winget ก่อนไหม? (ไม่จำเป็น: Install-LocalTranslator.bat ดาวน์โหลด+ลง Ollama ให้เอง)')) { Run 'winget Ollama' winget @('install', '-e', '--id', 'Ollama.Ollama', '--accept-source-agreements', '--accept-package-agreements') | Out-Null }
           if ($zipTr) { $to = "$LocalAI\translation\LocalTranslator"; New-Item -ItemType Directory -Force $to | Out-Null; Expand-Archive -LiteralPath $zipTr.FullName -DestinationPath $to -Force; Ok "แตกไป $to"; Start-Process "$to\Install-LocalTranslator.bat" -WorkingDirectory $to } else { Bad 'ไม่มี zip — สร้างจากเมนู [5] ก่อน' } }
     '4' { Open-Url $P.asc.url; Open-Url $P.crm.url; Log 'ขอสิทธิ์: ASC Cloud → supabase/allow-domains.sql หรือ invite-users.mjs · CRM-Pi → ตั้ง admin ใน Supabase CRM' }
     '5' { foreach ($w in @(@('git', 'Git.Git'), @('gh', 'GitHub.cli'), @('Tailscale', 'Tailscale.Tailscale'), @('Node', 'OpenJS.NodeJS.LTS'), @('Python 3.12+', 'Python.Python.3.12'))) {

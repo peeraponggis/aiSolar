@@ -93,6 +93,12 @@ def bump(target, level, note):
         safe = note.replace("\\", "\\\\").replace("'", "\\'")
         text = text.replace("const APP_CHANGELOG=[\n", f"const APP_CHANGELOG=[\n  ['{new}','{today}','{safe}'],\n", 1)
     path.write_bytes(text.encode("utf-8"))
+    vj = path.with_name("VERSION.json")   # translator: ชุด bat ASC (setup_prg\ASC) อ่านรุ่นจาก VERSION.json ข้าง app_version.py
+    if path.suffix == ".py" and vj.exists():
+        info = json.loads(vj.read_bytes().decode("utf-8-sig"))
+        y, m, d = today.split("-")
+        info.update(version=new, updated=f"{int(y) + 543}-{m}-{d}")
+        vj.write_bytes(json.dumps(info, ensure_ascii=False).encode("utf-8"))
     print(f"{target}: {old} -> {new} (ปรับปรุง {today}) · {path}")
 
 

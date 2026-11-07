@@ -94,7 +94,7 @@ const TOOLS=[
  ['02','ASC Architect ปล่อยรุ่น','ชุดติดตั้ง Inno + ชุดอัปเดต → เว็บ → push'],
  ['03','ASC Cloud deploy','push docs/ → รอ GitHub Pages → ตรวจ URL'],
  ['04','CRM-Pi deploy','build_pages → ตรวจคีย์ → wrangler production (laptop เท่านั้น)'],
- ['05','Local Translator build','PyInstaller → zip ชุดติดตั้ง → ส่ง home'],
+ ['05','Local Translator build','build_exe.bat → zip 2 ชุด (แจกจ่าย 31 MB · เต็ม 181 MB) → installers\\ → ส่งชุดเต็มไป home'],
  ['06','SQL ที่ต้องรัน','ลิงก์ SQL Editor ทุกครั้ง · คัดลอกไฟล์ · จำว่ารันแล้ว'],
  ['07','Home server','ดูรุ่น · อัปเดต ASCS บน home · ดึง/ส่ง out · HomeGuard · Remote Control'],
  ['08','ติดตั้งบนเครื่องใหม่','ตรวจเครื่องมือ · [9] ติดตั้งตามลำดับทั้งหมด · เปิดชุดติดตั้งล่าสุด · winget · ไอคอน Desktop'],
@@ -116,7 +116,7 @@ function render(){
     const g=/ไม่อยู่ใน git/.test(p.git)?b('acc',p.git):p.dirty?b('warn',p.git):b('ok',p.git);
     return `<tr><td><b>${esc(p.name)}</b>${p.url?`<br><a href="${esc(p.url)}" target="_blank" style="font-size:12px">${esc(p.url.replace('https://',''))}</a>`:''}</td><td><b>${esc(p.ver)}</b></td><td>${g}</td><td>${hv}</td><td><button class="btn" onclick="run('${act}')">▶ ${act}</button></td></tr>`}).join('');
   const i=S.installer;
-  const KIND={'ASC-Studio-Setup-*.exe':['ASC Studio Setup','01 ข้อ 3'],'ASCA-Setup-*.exe':['ASC Architect Setup','02 ข้อ 2'],'HomeGuard-Setup-*.exe':['HomeGuard Setup','09 ข้อ 1'],'LocalTranslator-setup-*.zip':['Local Translator zip','05 ข้อ 2']};
+  const KIND={'ASC-Studio-Setup-*.exe':['ASC Studio Setup','01 ข้อ 3'],'ASCA-Setup-*.exe':['ASC Architect Setup','02 ข้อ 2'],'HomeGuard-Setup-*.exe':['HomeGuard Setup','09 ข้อ 1'],'LocalTranslator-setup-*.zip':['Local Translator ชุดแจกจ่าย','05 ข้อ 1'],'LocalTranslator-full-*.zip':['Local Translator ชุดเต็ม','05 ข้อ 1']};
   const rows=Object.keys(KIND).map(k=>{const f=(S.installers||[]).find(x=>x.kind===k);const [label,how]=KIND[k];
     return `<tr><th>${label}</th><td>${f?`<b>${esc(f.dst.split('\\').pop())}</b> · ${f.mb} MB · ${esc(f.when)}<br><span class="path">พกไป: ${esc(f.dst)}</span><br><span class="path">ต้นทาง: ${esc(f.src)}</span>`:b('bad','ยังไม่มี — กด '+how)}</td></tr>`}).join('');
   document.getElementById('inst').innerHTML=rows+`
@@ -132,7 +132,8 @@ function render(){
   if(S.sqlPending)todo.push(['06','SQL ค้าง '+S.sqlPending+' ไฟล์','กด 06 → เลือกเลข → วาง Run ใน Supabase → กด D']);
   S.programs.filter(p=>p.home&&p.home!==p.ver).forEach(p=>todo.push([p.key==='hg'?'09':'07',p.name+' บน home ยังรุ่น '+p.home,'laptop '+p.ver+(p.key==='hg'?' — กด 09 → [3] เทียบไฟล์ก่อน แล้ว [5] ส่งติดตั้งบน home':' — กด 07 → [1] อัปเดต ASCS บน home'+(p.key!=='ascs'?' (ตัวอื่น pull เอง)':''))]));
   if(!S.installer.hg)todo.push(['09','ยังไม่มีชุดติดตั้ง HomeGuard','กด 09 → [1] build']);
-  if(!(S.installers||[]).some(x=>x.kind==='LocalTranslator-setup-*.zip'&&/1\.9|2\./.test(x.dst)))todo.push(['05','zip Local Translator เป็นรุ่นเก่า','กด 05 → [1] build → [2] zip']);
+  const tr=S.programs.find(p=>p.key==='tr');
+  if(tr&&!(S.installers||[]).some(x=>x.kind==='LocalTranslator-setup-*.zip'&&x.dst.endsWith('-'+tr.ver+'.zip')))todo.push(['05','zip Local Translator ใน installers ไม่ตรงรุ่น '+tr.ver,'กด 05 → [1] build ทั้ง 2 ชุด']);
   if(!S.homeOk)todo.push(['07','home server ไม่ตอบ','ตรวจ Tailscale/เครื่อง home เปิดอยู่ไหม']);
   if(!S.keys.ascs||!S.keys.asca)todo.push(['08','กุญแจชุดติดตั้งหาย','ดู README หัวข้อ 5 กุญแจ/รหัส']);
   document.getElementById('todoSum').textContent=todo.length?todo.length+' รายการ':'';

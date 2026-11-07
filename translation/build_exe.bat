@@ -32,7 +32,7 @@ for %%F in (Install-LocalTranslator.bat README-install.txt README-translator.md 
 echo     [OK] dist_lite\LocalTranslator
 
 :zip
-py make_setup_zip.py || goto fail
+py make_setup_zip.py %WHAT% || goto fail
 echo.
 echo Done.
 exit /b 0

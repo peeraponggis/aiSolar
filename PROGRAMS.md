@@ -43,7 +43,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ |
 |---|---|---|
-| Local Translator | 1.9.0 | `LocalAI\translation` |
+| Local Translator | 1.11.0 | `LocalAI\translation` |
 | Lungpee AI Gateway | 1.6.0 | `LocalAI\gateway` |
 | Lungpee Agent | 1.6.0 | `LocalAI\lungpee-agent` |
 | Lek Dang (Yeekee) | 1.0.0 | `LocalAI\yk` |
