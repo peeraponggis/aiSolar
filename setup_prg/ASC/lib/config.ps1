@@ -25,12 +25,14 @@ $script:HomeRoot = 'C:\LocalAI'                                       # home ser
 $script:Supa = [ordered]@{
   asc = @{ name = 'ASC Cloud'; ref = 'rcaslesvgilknupqmwrp'; url = 'https://supabase.com/dashboard/project/rcaslesvgilknupqmwrp/sql/new' }
   crm = @{ name = 'CRM-Pi';    ref = 'zloxphgxhttrtgqlafsz'; url = 'https://supabase.com/dashboard/project/zloxphgxhttrtgqlafsz/sql/new' }
+  ent = @{ name = 'ASC Enterprise'; ref = 'wykoqvfysukohcafeegq'; url = 'https://supabase.com/dashboard/project/wykoqvfysukohcafeegq/sql/new' }
 }
 # ไฟล์ SQL ที่ต้องรัน "ทุกรุ่น/เมื่อเปลี่ยน" (06) · secret = มีกุญแจ ห้ามพิมพ์/ลง log
 $script:SqlEach = @(
   @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\kb-data.sql";          note = 'คลังความรู้ AI รุ่นเว็บ (npm run kb:sql)' }
   @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\ascs-release-key.sql"; note = 'กุญแจชุดติดตั้ง (เมื่อกุญแจเปลี่ยน)'; secret = $true }
   @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\standards-data.sql";   note = 'ตาราง วสท. รุ่นเว็บ (npm run standards:sql)' }
+  @{ p = 'ent'; f = "$Ent\solar-project-complete\asc-enterprises\supabase\equipment-hidden-in-ascs.sql"; note = 'คลังอุปกรณ์: ช่องติ๊ก ซ่อนใน ASCS (รันก่อน deploy asc-enterprises 1.0.0)' }
   @{ p = 'crm'; f = "$($P.crm.dir)\pi_crm_erp\supabase\20261031_asc_studio.sql";  note = 'CRM ↔ ASC Studio' }
   @{ p = 'crm'; f = "$($P.crm.dir)\pi_crm_erp\supabase\20261031_admin_users.sql"; note = 'สิทธิ์ admin (รันซ้ำหลัง full_install ทุกครั้ง)' }
 )

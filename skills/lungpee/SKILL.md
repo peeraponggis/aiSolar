@@ -49,7 +49,7 @@ description: กฎการทำงานของลุงพี (Peerapong �
 - โปรแกรมเล็กหมวด 3.3 ขึ้น repo `ai` ผ่าน `git\ai\tools\sync_from_localai.sh` เท่านั้น (คัดเฉพาะโค้ด + ล้างรหัสผ่าน)
 - `pee_architec` (ASCA) เป็น private ห้ามปนกับ aiSolar
 - ข้อความที่ส่ง Telegram/WhatsApp/recap: ห้ามมีชื่อลูกค้า · ราคา/ต้นทุน · token
-- **ให้ลุงพีรัน SQL ใน Supabase ต้องแนบลิงก์ SQL Editor ของ project นั้นทุกครั้ง** (ลุงพีสั่ง 7 พ.ย. 2569) + path เต็มของไฟล์ + ลำดับรัน · ASC Cloud: https://supabase.com/dashboard/project/rcaslesvgilknupqmwrp/sql/new · CRM-Pi: https://supabase.com/dashboard/project/zloxphgxhttrtgqlafsz/sql/new
+- **ให้ลุงพีรัน SQL ใน Supabase ต้องแนบลิงก์ SQL Editor ของ project นั้นทุกครั้ง** (ลุงพีสั่ง 7 พ.ย. 2569) + path เต็มของไฟล์ + ลำดับรัน · ASC Cloud: https://supabase.com/dashboard/project/rcaslesvgilknupqmwrp/sql/new · CRM-Pi: https://supabase.com/dashboard/project/zloxphgxhttrtgqlafsz/sql/new · ASC Enterprise: https://supabase.com/dashboard/project/wykoqvfysukohcafeegq/sql/new
 - **ขอลุงพีอนุมัติก่อน:** deploy เว็บที่คนใช้จริง (ASC Cloud `peeraponggis.github.io/asc` · CRM-Pi `pi-system.pages.dev` Cloudflare) · สร้าง repo ใหม่ · ลบไฟล์/repo · ติดตั้งโปรแกรม
 
 ## 4. ผู้ช่วย AI ทุกโปรแกรม (แบบ piBot ของ ASC Studio / ASCA / CRM-Pi)
