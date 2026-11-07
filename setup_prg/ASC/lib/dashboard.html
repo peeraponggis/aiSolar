@@ -140,7 +140,8 @@ function render(){
   document.getElementById('tools').innerHTML=TOOLS.map(t=>`<div class="step"><div class="n">${t[0]}</div><div><b>${esc(t[1])}</b><small>${esc(t[2])}</small></div><button class="btn" onclick="run('${t[0]}')">▶ เปิด</button></div>`).join('');
   document.getElementById('log').textContent=S.log.length?S.log.join('\n'):'(ยังไม่มี log วันนี้)';
 }
-async function refresh(force){try{S=await (await fetch(force?'/api/refresh':'/api/status')).json();render()}catch(e){document.getElementById('sub').textContent='เซิร์ฟเวอร์ปิดแล้ว — เปิดใหม่จากไอคอน "ASC ปล่อยรุ่น"'}}
+async function load(){const j=await (await fetch('/api/status')).json();if(j.loading){document.getElementById('sub').textContent='กำลังอ่านสถานะครั้งแรก (git · ssh home · เว็บ) ~20 วินาที…';return false}if(j.error){document.getElementById('sub').textContent='อ่านสถานะผิดพลาด: '+j.error;return false}S=j;render();return true}
+async function refresh(force){try{if(force){await fetch('/api/refresh');toast('กำลังอ่านใหม่…');const was=S&&S.at;for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,2000));if(await load()&&S.at!==was)break}}else{if(!(await load())){for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,2000));if(await load())break}}}}catch(e){document.getElementById('sub').textContent='เซิร์ฟเวอร์ปิดแล้ว — เปิดใหม่จากไอคอน "ASC ปล่อยรุ่น"'}}
 refresh(false);setInterval(()=>refresh(false),60000);
 </script>
 </body>
