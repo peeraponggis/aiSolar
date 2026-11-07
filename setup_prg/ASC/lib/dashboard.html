@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASC ปล่อยรุ่น</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f4f6f5;--fg:#1d2422;--mut:#5f6b67;--line:#d9e0dd;--acc:#185fa5;--accbg:#e6f1fb;--ok:#1f6b33;--okbg:#e7f4ea;--warn:#8a5a00;--warnbg:#fdf3dc;--bad:#a32d2d;--badbg:#fbe9e9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 Sarabun,"Leelawadee UI",Tahoma,sans-serif}
+header{background:#16324f;color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+header h1{margin:0;font-size:20px;flex:1 1 300px} header small{opacity:.8;font-weight:400;font-size:13px;display:block}
+.big{font:inherit;font-size:17px;font-weight:700;background:#f2a93b;color:#16324f;border:0;border-radius:10px;padding:10px 22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.big:hover{background:#ffc15e}
+.hbtn{font:inherit;font-size:13px;background:#2a4a6d;color:#dbe7f3;border:0;border-radius:8px;padding:6px 12px;cursor:pointer}
+main{max-width:1180px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:0}
+.card h2{font-size:16px;margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .sp{flex:1}
+.card>table,.card table{display:block;overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top} th{color:var(--mut);font-weight:600;white-space:nowrap}
+.b{display:inline-block;border-radius:6px;padding:0 7px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.ok{background:var(--okbg);color:var(--ok)} .warn{background:var(--warnbg);color:var(--warn)} .bad{background:var(--badbg);color:var(--bad)} .acc{background:var(--accbg);color:var(--acc)}
+.btn{font:inherit;font-size:13px;border:1px solid #b9c4c0;background:#fff;border-radius:7px;padding:3px 10px;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn:hover{filter:brightness(.95)}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.step .n{font-size:20px;font-weight:700;color:var(--acc);text-align:center;line-height:1.2}
+.step b{display:block} .step small{color:var(--mut);display:block;font-size:12.5px}
+.step.todo{border-color:#f2c94c;background:#fffbea}
+.path{font:12px Consolas,monospace;color:var(--mut);word-break:break-all}
+a{color:var(--acc)}
+pre{font:12px/1.4 Consolas,monospace;background:#0c0c0c;color:#ccc;border-radius:8px;padding:10px;overflow:auto;max-height:220px;margin:0;white-space:pre-wrap}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#16324f;color:#fff;padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+.toast.on{opacity:1}
+.note{font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>ASC ปล่อยรุ่น <small id="sub">กำลังอ่านสถานะ…</small></h1>
+  <button class="hbtn" onclick="refresh(true)">⟳ อ่านสถานะใหม่</button>
+  <button class="hbtn" onclick="openP('README')">📖 README</button>
+  <button class="big" onclick="run('menu')">▶ ASC ปล่อยรุ่น (เมนูหลัก)</button>
+</header>
+<main>
+<div id="missing"></div>
+<div class="grid">
+  <div class="card">
+    <h2>รุ่นโปรแกรม <span class="sp"></span><span class="note">laptop · git · home server</span></h2>
+    <table><thead><tr><th>โปรแกรม</th><th>laptop</th><th>git</th><th>home</th><th></th></tr></thead><tbody id="progs"></tbody></table>
+  </div>
+  <div class="card">
+    <h2>ชุดติดตั้ง / ชุดอัปเดต</h2>
+    <table><tbody id="inst"></tbody></table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h2>ต้องทำอะไรบ้าง <span class="sp"></span><span id="todoSum" class="note"></span></h2>
+  <div class="steps" id="todo"></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h2>SQL ที่ต้องรันใน Supabase <span class="sp"></span><button class="btn pri" onclick="run('06')">▶ เปิด 06 SQL ที่ต้องรัน</button></h2>
+  <table><thead><tr><th>#</th><th>project · ลิงก์ SQL Editor</th><th>ไฟล์</th><th>สถานะ</th></tr></thead><tbody id="sql"></tbody></table>
+  <p class="note">กดปุ่ม 06 → กดเลข = คัดลอกไฟล์เข้า clipboard + เปิดลิงก์ · ไฟล์ 🔒 มีกุญแจ ห้ามส่งต่อ</p>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h2>เครื่องมือทั้งหมด</h2>
+  <div class="steps" id="tools"></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h2>log วันนี้ <span class="sp"></span><button class="btn" onclick="openP('LOG')">เปิดไฟล์ log</button> <button class="btn" onclick="quit()">⏻ ปิดเซิร์ฟเวอร์</button></h2>
+  <pre id="log">—</pre>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const TOOLS=[
+ ['01','ASC Studio ปล่อยรุ่น','build → ชุดติดตั้ง+ชุดอัปเดต → เว็บ → สแกนคีย์ → push → ตรวจเว็บจริง → PROGRAMS.md'],
+ ['02','ASC Architect ปล่อยรุ่น','ชุดติดตั้ง Inno + ชุดอัปเดต → เว็บ → push'],
+ ['03','ASC Cloud deploy','push docs/ → รอ GitHub Pages → ตรวจ URL'],
+ ['04','CRM-Pi deploy','build_pages → ตรวจคีย์ → wrangler production (laptop เท่านั้น)'],
+ ['05','Local Translator build','PyInstaller → zip ชุดติดตั้ง → ส่ง home'],
+ ['06','SQL ที่ต้องรัน','ลิงก์ SQL Editor ทุกครั้ง · คัดลอกไฟล์ · จำว่ารันแล้ว'],
+ ['07','Home server','ดูรุ่น · อัปเดต ASCS บน home · ดึง/ส่ง out · HomeGuard · Remote Control'],
+ ['08','ติดตั้งบนเครื่องใหม่','ตรวจเครื่องมือ · เปิดชุดติดตั้งล่าสุด · winget · ไอคอน Desktop'],
+];
+let S=null;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}
+async function run(n){const r=await fetch('/run?n='+n,{method:'POST'});toast(r.ok?'เปิดหน้าต่าง '+n+' แล้ว — ดูที่หน้าต่างดำ':'เปิดไม่ได้')}
+async function openP(what){let p=what==='README'?S.here+'\\README.md':what==='LOG'?S.here+'\\logs\\'+new Date().toISOString().slice(0,10)+'.txt':what;await fetch('/open?p='+encodeURIComponent(p),{method:'POST'})}
+async function quit(){await fetch('/quit');document.body.innerHTML='<main><div class="card">ปิดเซิร์ฟเวอร์แล้ว — เปิดใหม่จากไอคอน "ASC ปล่อยรุ่น"</div></main>'}
+function b(cls,t){return `<span class="b ${cls}">${esc(t)}</span>`}
+function render(){
+  document.getElementById('sub').textContent=S.here+' · อ่านเมื่อ '+S.at+(S.homeOk?'':' · home server ไม่ตอบ');
+  document.getElementById('missing').innerHTML=S.missing.length?`<div class="card" style="border-color:#e3a6a6;background:var(--badbg);margin-bottom:12px"><b>✗ สคริปต์ที่ bat เรียกหายไป — แก้ lib\\config.ps1</b><br>${S.missing.map(m=>`<span class="path">${esc(m)}</span>`).join('<br>')}</div>`:'';
+  document.getElementById('progs').innerHTML=S.programs.map(p=>{
+    const hv=p.home?(p.home===p.ver?b('ok',p.home+' ✓'):b('warn',p.home+' ≠')):'';
+    const act=p.key==='ascs'?'01':p.key==='asca'?'02':p.key==='asc'?'03':p.key==='crm'?'04':'05';
+    return `<tr><td><b>${esc(p.name)}</b>${p.url?`<br><a href="${esc(p.url)}" target="_blank" style="font-size:12px">${esc(p.url.replace('https://',''))}</a>`:''}</td><td><b>${esc(p.ver)}</b></td><td>${p.dirty?b('warn',p.git):b('ok',p.git)}</td><td>${hv}</td><td><button class="btn" onclick="run('${act}')">▶ ${act}</button></td></tr>`}).join('');
+  const i=S.installer;
+  document.getElementById('inst').innerHTML=`
+   <tr><th>ASC Studio Setup</th><td>${i.ascs?esc(i.ascs.name)+' · '+i.ascs.mb+' MB · '+esc(i.ascs.when):b('bad','ยังไม่มี — กด 01 ข้อ 3')}</td></tr>
+   <tr><th>ASC Architect Setup</th><td>${i.asca?esc(i.asca.name)+' · '+esc(i.asca.when):b('bad','ยังไม่มี — กด 02 ข้อ 2')}</td></tr>
+   <tr><th>ชุดอัปเดต ASCS</th><td>ในเครื่อง ${esc(i.release)} · บนเว็บ ${i.live===i.release?b('ok',i.live):b('warn',i.live+' (ยังไม่ push)')}</td></tr>
+   <tr><th>กุญแจ</th><td>ASCS ${S.keys.ascs?b('ok','มี'):b('bad','หาย!')} · ASCA ${S.keys.asca?b('ok','มี'):b('bad','หาย!')} <span class="note">(apps\\ASCS-release · apps\\ASCA-release\\password.txt)</span></td></tr>`;
+  // todo
+  const todo=[];
+  const ascs=S.programs.find(p=>p.key==='ascs'), crm=S.programs.find(p=>p.key==='crm');
+  if(ascs&&/ยังไม่ push|ตามหลัง/.test(ascs.git))todo.push(['01','ASC Studio ยังไม่ push / ตามหลัง origin','git: '+ascs.git+' — ถ้าเป็นรุ่นใหม่ที่ Claude bump แล้ว กด 01 → [1] ทำครบ']);
+  S.programs.filter(p=>/ตามหลัง/.test(p.git)&&p.key!=='ascs').forEach(p=>todo.push([p.key==='asca'?'02':p.key==='asc'?'03':p.key==='crm'?'04':'05',p.name+' ตามหลัง origin','git pull ก่อนทำงาน ('+p.git+')']));
+  if(i.live!==i.release)todo.push(['03','ชุดอัปเดตบนเว็บยังไม่ตรง','ในเครื่อง '+i.release+' · เว็บ '+i.live+' — กด 03 deploy']);
+  if(S.sqlPending)todo.push(['06','SQL ค้าง '+S.sqlPending+' ไฟล์','กด 06 → เลือกเลข → วาง Run ใน Supabase → กด D']);
+  S.programs.filter(p=>p.home&&p.home!==p.ver).forEach(p=>todo.push(['07',p.name+' บน home ยังรุ่น '+p.home,'laptop '+p.ver+' — กด 07 → [1] อัปเดต ASCS บน home'+(p.key!=='ascs'?' (ตัวอื่น pull เอง)':'')]));
+  if(!S.homeOk)todo.push(['07','home server ไม่ตอบ','ตรวจ Tailscale/เครื่อง home เปิดอยู่ไหม']);
+  if(!S.keys.ascs||!S.keys.asca)todo.push(['08','กุญแจชุดติดตั้งหาย','ดู README หัวข้อ 4 กุญแจ/รหัส']);
+  document.getElementById('todoSum').textContent=todo.length?todo.length+' รายการ':'';
+  document.getElementById('todo').innerHTML=todo.length?todo.map(t=>`<div class="step todo"><div class="n">${t[0]}</div><div><b>${esc(t[1])}</b><small>${esc(t[2])}</small></div><button class="btn pri" onclick="run('${t[0]}')">▶ เปิด ${t[0]}</button></div>`).join(''):'<div class="step"><div class="n">✓</div><div><b>ไม่มีอะไรค้าง</b><small>ทุกอย่างตรงกัน</small></div><div></div></div>';
+  document.getElementById('sql').innerHTML=S.sql.map((s,k)=>`<tr><td>${k+1}</td><td><b>${esc(s.project)}</b><br><a href="${esc(s.url)}" target="_blank" style="font-size:12px">${esc(s.url)}</a></td><td><span class="path">${esc(s.file)}</span><br><span class="note">${esc(s.note)}${s.secret?' 🔒':''}</span></td><td>${s.pending?b('warn','● '+s.status):b('ok',s.status)}</td></tr>`).join('');
+  document.getElementById('tools').innerHTML=TOOLS.map(t=>`<div class="step"><div class="n">${t[0]}</div><div><b>${esc(t[1])}</b><small>${esc(t[2])}</small></div><button class="btn" onclick="run('${t[0]}')">▶ เปิด</button></div>`).join('');
+  document.getElementById('log').textContent=S.log.length?S.log.join('\n'):'(ยังไม่มี log วันนี้)';
+}
+async function refresh(force){try{S=await (await fetch(force?'/api/refresh':'/api/status')).json();render()}catch(e){document.getElementById('sub').textContent='เซิร์ฟเวอร์ปิดแล้ว — เปิดใหม่จากไอคอน "ASC ปล่อยรุ่น"'}}
+refresh(false);setInterval(()=>refresh(false),60000);
+</script>
+</body>
+</html>

@@ -1,10 +1,11 @@
 # ชุด .bat — ปล่อยรุ่น · ติดตั้ง · SQL · home server (ASC Studio / ASC Architect / ASC Cloud / CRM-Pi / Local Translator)
 
 สร้าง 7 พ.ย. 2569 · โดย ลุงพี · โฟลเดอร์ `F:\LocalAI\setup_prg\ASC` (ขึ้น git aiSolar · ไม่มีคีย์ในไฟล์)
-เปิดจากไอคอน Desktop **"ASC ปล่อยรุ่น"** หรือดับเบิลคลิก `ASC-Menu.bat`
+เปิดจากไอคอน Desktop **"ASC ปล่อยรุ่น"** = `ASC-Dashboard.bat` → หน้าเว็บ http://127.0.0.1:8770/ แสดงสถานะจริง (รุ่น · git · home · ชุดติดตั้ง · SQL ค้าง · "ต้องทำอะไรบ้าง") และมีปุ่ม ▶ เปิด bat แต่ละตัวในหน้าต่างใหม่ · หรือดับเบิลคลิก `ASC-Menu.bat` ใช้เมนูในหน้าต่างดำอย่างเดียว
 
 | ไฟล์ | ทำอะไร |
 |---|---|
+| `ASC-Dashboard.bat` | หน้าเว็บในเครื่อง (`lib\dashboard.ps1` + `dashboard.html`): เซิร์ฟเวอร์เล็กพอร์ต 8770 · อ่านสถานะใหม่ทุก 60 วิ · ปุ่ม ▶ เปิด bat · ปิดหน้าต่างดำ = ปิดเซิร์ฟเวอร์ |
 | `ASC-Menu.bat` | เมนูหลัก: แสดงรุ่นทุกโปรแกรม (laptop · git · home) + จำนวน SQL ค้าง แล้วเลือก 1–8 |
 | `01-ascs-release.bat` | ASC Studio: build → ชุดติดตั้ง+ชุดอัปเดต → เว็บ → สแกนคีย์ → push → ตรวจเว็บจริง → PROGRAMS.md |
 | `02-asca-release.bat` | ASC Architect: ชุดติดตั้ง Inno + ชุดอัปเดต → เว็บ → push |
