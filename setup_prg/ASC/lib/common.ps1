@@ -129,7 +129,7 @@ function Sync-Installers {
     if (-not $latest) { continue }
     $dst = Join-Path $InstDir ($(if ($k.name) { $k.name } else { $latest.Name }))
     $same = (Test-Path -LiteralPath $dst) -and ((Get-Item $dst).Length -eq $latest.Length) -and ((Get-Item $dst).LastWriteTime -eq $latest.LastWriteTime)
-    if (-not $same) { Copy-Item $latest.FullName $dst -Force; Log "สำเนา $($latest.Name) → $dst" }
+    if (-not $same) { try { Copy-Item $latest.FullName $dst -Force; Log "สำเนา $($latest.Name) → $dst" } catch { Warn "สำเนา $($latest.Name) ไม่ได้ (ไฟล์กำลังถูกใช้/สร้างอยู่): $($_.Exception.Message)"; continue } }   # ไฟล์ที่ session อื่นกำลัง build = ข้ามรอบนี้ ไม่หยุดทั้งขั้น
     Get-ChildItem (Join-Path $InstDir $k.pat) -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne $dst } | ForEach-Object { Remove-Item $_.FullName -Force; Log "ลบรุ่นเก่า $($_.Name)" }
     $out += @{ kind = $k.pat; src = $latest.FullName; dst = $dst; mb = [math]::Round($latest.Length / 1MB, 1); when = $latest.LastWriteTime.ToString('d/M HH:mm') }
   }
