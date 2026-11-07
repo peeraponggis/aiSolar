@@ -1,0 +1,197 @@
+[OPTIMIZER_STRUCTURE]
+; เวอร์ชันโครงสร้าง 3.4 (ฟิลด์ตามโครงสร้าง 3.0 · รูปแบบการกรอก 3.4) - สำหรับ Power Optimizer / Smart Module Controller / Rapid Shutdown Device
+; ── กติกาการกรอก 3.4 (ใช้คู่กับ PROMPT_<ชนิด>.txt ในโฟลเดอร์เดียวกัน) ──
+; ค่าที่เห็นในแม่แบบเป็นค่าเริ่มต้นเท่านั้น ไม่ใช่ค่าของรุ่นใด ต้องแทนด้วยค่าจากเอกสารทุกบรรทัด
+; ไม่พบในเอกสาร: เว้นว่างหลังเครื่องหมาย (เหลือแค่ ชื่อฟิลด์ และเครื่องหมาย) แล้วใส่บรรทัด ; [ไม่มีข้อมูล] ไว้เหนือบรรทัดค่า ห้ามเดา ห้ามคงค่าเริ่มต้น
+; ทุกค่าที่กรอกต้องมีบรรทัด ; [SRC: หน้า n · ตารางหรือหัวข้อ · ข้อความต้นฉบับ] ไว้เหนือบรรทัดค่า
+; ห้ามใส่แท็ก หน่วย หรือคอมเมนต์ต่อท้ายบรรทัดค่า · ข้อความหลายรายการคั่นด้วยจุลภาค ห้ามใช้ ; หรือ # ในค่า
+; บรรทัดคอมเมนต์ทุกบรรทัดห้ามมีเครื่องหมายเท่ากับ (เขียน : แทน)
+
+[GENERAL_INFO]
+; ชื่อผู้ผลิตออปติไมเซอร์
+; [SRC: หน้า 6 · AndSolar Technology Co., Ltd.]
+Manufacturer = "AndSolar"
+; ชื่อรุ่นออปติไมเซอร์ (ตารางมีหลายรุ่น ให้แยก 1 ไฟล์ต่อ 1 รุ่น ครบทุกรุ่น)
+; [SRC: หน้า 5 · Product Parameters · Model AMCP600-750T1]
+Model_Name = "AMCP600-750T1"
+; ชื่อซีรีส์หรือตระกูลผลิตภัณฑ์ เช่น S-Series, TS4, SUN2000-P [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · T1 Series]
+Product_Series = "AMCP T1 Series"
+; ประเภทอุปกรณ์: Module-level Optimizer / Smart Module Controller / Rapid Shutdown Device [ใหม่]
+; [SRC: หน้า 1 · AMCP Smart PV Optimizer]
+Optimizer_Type = "Smart PV Optimizer"
+; จำนวนแผงที่ต่อเข้าออปติไมเซอร์ 1 ตัวได้ (1 หรือ 2 แผง) [ใหม่]
+; [DERIVED: แผนภาพระบบแสดง T1 ต่อ 1 แผง T2 ต่อ 2 แผง]
+; [SRC: หน้า 5 · System Topology · AMCP T1 Series ต่อแผงละ 1 ตัว]
+Modules_Per_Optimizer = 1
+; ยี่ห้ออินเวอร์เตอร์ที่ใช้ร่วมกันได้: ชื่อยี่ห้อ (ถ้าล็อกยี่ห้อ) หรือ "Universal" (ใช้กับอินเวอร์เตอร์ทั่วไปได้) (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+; [DERIVED: แผนภาพต่อกับอินเวอร์เตอร์ทั่วไป ไม่ระบุยี่ห้อ]
+; [SRC: หน้า 5 · System Topology · Inverter ทั่วไปผ่าน ADCU]
+Compatible_Inverter_Brand = "Universal"
+; รายชื่อรุ่นอินเวอร์เตอร์ที่ผู้ผลิตระบุว่าใช้ร่วมกันได้ คั่นด้วยจุลภาค [ใหม่]
+; [ไม่มีข้อมูล]
+Compatible_Inverter_Models =
+; รูปแบบการติดตั้ง: Full (ติดทุกแผงใน String) / Partial (ติดเฉพาะแผงที่ถูกบัง) / Both [ใหม่]
+; [SRC: หน้า 4 · Basic Features · Module-level Power Optimization (MPPT)]
+Optimization_Mode = "Module-level MPPT"
+
+[INPUT_PARAMETERS]
+; พิกัดกำลังไฟสูงสุดฝั่งขาเข้าที่รับจากแผง (วัตต์)
+; [SRC: หน้า 5 · Product Parameters · Input · Maximum Input Power 900W (คอลัมน์ AMCP600-750T1)]
+Max_Input_Power_W = 900
+; ช่วงกำลังไฟของแผงที่แนะนำให้ต่อ ต่ำสุด (วัตต์) [ใหม่]
+; [ไม่มีข้อมูล]
+Recommended_Module_Power_Min_W =
+; ช่วงกำลังไฟของแผงที่แนะนำให้ต่อ สูงสุด (วัตต์) [ใหม่]
+; [SRC: หน้า 4 · Product Features · Compatible PV Power 900W (T1)]
+Recommended_Module_Power_Max_W = 900
+; แรงดันวงจรเปิดสูงสุดฝั่งขาเข้าที่ทนได้ (โวลต์)
+; [ไม่มีข้อมูล]
+Max_Input_Voltage_Voc_V =
+; ย่านแรงดันขั้นต่ำที่ระบบ MPPT ในตัว Optimizer จะเริ่มทำงาน (โวลต์)
+; [SRC: หน้า 5 · Product Parameters · Input · MPPT Voltage Range 12-80V]
+MPPT_Operating_Min_V = 12.0
+; ย่านแรงดันสูงสุดที่ระบบ MPPT ในตัว Optimizer จะทำงาน (โวลต์)
+; [SRC: หน้า 5 · Product Parameters · Input · MPPT Voltage Range 12-80V]
+MPPT_Operating_Max_V = 80.0
+; กระแสลัดวงจรสูงสุดฝั่งขาเข้าที่รับได้จากแผง (แอมแปร์)
+; [SRC: หน้า 5 · Product Parameters · Input · Maximum Input Current 22A (คอลัมน์ AMCP600-750T1)]
+Max_Input_Current_Isc_A = 22.0
+; กระแสทำงาน Imp สูงสุดของแผงที่รองรับ (แอมแปร์) [ใหม่]
+; [ไม่มีข้อมูล]
+Max_Input_Current_Imp_A =
+; ชนิดขั้วต่อฝั่งขาเข้า เช่น MC4 [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Input/Output Connectors MC4/Compatible with MC4/Customizable]
+Input_Connector_Type = "MC4"
+
+[OUTPUT_PARAMETERS]
+; แรงดันไฟฟ้าสูงสุดฝั่งขาออกที่จ่ายเข้า String (โวลต์)
+; [SRC: หน้า 5 · Product Parameters · Output · Voltage Range 0-80V]
+Max_Output_Voltage_V = 80
+; กระแสไฟฟ้าสูงสุดฝั่งขาออกที่จ่ายเข้า String (แอมแปร์)
+; [SRC: หน้า 5 · Product Parameters · Output · Maximum Output Current 22A (คอลัมน์ AMCP600-750T1)]
+Max_Output_Current_A = 22.0
+; แรงดัน String ขาออกแบบคงที่ (Fixed String Voltage) สำหรับระบบที่ควบคุมแรงดันคงที่ เช่น SolarEdge 750V/380V (โวลต์) ถ้ามี [ใหม่]
+; [ไม่มีข้อมูล]
+Fixed_String_Voltage_V =
+; จำนวนออปติไมเซอร์ต่ำสุดต่อ 1 String [ใหม่]
+; [ไม่มีข้อมูล]
+Min_Optimizers_Per_String =
+; จำนวนออปติไมเซอร์สูงสุดต่อ 1 String [ใหม่]
+; [ไม่มีข้อมูล]
+Max_Optimizers_Per_String =
+; กำลังไฟรวมสูงสุดต่อ 1 String (วัตต์) [ใหม่]
+; [ไม่มีข้อมูล]
+Max_String_Power_W =
+; ชนิดขั้วต่อฝั่งขาออก เช่น MC4 [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Input/Output Connectors MC4/Compatible with MC4/Customizable]
+Output_Connector_Type = "MC4"
+; ความยาวสายฝั่งขาออก (มิลลิเมตร) [ใหม่]
+; [ไม่มีข้อมูล]
+Output_Cable_Length_mm =
+
+[EFFICIENCY]
+; ประสิทธิภาพการแปลงไฟของตัวออปติไมเซอร์สูงสุด (%)
+; [SRC: หน้า 5 · Product Parameters · Efficiency · Maximum Efficiency 99.60%]
+Max_Efficiency_Pct = 99.6
+; ประสิทธิภาพเฉลี่ยถ่วงน้ำหนักตามการทำงานจริง (%)
+; [SRC: หน้า 5 · Product Parameters · Efficiency · Weighted Efficiency 99.00%]
+Weighted_Efficiency_Pct = 99.0
+; พลังงานที่ตัวอุปกรณ์ใช้เองขณะสแตนด์บาย/กลางคืน (วัตต์) [ใหม่]
+; [ไม่มีข้อมูล]
+Standby_Power_Consumption_W =
+
+[BUCK_BOOST_OPERATION]
+; ชนิดวงจรแปลงไฟ: Buck / Boost / Buck-Boost [ใหม่]
+; [ไม่มีข้อมูล]
+Converter_Type =
+; แรงดันเอาต์พุตต่ำสุดที่อุปกรณ์สามารถกดแรงดันลงได้ (Buck Mode) หรือแรงดันปลอดภัยขณะ Bypass/Disconnect (โวลต์)
+; [SRC: หน้า 5 · Product Parameters · Output · Maximum Voltage in Disconnected State 1V]
+Min_Output_Voltage_V = 1.0
+; กำลังไฟเอาต์พุตสูงสุดที่ออปติไมเซอร์สามารถจ่ายออกไปได้ (วัตต์) คำนวณจาก Max_Output_Voltage_V x Max_Output_Current_A หากไม่ระบุ
+; [CALCULATED: Max_Output_Voltage_V คูณ Max_Output_Current_A]
+; [SRC: หน้า 5 · Product Parameters · Output · Voltage Range 0-80V · Maximum Output Current 22A]
+Max_Output_Power_W = 1760.0
+; แรงดันตกคร่อมเมื่ออุปกรณ์เข้าสู่โหมดทางผ่าน (Bypass Mode) เมื่อปิดระบบหรือพัง
+; [ไม่มีข้อมูล]
+Bypass_Diode_Voltage_Drop_V =
+; รองรับฟังก์ชัน Rapid Shutdown (ลดแรงดัน String ให้ปลอดภัยเมื่อสั่งหยุด) (True/False) [ใหม่]
+; [SRC: หน้า 4 · Module-level RSD · Decrease to safe voltage within 30S]
+Rapid_Shutdown_Supported = True
+; มาตรฐาน Rapid Shutdown ที่รองรับ เช่น "NEC 2017/2020 690.12, SunSpec RSD" [ใหม่]
+; [SRC: หน้า 4 · compliance to NEC 2017/2020/2023(690.12) regulation]
+Rapid_Shutdown_Standard = "NEC 2017/2020/2023 (690.12)"
+
+[COMMUNICATION_MONITORING]
+; วิธีสื่อสารกับอินเวอร์เตอร์หรือ Gateway: PLC over DC line / Wireless RF / Zigbee / None [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Other · Communication Method HPLC]
+Communication_Method = "HPLC"
+; ต้องมี Gateway หรือ Data logger เพิ่มเติมหรือไม่ (True/False) [ใหม่]
+; [SRC: หน้า 5 · System Topology · ADCU (Maximum 30 strings)]
+Requires_Gateway = True
+; รุ่นของ Gateway ที่ต้องใช้ (ถ้ามี) เช่น Tigo CCA, TAP [ใหม่]
+; [SRC: หน้า 5 · System Topology · ADCU]
+Gateway_Model = "ADCU"
+; ระดับการมอนิเตอร์: Module-level / String-level / None [ใหม่]
+; [SRC: หน้า 4 · Smart Features · Module-level Data Monitoring]
+Monitoring_Level = "Module-level"
+
+[THERMAL_LIMITS]
+; อุณหภูมิใช้งานต่ำสุด (องศาเซลเซียส) ปกติ -40 [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Temperature Range -40°C-+85°C]
+Min_Operating_Temperature_C = -40.0
+; อุณหภูมิที่ออปติไมเซอร์เริ่มปรับลดประสิทธิภาพการทำงานลงเพื่อกันพัง (ใช้อุณหภูมิต่ำสุดของช่วง shutdown range)
+; [SRC: หน้า 5 · Product Parameters · หมายเหตุใต้ตาราง · When the operating temperature exceeds 70°C, the device may work in de-rating mode]
+Thermal_Derating_Start_C = 70.0
+; อุณหภูมิสูงสุดที่อุปกรณ์สามารถทำงานได้ก่อนตัดระบบ
+; [SRC: หน้า 5 · Product Parameters · Temperature Range -40°C-+85°C]
+Max_Operating_Temperature_C = 85.0
+
+[MECHANICAL_CERTIFICATION]
+; ความกว้าง (มิลลิเมตร) [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Dimensions (W*D*H) 120*33*155mm]
+Width_mm = 120.0
+; ความสูง (มิลลิเมตร) [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Dimensions (W*D*H) 120*33*155mm]
+Height_mm = 155.0
+; ความหนา (มิลลิเมตร) [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Dimensions (W*D*H) 120*33*155mm]
+Depth_mm = 33.0
+; น้ำหนัก (กิโลกรัม) [ใหม่]
+; [ไม่มีข้อมูล]
+Weight_kg =
+; ระดับกันน้ำกันฝุ่น เช่น IP65, IP67, IP68 [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Ingress Protection Rating IP68]
+IP_Rating = "IP68"
+; รูปแบบการติดตั้ง: Frame-mounted (ยึดกรอบแผง) / Rail-mounted (ยึดราง) [ใหม่]
+; [SRC: หน้า 2 · Installation methods · Bolt installation / Clip installation]
+Mounting_Type = "Bolt installation, Clip installation"
+; มาตรฐานที่ผ่านการรับรอง คั่นด้วยจุลภาค เช่น "IEC 62109-1, UL 1741, CE" [ใหม่]
+; [SRC: หน้า 5 · Product Parameters · Certification · Safety / EMC / Environmental protection]
+Certifications = "IEC/EN 62109-1, NEC 2017/2020/2023 (690.12), IEC/EN 61000-6-1/-2/-3/-4, RoHS, REACH"
+; ระยะเวลารับประกัน (ปี) เช่น 25 [ใหม่]
+; [ไม่มีข้อมูล]
+Warranty_Years =
+
+[DATA_SOURCE]
+; ชื่อไฟล์ Datasheet ต้นทางที่ใช้กวาดข้อมูล [ใหม่]
+; [SRC: ชื่อไฟล์ที่แนบ]
+Source_File = "BRO_AndSolar_AMCP_V2.3.pdf"
+; วันที่หรือเวอร์ชันของ Datasheet ตามที่ระบุในเอกสาร [ใหม่]
+; [SRC: หน้า 6 · Version: 2.3-36E18]
+Datasheet_Version = "2.3-36E18"
+; วันที่กวาดข้อมูล รูปแบบ YYYY-MM-DD [ใหม่]
+; [SRC: วันที่ทำ]
+Extraction_Date = "2026-11-05"
+; วิธีที่ใช้กวาดข้อมูล: Text / OCR / Manual [ใหม่]
+; [SRC: โบรชัวร์เป็นภาพ อ่านจากภาพตาราง]
+Extraction_Method = "Text+OCR"
+; ระดับความเชื่อมั่นของข้อมูลโดยรวม: High / Medium / Low [ใหม่]
+; [SRC: โบรชัวร์ไม่มีแรงดันขาเข้าสูงสุด Voc และจำนวนต่อสตริง]
+Data_Confidence = "Medium"
+; จำนวนพารามิเตอร์ที่ไม่พบในเอกสาร [ใหม่]
+; [SRC: นับจากไฟล์นี้]
+Not_Found_Count = 14
+; หมายเหตุอื่น ๆ [ใหม่]
+; [SRC: หน้า 5 · Product Parameters]
+Notes = "เอกสารเป็นโบรชัวร์ ไม่ระบุ Max input voltage (Voc) และจำนวน optimizer ต่อสตริง ต้องดูคู่มือ UM_AndSolar_AMCP_T2"

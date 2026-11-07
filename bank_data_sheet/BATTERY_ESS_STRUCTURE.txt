@@ -1,0 +1,202 @@
+[BATTERY_ESS_STRUCTURE]
+; เวอร์ชันโครงสร้าง 3.4 (ฟิลด์ตามโครงสร้าง 3.2 · รูปแบบการกรอก 3.4) - ค่าที่บันทึกใน CAPACITY_VOLTAGE และ OPERATIONAL_LIMITS ให้เป็นระดับ System (ชุดที่ใหญ่ที่สุดในเอกสาร) ส่วนค่าต่อโมดูลให้บันทึกใน MODULE_CONFIGURATION
+; ── กติกาการกรอก 3.4 (ใช้คู่กับ PROMPT_<ชนิด>.txt ในโฟลเดอร์เดียวกัน) ──
+; ค่าที่เห็นในแม่แบบเป็นค่าเริ่มต้นเท่านั้น ไม่ใช่ค่าของรุ่นใด ต้องแทนด้วยค่าจากเอกสารทุกบรรทัด
+; ไม่พบในเอกสาร: เว้นว่างหลังเครื่องหมาย (เหลือแค่ ชื่อฟิลด์ และเครื่องหมาย) แล้วใส่บรรทัด ; [ไม่มีข้อมูล] ไว้เหนือบรรทัดค่า ห้ามเดา ห้ามคงค่าเริ่มต้น
+; ทุกค่าที่กรอกต้องมีบรรทัด ; [SRC: หน้า n · ตารางหรือหัวข้อ · ข้อความต้นฉบับ] ไว้เหนือบรรทัดค่า
+; ห้ามใส่แท็ก หน่วย หรือคอมเมนต์ต่อท้ายบรรทัดค่า · ข้อความหลายรายการคั่นด้วยจุลภาค ห้ามใช้ ; หรือ # ในค่า
+; บรรทัดคอมเมนต์ทุกบรรทัดห้ามมีเครื่องหมายเท่ากับ (เขียน : แทน)
+
+[GENERAL_INFO]
+; ชื่อผู้ผลิตแบตเตอรี่
+Manufacturer = ""
+; ชื่อรุ่นของแบตเตอรี่ (ตารางมีหลายรุ่น ให้แยก 1 ไฟล์ต่อ 1 รุ่น ครบทุกรุ่น)
+Model_Name = ""
+; ชื่อซีรีส์หรือตระกูลผลิตภัณฑ์ เช่น LUNA2000, SigenStor, Powerwall [ใหม่]
+Product_Series = ""
+; ชนิดทางเคมีของแบตเตอรี่ เช่น LFP, NMC, Lead-Acid
+Battery_Chemistry = "LFP"
+; คลาสแรงดันของแบตเตอรี่: HV (แรงดันสูง >100V) / LV (48V) ใช้เป็นตัวกรองขั้นแรกในการจับคู่กับอินเวอร์เตอร์ [ใหม่]
+Battery_Voltage_Class = ""
+; รูปแบบผลิตภัณฑ์: Battery Module / Battery Pack / All-in-one ESS (มีอินเวอร์เตอร์ในตัว) / Rack [ใหม่]
+Product_Form = ""
+; ชนิดของเซลล์และผู้ผลิตเซลล์ (ถ้าระบุ) เช่น "Prismatic, CATL", "Pouch" [ใหม่]
+Cell_Type = ""
+; ระดับของค่าที่บันทึกในไฟล์นี้: System (ชุดสูงสุด) / Single Module [ใหม่]
+Spec_Level = "System"
+
+[MODULE_CONFIGURATION]
+; ความจุพลังงานต่อ 1 โมดูล (kWh) [ใหม่]
+Module_Capacity_kWh = 0.0
+; แรงดันอ้างอิงต่อ 1 โมดูล (โวลต์) [ใหม่]
+Module_Voltage_V = 0.0
+; จำนวนโมดูลในชุด System ที่บันทึกค่าในไฟล์นี้ [ใหม่]
+Number_of_Modules_Recorded = 1
+; จำนวนโมดูลต่ำสุดต่อ 1 ชุด (Stack/Tower) [ใหม่]
+Min_Modules_Per_Stack = 1
+; จำนวนโมดูลสูงสุดต่อ 1 ชุด (Stack/Tower) [ใหม่]
+Max_Modules_Per_Stack = 1
+; จำนวนชุด (Stack) ที่ต่อขนานได้สูงสุดต่ออินเวอร์เตอร์ 1 เครื่อง [ใหม่]
+Max_Parallel_Stacks = 1
+; ความจุรวมสูงสุดที่ขยายได้ในระบบเดียว (kWh) [ใหม่]
+Max_Expandable_Capacity_kWh = 0.0
+; ต้องมีโมดูลควบคุม/Power Module แยกต่างหากหรือไม่ เช่น LUNA2000 Power Module, SigenStor EC (True/False) [ใหม่]
+Requires_Control_Module = False
+; รุ่นของโมดูลควบคุมที่ต้องใช้ (ถ้ามี) [ใหม่]
+Control_Module_Model = ""
+
+[CAPACITY_VOLTAGE]
+; ความจุพลังงานตามสเปกชีต (kWh) (Total / Nominal Energy)
+Nominal_Capacity_kWh = 0.0
+; ความจุไฟฟ้าตามสเปกชีต (Ampere-Hour)
+Nominal_Capacity_Ah = 0.0
+; ความจุพลังงานที่อนุญาตให้ใช้งานได้จริงโดยไม่ทำให้พังเร็ว (Usable kWh)
+Usable_Capacity_kWh = 0.0
+; แรงดันอ้างอิงของตัวแบตเตอรี่ (โวลต์)
+Nominal_Voltage_V = 0.0
+; แรงดันไฟฟ้าต่ำสุดก่อนตัดการจ่ายไฟ (โวลต์)
+Operating_Voltage_Min_V = 0.0
+; แรงดันไฟฟ้าสูงสุดเมื่อชาร์จเต็ม (โวลต์)
+Operating_Voltage_Max_V = 0.0
+
+[OPERATIONAL_LIMITS]
+; กำลังไฟอัดประจุ (ชาร์จ) สูงสุดแบบต่อเนื่อง (กิโลวัตต์)
+Max_Continuous_Charge_Power_kw = 0.0
+; กำลังไฟคายประจุ (ดึงไปใช้) สูงสุดแบบต่อเนื่อง (กิโลวัตต์)
+Max_Continuous_Discharge_Power_kw = 0.0
+; กระแสชาร์จสูงสุดแบบต่อเนื่อง (แอมแปร์) [ใหม่]
+Max_Continuous_Charge_Current_A = 0.0
+; กระแสคายประจุสูงสุดแบบต่อเนื่อง (แอมแปร์) [ใหม่]
+Max_Continuous_Discharge_Current_A = 0.0
+; กำลังชาร์จสูงสุดชั่วขณะ (Peak) (กิโลวัตต์) [ใหม่]
+Peak_Charge_Power_kW = 0.0
+; กำลังคายประจุสูงสุดชั่วขณะ (Peak) (กิโลวัตต์) [ใหม่]
+Peak_Discharge_Power_kW = 0.0
+; ระยะเวลาที่จ่ายกำลัง Peak ได้ (วินาที) [ใหม่]
+Peak_Power_Duration_Sec = 0
+; อัตราการจ่ายกระแสไฟเมื่อเทียบกับความจุ (C-Rating) เช่น "0.5C"
+C_Rating = "-"
+; เปอร์เซ็นต์การดึงความจุไปใช้สูงสุดที่โรงงานแนะนำ (Depth of Discharge %)
+Recommended_DoD_Pct = 90.0
+; ระดับ SoC ต่ำสุดที่ BMS อนุญาตให้คายประจุถึง (%) [ใหม่]
+Min_SoC_Pct = 0.0
+; ระดับ SoC สูงสุดที่ BMS อนุญาตให้ชาร์จถึง (%) [ใหม่]
+Max_SoC_Pct = 100.0
+
+[EFFICIENCY_LIFECYCLE]
+; ประสิทธิภาพรวมเมื่อชาร์จไฟเข้าไปแล้วดึงกลับออกมาใช้ (%)
+Round_Trip_Efficiency_Pct = 0.0
+; รอบอายุการใช้งานที่คาดหวัง (จำนวนครั้งการชาร์จ-คายประจุ)
+Expected_Cycle_Life = 6000
+; เงื่อนไขการดึงไฟไปใช้ (DoD %) ที่ใช้อ้างอิงการรับประกันรอบการใช้งาน
+Guaranteed_DoD_Condition_Pct = 0.0
+; เงื่อนไขอุณหภูมิและ C-rate ที่ใช้ทดสอบ Cycle Life เช่น "25 C, 0.5C/0.5C" [ใหม่]
+Cycle_Life_Test_Condition = ""
+
+[DEGRADATION_MODEL]
+; อัตราความจุแบตเตอรี่ที่หายไป (%) ต่อการชาร์จ-คายประจุครบ 1,000 รอบ
+Capacity_Fade_per_1000_Cycles_Pct = 0.0
+; อายุการใช้งานตามปฏิทินของแบตเตอรี่ (ปี) แม้จะไม่ได้ใช้งานหนัก
+Calendar_Life_Years = 10
+; เปอร์เซ็นต์สุขภาพแบตเตอรี่ (SoH) ที่ถือว่าหมดอายุการใช้งาน (มักกำหนดที่ 70% หรือ 80%)
+End_of_Life_SoH_Pct = 70.0
+; ระยะเวลารับประกัน (ปี) เช่น 10, 15 [ใหม่]
+Warranty_Years = 10
+; ปริมาณพลังงานสะสมที่รับประกัน (Energy Throughput) (MWh) ถ้าระบุ [ใหม่]
+Warranty_Energy_Throughput_MWh = 0.0
+; ระดับ SoH ที่รับประกัน ณ สิ้นสุดระยะประกัน (%) เช่น 70, 80 [ใหม่]
+Warranty_End_SoH_Pct = 0.0
+
+[THERMAL_PARAMETERS]
+; อุณหภูมิต่ำสุดที่อนุญาตให้ทำการชาร์จประจุได้ (องศาเซลเซียส)
+Charge_Temp_Range_Min_C = 0.0
+; อุณหภูมิสูงสุดที่อนุญาตให้ทำการชาร์จประจุได้ (องศาเซลเซียส)
+Charge_Temp_Range_Max_C = 45.0
+; อุณหภูมิต่ำสุดที่อนุญาตให้ทำการคายประจุได้ (องศาเซลเซียส)
+Discharge_Temp_Range_Min_C = -10.0
+; อุณหภูมิสูงสุดที่อนุญาตให้ทำการคายประจุได้ (องศาเซลเซียส)
+Discharge_Temp_Range_Max_C = 50.0
+; อุณหภูมิที่แบตเตอรี่ทำงานได้เต็มประสิทธิภาพและยืดอายุได้ดีที่สุด
+Optimal_Operating_Temp_C = 25.0
+; อุณหภูมิเก็บรักษาต่ำสุด (องศาเซลเซียส) [ใหม่]
+Storage_Temp_Min_C = -20.0
+; อุณหภูมิเก็บรักษาสูงสุด (องศาเซลเซียส) [ใหม่]
+Storage_Temp_Max_C = 45.0
+; วิธีจัดการอุณหภูมิ: Natural Cooling / Forced Air / Liquid Cooling [ใหม่]
+Thermal_Management = ""
+; มีฮีตเตอร์ในตัวสำหรับอากาศเย็น (True/False) [ใหม่]
+Integrated_Heater = False
+; ความชื้นสัมพัทธ์สูงสุดที่ใช้งานได้ (%) [ใหม่]
+Max_Operating_Humidity_Pct = 0.0
+; ระดับความสูงจากน้ำทะเลสูงสุดที่ใช้งานได้ (เมตร) [ใหม่]
+Max_Operating_Altitude_m = 0
+
+[ELECTRICAL_LOSSES]
+; ความต้านทานภายใน (mOhm) ใช้คำนวณการสูญเสียพลังงานในรูปความร้อน
+Internal_Resistance_mOhm = 0.0
+; อัตราการสูญเสียประจุด้วยตัวเองเมื่อสแตนด์บายทิ้งไว้ (% ต่อเดือน)
+Self_Discharge_Rate_Pct_per_Month = 0.0
+; พลังงานที่ระบบ BMS ใช้หล่อเลี้ยงตัวเอง (วัตต์)
+Standby_Power_Consumption_W = 0.0
+
+[BMS_COMMUNICATION]
+; โพรโทคอลสื่อสารของ BMS กับอินเวอร์เตอร์ เช่น CAN, RS485, Modbus RTU (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+BMS_Communication_Protocol = ""
+; ชนิดพอร์ตสื่อสาร เช่น RJ45, Terminal block, Proprietary connector [ใหม่]
+Communication_Port_Type = ""
+; รายชื่อยี่ห้อ/รุ่นอินเวอร์เตอร์ที่ผู้ผลิตระบุว่าใช้ร่วมกันได้ คั่นด้วยจุลภาค เช่น "SUN2000-5K-MAP0, SUN2000-10K-MAP0" (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+Compatible_Inverter_Models = ""
+; ลักษณะโปรโตคอล: Open (ใช้กับต่างยี่ห้อได้ เช่น Pylontech CAN) / Proprietary (ล็อกยี่ห้อตัวเอง) [ใหม่]
+Protocol_Openness = ""
+; ระบบสมดุลเซลล์: Passive / Active [ใหม่]
+Cell_Balancing_Type = ""
+; รองรับการอัปเดตเฟิร์มแวร์ระยะไกล (True/False) [ใหม่]
+Remote_Firmware_Update = False
+
+[PROTECTION_CERTIFICATION]
+; ระบบป้องกันที่มีใน BMS คั่นด้วยจุลภาค เช่น "OVP, UVP, OCP, OTP, Short-circuit" [ใหม่]
+Protection_Features = ""
+; ระบบป้องกันไฟไหม้/ระงับความร้อนลุกลาม เช่น "Aerosol fire suppression, Thermal runaway containment" [ใหม่]
+Fire_Protection = ""
+; มาตรฐานที่ผ่านการรับรอง คั่นด้วยจุลภาค เช่น "IEC 62619, IEC 63056, UN38.3, UL 9540A, UL 1973, CE" [ใหม่]
+Certifications = ""
+; ระดับกันน้ำกันฝุ่น เช่น IP55, IP65, IP66 [ใหม่]
+IP_Rating = ""
+
+[MECHANICAL_SPEC]
+; ความกว้างของชุดที่บันทึกค่า (มิลลิเมตร) [ใหม่]
+Width_mm = 0.0
+; ความสูงของชุดที่บันทึกค่า (มิลลิเมตร) [ใหม่]
+Height_mm = 0.0
+; ความลึกของชุดที่บันทึกค่า (มิลลิเมตร) [ใหม่]
+Depth_mm = 0.0
+; น้ำหนักของชุดที่บันทึกค่า (กิโลกรัม) [ใหม่]
+Weight_kg = 0.0
+; น้ำหนักต่อ 1 โมดูล (กิโลกรัม) [ใหม่]
+Module_Weight_kg = 0.0
+; รูปแบบการติดตั้ง: Floor-standing / Wall-mounted / Rack-mounted / Stackable [ใหม่]
+Mounting_Type = ""
+; สถานที่ติดตั้งที่รองรับ: Indoor / Outdoor / Both [ใหม่]
+Installation_Location = ""
+; ระดับเสียงขณะทำงาน (เดซิเบล) [ใหม่]
+Noise_Level_dB = 0.0
+
+[DATA_SOURCE]
+; ชื่อไฟล์ Datasheet ต้นทางที่ใช้กวาดข้อมูล [ใหม่]
+Source_File = ""
+; วันที่หรือเวอร์ชันของ Datasheet ตามที่ระบุในเอกสาร [ใหม่]
+Datasheet_Version = ""
+; วันที่กวาดข้อมูล รูปแบบ YYYY-MM-DD [ใหม่]
+Extraction_Date = ""
+; วิธีที่ใช้กวาดข้อมูล: Text / OCR / Manual [ใหม่]
+Extraction_Method = ""
+; ระดับความเชื่อมั่นของข้อมูลโดยรวม: High / Medium / Low [ใหม่]
+Data_Confidence = ""
+; จำนวนพารามิเตอร์ที่ไม่พบในเอกสาร [ใหม่]
+Not_Found_Count = 0
+; ตัวแทนจำหน่ายหรือแหล่งที่ซื้อได้ในประเทศไทย [ใหม่ 3.2]
+Thai_Distributor = ""
+; ลิงก์ datasheet ทางการของผู้ผลิต [ใหม่ 3.2]
+Datasheet_URL = ""
+; หมายเหตุอื่น ๆ เช่น รุ่นอื่นในตารางเดียวกัน [ใหม่]
+Notes = ""
