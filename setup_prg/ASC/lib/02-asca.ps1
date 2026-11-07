@@ -28,13 +28,23 @@ function Step-Push {
   ScanSecrets $asc @((Get-Content -LiteralPath $KeyASCA -Raw -ErrorAction SilentlyContinue))
   if (CommitPush 'asc' "ASC Architect $v (architec + ชุดอัปเดต)" @()) { & "$PSScriptRoot\03-cloud.ps1" -VerifyOnly }
 }
+function Step-Programs {
+  Title 'PROGRAMS.md + push aiSolar'
+  $v = Ver 'asca'; GitPull 'tr'
+  $c = Get-Content -LiteralPath $Programs -Encoding UTF8
+  $i = ($c | Select-String -SimpleMatch 'ASC Architect (ASCA)' | Select-Object -First 1).LineNumber
+  if (-not $i) { Warn 'ไม่พบบรรทัด ASCA ใน PROGRAMS.md'; return }
+  $c[$i - 1] = [regex]::new('\|\s*[\d.]+\s*\|').Replace($c[$i - 1], "| $v |", 1)
+  [IO.File]::WriteAllLines($Programs, $c, [Text.UTF8Encoding]::new($false))
+  CommitPush 'tr' "PROGRAMS: ASC Architect $v" @('PROGRAMS.md') | Out-Null
+}
 try {
   Clear-Host; Title "ASC Architect $(Ver 'asca')  ($d)"
   Log "git: $(GitState 'asca')"
-  Write-Host ''; Write-Host '  [1] ทำครบ (2→3→4)'; Write-Host '  [2] ชุดติดตั้ง Inno + ชุดอัปเดต'; Write-Host '  [3] เว็บ: build_cloud → asc\docs\architec'; Write-Host '  [4] push pee_architec + asc → ตรวจเว็บ'; Write-Host '  [0] กลับ'
+  Write-Host ''; Write-Host '  [1] ทำครบ (commit+push pee_architec → 2 → 3 → 4 → 5)'; Write-Host '  [2] ชุดติดตั้ง Inno + ชุดอัปเดต (commit ก่อน)'; Write-Host '  [3] เว็บ: build_cloud → asc\docs\architec'; Write-Host '  [4] push asc → ตรวจเว็บ'; Write-Host '  [5] อัปเดต PROGRAMS.md + push aiSolar'; Write-Host '  [0] กลับ'
   switch (Read-Host 'เลือก') {
-    '1' { GitPull 'asca'; GitPull 'asc'; Step-PushAsca; Step-Installer; Step-Web; Step-Push }
-    '2' { Step-PushAsca; Step-Installer } '3' { Step-Web } '4' { GitPull 'asc'; Step-Push }
+    '1' { GitPull 'asca'; GitPull 'asc'; Step-PushAsca; Step-Installer; Step-Web; Step-Push; Step-Programs }
+    '2' { Step-PushAsca; Step-Installer } '3' { Step-Web } '4' { GitPull 'asc'; Step-Push } '5' { Step-Programs }
     default { return }
   }
 } catch { Bad "หยุด: $($_.Exception.Message)" }
