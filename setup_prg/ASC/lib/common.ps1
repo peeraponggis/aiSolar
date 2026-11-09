@@ -91,7 +91,18 @@ function CommitPush([string]$key, [string]$msg, [string[]]$paths) {
   $d = GitDir $key
   if ($paths -and $paths.Count) { git -C $d add -- @paths 2>&1 | Out-Null }   # ไม่มี path = ใช้ที่ stage ไว้แล้ว
   $stat = git -C $d diff --cached --stat | Out-String
-  if (-not $stat.Trim()) { Warn "$($P[$key].name): ไม่มีอะไรเปลี่ยน"; return $false }
+  if (-not $stat.Trim()) {
+    # ไม่มีอะไรใหม่ให้ commit แต่มี commit ค้างที่ยังไม่ push (เช่น session อื่น commit ไว้) → ถาม push อย่างเดียว
+    $ahead = [int](git -C $d rev-list --count '@{u}..HEAD' 2>$null)
+    if ($ahead -gt 0 -and (Ask "$($P[$key].name): มี $ahead commit ยังไม่ push — push เลย?")) {
+      $eap = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+      $o = (git -C $d push 2>&1 | ForEach-Object { "$_" }) -join "`n"; $rc = $LASTEXITCODE; $ErrorActionPreference = $eap
+      Add-Content -LiteralPath $LogFile -Value $o -Encoding UTF8
+      if ($rc) { Bad "push ไม่ผ่าน: $o"; throw 'push' }
+      Ok ("push {0} {1}" -f $P[$key].name, (git -C $d log --oneline -1)); return $true
+    }
+    Warn "$($P[$key].name): ไม่มีอะไรเปลี่ยน"; return $false
+  }
   Write-Host $stat -ForegroundColor DarkGray
   if ($P[$key].url) { Warn "push แล้วเว็บจริงเปลี่ยนทันที ($($P[$key].url))" }
   if (-not (Ask "commit + push $($P[$key].name): `"$msg`" ?")) { git -C $d reset -q; Warn 'ยกเลิก (unstage แล้ว)'; return $false }
