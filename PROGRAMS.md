@@ -1,4 +1,4 @@
-# ทะเบียนโปรแกรมของลุงพี (ศูนย์กลาง · ทั้ง Laptop + Home server)
+﻿# ทะเบียนโปรแกรมของลุงพี (ศูนย์กลาง · ทั้ง Laptop + Home server)
 
 อัปเดต 1 พ.ย. 2569 · laptop ใช้ `F:\` · home server ใช้ `C:\` (โครงสร้างโฟลเดอร์เหมือนกัน)
 แบ่ง 4 หมวดตาม **"ใครเห็นได้"** — เช็กหมวดก่อนแก้หรือ push ทุกครั้ง
@@ -35,7 +35,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
 | Design Auto (Auto Solar Co-pilot Studio) | 0.167.1 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
-| ASC Architect (ASCA) | 0.31.4 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
+| ASC Architect (ASCA) | 0.31.5 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
 
 ## หมวด 3 · 🌐 โค้ดเปิดเผยได้ — public · `peeraponggis`
 
