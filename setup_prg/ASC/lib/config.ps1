@@ -34,6 +34,7 @@ $script:SqlEach = @(
   @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\standards-data.sql";   note = 'ตาราง วสท. รุ่นเว็บ (npm run standards:sql)' }
   @{ p = 'ent'; f = "$Ent\solar-project-complete\asc-enterprises\supabase\equipment-hidden-in-ascs.sql"; note = 'คลังอุปกรณ์: ช่องติ๊ก ซ่อนใน ASCS (รันก่อน deploy asc-enterprises 1.0.0)' }
   @{ p = 'asc'; f = "$($P.asc.dir)\supabase\devices-hidden-in-ascs.sql"; note = 'คลังสเปกอุปกรณ์ ASC Cloud (หน้า Settings): ช่องติ๊ก ซ่อนใน ASCS (4.7.0) — รันก่อนใช้' }
+  @{ p = 'asc'; f = "$($P.asc.dir)\supabase\access-control.sql"; note = 'สิทธิ์การใช้งาน/แพ็กเกจ/พักสิทธิ์ (ASCS 0.166.1+ · ตาราง access_packages account_access access_sessions access_log)' }
   @{ p = 'crm'; f = "$($P.crm.dir)\pi_crm_erp\supabase\20261031_asc_studio.sql";  note = 'CRM ↔ ASC Studio' }
   @{ p = 'crm'; f = "$($P.crm.dir)\pi_crm_erp\supabase\20261031_admin_users.sql"; note = 'สิทธิ์ admin (รันซ้ำหลัง full_install ทุกครั้ง)' }
 )
