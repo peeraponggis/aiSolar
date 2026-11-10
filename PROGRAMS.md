@@ -34,7 +34,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
-| Design Auto (Auto Solar Co-pilot Studio) | 0.169.1 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
+| Design Auto (Auto Solar Co-pilot Studio) | 0.170.0 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
 | ASC Architect (ASCA) | 0.31.5 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
 
 ## หมวด 3 · 🌐 โค้ดเปิดเผยได้ — public · `peeraponggis`
@@ -58,7 +58,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
-| ASC Studio (ASCS) | 4.6.0 | `LocalAI\git\asc` | peeraponggis/asc |
+| ASC Studio (ASCS) | 4.8.1 | `LocalAI\git\asc` | peeraponggis/asc |
 | courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
 | webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.0.0 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
 | Project Plan SPA (โปรแกรมบริหารโครงการ) | 1.7.2 | `LocalAI\project_plan_spa` · home clone `LocalAI\git\aisolar2` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/plan/ · รายงาน Pi monitor (รหัส PLAN) |

@@ -58,6 +58,7 @@ home server: `C:\LocalAI` · `C:\enterprise` (ไม่มี F:) · `ssh home` 
 
 **ASC Cloud (Supabase)** — เปิด https://supabase.com/dashboard/project/rcaslesvgilknupqmwrp/sql/new วางทีละไฟล์จาก `F:\LocalAI\git\asc\supabase\` ตามลำดับ (ใน 06 กด F แล้วพิมพ์ `asc-1` … เพื่อคัดลอก+เปิดลิงก์ให้):
 1. `schema.sql` 2. `kb.sql` 3. `ascs-studio.sql` 4. `ascs-release.sql` 5. `ai-install.sql` 6. `allow-domains.sql` 7. `devices.sql` 8. `menu-access.sql` 9. `presence.sql` 10. `pi-monitor-telegram.sql` 11. `presence-ingest.sql` 12. `presence-device.sql` 13. `presence-apps.sql` 14. `device-menus.sql`
+และไฟล์ที่ 06 ติดตามรายรุ่น (ไม่อยู่ในลำดับ F): `devices-hidden-in-ascs.sql` · `access-control.sql` · `ascs-terms.sql` (คำศัพท์ ASCS · ต้องมี `presence-device.sql` ก่อน)
 แล้วรันข้อมูล: `out\cloud\kb-data.sql` · `out\cloud\standards-data.sql` · `out\cloud\ascs-release-key.sql` (🔒) — ทั้งสามอยู่ใน 06
 เว็บ: GitHub Pages เผยแพร่ `docs/` ของ branch main อัตโนมัติเมื่อ push (03)
 
