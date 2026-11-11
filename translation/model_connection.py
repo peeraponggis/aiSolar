@@ -21,7 +21,10 @@ model_connection.py - เชื่อมต่อ/สลับเส้นทา
 import logging
 import threading
 
-from engine import BACKEND, api_ready, ensure_ollama, list_models, pick_model, resolve_api_key, warm_up
+import os
+import subprocess
+
+from engine import BACKEND, api_ready, ensure_ollama, find_ollama_exe, list_models, pick_model, resolve_api_key, warm_up
 
 log = logging.getLogger(__name__)
 
@@ -96,8 +99,11 @@ class ModelConnection:
             self.model_var.set(chosen); self.st["model"] = chosen
             note = "" if chosen.startswith("scb10x/typhoon2.5") else " (แนะนำ typhoon2.5-qwen3-4b สำหรับภาษาไทย)"
             self.set_status(f"พร้อม · โมเดล {chosen}{note} · กำลังอุ่นเครื่องเข้า GPU ...")
-            threading.Thread(target=lambda: (warm_up(chosen), self.q.put(("piece", ""))), daemon=True).start()
-            self.root.after(1500, lambda: self.set_status(f"พร้อมใช้งาน · {chosen}") if not self.worker["busy"] else None)
+            def _startup_warm(m=chosen):
+                warm_up(m)
+                self.root.after(0, lambda: self.set_status(f"พร้อมใช้งาน · {m}") if not self.worker["busy"] else None)
+                self.q.put(("piece", ""))
+            threading.Thread(target=_startup_warm, daemon=True).start()
         else:
             self.use_backend("local"); self.st["model"] = ""
             self.model_var.set("ไม่พบโมเดล" if models is None else "ยังไม่มีโมเดลในเครื่อง")
@@ -114,13 +120,43 @@ class ModelConnection:
         threading.Thread(target=lambda: self.q.put(("models", ensure_ollama())), daemon=True).start()
 
     def retry_quietly(self):
-        """ลองเชื่อมต่อ Ollama ใหม่เบื้องหลังโดยไม่เปลี่ยนข้อความสถานะ — สำเร็จเมื่อไรก็พร้อมใช้ทันที"""
+        """ลองเชื่อมต่อ Ollama ใหม่เบื้องหลัง — ถ้ายังไม่ทำงานจะลองเปิดให้เองด้วย"""
         if self.st.get("model") or BACKEND.get("mode") == "api":
             return
 
-        def check():   # เธรดเบื้องหลัง: ส่งผลกลับผ่านคิว (on_models ทำงานบนเธรดหลัก และนัดลองใหม่ถ้ายังไม่ได้)
+        def check():
             models = list_models()
+            if models is None:
+                self._try_start_ollama()
+                models = list_models()
             if models is not None:
                 log.info("เชื่อมต่อ Ollama ได้แล้ว (ลองใหม่อัตโนมัติ) พบ %d โมเดล", len(models))
             self.q.put(("models", models))
         threading.Thread(target=check, daemon=True).start()
+
+    @staticmethod
+    def _try_start_ollama():
+        """ลองเปิด ollama serve ถ้ายังไม่มี process — ไม่รอนาน แค่จุดเริ่ม"""
+        try:
+            out = subprocess.check_output(["tasklist", "/FI", "IMAGENAME eq ollama.exe", "/NH"],
+                                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                                          timeout=5, text=True)
+            if "ollama.exe" in out.lower():
+                return
+        except Exception:
+            pass
+        exe = find_ollama_exe()
+        if not exe:
+            return
+        env = dict(os.environ)
+        env.setdefault("OLLAMA_ORIGINS", "*")
+        env.setdefault("OLLAMA_FLASH_ATTENTION", "1")
+        env.setdefault("OLLAMA_KV_CACHE_TYPE", "q8_0")
+        try:
+            subprocess.Popen([exe, "serve"], env=env,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            log.info("retry: เปิด Ollama (%s) อีกครั้ง", exe)
+            import time; time.sleep(5)
+        except Exception:
+            log.warning("retry: เปิด Ollama ไม่สำเร็จ", exc_info=True)

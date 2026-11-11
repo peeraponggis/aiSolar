@@ -286,7 +286,7 @@ def find_ollama_exe():
     return None
 
 
-def ensure_ollama(wait_s=25):
+def ensure_ollama(wait_s=45):
     """ถ้าเชื่อมต่อ Ollama ไม่ได้ ให้ลองเปิด 'ollama serve' เอง (ซ่อนหน้าต่าง) แล้วรอจนพร้อม คืน list โมเดลหรือ None"""
     models = list_models()
     if models is not None:
