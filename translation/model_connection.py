@@ -116,8 +116,19 @@ class ModelConnection:
             self.on_ready(models)
 
     def connect(self):
-        self.set_status("กำลังเชื่อมต่อ Ollama (ถ้ายังไม่เปิดจะเปิดให้เอง) ...")
-        threading.Thread(target=lambda: self.q.put(("models", ensure_ollama())), daemon=True).start()
+        a = self.settings.get("api") or {}
+        mode = a.get("mode", "auto")
+        if mode in ("auto", "api") and self.api_configured():
+            self.q.put(("models", None))
+            self.set_status("กำลังเชื่อมต่อ API ออนไลน์ + เปิด Ollama เบื้องหลัง ...")
+            def _bg():
+                models = ensure_ollama()
+                if models:
+                    self.q.put(("models", models))
+            threading.Thread(target=_bg, daemon=True).start()
+        else:
+            self.set_status("กำลังเชื่อมต่อ Ollama (ถ้ายังไม่เปิดจะเปิดให้เอง) ...")
+            threading.Thread(target=lambda: self.q.put(("models", ensure_ollama())), daemon=True).start()
 
     def retry_quietly(self):
         """ลองเชื่อมต่อ Ollama ใหม่เบื้องหลัง — ถ้ายังไม่ทำงานจะลองเปิดให้เองด้วย"""
