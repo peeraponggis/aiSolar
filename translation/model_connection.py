@@ -62,8 +62,11 @@ class ModelConnection:
             self.set_status(f"ใช้โมเดลออนไลน์ {BACKEND['model']} ผ่าน API"); return
         self.use_backend("local")
         self.st["model"] = name; self.settings["model"] = name; self.save_settings()
-        threading.Thread(target=warm_up, args=(self.st["model"],), daemon=True).start()
-        self.set_status(f"กำลังโหลด {self.st['model']} เข้า GPU ...")
+        def load():   # โหลดเสร็จแล้วต้องเปลี่ยนสถานะด้วย — เดิมค้าง "กำลังโหลด ... เข้า GPU" ตลอดแม้โมเดลพร้อมแล้ว
+            warm_up(name)
+            self.root.after(0, lambda: self.set_status(f"พร้อมใช้งาน · {name}") if not self.worker["busy"] else None)
+        threading.Thread(target=load, daemon=True).start()
+        self.set_status(f"กำลังโหลด {name} เข้า GPU ...")
 
     def on_models(self, models):
         """models = รายการโมเดลในเครื่อง (None = ไม่พบ Ollama) -> เลือกเส้นทางตามโหมดใน ⚙ ผู้ให้บริการ"""
