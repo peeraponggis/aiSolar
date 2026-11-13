@@ -1,0 +1,106 @@
+<!doctype html>
+<!-- YT Shorts — การ์ดสถิติ (ทดลอง HyperFrames) · โดย ลุงพี -->
+<html lang="th" data-resolution="portrait" data-composition-variables='[
+  {"id":"kicker","type":"string","label":"หัวเรื่องเล็ก","default":"ตลาดโซลาร์เซลล์ไทย"},
+  {"id":"value","type":"number","label":"ตัวเลข","default":1.7},
+  {"id":"decimals","type":"number","label":"ทศนิยม","default":1},
+  {"id":"unit","type":"string","label":"หน่วย","default":"ล้านล้านบาท"},
+  {"id":"badge","type":"string","label":"ป้าย","default":"+37%"},
+  {"id":"caption","type":"string","label":"คำอธิบาย","default":"มูลค่าลงทุนพลังงานสะอาด ปี 2569 เพิ่มขึ้นจากปีก่อน"},
+  {"id":"accent","type":"color","label":"สีเน้น","default":"#f5c542"}
+]'>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #0b1220;
+        --ground-2: #13233f;
+        --ink: #ffffff;
+        --muted: #b9c4d8;
+        --accent: #f5c542;
+        --good: #2ecc71;
+        --font-display: "Kanit", sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1080px; height: 1920px; overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative; width: 100%; height: 100%;
+        font-family: var(--font-display); color: var(--ink);
+        background: radial-gradient(1200px 1200px at 50% 38%, var(--ground-2), var(--ground) 70%);
+      }
+      .clip { position: absolute; inset: 0; }
+      #card {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 36px; padding: 0 90px; text-align: center;
+      }
+      #kicker {
+        font-size: 58px; font-weight: 600; color: var(--muted);
+        letter-spacing: 0.01em;
+      }
+      #rule { width: 220px; height: 10px; border-radius: 5px; background: var(--accent); }
+      #value {
+        font-size: 300px; font-weight: 800; line-height: 1.05;
+        color: var(--accent); font-variant-numeric: tabular-nums;
+      }
+      #unit { font-size: 92px; font-weight: 600; line-height: 1.25; }
+      #badge {
+        margin-top: 24px; padding: 18px 56px; border-radius: 999px;
+        background: var(--good); color: #062b16;
+        font-size: 84px; font-weight: 800;
+      }
+      #caption {
+        margin-top: 30px; font-size: 54px; font-weight: 400; line-height: 1.55;
+        color: var(--muted); max-width: 900px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="5"
+         data-width="1080" data-height="1920">
+      <div id="card" class="clip" data-start="0" data-duration="5" data-track-index="0">
+        <div id="kicker"></div>
+        <div id="rule"></div>
+        <div id="value">0</div>
+        <div id="unit"></div>
+        <div id="badge"></div>
+        <div id="caption"></div>
+      </div>
+    </div>
+    <script>
+      const v = window.__hyperframes.getVariables();
+      const $ = (id) => document.getElementById(id);
+      document.documentElement.style.setProperty("--accent", v.accent);
+      $("kicker").textContent = v.kicker;
+      $("unit").textContent = v.unit;
+      $("badge").textContent = v.badge;
+      $("caption").textContent = v.caption;
+
+      const fmt = (n) => n.toLocaleString("en-US", {
+        minimumFractionDigits: v.decimals, maximumFractionDigits: v.decimals });
+      const counter = { n: 0 };
+      const showCount = () => { $("value").textContent = fmt(counter.n); };
+
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#kicker", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1)
+        .fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, 0.3)
+        .fromTo("#value", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 0.5)
+        .fromTo(counter, { n: 0 }, { n: v.value, duration: 1.6, ease: "power2.out", onUpdate: showCount }, 0.5)
+        .fromTo("#unit", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.4)
+        .fromTo("#badge", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, 1.8)
+        .fromTo("#caption", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 2.1)
+        .to("#value", { scale: 1.04, duration: 0.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 3.4)
+        .to("#card", { opacity: 0, duration: 0.35, ease: "power1.in" }, 4.65);
+      showCount();
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

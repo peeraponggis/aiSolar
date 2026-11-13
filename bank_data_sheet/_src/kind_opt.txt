@@ -1,0 +1,80 @@
+@@NAME
+OPT
+@@TITLE
+ออปติไมเซอร์ / อุปกรณ์ระดับแผง / Rapid Shutdown (Optimizer / MLPE / RSD)
+@@TEMPLATE
+OPTIMIZER_STRUCTURE.txt
+@@1
+   OPT = Power Optimizer / Smart Module Controller / RSD → OPTIMIZER_STRUCTURE.txt (หัวไฟล์ [OPTIMIZER_STRUCTURE])
+   รู้จากคำ: optimizer, module-level, buck/boost, rapid shutdown
+@@FORMULAS
+       - Max_Output_Power_W = Max_Output_Voltage_V x Max_Output_Current_A
+         (เฉพาะเอกสารไม่ระบุตรง ๆ)
+@@5
+   OPT
+       Max_Input_Power_W            ← ว่าง = โปรแกรมไม่รับไฟล์
+       Max_Input_Voltage_Voc_V, Max_Input_Current_Isc_A
+       Max_Output_Voltage_V, Max_Output_Current_A
+       Modules_Per_Optimizer        ← 1 หรือ 2 แผงต่อตัว (ว่าง = โปรแกรมใช้ 1)
+       Compatible_Inverter_Brand
+       Min_Optimizers_Per_String, Max_Optimizers_Per_String, Max_String_Power_W   ← คิดสตริง
+   ฟิลด์ที่โปรแกรมใช้เพิ่ม (กรอกให้ได้ถ้าเอกสารมี):
+       Recommended_Module_Power_Max_W, Fixed_String_Voltage_V, Rapid_Shutdown_Supported,
+       Max_Efficiency_Pct, IP_Rating, Warranty_Years
+@@6
+   OPT:
+   - Min_Output_Voltage_V ใช้ค่า Safety output voltage (แรงดันเมื่อ Bypass/Disconnect)
+   - Thermal_Derating_Start_C ใช้อุณหภูมิต่ำสุดของช่วง shutdown range
+     (แม่แบบตั้ง 70 ไว้ ไม่พบ = ว่าง)
+   - Max_Output_Power_W คำนวณตามข้อ 4.7 หากเอกสารไม่ระบุตรง ๆ
+   - Compatible_Inverter_Brand: ระบบปิด (SolarEdge, Huawei SUN2000-P, Enphase) ใส่ชื่อยี่ห้อ
+     ใช้กับอินเวอร์เตอร์ทั่วไปได้ (Tigo TS4-A-O) ใส่ "Universal"
+   - Fixed_String_Voltage_V เฉพาะระบบที่สตริงแรงดันคงที่ (เช่น SolarEdge 380 V / 750 V)
+   - อุปกรณ์ RSD อย่างเดียว (ไม่มี MPPT) ให้กรอกค่าขาเข้า/ขาออกที่มี
+     ส่วน MPPT/Buck-boost ที่ไม่มีให้ว่าง + ; [ไม่ใช้กับเครื่องชนิดนี้: อุปกรณ์ตัดวงจรอย่างเดียว]
+@@7
+   OPT:
+   - MPPT_Operating_Max_V ไม่เกิน Max_Input_Voltage_Voc_V
+   - Min_Output_Voltage_V น้อยกว่า Max_Output_Voltage_V
+   - Min_Optimizers_Per_String ไม่เกิน Max_Optimizers_Per_String
+   - Recommended_Module_Power_Max_W ไม่เกิน Max_Input_Power_W x Modules_Per_Optimizer
+@@10
+   [OPT]
+   Rated Input DC Power / Max Input Power / Rated Power                   → Max_Input_Power_W
+   Absolute Maximum Input Voltage / Max Input Voltage / Max Voc           → Max_Input_Voltage_Voc_V
+   MPPT Operating Range / Operating Voltage Range / MPP Voltage           → MPPT_Operating_Min_V, MPPT_Operating_Max_V
+   Max Short Circuit Current / Max Isc / Max Input Current                → Max_Input_Current_Isc_A
+   Max Output Voltage / Maximum Output Voltage                            → Max_Output_Voltage_V
+   Max Output Current / Maximum Output Current                            → Max_Output_Current_A
+   Safety Output Voltage / Safe Voltage / Shutdown Voltage / Off Voltage  → Min_Output_Voltage_V
+   Max Efficiency / Peak Efficiency                                       → Max_Efficiency_Pct
+   Weighted Efficiency / CEC Efficiency / EU Efficiency                   → Weighted_Efficiency_Pct
+   Compatible Inverters / Compatibility / Works with                      → Compatible_Inverter_Brand, Compatible_Inverter_Models
+   Modules per Optimizer / 1:1 / 2:1 / Dual-input                         → Modules_Per_Optimizer
+   Modules per String / Optimizers per String / String Length             → Min/Max_Optimizers_Per_String
+   Max String Power / Max Power per String                                → Max_String_Power_W
+   Fixed String Voltage                                                   → Fixed_String_Voltage_V
+   Rapid Shutdown / RSD / NEC 690.12                                      → Rapid_Shutdown_Supported, Rapid_Shutdown_Standard
+   Communication / Monitoring / PLC / Wireless                            → Communication_Method, Monitoring_Level
+@@11
+   ฟิลด์ (OPT)                  ค่าที่ยอมรับ                                 โปรแกรมใช้ทำอะไร
+   Modules_Per_Optimizer        1 หรือ 2 (ตัวเลข)                            จำนวนออปติไมเซอร์ในงาน
+   Compatible_Inverter_Brand    ชื่อยี่ห้อ เช่น "Huawei" หรือ "Universal"      ตรวจว่าใช้กับอินเวอร์เตอร์ได้
+   Rapid_Shutdown_Supported     True / False                                 รายงาน RSD
+   IP_Rating                    "IP68"                                       รายงาน
+@@12
+   [INPUT_PARAMETERS]
+   ; กำลังไฟฟ้าขาเข้าสูงสุดต่อตัว (วัตต์)
+   ; [SRC: หน้า 2 · Technical Data · Rated input power 450 W]
+   Max_Input_Power_W = 450
+   ; แรงดันขาเข้าสูงสุด Voc (โวลต์)
+   ; [SRC: หน้า 2 · Technical Data · Absolute max. input voltage 80 V]
+   Max_Input_Voltage_Voc_V = 80
+
+   [OUTPUT_PARAMETERS]
+   ; จำนวนออปติไมเซอร์ต่ำสุดต่อสตริง
+   ; [SRC: หน้า 2 · String Design · Min. number of optimizers per string 4]
+   Min_Optimizers_Per_String = 4
+   ; แรงดันสตริงคงที่ (ระบบ SolarEdge) ...
+   ; [ไม่มีข้อมูล]
+   Fixed_String_Voltage_V =

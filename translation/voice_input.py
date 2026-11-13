@@ -1,3 +1,12 @@
+# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -16,8 +25,15 @@ voice_input.py - ถามคำถามด้วยเสียงแบบก
 import logging
 import threading
 
-import numpy as np
-import sounddevice as sd
+try:   # ชุดแจกจ่าย (lite) ไม่มี numpy/sounddevice/faster-whisper → ปุ่มพูดถามถูกปิด แต่ส่วนอื่นใช้ได้ครบ
+    import numpy as np
+    import sounddevice as sd
+    VOICE_AVAILABLE = True
+    VOICE_UNAVAILABLE_REASON = ""
+except ImportError as _e:   # noqa: N816
+    np = sd = None
+    VOICE_AVAILABLE = False
+    VOICE_UNAVAILABLE_REASON = "ชุดนี้ไม่มีพูดถามด้วยเสียง (ชุดแจกจ่าย) — ใช้ชุดเต็มถ้าต้องการ"
 
 log = logging.getLogger(__name__)
 

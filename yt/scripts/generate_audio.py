@@ -1,9 +1,24 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 import os
 import re
 import json
+import time
+import shutil
 import asyncio
-import edge_tts
+import subprocess
 from pathlib import Path
+from typing import Callable
+
+import edge_tts
+
 from scripts.utils import get_audio_duration
 
 _ENV_DIR = Path(__file__).resolve().parent.parent
@@ -23,6 +38,10 @@ TONE_PRESETS = {
     "warm": {"base_rate": -3, "base_pitch": 3, "variation": 6},
     "news": {"base_rate": 3, "base_pitch": -2, "variation": 7},
 }
+
+TTS_CONCURRENCY = 3
+NARRATION_GAP = 0.15
+DIALOGUE_GAP = 0.3
 
 
 def load_replacements() -> dict:
@@ -61,19 +80,39 @@ def apply_replacements(text: str, replacements: dict) -> str:
     return text
 
 
-def _split_sentences(text: str) -> list[str]:
-    parts = re.split(r'(?<=[.!?。！？])\s*', text)
-    if len(parts) <= 1:
-        parts = text.strip().split("\n")
+MAX_SEGMENT_CHARS = 250
+
+
+def _chunk_long(sentence: str, limit: int = MAX_SEGMENT_CHARS) -> list[str]:
+    """Thai paragraphs often have no full stops; cut very long ones at spaces
+    so each TTS request stays short and quick to synthesize."""
+    if len(sentence) <= limit:
+        return [sentence]
+    chunks, current = [], ""
+    for phrase in sentence.split(" "):
+        if current and len(current) + 1 + len(phrase) > limit:
+            chunks.append(current)
+            current = phrase
+        else:
+            current = f"{current} {phrase}" if current else phrase
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _split_sentences(text: str, chunk: bool = True) -> list[str]:
+    parts = re.split(r'(?<=[.!?。！？])\s*|\n+', text)
     sentences = []
     for p in parts:
-        p = p.strip()
+        p = (p or "").strip()
         if not p:
             continue
         if sentences and len(sentences[-1]) < 15 and len(p) < 15:
             sentences[-1] += " " + p
         else:
             sentences.append(p)
+    if chunk:
+        sentences = [c for s in sentences for c in _chunk_long(s)]
     return sentences if sentences else [text]
 
 
@@ -99,135 +138,244 @@ def _calc_sentence_prosody(idx: int, total: int, sent: str,
         r_offset -= int(var * 0.3)
         p_offset -= int(var * 0.2)
 
-    r_val = max(-50, min(50, base_rate + r_offset))
-    p_val = max(-50, min(50, base_pitch + p_offset))
-    r_str = f"+{r_val}%" if r_val >= 0 else f"{r_val}%"
-    p_str = f"+{p_val}Hz" if p_val >= 0 else f"{p_val}Hz"
-    return r_str, p_str
+    return _fmt_rate(base_rate + r_offset), _fmt_pitch(base_pitch + p_offset)
 
 
-_edge_tts_failures = 0
+def _parse_signed(value: str) -> int:
+    m = re.search(r"[+-]?\d+", value or "")
+    return int(m.group()) if m else 0
 
-async def _tts_with_retry(text: str, voice: str, output_path: str,
-                          rate: str, pitch: str, max_retries: int = 3,
-                          tone: str = "normal"):
-    global _edge_tts_failures
+
+def _fmt_rate(v: int) -> str:
+    v = max(-50, min(50, v))
+    return f"+{v}%" if v >= 0 else f"{v}%"
+
+
+def _fmt_pitch(v: int) -> str:
+    v = max(-50, min(50, v))
+    return f"+{v}Hz" if v >= 0 else f"{v}Hz"
+
+
+def _strip_tts_noise(text: str) -> str:
     clean = re.sub(r"[.]{3,}", "...", text)
     clean = re.sub(r"[!]{2,}", "!", clean)
     clean = re.sub(r"[?]{2,}", "?", clean)
-    clean = re.sub(r"[#~_=|<>^]{2,}", "", clean).strip()
-    if not clean or re.fullmatch(r"[.\-–—!?…\s]+", clean):
-        import subprocess
-        subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-i",
-                        "anullsrc=r=48000:cl=mono", "-t", "0.3",
-                        "-c:a", "libmp3lame", "-q:a", "2", output_path],
-                       capture_output=True, timeout=10)
+    return re.sub(r"[#~_=|<>^]{2,}", "", clean).strip()
+
+
+def _has_speech(text: str) -> bool:
+    return bool(text) and not re.fullmatch(r"[.\-–—!?…\s]+", text)
+
+
+def _write_silence(path: str, seconds: float = 0.3):
+    codec = ["-c:a", "pcm_s16le"] if path.endswith(".wav") else ["-c:a", "libmp3lame", "-q:a", "2"]
+    subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-i", "anullsrc=r=48000:cl=mono",
+                    "-t", f"{seconds}", *codec, path],
+                   capture_output=True, timeout=30)
+
+
+# ── edge-tts with circuit breaker ──
+# gTTS ignores voice/rate/pitch/tone, so staying on it degrades every setting.
+# Pause edge-tts briefly after repeated failures, then let it prove itself again.
+
+class EdgeTTSUnavailable(Exception):
+    pass
+
+
+_edge_tts_failures = 0
+_edge_tts_blocked_until = 0.0
+EDGE_TTS_COOLDOWN = 120
+
+
+async def _edge_stream(text: str, voice_name: str, output_path: str,
+                       rate: str, pitch: str) -> list[dict]:
+    """Write the audio and return per-word timing [{"t", "s", "e"}] in seconds."""
+    communicate = edge_tts.Communicate(text, voice_name, rate=rate, pitch=pitch,
+                                       boundary="WordBoundary")
+    words = []
+    with open(output_path, "wb") as f:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                f.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                start = chunk["offset"] / 1e7
+                words.append({"t": chunk["text"], "s": round(start, 3),
+                              "e": round(start + chunk["duration"] / 1e7, 3)})
+    return words
+
+
+async def _edge_tts(text: str, voice: str, output_path: str,
+                    rate: str, pitch: str, max_retries: int = 5) -> list[dict]:
+    # The service intermittently answers "No audio received" (~1 in 4 calls
+    # in testing, independent of text/prosody), so a few quick retries matter.
+    global _edge_tts_failures, _edge_tts_blocked_until
+    if time.monotonic() < _edge_tts_blocked_until:
+        raise EdgeTTSUnavailable("edge-tts cooling down")
+    voice_name = VOICES.get(voice, voice)
+    for attempt in range(max_retries):
+        try:
+            words = await asyncio.wait_for(
+                _edge_stream(text, voice_name, output_path, rate, pitch),
+                timeout=30 + len(text) / 8)
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
+                _edge_tts_failures = 0
+                _edge_tts_blocked_until = 0.0
+                return words
+        except asyncio.TimeoutError:
+            print(f"edge-tts timeout on attempt {attempt + 1}/{max_retries}")
+        except Exception as e:
+            print(f"edge-tts error on attempt {attempt + 1}/{max_retries}: {e}")
+        if attempt < max_retries - 1:
+            await asyncio.sleep(min(1.5 * (attempt + 1), 5))
+    _edge_tts_failures += 1
+    if _edge_tts_failures >= 3:
+        _edge_tts_blocked_until = time.monotonic() + EDGE_TTS_COOLDOWN
+        print(f"edge-tts paused for {EDGE_TTS_COOLDOWN}s after {_edge_tts_failures} failures")
+    raise EdgeTTSUnavailable("edge-tts failed")
+
+
+def _gtts_sync(text: str, output_path: str):
+    from gtts import gTTS
+    gTTS(text=text, lang="th").save(output_path)
+    if not os.path.exists(output_path) or os.path.getsize(output_path) < 100:
+        raise RuntimeError("gTTS produced empty audio")
+
+
+async def _tts_with_retry(text: str, voice: str, output_path: str,
+                          rate: str, pitch: str, max_retries: int = 5):
+    """Single-shot TTS for previews/comparisons: edge-tts, gTTS if unavailable."""
+    clean = _strip_tts_noise(text)
+    if not _has_speech(clean):
+        await asyncio.to_thread(_write_silence, output_path)
         return
-
-    if _edge_tts_failures < 3:
-        last_err = None
-        for attempt in range(max_retries):
-            try:
-                communicate = edge_tts.Communicate(clean, voice, rate=rate, pitch=pitch)
-                await asyncio.wait_for(communicate.save(output_path), timeout=30)
-                if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
-                    _edge_tts_failures = 0
-                    return
-            except asyncio.TimeoutError:
-                last_err = TimeoutError("edge-tts timed out after 30s")
-                print(f"edge-tts timeout on attempt {attempt + 1}/{max_retries}")
-            except (edge_tts.exceptions.NoAudioReceived, Exception) as e:
-                last_err = e
-            wait = 2 * (attempt + 1)
-            print(f"edge-tts retry {attempt + 1}/{max_retries} (wait {wait}s)")
-            await asyncio.sleep(wait)
-        _edge_tts_failures += 1
-        print(f"edge-tts failed ({_edge_tts_failures} consecutive), falling back to gTTS")
-    else:
-        print("edge-tts skipped (service down), using gTTS directly")
-
     try:
-        from gtts import gTTS as _gTTS
-        tts = _gTTS(text=clean, lang="th")
-        tts.save(output_path)
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
-            return
-    except Exception as e:
-        print(f"gTTS also failed: {e}")
-    raise edge_tts.exceptions.NoAudioReceived("TTS failed (edge-tts + gTTS)")
+        await _edge_tts(clean, voice, output_path, rate, pitch, max_retries)
+        return
+    except EdgeTTSUnavailable:
+        print("edge-tts unavailable, using gTTS (voice/rate/pitch will not apply)")
+        await asyncio.to_thread(_gtts_sync, clean, output_path)
 
 
-async def _generate_toned_narration(
-    project_id: str, text: str, voice_name: str,
-    base_rate: str, base_pitch: str, tone: str,
-) -> str:
-    import subprocess
+async def _synthesize_segments(segments: list[dict], seg_dir: str,
+                               log: Callable | None = None,
+                               report: dict | None = None) -> tuple[list[str], list[list[dict]]]:
+    """TTS every segment (3 at a time); returns clip paths and per-segment word
+    timings. If edge-tts fails for any of them, the whole set is redone with
+    gTTS (no word timings) so one clip never mixes two different voices."""
+    os.makedirs(seg_dir, exist_ok=True)
+    paths = [os.path.join(seg_dir, f"seg_{i:03d}.mp3") for i in range(len(segments))]
+    sem = asyncio.Semaphore(TTS_CONCURRENCY)
 
-    preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
-    output_dir = os.path.join("projects", project_id, "audio")
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, "narration.mp3")
+    async def one(i: int) -> list[dict]:
+        seg = segments[i]
+        text = _strip_tts_noise(seg["tts_text"])
+        if not _has_speech(text):
+            await asyncio.to_thread(_write_silence, paths[i])
+            return []
+        async with sem:
+            return await _edge_tts(text, seg["voice"], paths[i], seg["rate"], seg["pitch"])
 
-    if preset["variation"] == 0:
-        await _tts_with_retry(text, voice_name, output_path, base_rate, base_pitch)
-        return output_path
+    results = await asyncio.gather(*(one(i) for i in range(len(segments))),
+                                   return_exceptions=True)
+    errors = [r for r in results if isinstance(r, Exception)]
+    if not errors:
+        return paths, results
+    if not all(isinstance(e, EdgeTTSUnavailable) for e in errors):
+        raise next(e for e in errors if not isinstance(e, EdgeTTSUnavailable))
 
-    sentences = _split_sentences(text)
-    if len(sentences) <= 1:
-        await _tts_with_retry(text, voice_name, output_path, base_rate, base_pitch)
-        return output_path
+    if report is not None:
+        report["used_gtts"] = True
+    msg = "edge-tts ใช้ไม่ได้ — สร้างเสียงทั้งหมดใหม่ด้วย gTTS (เสียง/ความเร็ว/โทนจะไม่ตรงที่เลือก)"
+    print(msg)
+    if log:
+        log(msg, "warning")
 
-    base_r = int(re.search(r'[+-]?\d+', base_rate).group()) if re.search(r'[+-]?\d+', base_rate) else 0
-    base_p = int(re.search(r'[+-]?\d+', base_pitch).group()) if re.search(r'[+-]?\d+', base_pitch) else 0
-    base_r += preset["base_rate"]
-    base_p += preset["base_pitch"]
+    def redo_all():
+        for i, seg in enumerate(segments):
+            text = _strip_tts_noise(seg["tts_text"])
+            if _has_speech(text):
+                _gtts_sync(text, paths[i])
+            else:
+                _write_silence(paths[i])
+    await asyncio.to_thread(redo_all)
+    return paths, [[] for _ in segments]
 
-    clips_dir = os.path.join(output_dir, "tone_clips")
-    os.makedirs(clips_dir, exist_ok=True)
 
-    clip_paths = []
-    for i, sent in enumerate(sentences):
-        r_str, p_str = _calc_sentence_prosody(i, len(sentences), sent, base_r, base_p, preset)
-        clip_path = os.path.join(clips_dir, f"sent_{i:03d}.mp3")
-        print(f"  sentence {i+1}/{len(sentences)}: rate={r_str} pitch={p_str}")
-        await _tts_with_retry(sent, voice_name, clip_path, r_str, p_str)
-        clip_paths.append(clip_path)
-        if i < len(sentences) - 1:
-            await asyncio.sleep(0.3)
+SAMPLE_RATE = 48000
 
-    gap_seconds = 0.15
-    inputs = []
-    filter_parts = []
-    for i, clip in enumerate(clip_paths):
-        inputs.extend(["-i", clip])
-        filter_parts.append(f"[{i}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono[a{i}]")
 
-    concat_parts = []
-    for i in range(len(clip_paths)):
-        concat_parts.append(f"[a{i}]")
-        if i < len(clip_paths) - 1:
-            filter_parts.append(
-                f"aevalsrc=0:s=48000:d={gap_seconds}:c=mono,aformat=sample_fmts=fltp:channel_layouts=mono[gap{i}]"
-            )
-            concat_parts.append(f"[gap{i}]")
-
-    n_segments = len(clip_paths) + len(clip_paths) - 1
-    filter_parts.append("".join(concat_parts) + f"concat=n={n_segments}:v=0:a=1[out]")
-
-    cmd = [FFMPEG, "-y"] + inputs + [
-        "-filter_complex", ";".join(filter_parts),
-        "-map", "[out]",
-        "-c:a", "libmp3lame", "-q:a", "2",
-        output_path,
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, timeout=120,
-                            encoding="utf-8", errors="replace")
+def _decode_pcm(path: str) -> bytes:
+    """Decode any audio file to raw 48 kHz mono 16-bit samples."""
+    result = subprocess.run(
+        [FFMPEG, "-v", "error", "-i", path, "-f", "s16le", "-ac", "1", "-ar", str(SAMPLE_RATE), "-"],
+        capture_output=True, timeout=120)
     if result.returncode != 0:
-        err = (result.stderr or "")[-500:]
-        raise RuntimeError(f"Toned narration concat failed: {err}")
+        raise RuntimeError(f"Could not decode {path}: {result.stderr.decode('utf-8', 'replace')[-300:]}")
+    return result.stdout
 
-    return output_path
+
+def _concat_with_gaps(clips: list[str], gap: float, output_wav: str) -> list[float]:
+    """Join clips into one 48 kHz mono WAV with silence between them and return
+    each clip's exact duration. Joined in Python rather than with one FFmpeg
+    command, whose length (one input per sentence) Windows caps at 32,767
+    characters — about 150 sentences."""
+    import wave
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        pcms = list(pool.map(_decode_pcm, clips))
+    silence = b"\x00\x00" * int(SAMPLE_RATE * gap)
+    with wave.open(output_wav, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(SAMPLE_RATE)
+        for i, pcm in enumerate(pcms):
+            if i:
+                w.writeframes(silence)
+            w.writeframes(pcm)
+    return [len(p) / 2 / SAMPLE_RATE for p in pcms]
+
+
+def _write_timings(path: str, items: list[dict], durations: list[float], gap: float,
+                   words: list[list[dict]] | None = None):
+    timing, t = [], 0.0
+    for i, (it, d) in enumerate(zip(items, durations)):
+        entry = {"text": it["text"], "start": round(t, 3), "end": round(t + d, 3)}
+        if "speaker" in it:
+            entry["speaker"] = it["speaker"]
+        if words and words[i]:
+            entry["words"] = [{"t": w["t"], "s": round(t + w["s"], 3), "e": round(t + w["e"], 3)}
+                              for w in words[i]]
+        timing.append(entry)
+        t += d + gap
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(timing, f, ensure_ascii=False, indent=2)
+
+
+def _write_proportional_timings(path: str, items: list[dict], total: float):
+    """For engines that synthesize everything in one pass (F5): spread time by text length."""
+    weights = [max(1, len(it["text"])) for it in items]
+    scale = total / sum(weights)
+    _write_timings(path, items, [w * scale for w in weights], 0.0)
+
+
+def _polish_audio(wav_path: str):
+    """Clean up cloned voice: rumble cut, gentle compression, clarity EQ.
+    Loudness is normalised once, at the final video mux."""
+    polished = wav_path.replace(".wav", "_polished.wav")
+    af = ",".join([
+        "highpass=f=80",
+        "acompressor=threshold=-20dB:ratio=2:attack=5:release=80",
+        "equalizer=f=2500:t=q:w=1.2:g=2",
+        "equalizer=f=180:t=q:w=0.8:g=-1",
+    ])
+    result = subprocess.run([FFMPEG, "-y", "-i", wav_path, "-af", af,
+                             "-c:a", "pcm_s16le", "-ar", "48000", polished],
+                            capture_output=True, timeout=180)
+    if result.returncode == 0 and os.path.exists(polished) and os.path.getsize(polished) > 100:
+        os.replace(polished, wav_path)
+    else:
+        print("Clone polish failed, using raw clone output")
 
 
 def parse_dialogue(script: str) -> list[dict]:
@@ -255,106 +403,6 @@ def parse_dialogue(script: str) -> list[dict]:
     return lines
 
 
-async def _generate_dialogue_audio(
-    project_id: str, script: str,
-    voice_a: str, voice_b: str,
-    rate: str, pitch: str,
-    replacements: dict,
-    tone: str = "normal",
-) -> str:
-    """Generate multi-voice dialogue audio with per-line TTS."""
-    output_dir = os.path.join("projects", project_id, "audio")
-    os.makedirs(output_dir, exist_ok=True)
-
-    lines = parse_dialogue(script)
-    if not lines:
-        raise ValueError("No dialogue lines found in script")
-
-    voice_map = {"A": voice_a, "B": voice_b}
-    gap_seconds = 0.3
-    clips_dir = os.path.join(output_dir, "clips")
-    os.makedirs(clips_dir, exist_ok=True)
-
-    preset = TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
-    base_r = int(re.search(r'[+-]?\d+', rate).group()) if re.search(r'[+-]?\d+', rate) else 0
-    base_p = int(re.search(r'[+-]?\d+', pitch).group()) if re.search(r'[+-]?\d+', pitch) else 0
-    base_r += preset["base_rate"]
-    base_p += preset["base_pitch"]
-
-    clip_paths = []
-    for i, line in enumerate(lines):
-        processed = apply_replacements(line["text"], replacements)
-        voice_name = voice_map[line["speaker"]]
-        clip_path = os.path.join(clips_dir, f"line_{i:03d}.mp3")
-        if preset["variation"] > 0:
-            r_str, p_str = _calc_sentence_prosody(i, len(lines), processed, base_r, base_p, preset)
-        else:
-            r_str, p_str = rate, pitch
-        await _tts_with_retry(processed, voice_name, clip_path, r_str, p_str)
-        clip_paths.append(clip_path)
-        if i < len(lines) - 1:
-            await asyncio.sleep(0.3)
-
-    timing = []
-    current_time = 0.0
-    for i, line in enumerate(lines):
-        dur = get_audio_duration(clip_paths[i])
-        timing.append({
-            "speaker": line["speaker"],
-            "text": line["text"],
-            "start": round(current_time, 3),
-            "end": round(current_time + dur, 3),
-        })
-        current_time += dur + gap_seconds
-
-    timing_path = os.path.join(output_dir, "dialogue_timing.json")
-    with open(timing_path, "w", encoding="utf-8") as f:
-        json.dump(timing, f, ensure_ascii=False, indent=2)
-
-    output_path = os.path.join(output_dir, "narration.mp3")
-
-    if len(clip_paths) == 1:
-        import shutil
-        shutil.copy2(clip_paths[0], output_path)
-        return output_path
-
-    inputs = []
-    filter_parts = []
-    idx = 0
-    for i, clip in enumerate(clip_paths):
-        inputs.extend(["-i", clip])
-        filter_parts.append(f"[{idx}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono[a{idx}]")
-        idx += 1
-
-    concat_parts = []
-    for i in range(len(clip_paths)):
-        concat_parts.append(f"[a{i}]")
-        if i < len(clip_paths) - 1:
-            filter_parts.append(
-                f"aevalsrc=0:s=48000:d={gap_seconds}:c=mono,aformat=sample_fmts=fltp:channel_layouts=mono[gap{i}]"
-            )
-            concat_parts.append(f"[gap{i}]")
-
-    n_segments = len(clip_paths) + len(clip_paths) - 1
-    filter_parts.append("".join(concat_parts) + f"concat=n={n_segments}:v=0:a=1[out]")
-
-    cmd = [FFMPEG, "-y"] + inputs + [
-        "-filter_complex", ";".join(filter_parts),
-        "-map", "[out]",
-        "-c:a", "libmp3lame", "-q:a", "2",
-        output_path,
-    ]
-
-    import subprocess
-    result = subprocess.run(cmd, capture_output=True, timeout=120,
-                            encoding="utf-8", errors="replace")
-    if result.returncode != 0:
-        err = (result.stderr or "")[-500:]
-        raise RuntimeError(f"Dialogue concat failed: {err}")
-
-    return output_path
-
-
 async def generate_audio(
     project_id: str,
     script: str,
@@ -366,58 +414,89 @@ async def generate_audio(
     voice_b: str = "",
     tone: str = "normal",
     clone_tau: float = 0.3,
+    clone_engine: str = "openvoice",
+    tone_preset: dict | None = None,
+    log: Callable | None = None,
+    report: dict | None = None,
 ) -> str:
+    """Returns path to audio/narration.wav and writes audio/timings.json
+    (one entry per spoken sentence/line) for subtitle timing."""
     replacements = load_replacements()
+    out_dir = os.path.join("projects", project_id, "audio")
+    seg_dir = os.path.join(out_dir, "segments")
+    os.makedirs(out_dir, exist_ok=True)
+    shutil.rmtree(seg_dir, ignore_errors=True)
+    narration = os.path.join(out_dir, "narration.wav")
+    timings_path = os.path.join(out_dir, "timings.json")
+
+    preset = tone_preset or TONE_PRESETS.get(tone, TONE_PRESETS["normal"])
+    base_r = _parse_signed(rate) + preset["base_rate"]
+    base_p = _parse_signed(pitch) + preset["base_pitch"]
 
     if mode == "dialogue":
-        voice_a_name = VOICES.get(voice, VOICES["female"])
-        if not voice_b:
-            voice_b = "male" if voice == "female" else "female"
-        voice_b_name = VOICES.get(voice_b, VOICES["male"])
-        return await _generate_dialogue_audio(
-            project_id, script, voice_a_name, voice_b_name,
-            rate, pitch, replacements, tone=tone,
-        )
+        lines = parse_dialogue(script)
+        if not lines:
+            raise ValueError("No dialogue lines found in script")
+        vb = voice_b or ("male" if voice == "female" else "female")
+        voice_map = {"A": VOICES.get(voice, VOICES["female"]), "B": VOICES.get(vb, VOICES["male"])}
+        items = [{"text": ln["text"], "speaker": ln["speaker"], "voice": voice_map[ln["speaker"]]}
+                 for ln in lines]
+        gap = DIALOGUE_GAP
+    else:
+        sentences = _split_sentences(_clean_script_for_tts(script))
+        items = [{"text": s, "voice": VOICES.get(voice, VOICES["female"])} for s in sentences]
+        gap = NARRATION_GAP
 
-    processed = _clean_script_for_tts(script)
-    processed = apply_replacements(processed, replacements)
+    if clone_voice_id and clone_engine == "f5-tts-thai" and mode != "dialogue":
+        from scripts.voice_clone import get_reference_path
+        from scripts.f5_clone import clone_with_f5, is_f5_available
+        ref_path = get_reference_path(clone_voice_id)
+        if ref_path and is_f5_available():
+            full_text = apply_replacements("\n".join(it["text"] for it in items), replacements)
+            try:
+                await clone_with_f5(full_text, ref_path, narration)
+                await asyncio.to_thread(_polish_audio, narration)
+                total = await asyncio.to_thread(get_audio_duration, narration)
+                _write_proportional_timings(timings_path, items, total)
+                return narration
+            except Exception as e:
+                msg = f"F5-TTS-THAI ล้มเหลว ({str(e)[:120]}) — ใช้ OpenVoice แทน"
+                print(msg)
+                if log:
+                    log(msg, "warning")
 
-    voice_name = VOICES.get(voice, VOICES["female"])
+    segments = []
+    for i, it in enumerate(items):
+        if preset["variation"] > 0:
+            r, p = _calc_sentence_prosody(i, len(items), it["text"], base_r, base_p, preset)
+        else:
+            r, p = _fmt_rate(base_r), _fmt_pitch(base_p)
+        segments.append({"tts_text": apply_replacements(it["text"], replacements),
+                         "voice": it["voice"], "rate": r, "pitch": p})
 
-    output_dir = os.path.join("projects", project_id, "audio")
-    os.makedirs(output_dir, exist_ok=True)
+    clip_paths, seg_words = await _synthesize_segments(segments, seg_dir, log=log, report=report)
+    base_wav = os.path.join(out_dir, "base_tts.wav") if clone_voice_id else narration
+    durations = await asyncio.to_thread(_concat_with_gaps, clip_paths, gap, base_wav)
+    _write_timings(timings_path, items, durations, gap, seg_words)
+    shutil.rmtree(seg_dir, ignore_errors=True)
 
     if clone_voice_id:
-        base_path = os.path.join(output_dir, "base_tts.wav")
-        if tone != "normal":
-            await _generate_toned_narration(project_id, processed, voice_name, rate, pitch, tone)
-            import shutil, subprocess as _sp
-            mp3_path = os.path.join(output_dir, "narration.mp3")
-            _sp.run([FFMPEG, "-y", "-i", mp3_path, "-acodec", "pcm_s16le",
-                     "-ar", "48000", base_path],
-                    capture_output=True, timeout=120)
-        else:
-            mp3_tmp = os.path.join(output_dir, "base_tts_tmp.mp3")
-            await _tts_with_retry(processed, voice_name, mp3_tmp, rate, pitch)
-            import subprocess as _sp
-            _sp.run([FFMPEG, "-y", "-i", mp3_tmp, "-acodec", "pcm_s16le",
-                     "-ar", "48000", base_path],
-                    capture_output=True, timeout=120)
-
         from scripts.voice_clone import clone_voice, get_reference_path
         ref_path = get_reference_path(clone_voice_id)
+        cloned = False
         if ref_path:
-            output_path = os.path.join(output_dir, "narration.wav")
-            await clone_voice(base_path, ref_path, output_path, tau=clone_tau)
+            cloned = await clone_voice(base_wav, ref_path, narration, tau=clone_tau)
+        if cloned:
+            await asyncio.to_thread(_polish_audio, narration)
         else:
-            output_path = os.path.join(output_dir, "narration.mp3")
-            os.rename(base_path, output_path)
-    else:
-        if tone != "normal":
-            output_path = await _generate_toned_narration(
-                project_id, processed, voice_name, rate, pitch, tone)
-        else:
-            output_path = os.path.join(output_dir, "narration.mp3")
-            await _tts_with_retry(processed, voice_name, output_path, rate, pitch)
+            os.replace(base_wav, narration)
+            if report is not None:
+                report["clone_failed"] = True
+            msg = "โคลนเสียงไม่สำเร็จ — ใช้เสียง TTS ปกติแทน"
+            print(msg)
+            if log:
+                log(msg, "warning")
+        if os.path.exists(base_wav):
+            os.remove(base_wav)
 
-    return output_path
+    return narration

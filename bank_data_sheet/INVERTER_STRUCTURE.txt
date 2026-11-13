@@ -1,0 +1,306 @@
+[INVERTER_STRUCTURE]
+; เวอร์ชันโครงสร้าง 3.4 (ฟิลด์ตามโครงสร้าง 3.2 · รูปแบบการกรอก 3.4) - ใช้ร่วมกันทั้ง String / Micro / Central / Hybrid / Off-grid  ส่วน OFFGRID_AC_COUPLING ให้กรอกเฉพาะเครื่องที่ทำงานออฟกริดหรือ AC Coupling ได้ ส่วนที่ขึ้นต้นด้วย HYBRID_ ให้กรอกเฉพาะไฮบริด (ถ้าเป็น String ให้เว้นว่างทุกบรรทัดค่าใน section นั้น แล้วใส่ ; [ไม่ใช้กับเครื่องชนิดนี้] ใต้หัว section)
+; ── กติกาการกรอก 3.4 (ใช้คู่กับ PROMPT_<ชนิด>.txt ในโฟลเดอร์เดียวกัน) ──
+; ค่าที่เห็นในแม่แบบเป็นค่าเริ่มต้นเท่านั้น ไม่ใช่ค่าของรุ่นใด ต้องแทนด้วยค่าจากเอกสารทุกบรรทัด
+; ไม่พบในเอกสาร: เว้นว่างหลังเครื่องหมาย (เหลือแค่ ชื่อฟิลด์ และเครื่องหมาย) แล้วใส่บรรทัด ; [ไม่มีข้อมูล] ไว้เหนือบรรทัดค่า ห้ามเดา ห้ามคงค่าเริ่มต้น
+; ทุกค่าที่กรอกต้องมีบรรทัด ; [SRC: หน้า n · ตารางหรือหัวข้อ · ข้อความต้นฉบับ] ไว้เหนือบรรทัดค่า
+; ห้ามใส่แท็ก หน่วย หรือคอมเมนต์ต่อท้ายบรรทัดค่า · ข้อความหลายรายการคั่นด้วยจุลภาค ห้ามใช้ ; หรือ # ในค่า
+; บรรทัดคอมเมนต์ทุกบรรทัดห้ามมีเครื่องหมายเท่ากับ (เขียน : แทน)
+
+[GENERAL_INFO]
+; ชื่อผู้ผลิตอินเวอร์เตอร์
+Manufacturer = ""
+; ชื่อรุ่นของอินเวอร์เตอร์ (ตารางมีหลายรุ่น ให้แยก 1 ไฟล์ต่อ 1 รุ่น ครบทุกรุ่น)
+Model_Name = ""
+; ชื่อซีรีส์หรือตระกูลผลิตภัณฑ์ เช่น SUN2000, Sigen Hybrid, Primo GEN24 [ใหม่]
+Product_Series = ""
+; ประเภทของอินเวอร์เตอร์ (เช่น String, Micro, Central, Hybrid, Off-grid) - Off-grid คือเครื่องที่ไม่จ่ายไฟย้อนเข้ากริด เช่น Axpert, SPF
+Inverter_Type = ""
+; คลาสแรงดันแบตเตอรี่ที่ระบบรองรับ: HV (แรงดันสูง >100V) / LV (48V) / None (ไม่รองรับแบตเตอรี่) ใช้เป็นตัวกรองขั้นแรกในการจับคู่ [ใหม่]
+Battery_Coupling_Class = ""
+
+[DC_INPUT_PARAMETERS]
+; แรงดันไฟดีซีสูงสุดที่อินเวอร์เตอร์ทนได้ (โวลต์)
+Max_DC_Input_Voltage_V = 0
+; แรงดันไฟดีซีเริ่มต้นที่ทำให้อินเวอร์เตอร์ตื่นและเริ่มทำงาน (โวลต์)
+Start_Input_Voltage_V = 0
+; แรงดัน DC ที่ใช้เป็นค่าอ้างอิงตามสเปกชีต (Rated/Nominal input voltage) (โวลต์) เช่น 600 [ใหม่]
+Rated_DC_Input_Voltage_V = 0
+; แรงดันขั้นต่ำที่ระบบ MPPT จะทำงานได้อย่างมีประสิทธิภาพ (โวลต์)
+MPPT_Voltage_Min_V = 0
+; แรงดันสูงสุดที่ระบบ MPPT จะทำงานได้อย่างมีประสิทธิภาพ (โวลต์)
+MPPT_Voltage_Max_V = 0
+; แรงดันขั้นต่ำที่อินเวอร์เตอร์สามารถจ่ายกำลังไฟได้เต็ม 100% (โวลต์)
+Full_Power_MPPT_Min_V = 0
+; พิกัดกระแสไฟทำงานสูงสุดต่อ 1 MPPT (แอมแปร์)
+Max_Input_Current_MPPT_A = 0.0
+; พิกัดกระแสลัดวงจรสูงสุดต่อ 1 MPPT (แอมแปร์)
+Max_Isc_Current_MPPT_A = 0.0
+; จำนวนวงจร MPPT อิสระในอินเวอร์เตอร์ตัวนี้
+Number_of_MPPTs = 0
+; จำนวนช่องเสียบสาย (String) ที่ให้มาต่อ 1 MPPT
+Inputs_per_MPPT = 0
+; กำลังไฟ PV สูงสุดที่ผู้ผลิตแนะนำให้ต่อเข้า (Max recommended PV input power) (kWp) [ใหม่]
+Max_PV_Input_Power_kWp = 0.0
+; อัตราส่วน DC/AC สูงสุดที่อนุญาต เช่น 1.5 คำนวณจาก Max_PV_Input_Power_kWp / Rated_AC_Output_Power_kW หากไม่ระบุตรง ๆ [ใหม่]
+Max_DC_AC_Ratio = 0.0
+; กำลังไฟสูงสุดต่อ 1 MPPT (kW) ถ้าเอกสารระบุ [ใหม่]
+Max_Input_Power_per_MPPT_kW = 0.0
+; ชนิดขั้วต่อสาย DC เช่น MC4, Amphenol H4, Staubli [ใหม่]
+DC_Connector_Type = ""
+
+[AC_OUTPUT_GRID_CONNECTED]
+; พิกัดกำลังจ่ายไฟกระแสสลับสูงสุดแบบต่อเนื่อง (กิโลวัตต์)
+Rated_AC_Output_Power_kW = 0.0
+; พิกัดกำลังจ่ายไฟกระแสสลับปรากฏสูงสุด (kVA)
+Max_AC_Apparent_Power_kVA = 0.0
+; แรงดันไฟฟ้ากระแสสลับที่ใช้งาน (โวลต์) เช่น 220, 230, 380, 400
+Nominal_AC_Voltage_V = 400
+; ช่วงแรงดัน AC ต่ำสุดที่ยังทำงานได้ (โวลต์) [ใหม่]
+AC_Voltage_Range_Min_V = 0
+; ช่วงแรงดัน AC สูงสุดที่ยังทำงานได้ (โวลต์) [ใหม่]
+AC_Voltage_Range_Max_V = 0
+; ชนิดของเฟส (เช่น 1-Phase, 3-Phase)
+Phase_Type = ""
+; ความถี่ของระบบไฟฟ้า (เฮิรตซ์) เช่น 50 หรือ 60
+Nominal_Frequency_Hz = 50
+; กระแสไฟฟ้ากระแสสลับสูงสุดที่จ่ายออกไปได้ (แอมแปร์) (ระบบ 3 เฟสให้ใช้ค่าต่อเฟส)
+Max_AC_Output_Current_A = 0.0
+; ช่วงการปรับชดเชยค่า Power Factor (ตัวประกอบกำลัง)
+Power_Factor_Range = "0.8lag-0.8lead"
+; ค่าความเพี้ยนของกระแส THDi ที่พิกัด (%) ปกติน้อยกว่า 3 [ใหม่]
+THDi_Pct = 0.0
+; รองรับการต่อขนานอินเวอร์เตอร์หลายเครื่องในระบบเดียว (True/False) [ใหม่]
+Parallel_Operation_Supported = False
+; จำนวนเครื่องสูงสุดที่ต่อขนานได้ [ใหม่]
+Max_Parallel_Units = 1
+
+[EFFICIENCY_LOSS]
+; ประสิทธิภาพการแปลงไฟสูงสุดตามสเปกชีต (%)
+Max_Efficiency_Pct = 0.0
+; ประสิทธิภาพเฉลี่ยถ่วงน้ำหนักตามมาตรฐานยุโรปหรือ CEC (%)
+Euro_CEC_Efficiency_Pct = 0.0
+; ประสิทธิภาพของระบบ MPPT (%) ปกติมากกว่า 99 [ใหม่]
+MPPT_Efficiency_Pct = 0.0
+; พลังงานที่อินเวอร์เตอร์บริโภคเองในช่วงกลางคืน (วัตต์)
+Night_Consumption_W = 0.0
+
+[HYBRID_DC_BATTERY_INTERFACE]
+; ชนิดของแบตเตอรี่ที่รองรับ (เช่น Li-ion, Lead-Acid, High Voltage)
+Compatible_Battery_Type = "-"
+; ชนิดเคมีแบตเตอรี่ที่รองรับ เช่น LFP, NMC, Lead-Acid [ใหม่]
+Compatible_Battery_Chemistry = ""
+; รายชื่อรุ่นแบตเตอรี่ที่ผู้ผลิตระบุว่าใช้ร่วมกันได้ คั่นด้วยจุลภาค เช่น "LUNA2000-7-S1, LUNA2000-14-S1" (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+Compatible_Battery_Models = ""
+; รองรับแบตเตอรี่ต่างยี่ห้อผ่านโปรโตคอลเปิด (True) หรือล็อกเฉพาะยี่ห้อตัวเอง (False) [ใหม่]
+Third_Party_Battery_Support = False
+; รูปแบบการต่อแบตเตอรี่: DC-Coupled / AC-Coupled [ใหม่]
+Battery_Coupling_Type = "DC-Coupled"
+; แรงดันแบตเตอรี่ขั้นต่ำที่รองรับได้ (โวลต์)
+Battery_Voltage_Range_Min_V = 0
+; แรงดันแบตเตอรี่สูงสุดที่รองรับได้ (โวลต์)
+Battery_Voltage_Range_Max_V = 0
+; แรงดันอ้างอิงของระบบแบตเตอรี่ (โวลต์)
+Nominal_Battery_Voltage_V = 0
+; กำลังไฟสูงสุดที่อินเวอร์เตอร์สามารถอัดประจุเข้าแบตเตอรี่ได้ (กิโลวัตต์)
+Max_Charge_Power_kW = 0.0
+; กำลังไฟสูงสุดที่อินเวอร์เตอร์ดึงจากแบตเตอรี่มาใช้ได้ (กิโลวัตต์)
+Max_Discharge_Power_kW = 0.0
+; กระแสชาร์จสูงสุดเข้าแบตเตอรี่ (แอมแปร์)
+Max_Charge_Current_A = 0.0
+; กระแสคายประจุสูงสุดจากแบตเตอรี่ (แอมแปร์)
+Max_Discharge_Current_A = 0.0
+; จำนวนพอร์ตต่อแบตเตอรี่อิสระในเครื่อง เช่น 1, 2 [ใหม่]
+Number_of_Battery_Ports = 1
+; ความจุแบตเตอรี่รวมสูงสุดที่ระบบรองรับ (kWh) [ใหม่]
+Max_Battery_Capacity_kWh = 0.0
+; โพรโทคอลสื่อสารกับระบบจัดการแบตเตอรี่ (BMS) เช่น CAN, RS485
+BMS_Communication_Protocol = "-"
+; รองรับการทำงานแบบไม่มีกริด (Off-grid / Black start) (True/False) [ใหม่]
+Off_Grid_Capable = False
+; มีช่องรับไฟจากเครื่องปั่นไฟ (Generator input) (True/False) [ใหม่]
+Generator_Input_Supported = False
+
+[HYBRID_AC_BACKUP_EPS_OUTPUT]
+; กำลังไฟจ่ายให้ช่องโหลดสำรอง (Backup/EPS) แบบต่อเนื่อง (กิโลวัตต์)
+Backup_Rated_Power_kW = 0.0
+; กำลังไฟจ่ายโหลดสำรองแบบปรากฏ (kVA)
+Backup_Max_Apparent_Power_kVA = 0.0
+; ระยะเวลาที่ทนกำลังไฟกระชาก (Peak) ได้ (วินาที)
+Backup_Peak_Power_Duration_Sec = 0
+; เวลาในการตัดสลับเมื่อไฟดับเข้าสู่โหมดสำรอง (มิลลิวินาที) ยิ่งน้อยยิ่งดี (0 คือ UPS แบบไร้รอยต่อ)
+Backup_Switchover_Time_ms = 0
+; แรงดันไฟฟ้าขาออกในโหมดสำรอง (โวลต์)
+Backup_Nominal_AC_Voltage_V = 0
+; รูปแบบเฟสของช่องโหลดสำรอง (1-Phase / 3-Phase) [ใหม่]
+Backup_Phase_Type = ""
+; กระแสสูงสุดของช่องโหลดสำรอง (แอมแปร์) [ใหม่]
+Backup_Max_Output_Current_A = 0.0
+; เปอร์เซ็นต์ความเพี้ยนของรูปคลื่นแรงดันในโหมดสำรอง (THDv %)
+Backup_THDV_Pct = 0.0
+; กระแสไหลผ่านบายพาสวงจรสูงสุดเมื่อทำงานปกติ (แอมแปร์)
+Max_Bypass_Current_A = 0.0
+; ต้องใช้กล่อง Backup Box / ATS ภายนอกเพิ่มหรือไม่ (True คือต้องซื้อเพิ่ม) [ใหม่]
+Requires_External_Backup_Box = False
+; รุ่นของ Backup Box / ATS ที่ผู้ผลิตกำหนด (ถ้ามี) [ใหม่]
+Backup_Box_Model = ""
+
+[HYBRID_ENERGY_MANAGEMENT_CONTROL]
+; ประสิทธิภาพสูงสุดตอนดึงไฟจากแบตไปจ่ายโหลด (Battery to AC) (%)
+Max_Battery_to_Load_Efficiency_Pct = 0.0
+; ประสิทธิภาพสูงสุดตอนแปลงไฟโซลาร์ชาร์จลงแบต (PV to Battery) (%)
+Max_PV_to_Battery_Efficiency_Pct = 0.0
+; โหมดการทำงานที่รองรับ เช่น Self-Consumption, TOU, Backup
+Supported_Operation_Modes = "-"
+; รองรับการเชื่อมต่อมิเตอร์กันย้อน (CT/Smart Meter) ภายนอกหรือไม่ (True/False)
+External_Meter_CT_Compatible = True
+; รุ่น Smart Meter / CT ที่ผู้ผลิตกำหนดให้ใช้ เช่น DTSU666-H, Sigen Gateway [ใหม่]
+Required_Smart_Meter_Model = ""
+; รองรับการจำกัดการจ่ายไฟย้อนเข้ากริด (Export Limit / Zero Export) (True/False) [ใหม่]
+Export_Limit_Support = True
+; รองรับการจ่ายโหลดแบบไม่สมดุล (Unbalanced Load) ระหว่างเฟสหรือไม่ (True/False)
+Unbalanced_Load_Support = False
+; รุ่นเครื่องชาร์จ EV ที่ทำงานร่วมกับระบบ EMS ของอินเวอร์เตอร์นี้ได้ (ถ้าระบุ) [ใหม่]
+EV_Charger_Integration = ""
+
+[OFFGRID_AC_COUPLING]
+; โหมดออฟกริดที่รองรับ: Stand-alone (ไม่มีไฟการไฟฟ้า) / Grid-assist (ใช้ไฟการไฟฟ้าเป็น bypass และชาร์จสำรอง) / Both / None [ใหม่ 3.2]
+Off_Grid_Mode = "None"
+; จ่ายไฟย้อนเข้ากริดได้หรือไม่ (True คือขายคืนได้ · อินเวอร์เตอร์ออฟกริดแท้ส่วนใหญ่เป็น False) [ใหม่ 3.2]
+Grid_Export_Capable = True
+; กระแสชาร์จแบตเตอรี่จากไฟ AC (การไฟฟ้าหรือเครื่องปั่นไฟ) สูงสุด วัดฝั่งแบตเตอรี่ (แอมแปร์) [ใหม่ 3.2]
+Max_AC_Charge_Current_A = 0.0
+; กระแสชาร์จแบตเตอรี่จากโซลาร์ (MPPT charger) สูงสุด วัดฝั่งแบตเตอรี่ (แอมแปร์) [ใหม่ 3.2]
+Max_PV_Charge_Current_A = 0.0
+; กำลังกระชากสูงสุดในโหมดออฟกริด เช่น ตอนสตาร์ทมอเตอร์หรือคอมแอร์ (kVA) [ใหม่ 3.2]
+Surge_Power_kVA = 0.0
+; พลังงานที่เครื่องใช้เองขณะเปิดโหมดอินเวอร์เตอร์แต่ไม่มีโหลด (วัตต์) ใช้คิดพลังงานสูญเสียต่อวันของระบบออฟกริด [ใหม่ 3.2]
+No_Load_Consumption_W = 0.0
+; พิกัดกำลังของพอร์ตเครื่องปั่นไฟ (kW) ถ้าไม่มีพอร์ตแยกให้ใช้ 0 [ใหม่ 3.2]
+Generator_Port_Rated_Power_kW = 0.0
+; รองรับ AC Coupling กับอินเวอร์เตอร์ on-grid เดิมหรือไม่ (True/False) [ใหม่ 3.2]
+AC_Coupling_Supported = False
+; ตำแหน่งที่ต่อ on-grid เดิมได้: Grid-side (วัด CT ที่ตู้ MDB) / Backup-side (ต่อพอร์ต Backup หรือ GEN) / Both / None [ใหม่ 3.2]
+AC_Coupling_Port = "None"
+; กำลังอินเวอร์เตอร์ on-grid เดิมสูงสุดที่ต่อเข้าพอร์ต Backup หรือ GEN ได้ (kW) ตามคู่มือผู้ผลิต [ใหม่ 3.2]
+Max_AC_Coupled_PV_kW = 0.0
+; วิธีคุมกำลัง on-grid เดิมเมื่อแบตเต็มขณะไฟดับ: Frequency shift / Relay / Communication / None [ใหม่ 3.2]
+AC_Coupling_Power_Control = "None"
+
+[DETAILED_EFFICIENCY_CURVE]
+; แรงดันอ้างอิงสำหรับการพล็อตเส้นโค้งประสิทธิภาพ
+Nominal_Voltage_For_Curve_V = 0.0
+; ประสิทธิภาพของอินเวอร์เตอร์ที่ภาระการทำงาน (Load) 10% (%)
+Efficiency_at_10_Pct_Load = 0.0
+; ประสิทธิภาพที่ Load 20% (%)
+Efficiency_at_20_Pct_Load = 0.0
+; ประสิทธิภาพที่ Load 50% (%)
+Efficiency_at_50_Pct_Load = 0.0
+; ประสิทธิภาพที่ Load 75% (%)
+Efficiency_at_75_Pct_Load = 0.0
+; ประสิทธิภาพที่ Load 100% (%)
+Efficiency_at_100_Pct_Load = 0.0
+; พลังงานที่อินเวอร์เตอร์ใช้เลี้ยงวงจรตัวเองขณะจ่ายไฟ (วัตต์)
+Auxiliary_Consumption_Operating_W = 0.0
+
+[THERMAL_DERATING_BEHAVIOR]
+; อุณหภูมิแวดล้อมที่เครื่องเริ่มลดการจ่ายกำลังไฟเพื่อป้องกันความร้อน (Thermal Derating)
+Derating_Start_Temperature_C = 45.0
+; อัตราการลดกำลังไฟเมื่ออุณหภูมิเกินจุด Derating (วัตต์ ต่อ 1 องศาเซลเซียส)
+Power_Drop_Rate_W_per_C = 0.0
+; เส้นลดกำลังตามอุณหภูมิจากกราฟ derating ใน datasheet รูปแบบ "องศา:kW,องศา:kW" อย่างน้อย 2 จุด เช่น "45:10,50:8,60:5" ต่อเครื่อง (kW ไม่ใช่ %) โปรแกรมใช้จำลองการผลิตไฟ [ใหม่ 3.4]
+Derating_Curve_C_kW = ""
+; อุณหภูมิใช้งานต่ำสุดที่เครื่องรองรับ (องศาเซลเซียส) เช่น -25 [ใหม่]
+Operating_Temp_Min_C = -25.0
+; อุณหภูมิสูงสุดที่เครื่องสามารถทำงานได้ก่อนจะตัดการทำงาน
+Max_Operating_Temperature_C = 60.0
+; ความชื้นสัมพัทธ์สูงสุดที่ใช้งานได้ (%) [ใหม่]
+Max_Operating_Humidity_Pct = 100.0
+; ระดับความสูงจากน้ำทะเลสูงสุดที่ใช้งานได้โดยไม่ลดกำลัง (เมตร) [ใหม่]
+Max_Operating_Altitude_m = 0
+; วิธีระบายความร้อน: Natural convection / Smart air cooling (Fan) [ใหม่]
+Cooling_Method = ""
+; ระดับเสียงขณะทำงาน (เดซิเบล) [ใหม่]
+Noise_Level_dB = 0.0
+
+[ADVANCED_GRID_SUPPORT]
+; พิกัดการจ่าย/ดูดซับพลังงานรีแอคทีฟเพื่อพยุงแรงดันกริด (kVAR)
+Reactive_Power_Capability_kVAR = 0.0
+; รองรับระบบพยุงแรงดันชั่วขณะเมื่อไฟตกหรือไฟเกิน (True/False)
+LVRT_HVRT_Supported = True
+; มีระบบป้องกันการจ่ายไฟเข้าระบบสายส่งเมื่อไฟดับ (True/False)
+Active_Anti_Islanding = True
+; มาตรฐาน Grid Code ที่รองรับ คั่นด้วยจุลภาค เช่น "MEA/PEA (Thailand), IEC 62116, VDE-AR-N 4105, AS/NZS 4777.2" [ใหม่]
+Grid_Code_Compliance = ""
+; มาตรฐานความปลอดภัยที่ผ่านการรับรอง เช่น "IEC 62109-1, IEC 62109-2, IEC 62477-1" [ใหม่]
+Safety_Certifications = ""
+
+[PROTECTION_FEATURES]
+; มีสวิตช์ตัดวงจร DC ในตัว (True/False) [ใหม่]
+DC_Switch_Integrated = True
+; มีระบบตรวจจับอาร์กฟอลต์ฝั่ง DC (AFCI) (True/False) [ใหม่]
+AFCI_Supported = False
+; ชนิดอุปกรณ์ป้องกันไฟกระชากฝั่ง DC (SPD) เช่น Type II, Type I+II [ใหม่]
+DC_SPD_Type = ""
+; ชนิดอุปกรณ์ป้องกันไฟกระชากฝั่ง AC (SPD) เช่น Type II [ใหม่]
+AC_SPD_Type = ""
+; มีระบบตรวจสอบค่าความต้านทานฉนวน (Insulation monitoring) (True/False) [ใหม่]
+Insulation_Monitoring = True
+; มีระบบตรวจกระแสรั่ว (RCMU / Residual current monitoring) (True/False) [ใหม่]
+Residual_Current_Monitoring = True
+; มีระบบป้องกันการต่อขั้ว DC กลับ (True/False) [ใหม่]
+DC_Reverse_Polarity_Protection = True
+
+[COMMUNICATION_MONITORING]
+; อินเทอร์เฟซสื่อสารที่มีในตัวเครื่อง คั่นด้วยจุลภาค เช่น "WLAN, Ethernet, 4G, RS485, Bluetooth" [ใหม่]
+Communication_Interfaces = ""
+; โปรโตคอลสื่อสารที่รองรับ เช่น "Modbus RTU, Modbus TCP, SunSpec" [ใหม่]
+Communication_Protocols = ""
+; แพลตฟอร์มหรือแอปสำหรับมอนิเตอร์ เช่น FusionSolar, mySigen, SolarEdge Monitoring [ใหม่]
+Monitoring_Platform = ""
+; ต้องมี Dongle หรือ Data logger ภายนอกเพื่อเชื่อมต่ออินเทอร์เน็ตหรือไม่ (True/False) [ใหม่]
+Requires_External_Dongle = False
+; รุ่นของ Dongle / Logger ที่ผู้ผลิตกำหนด (ถ้ามี) [ใหม่]
+Dongle_Model = ""
+
+[MECHANICAL_ENVIRONMENTAL]
+; ความกว้างของตัวเครื่อง (มิลลิเมตร) [ใหม่]
+Width_mm = 0.0
+; ความสูงของตัวเครื่อง (มิลลิเมตร) [ใหม่]
+Height_mm = 0.0
+; ความลึกของตัวเครื่อง (มิลลิเมตร) [ใหม่]
+Depth_mm = 0.0
+; น้ำหนักของตัวเครื่อง (กิโลกรัม) [ใหม่]
+Weight_kg = 0.0
+; ระดับกันน้ำกันฝุ่น เช่น IP65, IP66 [ใหม่]
+IP_Rating = ""
+; รูปแบบการติดตั้ง: Wall-mounted / Floor-standing [ใหม่]
+Mounting_Type = ""
+; โครงสร้างวงจร: Transformerless / Isolated (มีหม้อแปลง) [ใหม่]
+Topology = "Transformerless"
+
+[WARRANTY]
+; ระยะเวลารับประกันมาตรฐาน (ปี) [ใหม่]
+Warranty_Years = 0
+; ระยะเวลารับประกันสูงสุดที่ซื้อขยายเพิ่มได้ (ปี) [ใหม่]
+Max_Extended_Warranty_Years = 0
+
+[DATA_SOURCE]
+; ชื่อไฟล์ Datasheet ต้นทางที่ใช้กวาดข้อมูล [ใหม่]
+Source_File = ""
+; วันที่หรือเวอร์ชันของ Datasheet ตามที่ระบุในเอกสาร [ใหม่]
+Datasheet_Version = ""
+; วันที่กวาดข้อมูล รูปแบบ YYYY-MM-DD [ใหม่]
+Extraction_Date = ""
+; วิธีที่ใช้กวาดข้อมูล: Text / OCR / Manual [ใหม่]
+Extraction_Method = ""
+; ระดับความเชื่อมั่นของข้อมูลโดยรวม: High / Medium / Low [ใหม่]
+Data_Confidence = ""
+; จำนวนพารามิเตอร์ที่ไม่พบในเอกสาร [ใหม่]
+Not_Found_Count = 0
+; ตัวแทนจำหน่ายหรือแหล่งที่ซื้อได้ในประเทศไทย [ใหม่ 3.2]
+Thai_Distributor = ""
+; ลิงก์ datasheet ทางการของผู้ผลิต [ใหม่ 3.2]
+Datasheet_URL = ""
+; หมายเหตุอื่น ๆ [ใหม่]
+Notes = ""

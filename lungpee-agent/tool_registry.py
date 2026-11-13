@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -8,20 +17,45 @@ parameter + ตาราง dispatch เรียกฟังก์ชันจ�
 เริ่ม Phase 2: โมเดลขนาดเล็ก (4B) แม่นยำน้อยลงถ้าต้องเลือกจากเครื่องมือเยอะ/คลุมเครือพร้อมกัน
 """
 from tools import apps, files, shell, ui_automation
+from tools import image as image_tool
 from tools import translate as translate_tool
 
 TOOLS = [
     {"type": "function", "function": {
+        "name": "generate_image",
+        "description": (
+            "วาดรูป/สร้างภาพใหม่จากคำอธิบาย แล้วเปิดภาพให้ผู้ใช้ดู "
+            "ใช้เมื่อผู้ใช้พูดว่า: วาดรูป, วาดภาพ, สร้างภาพ, สร้างรูป, ขอรูป, draw, generate image "
+            "ใช้เวลาประมาณ 1-2 นาที"
+        ),
+        "parameters": {"type": "object", "properties": {
+            "prompt": {"type": "string", "description": "คำอธิบายภาพตามที่ผู้ใช้พูด (ภาษาไทยได้) ไม่ต้องใส่คำว่าวาดรูป"},
+            "shape": {"type": "string", "enum": ["auto", "square", "portrait", "landscape"],
+                      "description": "ใช้ auto เสมอ ยกเว้นผู้ใช้พูดว่าแนวตั้ง (portrait) หรือแนวนอน (landscape)"},
+        }, "required": ["prompt"]},
+    }},
+    {"type": "function", "function": {
         "name": "launch_app",
-        "description": "เปิดโปรแกรมใดก็ได้ที่ติดตั้งในเครื่อง เช่น line, freecad, notepad, chrome",
+        "description": (
+            "เปิดโปรแกรมใดก็ได้ที่ติดตั้งในเครื่อง "
+            "ใช้เมื่อผู้ใช้พูดว่า: เปิด, เรียก, open, launch ตามด้วยชื่อโปรแกรม "
+            "ตัวอย่างชื่อ: line, ไลน์, freecad, ฟรีแคด, notepad, โน้ตแพด, "
+            "chrome, edge, calculator, เครื่องคิดเลข, code, vscode, excel, word "
+            "ส่งชื่อตามที่ผู้ใช้พูดมาโดยตรง ห้ามเปลี่ยนเป็นชื่ออื่น"
+        ),
         "parameters": {"type": "object", "properties": {
             "name": {"type": "string", "description": "ชื่อโปรแกรมตามที่ผู้ใช้พูดมาตรงๆ ห้ามเปลี่ยนเป็นโปรแกรมอื่น"},
         }, "required": ["name"]},
     }},
     {"type": "function", "function": {
         "name": "run_shell",
-        "description": "รันคำสั่ง PowerShell หนึ่งคำสั่ง แล้วคืนผลลัพธ์ (stdout/stderr) - ใช้เมื่อผู้ใช้ขอให้ทำ"
-                       "สิ่งที่ต้องใช้สคริปต์/คำสั่งระบบ ต้องขออนุญาตผู้ใช้ก่อนรันเสมอ",
+        "description": (
+            "รันคำสั่ง PowerShell หนึ่งคำสั่ง แล้วคืนผลลัพธ์ (stdout/stderr) "
+            "ใช้เมื่อผู้ใช้ขอให้: รันสคริปต์, ดู IP, ping, ดูขนาดดิสก์, ตรวจ process, "
+            "หรือทำสิ่งที่ไม่มีเครื่องมือเฉพาะรองรับ "
+            "ห้ามใช้คำสั่งที่มี remove-item, del, rm, erase เพราะจะถูกบล็อกอัตโนมัติ "
+            "ต้องขออนุญาตผู้ใช้ก่อนรันเสมอ"
+        ),
         "parameters": {"type": "object", "properties": {
             "command": {"type": "string", "description": "คำสั่ง PowerShell ที่จะรัน"},
         }, "required": ["command"]},
@@ -35,8 +69,11 @@ TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "find_file",
-        "description": "ค้นหาไฟล์หรือโฟลเดอร์ด้วยชื่อ (หรือบางส่วนของชื่อ) แบบค้นลึกทุกโฟลเดอร์ย่อยในครั้งเดียว "
-                       "ใช้เครื่องมือนี้ทันทีเมื่อผู้ใช้ขอให้หาไฟล์/โฟลเดอร์ ห้ามถามกลับก่อนลองค้นด้วยเครื่องมือนี้",
+        "description": (
+            "ค้นหาไฟล์หรือโฟลเดอร์ด้วยชื่อ (หรือบางส่วนของชื่อ) แบบค้นลึกทุกโฟลเดอร์ย่อยในครั้งเดียว "
+            "ใช้เมื่อผู้ใช้พูดว่า: หาไฟล์, ค้นหาไฟล์, ไฟล์อยู่ที่ไหน, หาโฟลเดอร์, ไฟล์ชื่อ..., find, search for "
+            "เรียกเครื่องมือนี้ทันทีโดยไม่ถามกลับ แม้ไม่รู้ว่าไฟล์อยู่โฟลเดอร์ไหน"
+        ),
         "parameters": {"type": "object", "properties": {
             "name": {"type": "string", "description": "ชื่อไฟล์/โฟลเดอร์ที่จะค้นหา (หรือบางส่วนของชื่อ)"},
             "root": {"type": "string", "description": "โฟลเดอร์ที่จะเริ่มค้น (ไม่ระบุก็ได้ จะค้นจากโฟลเดอร์ผู้ใช้โดยอัตโนมัติ)"},
@@ -60,7 +97,7 @@ TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "delete_file",
-        "description": "ลบไฟล์ (ต้องขออนุญาตผู้ใช้ก่อนเสมอ เพราะย้อนกลับไม่ได้)",
+        "description": "ลบไฟล์ — เครื่องมือนี้ถูกปิดใช้งานถาวร ห้ามเรียกในทุกกรณี แจ้งผู้ใช้ให้ลบเองแทน",
         "parameters": {"type": "object", "properties": {
             "path": {"type": "string", "description": "path ของไฟล์ที่จะลบ"},
         }, "required": ["path"]},
@@ -106,6 +143,10 @@ def _launch_app(args, ctx):
     return apps.launch_app(args.get("name", ""))
 
 
+def _generate_image(args, ctx):
+    return image_tool.generate_image(args.get("prompt", ""), args.get("shape") or "auto")
+
+
 def _run_shell(args, ctx):
     return shell.run_shell(args.get("command", ""))
 
@@ -148,6 +189,7 @@ def _type_text(args, ctx):
 
 
 DISPATCH = {
+    "generate_image": _generate_image,
     "launch_app": _launch_app,
     "run_shell": _run_shell,
     "list_dir": _list_dir,

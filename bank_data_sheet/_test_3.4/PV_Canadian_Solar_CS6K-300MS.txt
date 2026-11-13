@@ -1,0 +1,240 @@
+[PV_MODULE_STRUCTURE]
+; เวอร์ชันโครงสร้าง 3.4 (ฟิลด์ตามโครงสร้าง 3.0 · รูปแบบการกรอก 3.4) - ทุกพารามิเตอร์มีคอมเมนต์ภาษาไทยกำกับ พารามิเตอร์ที่เพิ่มจากเวอร์ชันเดิมจะมี [ใหม่] ท้ายคอมเมนต์
+; ── กติกาการกรอก 3.4 (ใช้คู่กับ PROMPT_<ชนิด>.txt ในโฟลเดอร์เดียวกัน) ──
+; ค่าที่เห็นในแม่แบบเป็นค่าเริ่มต้นเท่านั้น ไม่ใช่ค่าของรุ่นใด ต้องแทนด้วยค่าจากเอกสารทุกบรรทัด
+; ไม่พบในเอกสาร: เว้นว่างหลังเครื่องหมาย (เหลือแค่ ชื่อฟิลด์ และเครื่องหมาย) แล้วใส่บรรทัด ; [ไม่มีข้อมูล] ไว้เหนือบรรทัดค่า ห้ามเดา ห้ามคงค่าเริ่มต้น
+; ทุกค่าที่กรอกต้องมีบรรทัด ; [SRC: หน้า n · ตารางหรือหัวข้อ · ข้อความต้นฉบับ] ไว้เหนือบรรทัดค่า
+; ห้ามใส่แท็ก หน่วย หรือคอมเมนต์ต่อท้ายบรรทัดค่า · ข้อความหลายรายการคั่นด้วยจุลภาค ห้ามใช้ ; หรือ # ในค่า
+; บรรทัดคอมเมนต์ทุกบรรทัดห้ามมีเครื่องหมายเท่ากับ (เขียน : แทน)
+
+[GENERAL_INFO]
+; ชื่อผู้ผลิตแผงโซลาร์เซลล์
+; [SRC: หน้า 1 · หัวเอกสาร · CanadianSolar · CANADIAN SOLAR INC.]
+Manufacturer = "Canadian Solar"
+; ชื่อรุ่นของแผงโซลาร์เซลล์ (ตารางมีหลายรุ่น ให้แยก 1 ไฟล์ต่อ 1 รุ่น ครบทุกรุ่น)
+; [SRC: หน้า 2 · Electrical Data STC · CS6K 300MS]
+Model_Name = "CS6K-300MS"
+; ชื่อซีรีส์หรือตระกูลผลิตภัณฑ์ เช่น Tiger Neo, Vertex S+, Hi-MO 6 [ใหม่]
+; [SRC: หน้า 1 · หัวเอกสาร · SUPERPOWER CS6K- 290|295|300|305MS]
+Product_Series = "SuperPower"
+; ชนิดของเซลล์ เช่น Monocrystalline, n-type TOPCon, HJT, PERC
+; [SRC: หน้า 2 · Mechanical Data · Cell Type Mono-crystalline, 6 inch · หน้า 1 Mono-PERC cells]
+Cell_Type = "Mono-crystalline PERC, 6 inch"
+; จำนวนเซลล์ทั้งหมดในแผง เช่น 108, 120, 132, 144 (แผง Half-cut นับตามจำนวนชิ้นจริง) [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Cell Arrangement 60 (6 x 10)]
+Number_of_Cells = 60
+; รูปแบบการตัดเซลล์ เช่น Full-cell, Half-cut, 1/3-cut, Shingled [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Cell Arrangement 60 (6 x 10)]
+Cell_Configuration = "6 x 10"
+; โครงสร้างแผง เช่น Glass-Backsheet, Glass-Glass (Dual Glass) [ใหม่]
+; [ไม่มีข้อมูล]
+Module_Construction =
+
+[STC_PARAMETERS]
+; กำลังไฟฟ้าสูงสุดที่สภาวะมาตรฐาน STC (วัตต์)
+; [SRC: หน้า 2 · Electrical Data STC · Nominal Max. Power (Pmax) 300 W]
+Pmax_Wp = 300.0
+; แรงดันไฟฟ้าวงจรเปิด (โวลต์) ที่ STC
+; [SRC: หน้า 2 · Electrical Data STC · Open Circuit Voltage (Voc) 39.7 V]
+Voc_V = 39.7
+; กระแสไฟฟ้าลัดวงจร (แอมแปร์) ที่ STC
+; [SRC: หน้า 2 · Electrical Data STC · Short Circuit Current (Isc) 9.83 A]
+Isc_A = 9.83
+; แรงดันไฟฟ้าที่ให้กำลังสูงสุด (โวลต์) ที่ STC
+; [SRC: หน้า 2 · Electrical Data STC · Opt. Operating Voltage (Vmp) 32.5 V]
+Vmp_V = 32.5
+; กระแสไฟฟ้าที่ให้กำลังสูงสุด (แอมแปร์) ที่ STC
+; [SRC: หน้า 2 · Electrical Data STC · Opt. Operating Current (Imp) 9.24 A]
+Imp_A = 9.24
+; ประสิทธิภาพของแผงโซลาร์เซลล์ (%)
+; [SRC: หน้า 2 · Electrical Data STC · Module Efficiency 18.33%]
+Module_Efficiency_Pct = 18.33
+; ค่าคลาดเคลื่อนของกำลังไฟฟ้า ระบุตามสเปกชีต เช่น "0/+5W" หรือ "0~+3%" [ใหม่]
+; [SRC: หน้า 2 · Electrical Data STC · Power Tolerance 0 ~ + 5 W]
+Power_Tolerance = "0~+5W"
+; ค่า Fill Factor (%) คำนวณจาก (Vmp x Imp) หาร (Voc x Isc) คูณ 100 หากเอกสารไม่ระบุ [ใหม่]
+; [CALCULATED: Vmp x Imp หาร (Voc x Isc) คูณ 100]
+; [SRC: หน้า 2 · Electrical Data STC · Vmp 32.5 V, Imp 9.24 A, Voc 39.7 V, Isc 9.83 A]
+Fill_Factor_Pct = 77.0
+
+[NMOT_PARAMETERS]
+; เงื่อนไขทดสอบ NMOT/NOCT ที่เอกสารใช้อ้างอิง เช่น "800 W/m2, 20 C, AM1.5, 1 m/s" [ใหม่]
+; [SRC: หน้า 2 · Electrical Data NMOT · irradiance of 800 W/m2, spectrum AM 1.5, ambient temperature 20°C, wind speed 1 m/s]
+NMOT_Test_Condition = "800 W/m2, AM 1.5, ambient 20C, wind 1 m/s"
+; กำลังไฟฟ้าสูงสุดที่สภาวะ NMOT (อุณหภูมิการทำงานจริง) (วัตต์)
+; [SRC: หน้า 2 · Electrical Data NMOT · Nominal Max. Power (Pmax) 222 W]
+Pmax_NMOT_W = 222.0
+; แรงดันไฟฟ้าวงจรเปิดที่ NMOT (โวลต์)
+; [SRC: หน้า 2 · Electrical Data NMOT · Open Circuit Voltage (Voc) 37.2 V]
+Voc_NMOT_V = 37.2
+; กระแสไฟฟ้าลัดวงจรที่ NMOT (แอมแปร์)
+; [SRC: หน้า 2 · Electrical Data NMOT · Short Circuit Current (Isc) 7.93 A]
+Isc_NMOT_A = 7.93
+; แรงดันไฟฟ้าที่ให้กำลังสูงสุดที่ NMOT (โวลต์)
+; [SRC: หน้า 2 · Electrical Data NMOT · Opt. Operating Voltage (Vmp) 30.0 V]
+Vmp_NMOT_V = 30.0
+; กระแสไฟฟ้าที่ให้กำลังสูงสุดที่ NMOT (แอมแปร์)
+; [SRC: หน้า 2 · Electrical Data NMOT · Opt. Operating Current (Imp) 7.40 A]
+Imp_NMOT_A = 7.4
+
+[TEMPERATURE_COEFFICIENTS]
+; ค่าสัมประสิทธิ์อุณหภูมิต่อกระแสลัดวงจร (% ต่อ 1 องศาเซลเซียส) (มักเป็นบวก เช่น +0.045)
+; [SRC: หน้า 2 · Temperature Characteristics · Temperature Coefficient (Isc) 0.05 % / °C]
+Tk_Isc_Pct_Per_C = 0.05
+; ค่าสัมประสิทธิ์อุณหภูมิต่อแรงดันวงจรเปิด (% ต่อ 1 องศาเซลเซียส) (มักติดลบ เช่น -0.25)
+; [SRC: หน้า 2 · Temperature Characteristics · Temperature Coefficient (Voc) -0.29 % / °C]
+Tk_Voc_Pct_Per_C = -0.29
+; ค่าสัมประสิทธิ์อุณหภูมิต่อกำลังไฟฟ้าสูงสุด (% ต่อ 1 องศาเซลเซียส) (มักติดลบ เช่น -0.30)
+; [SRC: หน้า 2 · Temperature Characteristics · Temperature Coefficient (Pmax) -0.39 % / °C]
+Tk_Pmax_Pct_Per_C = -0.39
+; อุณหภูมิการทำงานปกติของเซลล์ที่สภาวะแวดล้อมกำหนด (องศาเซลเซียส) เช่น 43 (ถ้าระบุเป็น 43+-2 ให้ใส่ 43)
+; [SRC: หน้า 2 · Temperature Characteristics · Nominal Module Operating Temperature (NMOT) 42 ± 3 °C]
+NMOT_Value_C = 42.0
+; อุณหภูมิใช้งานต่ำสุดของแผง (องศาเซลเซียส) ปกติ -40 [ใหม่]
+; [SRC: หน้า 2 · Electrical Data STC · Operating Temperature -40°C ~ +85°C]
+Operating_Temp_Min_C = -40.0
+; อุณหภูมิใช้งานสูงสุดของแผง (องศาเซลเซียส) ปกติ +85 [ใหม่]
+; [SRC: หน้า 2 · Electrical Data STC · Operating Temperature -40°C ~ +85°C]
+Operating_Temp_Max_C = 85.0
+
+[MECHANICAL_SPEC]
+; ความยาวของแผง (มิลลิเมตร)
+; [SRC: หน้า 2 · Mechanical Data · Dimensions 1650 x 992 x 35 mm]
+Length_mm = 1650.0
+; ความกว้างของแผง (มิลลิเมตร)
+; [SRC: หน้า 2 · Mechanical Data · Dimensions 1650 x 992 x 35 mm]
+Width_mm = 992.0
+; ความหนาของกรอบแผง (มิลลิเมตร)
+; [SRC: หน้า 2 · Mechanical Data · Dimensions 1650 x 992 x 35 mm]
+Thickness_mm = 35.0
+; น้ำหนักของแผง (กิโลกรัม)
+; [SRC: หน้า 2 · Mechanical Data · Weight 18.2 kg (40.1 lbs)]
+Weight_kg = 18.2
+; วัสดุกรอบแผง เช่น Anodized Aluminium Alloy [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Frame Material Anodized aluminium alloy]
+Frame_Material = "Anodized aluminium alloy"
+; ความหนากระจกด้านหน้า (มิลลิเมตร) เช่น 2.0, 3.2 [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Front Cover 3.2 mm tempered glass]
+Front_Glass_Thickness_mm = 3.2
+; เป็นแผงชนิดสองหน้า (Bifacial) หรือไม่ (True/False)
+; [ไม่มีข้อมูล]
+Is_Bifacial =
+; สัดส่วนการผลิตพลังงานจากด้านหลังแผงเทียบกับด้านหน้า (เช่น 0.70 หรือ 0.80)
+; [ไม่มีข้อมูล]
+Bifaciality_Factor =
+; พิกัดรับแรงลมด้านหลัง (ปาสคาล) เช่น 2400 [ใหม่]
+; [UNCERTAIN: ข้อความจุดเด่นหน้าแรก มีดอกจันให้ดูคู่มือติดตั้ง]
+; [SRC: หน้า 1 · Key Features · wind load up to 4000 Pa *]
+Max_Wind_Load_Pa = 4000
+; พิกัดรับน้ำหนักด้านหน้า/หิมะ (ปาสคาล) เช่น 5400 [ใหม่]
+; [UNCERTAIN: ข้อความจุดเด่นหน้าแรก มีดอกจันให้ดูคู่มือติดตั้ง]
+; [SRC: หน้า 1 · Key Features · Heavy snow load up to 6000 Pa]
+Max_Snow_Load_Pa = 6000
+; จำนวนไดโอดบายพาสในกล่องต่อสาย เช่น 3 [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · J-Box IP68, 3 bypass diodes]
+Number_of_Bypass_Diodes = 3
+; ระดับกันน้ำกันฝุ่นของกล่องต่อสาย (Junction Box) เช่น IP68 [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · J-Box IP68, 3 bypass diodes]
+Junction_Box_IP_Rating = "IP68"
+; ชนิดขั้วต่อสาย เช่น MC4, MC4-EVO2, Staubli [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Connector T4 series]
+Connector_Type = "T4 series"
+; ความยาวสายไฟต่อเส้น (+/-) (มิลลิเมตร) เช่น 1200 (ถ้าระบุเป็นช่วงให้ใส่ค่าที่มากที่สุด) [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Cable 4.0 mm² (IEC), 12 AWG (UL), 1000 mm]
+Cable_Length_mm = 1000.0
+; พื้นที่หน้าตัดสายไฟ (ตารางมิลลิเมตร) เช่น 4.0 [ใหม่]
+; [SRC: หน้า 2 · Mechanical Data · Cable 4.0 mm² (IEC), 12 AWG (UL), 1000 mm]
+Cable_Cross_Section_mm2 = 4.0
+
+[ONE_DIODE_MODEL_PARAMS]
+; ความต้านทานขนาน (Rsh) มีผลต่อประสิทธิภาพในที่แสงน้อย ยิ่งสูงยิ่งดี
+; [ไม่มีข้อมูล]
+Shunt_Resistance_Rsh_Ohm =
+; ความต้านทานอนุกรม (Rs) ภายในเซลล์แผง ยิ่งต่ำยิ่งดี
+; [ไม่มีข้อมูล]
+Series_Resistance_Rs_Ohm =
+; ค่าอุดมคติของไดโอด ใช้ในสมการ PVSYSt ปกติอยู่ระหว่าง 1.0 - 1.5
+; [ไม่มีข้อมูล]
+Diode_Ideality_Factor_Gamma =
+
+[LOW_LIGHT_AND_IAM]
+; ประสิทธิภาพสัมพัทธ์ที่ความเข้มแสงต่ำ (200 W/m2) เพื่อจำลองช่วงเช้า/เย็น หรือเมฆบัง
+; [ไม่มีข้อมูล]
+Relative_Efficiency_at_200W_m2_Pct =
+; ค่าสัมประสิทธิ์จำลองการสะท้อนแสงหน้ากระจก (Incident Angle Modifier)
+; [ไม่มีข้อมูล]
+IAM_ASHRAE_b0 =
+; ดัชนีหักเหแสงของกระจกหน้าแผง (ปกติประมาณ 1.526)
+; [ไม่มีข้อมูล]
+IAM_Glass_Index_n =
+; แผงมีการเคลือบสารลดการสะท้อนแสง (Anti-Reflective Coating) หรือไม่ (True/False)
+; [ไม่มีข้อมูล]
+IAM_AR_Coating =
+
+[DEGRADATION_WARRANTY]
+; อัตราการเสื่อมสภาพในปีแรก (Light Induced Degradation) (%)
+; [ไม่มีข้อมูล]
+First_Year_Degradation_LID_Pct =
+; อัตราการเสื่อมสภาพรายปีตั้งแต่ปีที่ 2 เป็นต้นไป (%)
+; [ไม่มีข้อมูล]
+Annual_Degradation_Rate_Pct =
+; จำนวนปีที่รับประกันประสิทธิภาพแผง (Performance/Power Warranty) (มักจะเป็น 25 หรือ 30 ปี)
+; [SRC: หน้า 1 · 25 years linear power output warranty]
+Warranty_Years = 25
+; จำนวนปีที่รับประกันตัวผลิตภัณฑ์ (Product Warranty) เช่น 12, 15, 25 [ใหม่]
+; [SRC: หน้า 1 · 10 years product warranty on materials and workmanship]
+Product_Warranty_Years = 10
+; กำลังไฟฟ้าที่รับประกัน ณ สิ้นปีที่ 1 (% ของ Pmax) เช่น 99.0 [ใหม่]
+; [ไม่มีข้อมูล]
+Warranty_Year1_Power_Pct =
+; กำลังไฟฟ้าที่รับประกัน ณ สิ้นปีสุดท้ายของประกัน (% ของ Pmax) เช่น 87.4 [ใหม่]
+; [ไม่มีข้อมูล]
+Warranty_End_Power_Pct =
+; แผงทนต่อการเสื่อมจากศักย์ไฟฟ้า (PID Resistant) หรือไม่ (True/False) [ใหม่]
+; [ไม่มีข้อมูล]
+PID_Resistant =
+
+[CERTIFICATION_LIMITS]
+; พิกัดแรงดันสูงสุดของระบบที่แผงรองรับได้ (เช่น 1000V หรือ 1500V)
+; [UNCERTAIN: เอกสารระบุ 1000 V หรือ 1500 V ตามรุ่นย่อย ใช้ค่าต่ำไว้ก่อน ตรวจป้ายแผงจริง]
+; [SRC: หน้า 2 · Electrical Data STC · Max. System Voltage 1000 V (IEC/UL) or 1500 V (IEC/UL)]
+Max_System_Voltage_V = 1000
+; พิกัดทนกระแสไหลย้อนกลับสูงสุด (สำหรับใช้เลือกขนาด String Fuse)
+; [DERIVED: เอกสารระบุค่าเดียวคือ Max. Series Fuse Rating จึงใส่ทั้งสองฟิลด์]
+; [SRC: หน้า 2 · Electrical Data STC · Max. Series Fuse Rating 15 A]
+Max_Reverse_Current_A = 15.0
+; พิกัดฟิวส์อนุกรมสูงสุด (Max Series Fuse Rating) (แอมแปร์) ถ้าเอกสารระบุแยกจาก Reverse Current [ใหม่]
+; [SRC: หน้า 2 · Electrical Data STC · Max. Series Fuse Rating 15 A]
+Max_Series_Fuse_Rating_A = 15.0
+; ระดับความปลอดภัยทางไฟฟ้า (Safety Class / Application Class) เช่น Class II [ใหม่]
+; [SRC: หน้า 2 · Electrical Data STC · Application Classification Class A]
+Safety_Class = "Class A"
+; ระดับทนไฟ เช่น Class C, Type 1, Type 2 [ใหม่]
+; [SRC: หน้า 2 · Electrical Data STC · Module Fire Performance TYPE 1 (UL 1703) or CLASS C (IEC 61730)]
+Fire_Rating = "TYPE 1 (UL 1703) or CLASS C (IEC 61730)"
+; มาตรฐานที่ผ่านการรับรอง คั่นด้วยเครื่องหมายจุลภาค เช่น "IEC 61215, IEC 61730, UL 61730" [ใหม่]
+; [SRC: หน้า 1 · Product Certificates · IEC 61215 / IEC 61730: VDE / CE]
+Certifications = "IEC 61215, IEC 61730, VDE, CE"
+
+[DATA_SOURCE]
+; ชื่อไฟล์ Datasheet ต้นทางที่ใช้กวาดข้อมูล [ใหม่]
+; [SRC: ชื่อไฟล์ที่แนบ]
+Source_File = "DS_CS6K-290-305MS_V5.562_EN.pdf"
+; วันที่หรือเวอร์ชันของ Datasheet ตามที่ระบุในเอกสาร เช่น "2025-03" หรือ "Rev 1.2" [ใหม่]
+; [SRC: หน้า 2 · ท้ายหน้า · Apr. 2018 PV Module Product Datasheet V5.562_EN]
+Datasheet_Version = "V5.562_EN Apr. 2018"
+; วันที่กวาดข้อมูล รูปแบบ YYYY-MM-DD [ใหม่]
+; [SRC: วันที่ทำ]
+Extraction_Date = "2026-11-05"
+; วิธีที่ใช้กวาดข้อมูล: Text (อ่านจาก PDF โดยตรง), OCR (อ่านจากภาพ), Manual [ใหม่]
+; [SRC: PDF มี text layer]
+Extraction_Method = "Text"
+; ระดับความเชื่อมั่นของข้อมูลโดยรวม: High / Medium / Low [ใหม่]
+; [SRC: ทุกค่าบังคับพบในตารางสเปกหลัก]
+Data_Confidence = "High"
+; จำนวนพารามิเตอร์ที่ไม่พบในเอกสาร (นับบรรทัดที่มี [ไม่มีข้อมูล]) [ใหม่]
+; [SRC: นับจากไฟล์นี้]
+Not_Found_Count = 16
+; หมายเหตุอื่น ๆ เช่น รุ่นอื่นที่อยู่ในตารางเดียวกัน หรือค่าที่ต้องตรวจสอบเพิ่ม [ใหม่]
+; [ไม่มีข้อมูล]
+Notes =

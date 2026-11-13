@@ -4,7 +4,7 @@
     {
       "name": "yt-shorts",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "uvicorn", "app.app:app", "--host", "127.0.0.1", "--port", "5000", "--reload"],
+      "runtimeArgs": ["-m", "uvicorn", "app.app:app", "--host", "127.0.0.1", "--port", "5000", "--reload", "--reload-dir", "app", "--reload-dir", "core", "--reload-dir", "scripts"],
       "port": 5000
     }
   ]

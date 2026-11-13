@@ -47,3 +47,68 @@ tools/ffmpeg/
 tmp/
 temp/
 *.tmp
+# PyInstaller work folders
+translation/build/
+gateway/build/
+
+# Multi Tools is its own git repo
+multi-tools/
+_scratch/
+
+# ทะเบียนศูนย์ผู้ให้บริการ (ข้อมูลผู้ใช้ ไม่มีคีย์ — Multi Tools สร้างใหม่ได้)
+shared/providers.json
+
+# repo แยก: github.com/peeraponggis/pee_architec (private)
+pee_architec/
+
+# ===== กันพลาด: repo นี้เป็น PUBLIC (โดย ลุงพี 31 ต.ค. 2569 · ดู PROGRAMS.md หมวด 4) =====
+# โปรแกรมที่มีรหัสผ่าน PEA / ข้อมูลลูกค้า — โค้ดสะอาดอยู่ที่ git/ai (public) แทน
+AMI_Fetcher/
+AMR_Fetcher/
+PEA_build/
+FB_Fetcher/
+FB_Extension/
+cctv/
+Trading/
+carport_cm/
+desktop_app/
+apps/
+tools/homeguard/
+tools/Tune-PC/
+aiSolar/
+# repo แยกของตัวเอง (clone อยู่ใต้ git/)
+git/
+courseweb/
+project_plan_spa/
+# ข้อมูล/ความลับ
+**/data/customers/
+**/config.ini
+**/.env
+**/.env.*
+*.pem
+*.key
+**/*credential*
+**/*cookie*
+*.sqlite
+*.db
+*.xls
+*.xlsx
+*.mkv
+*.avi
+
+# Local Translator: ข้อมูลของแต่ละเครื่อง (ประวัติการแปล · ค่าตั้ง + API key) — ห้ามขึ้น git (ลุงพีสั่ง 2 พ.ย. 2569 หลังประวัติหลุดขึ้น repo public)
+translation/history.json
+translation/settings.json
+translation/dist/LocalTranslator/history.json
+translation/dist/LocalTranslator/settings.json
+translation/_keep_local/
+
+# Local Translator build outputs (ชุดเต็ม zip ใหญ่เกิน 100 MB ของ GitHub)
+translation/dist_lite/
+translation/build_dist/
+translation/build_lite/
+translation/LocalTranslator-full.zip
+training/
+bank_data_sheet/_old_v3.1/
+bank_data_sheet/_proposal/
+bank_data_sheet/_test_3.4/datasheet_ต้นทาง/
