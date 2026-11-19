@@ -1,0 +1,82 @@
+{
+  "brand": "AndSolar",
+  "series": "AMCP T2",
+  "models": ["AMCP1000-1200", "AMCP1200-1500"],
+  "source": ["UM_AndSolar_AMCP_T2_V1.2.pdf"],
+  "pdf": "accessory/Optimizer/UM_AndSolar_AMCP_T2_V1.2.pdf",
+  "manualVersion": "V1.2-36B04",
+  "verified": "draft — สกัดด้วย PROMPT_MANUAL 1.0 เมื่อ 2026-11-05 ยังไม่ได้ตรวจ",
+  "updated": "2026-11-05",
+  "pageNote": "page = ลำดับหน้าใน PDF เริ่มที่ 1 (เลขที่พิมพ์ท้ายกระดาษ = page - 1)",
+  "values": {
+    "optimizerRsd": {
+      "value": { "optimizerModel": "AMCP1000-1200, AMCP1200-1500", "rapidShutdown": "สั่งตัดได้ 3 ทาง: สวิตช์ฉุกเฉิน · สั่งผ่านแอป · ตัดเองเมื่ออุณหภูมิสูง · ตัดภายใน 30 วินาที (ADCU-M0)" },
+      "unit": "",
+      "page": 11,
+      "pages": [11, 28],
+      "quote": "Rapid Shutdown Method : Manual shutdown by emergency switch, App remote shutdown, high temperature automatic shutdown.",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf",
+      "note": "หน้า 28 ตาราง ADCU Parameters: Max. Shutdown Time Less than 30s"
+    },
+    "deratingNote": {
+      "value": "ลดกำลังเมื่ออุณหภูมิใช้งานเกิน 70°C แล้วกลับเป็นปกติเมื่ออุณหภูมิลดลง",
+      "unit": "",
+      "page": 28,
+      "quote": "When the operating temperature exceeds 70°C, the device may work in de-rating mode and return to normal operating mode after the operating temperature decreases",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    },
+    "operatingTempC": {
+      "value": "-40~85",
+      "unit": "°C",
+      "page": 27,
+      "quote": "Temperature Range* -40℃-+85℃",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    },
+    "ipRating": {
+      "value": "IP68",
+      "unit": "",
+      "page": 27,
+      "quote": "Ingress Protection Rating IP68",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    },
+    "maxAltitudeM": {
+      "value": 4000,
+      "unit": "m",
+      "page": 28,
+      "quote": "Highest Altitude 4000m",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    },
+    "commProtocol": {
+      "value": "HPLC (ผ่านสาย DC) · WEB+APP · ระยะสื่อสาร 1000 m · ADCU ต่อคลาวด์ 4G/LAN/Wi-Fi",
+      "unit": "",
+      "page": 28,
+      "pages": [28, 29],
+      "quote": "Communication Method HPLC User Interface WEB+APP Communication Distance 1000m",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    },
+    "maxInputA": {
+      "value": { "AMCP1000-1200": 16, "AMCP1200-1500": 22 },
+      "unit": "A",
+      "page": 27,
+      "quote": "Max. Input Current 16A 22A",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    },
+    "maxModulesPerString": {
+      "value": 30,
+      "unit": "แผง",
+      "page": 28,
+      "quote": "Max. No. of Modules in Series 30",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf",
+      "note": "ตาราง ADCU-M0 · Max. No. of MLPE Device Series Connections 30"
+    },
+    "adcuPowerCableMm2": {
+      "value": "1.0-1.5",
+      "unit": "mm²",
+      "page": 26,
+      "quote": "The recommended power cable for ADCU is: 1.0~1.5mm2 cable.",
+      "manual": "UM_AndSolar_AMCP_T2_V1.2.pdf"
+    }
+  },
+  "notFound": ["acBreakerA", "rcdMa", "rcdType", "maxOutputFaultCurrentA", "backupBreakerA", "spdType", "acCableMm2", "peCableMm2", "dcCableMm2", "batteryCableMm2", "batteryBreakerA", "batteryFuse", "dcIscMaxA", "gridCodes", "meterCt", "parallelMax", "acSwitchNote", "dcMaxInputA", "mpptFullLoadV", "dcSwitchBuiltIn"],
+  "notFoundNote": "คู่มือเป็นของออปติไมเซอร์ (ไม่ใช่อินเวอร์เตอร์) จึงไม่มีค่าเบรกเกอร์/RCD/ค่าตั้งการไฟฟ้า · ไม่ระบุแรงดันขาเข้าสูงสุด (Voc) ของตัว optimizer ระบุเฉพาะ MPPT 24-130 V และ Max. System Voltage 1500V"
+}

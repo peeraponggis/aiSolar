@@ -1,0 +1,318 @@
+[EV_CHARGE_STRUCTURE]
+; เวอร์ชันโครงสร้าง 3.4 (ฟิลด์ตามโครงสร้าง 3.3 · รูปแบบการกรอก 3.4) - ใช้ร่วมกันทั้ง AC Wallbox และ DC Charger  ฟิลด์ที่ขึ้นต้นด้วย DC_ ให้กรอกเฉพาะ DC Charger
+; 3.3 เพิ่มฟิลด์ที่กำกับ [ใหม่ 3.3] สำหรับตรวจตามระเบียบไทย/ลาว (มอก. PEA VOLTA RCD หัว GB/T) และการออกแบบสถานี DC
+; ไฟล์ 3.0/3.1/3.2 เดิมยังนำเข้าได้ ฟิลด์ที่ไม่มีในไฟล์ให้โปรแกรมใช้ค่าเริ่มต้น
+; ฟิลด์บังคับ (ขาดแล้วโปรแกรมออกแบบไม่ได้) Max_Output_Power_kW, Phase_Type, Max_Current_Per_Phase_A, Connector_Standard, Integrated_RCD_Type, Builtin_RCD_Class, DC_Leakage_Detection_6mA
+; DC Charger บังคับเพิ่ม DC_Output_Voltage_Min_V, DC_Output_Voltage_Max_V, DC_Max_Output_Current_A, AC_Input_Power_kVA
+; ── กติกาการกรอก 3.4 (ใช้คู่กับ PROMPT_<ชนิด>.txt ในโฟลเดอร์เดียวกัน) ──
+; ค่าที่เห็นในแม่แบบเป็นค่าเริ่มต้นเท่านั้น ไม่ใช่ค่าของรุ่นใด ต้องแทนด้วยค่าจากเอกสารทุกบรรทัด
+; ไม่พบในเอกสาร: เว้นว่างหลังเครื่องหมาย (เหลือแค่ ชื่อฟิลด์ และเครื่องหมาย) แล้วใส่บรรทัด ; [ไม่มีข้อมูล] ไว้เหนือบรรทัดค่า ห้ามเดา ห้ามคงค่าเริ่มต้น
+; ทุกค่าที่กรอกต้องมีบรรทัด ; [SRC: หน้า n · ตารางหรือหัวข้อ · ข้อความต้นฉบับ] ไว้เหนือบรรทัดค่า
+; ห้ามใส่แท็ก หน่วย หรือคอมเมนต์ต่อท้ายบรรทัดค่า · ข้อความหลายรายการคั่นด้วยจุลภาค ห้ามใช้ ; หรือ # ในค่า
+; บรรทัดคอมเมนต์ทุกบรรทัดห้ามมีเครื่องหมายเท่ากับ (เขียน : แทน)
+
+[GENERAL_INFO]
+; ชื่อผู้ผลิตเครื่องชาร์จ
+Manufacturer = ""
+; ชื่อรุ่นเครื่องชาร์จ (ตารางมีหลายรุ่น ให้แยก 1 ไฟล์ต่อ 1 รุ่น ครบทุกรุ่น)
+Model_Name = ""
+; ชื่อซีรีส์หรือตระกูลผลิตภัณฑ์ เช่น Pulsar Plus, SmartCharger, Sigen EV AC [ใหม่]
+Product_Series = ""
+; ประเภทของเครื่องชาร์จ (เช่น AC Wallbox, DC Fast Charger)
+Charger_Type = ""
+; กลุ่มการใช้งานที่ออกแบบมา: Residential / Commercial / Public [ใหม่]
+Installation_Type = ""
+; รูปแบบการติดตั้ง: Wall-mounted / Pedestal / Portable [ใหม่]
+Mounting_Type = ""
+; จำนวนหัวชาร์จหรือช่องเสียบที่จ่ายไฟได้พร้อมกัน
+Number_of_Outputs = 1
+; โหมดการอัดประจุตาม IEC 61851: Mode 2 (สายพกพา IC-CPD) / Mode 3 (AC wallbox) / Mode 4 (DC) - สถานีในไทยต้องเป็น Mode 3 หรือ 4 [ใหม่ 3.3]
+Charging_Mode = ""
+; รหัสสินค้า/SKU ตามที่ผู้ขายไทยใช้ เช่น EIAW-E22KTSE5A04 (ถ้าเหมือน Model_Name ใส่ซ้ำได้) [ใหม่ 3.3]
+Product_Code = ""
+; จำนวนหัวชาร์จทั้งหมดบนเครื่อง (รวมหัวที่ใช้พร้อมกันไม่ได้) เช่น UFC 200 มี 4 หัว [ใหม่ 3.3]
+Number_of_Connectors_Total = 1
+; โครงสร้างเครื่อง DC: All-in-one / Split (Power unit + Dispenser) / Wallbox  AC ให้ใส่ "-" [ใหม่ 3.3]
+DC_Architecture = "-"
+; จำนวน Dispenser สูงสุดต่อ Power unit 1 ตัว (เฉพาะแบบ Split) [ใหม่ 3.3]
+DC_Max_Dispensers_Per_Power_Unit = 0
+
+[ELECTRICAL_SPECIFICATIONS]
+; แรงดันไฟฟ้าขาเข้า/ขาออก (โวลต์) เช่น 230, 400
+Nominal_Voltage_V = 0.0
+; ช่วงแรงดันขาเข้าต่ำสุดที่ทำงานได้ (โวลต์) [ใหม่]
+Input_Voltage_Range_Min_V = 0.0
+; ช่วงแรงดันขาเข้าสูงสุดที่ทำงานได้ (โวลต์) [ใหม่]
+Input_Voltage_Range_Max_V = 0.0
+; รูปแบบเฟสไฟฟ้า (1-Phase หรือ 3-Phase)
+Phase_Type = ""
+; พิกัดกระแสไฟสูงสุดที่รองรับต่อเฟส (แอมแปร์) เช่น 16A, 32A
+Max_Current_Per_Phase_A = 0.0
+; กระแสชาร์จต่ำสุดที่ตั้งค่าได้ (แอมแปร์) ปกติ 6 [ใหม่]
+Adjustable_Current_Min_A = 6.0
+; กระแสชาร์จสูงสุดที่ตั้งค่าได้ (แอมแปร์) เช่น 32 [ใหม่]
+Adjustable_Current_Max_A = 0.0
+; กำลังการจ่ายไฟรวมสูงสุด (กิโลวัตต์) เช่น 7.4kW, 22kW
+Max_Output_Power_kW = 0.0
+; ความถี่ของระบบไฟฟ้า (เฮิรตซ์)
+Grid_Frequency_Hz = 50.0
+; แรงดัน DC ขาออกต่ำสุด (โวลต์) เฉพาะ DC Charger [ใหม่]
+DC_Output_Voltage_Min_V = 0.0
+; แรงดัน DC ขาออกสูงสุด (โวลต์) เฉพาะ DC Charger [ใหม่]
+DC_Output_Voltage_Max_V = 0.0
+; กระแส DC ขาออกสูงสุด (แอมแปร์) เฉพาะ DC Charger [ใหม่]
+DC_Max_Output_Current_A = 0.0
+; ประสิทธิภาพสูงสุดของเครื่องชาร์จ (%) สำคัญสำหรับ DC Charger [ใหม่]
+Max_Efficiency_Pct = 0.0
+; ค่าตัวประกอบกำลังที่พิกัด (Power Factor) เช่น 0.99 [ใหม่]
+Power_Factor = 0.0
+; ขนาดเบรกเกอร์ต้นทางที่ผู้ผลิตแนะนำ (แอมแปร์) [ใหม่]
+Recommended_Upstream_Breaker_A = 0.0
+; กำลังไฟขาเข้า AC สูงสุด (kVA) ใช้คำนวณหม้อแปลงและขนาดมิเตอร์ ถ้าไม่ระบุให้คำนวณ Max_Output_Power_kW หาร (Max_Efficiency_Pct คูณ Power_Factor หาร 100) [ใหม่ 3.3]
+AC_Input_Power_kVA = 0.0
+; กระแสขาเข้า AC สูงสุดต่อเฟส (แอมแปร์) สำคัญสำหรับ DC Charger [ใหม่ 3.3]
+AC_Input_Current_Max_A = 0.0
+; ค่าความเพี้ยนฮาร์มอนิกกระแส THDi ที่พิกัด (%) [ใหม่ 3.3]
+THDi_Pct = 0.0
+; ขนาดโมดูลกำลังย่อยภายใน DC Charger (kW) เช่น 30, 40 [ใหม่ 3.3]
+DC_Power_Module_kW = 0.0
+; ขนาดสายใหญ่สุดที่ขั้วต่อขาเข้ารับได้ (ตารางมิลลิเมตร) [ใหม่ 3.3]
+Max_Input_Terminal_mm2 = 0.0
+; ทางเข้าสายไฟ: Bottom / Rear / Top / Side [ใหม่ 3.3]
+Cable_Entry = ""
+; ขนาดมิเตอร์ไฟฟ้าที่ผู้ขายแนะนำสำหรับบ้าน เช่น 30(100)A, 15(45)A 3P [ใหม่ 3.3]
+Recommended_Meter_Size = ""
+
+[CONNECTOR_CABLE]
+; มาตรฐานหัวชาร์จ เช่น Type 2 (IEC 62196-2), Type 1 (SAE J1772), CCS2, CHAdeMO, GB/T [ใหม่]
+Connector_Standard = ""
+; รูปแบบหัวชาร์จ: Socket (เต้ารับ ใช้สายแยก) / Tethered (สายติดเครื่อง) [ใหม่]
+Connector_Form = ""
+; ความยาวสายชาร์จ (เมตร) เฉพาะแบบ Tethered [ใหม่]
+Cable_Length_m = 0.0
+; มีระบบล็อกหัวชาร์จขณะชาร์จ (True/False) [ใหม่]
+Connector_Locking = True
+; รายการหัวชาร์จทั้งหมดพร้อมกำลังต่อหัว คั่นด้วยจุลภาค เช่น "CCS2 200kW, CHAdeMO 62.5kW, Type 2 22kW" [ใหม่ 3.3]
+Connector_List = ""
+; มีหัว GB/T (มาตรฐานจีน GB/T 20234) สำคัญสำหรับลาวที่มีรถตลาดจีนจำนวนมาก (True/False) [ใหม่ 3.3]
+GBT_Connector_Available = False
+; กระแส DC สูงสุดต่อหัว (แอมแปร์) [ใหม่ 3.3]
+DC_Max_Current_Per_Connector_A = 0.0
+; สายชาร์จระบายความร้อนด้วยของเหลว (True/False) [ใหม่ 3.3]
+DC_Liquid_Cooled_Cable = False
+; การแบ่งกำลังระหว่างหัว: None / Sequential / Dynamic / Fixed split [ใหม่ 3.3]
+Power_Sharing_Mode = ""
+
+[SMART_SOLAR_INTEGRATION]
+; รองรับการปรับกระแสชาร์จขึ้นลงตามโหลดรวมของบ้านเพื่อกันเบรกเกอร์ตัด (True/False)
+Dynamic_Load_Balancing_Support = False
+; รองรับโหมดชาร์จเฉพาะพลังงานโซลาร์เซลล์ที่เหลือทิ้งเท่านั้น (True/False)
+Solar_Eco_Mode_Support = False
+; กระแสขั้นต่ำที่จะสั่งให้รถเริ่มรับการชาร์จ (แอมแปร์) มาตรฐานมักจะ 6A
+Min_Current_to_Start_A = 6.0
+; กำลังไฟ PV ส่วนเกินขั้นต่ำที่เริ่มชาร์จได้ (วัตต์) คำนวณจาก Min_Current x Nominal_Voltage x จำนวนเฟส หากไม่ระบุ (เช่น 1.4 kW สำหรับ 1 เฟส) [ใหม่]
+Min_Surplus_Power_To_Start_W = 0.0
+; รองรับการสลับจาก 3 เฟสเหลือ 1 เฟสอัตโนมัติเมื่อแดดอ่อน (True/False)
+Phase_Switching_Support = False
+; โพรโทคอลในการสื่อสารกับอุปกรณ์อื่นหรืออินเวอร์เตอร์ เช่น "CAN, RS485, Modbus TCP"
+Communication_Protocol = ""
+; รูปแบบการทำงานร่วมกับมิเตอร์ (เช่น External CT, Modbus Meter)
+Meter_Integration_Type = "-"
+; รุ่นมิเตอร์หรือ CT ที่ผู้ผลิตกำหนดให้ใช้สำหรับ Load Balancing / Solar mode [ใหม่]
+Required_Meter_Model = ""
+; ยี่ห้อ/รุ่นอินเวอร์เตอร์หรือ EMS ที่ทำงานร่วมกันได้โดยตรง คั่นด้วยจุลภาค เช่น "Huawei FusionSolar, SigenStor" (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+Compatible_Inverter_EMS = ""
+; โปรโตคอลเปิดที่ใช้เชื่อมกับระบบต่างยี่ห้อ เช่น "Modbus TCP, SunSpec, OCPP Smart Charging" [ใหม่]
+Open_Integration_Protocols = ""
+; รองรับ Load Balancing ระหว่างเครื่องชาร์จหลายเครื่อง (True/False) [ใหม่]
+Multi_Charger_Load_Balancing = False
+; จำนวนเครื่องชาร์จสูงสุดในกลุ่ม Load Balancing เดียวกัน [ใหม่]
+Max_Chargers_in_Group = 1
+; วิธีวัดโหลดเพื่อทำ Load Balancing: CT / Modbus Meter / Inverter EMS / OCPP Smart Charging / None [ใหม่ 3.3]
+Load_Balancing_Method = ""
+; กำลังชาร์จต่ำสุดในโหมดโซลาร์ (kW) เช่น 1.4 สำหรับ 1 เฟส หรือ 4.2 สำหรับ 3 เฟส [ใหม่ 3.3]
+Solar_Mode_Min_Power_kW = 0.0
+; รองรับการตั้งเวลาชาร์จในตัวเครื่องหรือแอป เพื่อใช้ช่วง Off-Peak ของ TOU (True/False) [ใหม่ 3.3]
+Scheduled_Charging_Support = False
+; รับคำสั่งลดหรือปลดกำลังจากภายนอกแบบ real time ต่อหัวจ่าย (ระเบียบ กฟภ. 2563 ข้อ 4.4 และข้อ 8) (True/False) [ใหม่ 3.3]
+Active_Power_Control_Support = False
+; รองรับ IEC 63110 สำหรับส่งข้อมูลให้การไฟฟ้าหรือ CPO (True/False) [ใหม่ 3.3]
+IEC63110_Supported = False
+
+[COMMUNICATION_AUTHENTICATION]
+; อินเทอร์เฟซสื่อสาร คั่นด้วยจุลภาค เช่น "Wi-Fi, Ethernet, 4G, Bluetooth, RS485" [ใหม่]
+Communication_Interfaces = ""
+; รองรับ OCPP (True/False) [ใหม่]
+OCPP_Supported = False
+; เวอร์ชัน OCPP ที่รองรับ เช่น "1.6J", "2.0.1" [ใหม่]
+OCPP_Version = ""
+; วิธียืนยันตัวตนก่อนชาร์จ คั่นด้วยจุลภาค เช่น "RFID, App, Plug&Charge, Free" [ใหม่]
+Authentication_Methods = ""
+; รองรับ ISO 15118 (Plug & Charge) (True/False) [ใหม่]
+ISO15118_Supported = False
+; แอปหรือแพลตฟอร์มควบคุม เช่น myWallbox, FusionSolar, mySigen [ใหม่]
+Mobile_App_Platform = ""
+; มีมิเตอร์วัดพลังงานในตัว (True/False) [ใหม่]
+Integrated_Energy_Meter = False
+; มิเตอร์ในตัวผ่านการรับรอง MID (ใช้คิดเงินได้) (True/False) [ใหม่]
+MID_Certified_Meter = False
+; ชนิดหน้าจอแสดงผล เช่น LED indicator, LCD, Touchscreen, None [ใหม่]
+Display_Type = ""
+; ช่องทางชำระเงินที่เครื่องรองรับ คั่นด้วยจุลภาค เช่น "QR PromptPay, Credit card, RFID, App" [ใหม่ 3.3]
+Payment_Methods = ""
+; มีเครื่องรับบัตรเครดิตในตัว (True/False) [ใหม่ 3.3]
+Payment_Terminal_Integrated = False
+; มาตรฐาน RFID ที่อ่านได้ เช่น "Mifare ISO 14443A" (PEA VOLTA ทดสอบด้วย Mifare) [ใหม่ 3.3]
+RFID_Standard = ""
+
+[OPERATIONAL_PROFILE]
+; ช่วงเวลาปกติที่เริ่มเสียบชาร์จ (เช่น 18:00)
+Typical_Charging_Window_Start = "-"
+; ช่วงเวลาปกติที่ถอดปลั๊กชาร์จ (เช่น 06:00)
+Typical_Charging_Window_End = "-"
+; คาดการณ์ปริมาณการกินไฟเฉลี่ยต่อวันของรถ (kWh)
+Estimated_Daily_Energy_Demand_kWh = 0.0
+; ปัจจัยความพร้อมใช้งาน หรือโอกาสที่รถจะชาร์จพร้อมกัน (%) ในกรณีมีหลายเครื่อง
+Simultaneous_Use_Factor_Pct = 100.0
+
+[V2X_BIDIRECTIONAL]
+; รองรับการดึงไฟย้อนจากรถยนต์กลับสู่กริด (V2G) หรือใช้ในบ้าน (V2H) หรือไม่
+V2G_V2H_Supported = False
+; รองรับการจ่ายไฟจากรถให้โหลดโดยตรง (V2L) (True/False) [ใหม่]
+V2L_Supported = False
+; พิกัดกำลังไฟสูงสุดที่สามารถดึงจากรถยนต์กลับออกสู่ระบบ (kW)
+Max_Discharge_to_Grid_Power_kW = 0.0
+; มาตรฐานที่ใช้สำหรับการชาร์จสองทิศทาง เช่น "ISO 15118-20, CHAdeMO 2.0" [ใหม่]
+Bidirectional_Standard = ""
+; มาตรฐานความปลอดภัย Grid Code ที่เครื่องชาร์จรองรับเพื่อทำ V2G
+Grid_Code_Compliance = "-"
+; รุ่นรถยนต์ที่ผู้ผลิตระบุว่ารองรับ V2X ร่วมกับเครื่องนี้ [ใหม่]
+Compatible_EV_Models_For_V2X = ""
+
+[PROTECTION_SAFETY]
+; ชนิดอุปกรณ์ตัดกระแสรั่ว (RCD) ที่มีในตัว เช่น "Type A + 6mA DC (RDC-DD)", "Type B", "None" [ใหม่]
+Integrated_RCD_Type = ""
+; ต้องติดตั้ง RCD ภายนอกเพิ่มหรือไม่ (True/False) [ใหม่]
+Requires_External_RCD = False
+; ชนิด RCD ที่มีในตัวเครื่อง แยกจากการตรวจ DC: None / Type A / Type F / Type B [ใหม่ 3.3]
+Builtin_RCD_Class = "None"
+; มีวงจรตรวจกระแสรั่ว DC 6 mA ในตัว (RDC-DD ตาม IEC 62955 หรือ RDC-PD) (True/False) [ใหม่ 3.3]
+DC_Leakage_Detection_6mA = False
+; ชนิด RCD ภายนอกขั้นต่ำที่ต้องติดตั้งตามคู่มือผู้ผลิต: None / Type A / Type B [ใหม่ 3.3]
+Required_External_RCD_Class = "None"
+; มีการป้องกันสายนิวทรัล/PEN ขาด (O-PEN หรือ PEN fault protection) ใช้แทนหลักดิน TT ได้ (True/False) [ใหม่ 3.3]
+Open_PEN_Protection = False
+; มีอุปกรณ์กันฟ้าผ่า/แรงดันกระชาก (SPD) ในตัว และชนิด เช่น "Type 2", "None" [ใหม่ 3.3]
+Integrated_SPD = "None"
+; มีปุ่มหยุดฉุกเฉิน (Emergency Stop) (True/False) [ใหม่ 3.3]
+Emergency_Stop_Button = False
+; ตรวจความเป็นฉนวน DC (Insulation monitoring IMD) เฉพาะ DC Charger (True/False) [ใหม่ 3.3]
+DC_Insulation_Monitoring = False
+; เครื่องต้องการการระบายอากาศขณะชาร์จ (ต้องติดป้าย Ventilation Required ตาม MPESTD) (True/False) [ใหม่ 3.3]
+Ventilation_Required = False
+; มาตรฐานฮาร์มอนิกและไฟกะพริบที่ผ่าน คั่นด้วยจุลภาค เช่น "IEC 61000-3-2, IEC 61000-3-12, IEC 61000-3-3" (เงื่อนไข Low Priority ของ กฟน.) [ใหม่ 3.3]
+Harmonic_Flicker_Standards = ""
+; มาตรฐาน EMC ที่ผ่าน เช่น "IEC 61851-21-2" [ใหม่ 3.3]
+EMC_Standards = ""
+; ระบบป้องกันที่มี คั่นด้วยจุลภาค เช่น "Over-voltage, Under-voltage, Over-current, Over-temperature, Ground fault, Surge" [ใหม่]
+Protection_Features = ""
+; มาตรฐานที่ผ่านการรับรอง คั่นด้วยจุลภาค เช่น "IEC 61851-1, IEC 62196-2, IEC 61439-7, CE" [ใหม่]
+Certifications = ""
+; ระดับกันน้ำกันฝุ่น เช่น IP54, IP65 [ใหม่]
+IP_Rating = ""
+; ระดับทนแรงกระแทก เช่น IK08, IK10 [ใหม่]
+IK_Rating = ""
+
+[ENVIRONMENTAL_MECHANICAL]
+; อุณหภูมิใช้งานต่ำสุด (องศาเซลเซียส) [ใหม่]
+Operating_Temp_Min_C = -25.0
+; อุณหภูมิใช้งานสูงสุด (องศาเซลเซียส) [ใหม่]
+Operating_Temp_Max_C = 50.0
+; อุณหภูมิที่เริ่มลดกำลังชาร์จ (Derating) (องศาเซลเซียส) [ใหม่]
+Derating_Start_Temperature_C = 0.0
+; ความชื้นสัมพัทธ์สูงสุดที่ใช้งานได้ (%) [ใหม่]
+Max_Operating_Humidity_Pct = 95.0
+; ระดับความสูงจากน้ำทะเลสูงสุดที่ใช้งานได้ (เมตร) [ใหม่]
+Max_Operating_Altitude_m = 0
+; ความกว้าง (มิลลิเมตร) [ใหม่]
+Width_mm = 0.0
+; ความสูง (มิลลิเมตร) [ใหม่]
+Height_mm = 0.0
+; ความลึก (มิลลิเมตร) [ใหม่]
+Depth_mm = 0.0
+; น้ำหนัก (กิโลกรัม) [ใหม่]
+Weight_kg = 0.0
+; ระดับเสียงขณะทำงาน (เดซิเบล) สำคัญสำหรับ DC Charger ที่มีพัดลม [ใหม่]
+Noise_Level_dB = 0.0
+
+[STANDBY_LOSSES]
+; พลังงานที่เครื่องชาร์จกินไฟขณะเสียบปลั๊กแสตนด์บายทิ้งไว้ (วัตต์)
+Idle_Power_Consumption_W = 0.0
+; ความสูญเสียของพลังงานในสายชาร์จและคอนแทคเตอร์ (%)
+Internal_Cable_Loss_Pct = 0.0
+
+[TH_LA_COMPLIANCE]
+; ส่วนนี้ใหม่ทั้งหมดใน 3.3 - ข้อมูลรับรองสำหรับขายและติดตั้งในไทย/ลาว มักไม่อยู่ใน datasheet ให้กรอกจากเว็บผู้ขายหรือทะเบียนหน่วยงาน
+; มาตรฐาน มอก. ที่ผ่าน คั่นด้วยจุลภาค เช่น "มอก. 61851 เล่ม 1-2567, มอก. 2911-2562" [ใหม่ 3.3]
+TISI_Standards = ""
+; เลขที่ใบอนุญาต มอก. หรือเลขรับรองจาก สมอ. [ใหม่ 3.3]
+TISI_License_No = ""
+; อยู่ในทะเบียนเครื่องอัดประจุที่ผ่านการทดสอบกับ PEA VOLTA Platform (True/False) [ใหม่ 3.3]
+PEA_VOLTA_Listed = False
+; วันที่ตรวจทะเบียน PEA VOLTA รูปแบบ YYYY-MM-DD [ใหม่ 3.3]
+PEA_VOLTA_Check_Date = ""
+; ขึ้นทะเบียนอุปกรณ์กับ กฟภ. (ระเบียบ กฟภ. 2563 ข้อ 4.9) แยกจากทะเบียน PEA VOLTA (True/False) [ใหม่ 3.3]
+PEA_Equipment_Registered = False
+; อยู่ในทะเบียนเครื่องอัดประจุของ กฟน. (MEAPPD-001 ภาคผนวก ค) (True/False) [ใหม่ 3.3]
+MEA_Listed = False
+; ห้องทดสอบที่ออกรายงานผล เช่น "PTEC, TUV Rheinland, Intertek" [ใหม่ 3.3]
+Test_Report_Lab = ""
+; เลขที่รายงานผลทดสอบ IEC (CB report) [ใหม่ 3.3]
+Test_Report_No = ""
+; ตลาดที่ผู้ผลิตขายรุ่นนี้ เช่น "TH, LA" [ใหม่ 3.3]
+Market_Availability = ""
+
+[COMMERCIAL_TH]
+; ส่วนนี้ใหม่ทั้งหมดใน 3.3 - ราคาเป็นข้อมูลภายใน ห้ามส่งออกทาง Telegram หรือแจ้งเตือน
+; ผู้แทนจำหน่ายหรือผู้นำเข้าในไทย [ใหม่ 3.3]
+Thai_Distributor = ""
+; เว็บไซต์หรือช่องทางติดต่อผู้แทนจำหน่าย [ใหม่ 3.3]
+Distributor_URL = ""
+; ผู้แทนจำหน่ายในลาว (ถ้ามี) [ใหม่ 3.3]
+Lao_Distributor = ""
+; ราคาเครื่องเปล่า (บาท) ไม่รวมค่าติดตั้ง [ใหม่ 3.3]
+Price_THB_Unit = 0.0
+; ราคารวมติดตั้งมาตรฐาน (บาท) [ใหม่ 3.3]
+Price_THB_Installed = 0.0
+; ราคารวม VAT แล้ว (True/False) [ใหม่ 3.3]
+Price_Includes_VAT = True
+; วันที่ของราคา รูปแบบ YYYY-MM-DD [ใหม่ 3.3]
+Price_Date = ""
+; มีศูนย์บริการหรือช่างของผู้แทนจำหน่ายในไทย (True/False) [ใหม่ 3.3]
+Service_Center_TH = False
+
+[WARRANTY]
+; ระยะเวลารับประกัน (ปี) [ใหม่]
+Warranty_Years = 0
+; ระยะเวลารับประกันจากผู้แทนจำหน่ายในไทย (ปี) อาจต่างจากผู้ผลิต [ใหม่ 3.3]
+Local_Warranty_Years = 0
+
+[DATA_SOURCE]
+; ชื่อไฟล์ Datasheet ต้นทางที่ใช้กวาดข้อมูล [ใหม่]
+Source_File = ""
+; วันที่หรือเวอร์ชันของ Datasheet ตามที่ระบุในเอกสาร [ใหม่]
+Datasheet_Version = ""
+; ลิงก์ Datasheet ต้นทาง (เหมือน INV/BAT 3.2) [ใหม่ 3.3]
+Datasheet_URL = ""
+; ตลาดของ Datasheet ที่ใช้ เช่น TH, EU, AU (สเปกตลาดอื่นอาจต่างจากรุ่นที่ขายในไทย) [ใหม่ 3.3]
+Datasheet_Region = ""
+; วันที่กวาดข้อมูล รูปแบบ YYYY-MM-DD [ใหม่]
+Extraction_Date = ""
+; วิธีที่ใช้กวาดข้อมูล: Text / OCR / Manual [ใหม่]
+Extraction_Method = ""
+; ระดับความเชื่อมั่นของข้อมูลโดยรวม: High / Medium / Low [ใหม่]
+Data_Confidence = ""
+; จำนวนพารามิเตอร์ที่ไม่พบในเอกสาร [ใหม่]
+Not_Found_Count = 0
+; หมายเหตุอื่น ๆ [ใหม่]
+Notes = ""

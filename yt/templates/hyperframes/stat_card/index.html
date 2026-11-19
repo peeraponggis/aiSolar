@@ -1,0 +1,110 @@
+<!doctype html>
+<!-- YT Shorts — การ์ดสถิติ (HyperFrames) · โดย ลุงพี
+     __W__ __H__ __S__ __DURATION__ ถูกแทนค่าโดย scripts/graphic_cards.py ทุกครั้งที่เรนเดอร์
+     ฟอนต์และ GSAP อยู่ใน assets/ — เรนเดอร์ได้โดยไม่ต้องต่อเน็ต -->
+<html lang="th" data-composition-variables='[
+  {"id":"kicker","type":"string","label":"หัวเรื่องเล็ก","default":"ตลาดโซลาร์เซลล์ไทย"},
+  {"id":"value","type":"number","label":"ตัวเลข","default":1.7},
+  {"id":"decimals","type":"number","label":"ทศนิยม","default":1},
+  {"id":"unit","type":"string","label":"หน่วย","default":"ล้านล้านบาท"},
+  {"id":"badge","type":"string","label":"ป้าย","default":""},
+  {"id":"caption","type":"string","label":"คำอธิบาย","default":""},
+  {"id":"accent","type":"color","label":"สีเน้น","default":"#f5c542"}
+]'>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=__W__, height=__H__" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Kanit"; font-weight: 400; src: url("assets/fonts/Kanit-Regular.ttf"); font-display: block; }
+      @font-face { font-family: "Kanit"; font-weight: 600; src: url("assets/fonts/Kanit-SemiBold.ttf"); font-display: block; }
+      @font-face { font-family: "Kanit"; font-weight: 800; src: url("assets/fonts/Kanit-ExtraBold.ttf"); font-display: block; }
+      :root {
+        --s: __S__;
+        --ground: #0b1220;
+        --ground-2: #13233f;
+        --ink: #ffffff;
+        --muted: #b9c4d8;
+        --accent: #f5c542;
+        --good: #2ecc71;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: __W__px; height: __H__px; overflow: hidden; background: var(--ground); }
+      #root {
+        position: relative; width: 100%; height: 100%;
+        font-family: "Kanit", sans-serif; color: var(--ink);
+        background: radial-gradient(circle at 50% 40%, var(--ground-2), var(--ground) 70%);
+      }
+      .clip { position: absolute; inset: 0; }
+      #card {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: calc(36px * var(--s)); padding: 0 calc(90px * var(--s)); text-align: center;
+      }
+      #kicker { font-size: calc(58px * var(--s)); font-weight: 600; color: var(--muted); }
+      #rule { width: calc(220px * var(--s)); height: calc(10px * var(--s)); border-radius: 5px; background: var(--accent); }
+      #value {
+        font-size: calc(300px * var(--s)); font-weight: 800; line-height: 1.05;
+        color: var(--accent); font-variant-numeric: tabular-nums;
+      }
+      #unit { font-size: calc(92px * var(--s)); font-weight: 600; line-height: 1.25; }
+      #badge {
+        margin-top: calc(24px * var(--s)); padding: calc(18px * var(--s)) calc(56px * var(--s));
+        border-radius: 999px; background: var(--good); color: #062b16;
+        font-size: calc(84px * var(--s)); font-weight: 800;
+      }
+      #caption {
+        margin-top: calc(30px * var(--s)); font-size: calc(54px * var(--s)); line-height: 1.55;
+        color: var(--muted); max-width: calc(900px * var(--s));
+      }
+      .empty { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__DURATION__"
+         data-width="__W__" data-height="__H__">
+      <div id="card" class="clip" data-start="0" data-duration="__DURATION__" data-track-index="0">
+        <div id="kicker"></div>
+        <div id="rule"></div>
+        <div id="value">0</div>
+        <div id="unit"></div>
+        <div id="badge"></div>
+        <div id="caption"></div>
+      </div>
+    </div>
+    <script>
+      const v = window.__hyperframes.getVariables();
+      const $ = (id) => document.getElementById(id);
+      document.documentElement.style.setProperty("--accent", v.accent);
+      // "%", "฿", "x" read better attached to the number than on a line of their own.
+      const suffix = v.unit && v.unit.trim().length <= 2 ? v.unit.trim() : "";
+      if (suffix) v.unit = "";
+      for (const key of ["kicker", "unit", "badge", "caption"]) {
+        $(key).textContent = v[key] || "";
+        $(key).classList.toggle("empty", !v[key]);
+      }
+
+      const fmt = (n) => n.toLocaleString("en-US", {
+        minimumFractionDigits: v.decimals, maximumFractionDigits: v.decimals }) + suffix;
+      // Big numbers ("1,700,000") must still fit across the frame.
+      const widest = fmt(v.value).length;
+      $("value").style.fontSize = Math.min(300, 880 / (0.64 * widest)) * __S__ + "px";
+      const counter = { n: 0 };
+      const showCount = () => { $("value").textContent = fmt(counter.n); };
+
+      // Everything settles by ~3 s; the rest of the scene holds still (the
+      // video pipeline crossfades into the next scene, so no fade-out here).
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, 0.2)
+        .fromTo("#value", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 0.4)
+        .fromTo(counter, { n: 0 }, { n: v.value, duration: 1.6, ease: "power2.out", onUpdate: showCount }, 0.4)
+        .fromTo("#unit", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.2)
+        .fromTo("#badge", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, 1.7)
+        .fromTo("#caption", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 2.0)
+        .to("#value", { scale: 1.04, duration: 0.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 2.6);
+      showCount();
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

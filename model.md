@@ -3,7 +3,7 @@
 > ⚠️ ไฟล์นี้เก็บ API keys เป็น plaintext — อย่าอัปโหลด/แชร์
 > อัปเดตอัตโนมัติทุกครั้งที่แก้ Settings ใน chat.html
 
-อัปเดต: 2026-09-26 08:54:11
+อัปเดต: 2026-09-27 15:57:44
 
 ## Providers (5 ราย)
 
@@ -52,7 +52,7 @@
 
 ```json
 {
-  "apiUrl": "http://localhost:11434",
+  "apiUrl": "http://localhost:11435",
   "system": "",
   "temp": 0.7,
   "ctx": 4096,
@@ -291,7 +291,7 @@
       ]
     }
   ],
-  "sel": "local::scb10x/typhoon2.5-qwen3-4b:latest",
+  "sel": "",
   "voice": "",
   "voiceRate": 1,
   "ttsEngine": "neural",

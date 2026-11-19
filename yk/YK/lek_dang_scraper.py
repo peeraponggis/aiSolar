@@ -1,3 +1,12 @@
+﻿# ============================================================================
+# ProInventive Suite
+# Copyright (C) 2024-2569 ProInventive. All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL
+# Unauthorized use, copying, or distribution is prohibited.
+# Author: Peerapong (Lungpee) -- ProInventive -- giskku@gmail.com
+# ============================================================================
+
 # -*- coding: utf-8 -*-
 """
 lek_dang_scraper.py — กวาด "เลขดัง/เลขเด็ด" จากหลายเว็บ แล้วสรุปว่าเลขไหนถูกพูดถึงมากสุด

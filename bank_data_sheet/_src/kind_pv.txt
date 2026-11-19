@@ -1,0 +1,114 @@
+@@NAME
+PV
+@@TITLE
+แผงโซลาร์เซลล์ (PV Module)
+@@TEMPLATE
+PV_MODULE_STRUCTURE.txt
+@@1
+   PV = แผงโซลาร์เซลล์ → PV_MODULE_STRUCTURE.txt (หัวไฟล์ [PV_MODULE_STRUCTURE])
+   รู้จากคำ: Pmax, Voc, Isc, STC, NOCT/NMOT, cells, module efficiency
+@@FORMULAS
+       - Fill_Factor_Pct = Vmp_V x Imp_A หาร (Voc_V x Isc_A) คูณ 100
+       - Module_Efficiency_Pct (เฉพาะเอกสารไม่ระบุ) = Pmax_Wp หาร (Length_mm x Width_mm หาร 1000000) หาร 10
+       - Tk_* จากหน่วย mV/°C หรือ mA/°C = ค่านั้น หาร ค่า STC ของพารามิเตอร์เดียวกัน คูณ 100 (ข้อ 6)
+@@5
+   PV (ขาดข้อไหนก็วางแผงบนหลังคาไม่ได้ หรือจำลองผิด)
+       Length_mm, Width_mm          ← ใช้จัดวางแผงบนผัง สำคัญที่สุด
+                                      (ว่าง = โปรแกรมใช้ 2278 x 1134 mm แทน)
+       Pmax_Wp, Voc_V, Vmp_V, Isc_A, Imp_A
+       Tk_Pmax_Pct_Per_C, Tk_Voc_Pct_Per_C   ← จำลองการผลิตไฟและคิดจำนวนแผงต่อสตริง
+       Max_System_Voltage_V                   ← ว่าง = โปรแกรมใช้ 1500 V
+       Max_Series_Fuse_Rating_A               ← ใช้เลือกฟิวส์สตริง
+   ฟิลด์ที่โปรแกรมใช้เพิ่ม (กรอกให้ได้ถ้าเอกสารมี):
+       NMOT_Value_C, Thickness_mm, Weight_kg, Is_Bifacial, Bifaciality_Factor, Cell_Type,
+       Power_Tolerance, First_Year_Degradation_LID_Pct, Annual_Degradation_Rate_Pct,
+       IAM_ASHRAE_b0, Warranty_Years, Product_Warranty_Years, Warranty_End_Power_Pct
+@@6
+   PV:
+   - ใช้ค่า STC เป็นหลัก ค่า NOCT/NMOT ใส่ใน [NMOT_PARAMETERS]
+     NMOT_Value_C = อุณหภูมิเซลล์ที่ NMOT/NOCT (เช่น 43±2°C → 43)
+   - Warranty_Years = ปีรับประกันกำลัง (Power/Performance warranty)
+     Product_Warranty_Years = ปีรับประกันตัวสินค้า (Product/Material warranty) อย่าสลับกัน
+   - แผง Bifacial ใช้ค่า STC ด้านหน้า (Front side) ไม่ใช่ค่ารวม Bifacial gain
+     Is_Bifacial = True เมื่อเอกสารระบุ Bifacial · ระบุชัดว่าหน้าเดียว (Monofacial/backsheet) = False
+     ไม่กล่าวถึงเลย = ว่าง + [ไม่มีข้อมูล] (โปรแกรมถือว่าแผงหน้าเดียว)
+     Bifaciality_Factor ใส่เป็นทศนิยม (80±5% → 0.8)
+   - Max_Series_Fuse_Rating_A กับ Max_Reverse_Current_A เอกสารระบุค่าเดียว ให้ใส่ทั้งสองฟิลด์
+   - ชื่อฟิลด์สัมประสิทธิ์อุณหภูมิใช้ Tk_Pmax_Pct_Per_C, Tk_Voc_Pct_Per_C, Tk_Isc_Pct_Per_C เท่านั้น
+   - หน่วยของ Tk_* เป็น %/°C เอกสารที่ระบุ mV/°C หรือ mA/°C ต้องแปลง (ข้อ 4.7) และกำกับ CALCULATED
+   - Power_Tolerance คัดตามเอกสาร เช่น "0/+5W" หรือ "0~+3%"
+   - IAM_ASHRAE_b0 / IAM_Glass_Index_n ส่วนใหญ่ไม่อยู่ใน datasheet = ไม่มีข้อมูล (ห้ามคงค่า 0.05 / 1.526 ของแม่แบบ)
+   - First_Year_Degradation_LID_Pct, Annual_Degradation_Rate_Pct อ่านจากกราฟ/ข้อความ Linear warranty
+     เช่น "1% first year, 0.4% annual" → 1.0 และ 0.4 · Warranty_End_Power_Pct เช่น 87.4
+@@7
+   PV:
+   - Vmp_V น้อยกว่า Voc_V และ Imp_A น้อยกว่า Isc_A
+   - Vmp_V x Imp_A อยู่ในช่วง Pmax_Wp บวกลบ 3%
+   - Module_Efficiency_Pct ประมาณ Pmax_Wp หาร (Length_mm x Width_mm หาร 1000000) หาร 10 บวกลบ 0.5
+     ตรวจข้อนี้ไม่ได้เพราะไม่มีขนาดแผง = ขาดฟิลด์บังคับ ให้กลับไปหาใหม่
+   - Tk_Voc และ Tk_Pmax ติดลบ, Tk_Isc เป็นบวก
+   - Voc_V x จำนวนแผงที่คิดได้ ไม่ใช่หน้าที่ของไฟล์นี้ (โปรแกรมคิดเอง) ห้ามกรอกค่าสตริง
+@@10
+   [PV]
+   Maximum Power / Peak Power / Rated Power / Pmax / Pmpp / Nominal Power → Pmax_Wp
+   Open Circuit Voltage / Voc / Open-circuit Voltage                       → Voc_V
+   Short Circuit Current / Isc / Short-circuit Current                     → Isc_A
+   Maximum Power Voltage / Vmp / Vmpp / Voltage at Pmax / Rated Voltage    → Vmp_V
+   Maximum Power Current / Imp / Impp / Current at Pmax / Rated Current    → Imp_A
+   Module Efficiency / Efficiency / Panel Efficiency / STC Efficiency      → Module_Efficiency_Pct
+   Temperature Coefficient of Pmax / Pmpp / Power / γ(Pmax)                → Tk_Pmax_Pct_Per_C
+   Temperature Coefficient of Voc / β(Voc)                                 → Tk_Voc_Pct_Per_C
+   Temperature Coefficient of Isc / α(Isc)                                 → Tk_Isc_Pct_Per_C
+   NOCT / NMOT / Nominal Operating Cell Temperature                        → NMOT_Value_C
+   Maximum System Voltage / System Voltage / Max. System Voltage           → Max_System_Voltage_V
+   Maximum Series Fuse Rating / Max Fuse / Series Fuse                     → Max_Series_Fuse_Rating_A และ Max_Reverse_Current_A
+   Power Tolerance / Output Tolerance / Power Sorting                      → Power_Tolerance
+   Dimensions / Size / Module Size / Overall Size (L x W x H)              → Length_mm, Width_mm, Thickness_mm
+   Weight / Module Weight                                                  → Weight_kg
+   Bifaciality / Bifacial Factor / Rear side power ratio                   → Bifaciality_Factor
+   Mechanical Load / Static Load / Wind Load / Snow Load (Front / Back)    → Max_Snow_Load_Pa (Front), Max_Wind_Load_Pa (Back)
+   Power Warranty / Performance Warranty / Linear Warranty                 → Warranty_Years
+   Product Warranty / Material Warranty / Workmanship Warranty             → Product_Warranty_Years
+   First year degradation / Year 1 / Initial degradation                   → First_Year_Degradation_LID_Pct
+   Annual degradation / Yearly degradation / Linear degradation            → Annual_Degradation_Rate_Pct
+   Cell Type / Cell Technology / Solar Cells                               → Cell_Type
+   No. of Cells / Cell Number / Cell Arrangement                           → Number_of_Cells, Cell_Configuration
+   Junction Box / J-Box (IP)                                               → Junction_Box_IP_Rating
+   Connector / Connector Type (MC4, MC4-EVO2)                              → Connector_Type
+   Cable / Output Cable (mm², Length)                                      → Cable_Cross_Section_mm2, Cable_Length_mm
+   Fire Rating / Fire Class / Application Class / Safety Class             → Fire_Rating, Safety_Class
+@@11
+   ฟิลด์ (PV)        ค่าที่ยอมรับ                         โปรแกรมใช้ทำอะไร
+   Is_Bifacial       True / False (ไม่มีคำพูด)            คิดพลังงานด้านหลังแผง
+   Cell_Type         คัดตามเอกสาร แต่ต้องมีคำใดคำหนึ่ง      แผง n-type ใช้ค่าเสื่อมต่างจาก p-type
+                     ที่เอกสารใช้ เช่น "N-type TOPCon",
+                     "HJT", "P-type PERC", "Monocrystalline"
+   Power_Tolerance   "0/+5W" หรือ "0~+3%" (มีหน่วย W หรือ %) คิด Module quality loss
+@@12
+   [PV_MODULE_STRUCTURE]
+   ...
+   [STC_PARAMETERS]
+   ; กำลังไฟฟ้าสูงสุด ณ สภาวะ STC (วัตต์)
+   ; [SRC: หน้า 2 · Electrical Characteristics (STC) · Maximum Power (Pmax/W) 650]
+   Pmax_Wp = 650.0
+   ; ค่าคลาดเคลื่อนของกำลังไฟฟ้า ...
+   ; [SRC: หน้า 1 · Electrical Characteristics · Power Tolerance 0~+5W]
+   Power_Tolerance = "0~+5W"
+   ; ค่า Fill Factor ...
+   ; [CALCULATED: Vmp x Imp หาร (Voc x Isc) คูณ 100]
+   ; [SRC: หน้า 2 · Electrical Characteristics · Vmp 40.10, Imp 16.21, Voc 48.50, Isc 17.10]
+   Fill_Factor_Pct = 78.4
+
+   [MECHANICAL_SPEC]
+   ; ความยาวของแผง (มิลลิเมตร)
+   ; [SHARED: สเปกใช้ร่วมกันทุกรุ่นในเอกสาร]
+   ; [SRC: หน้า 2 · Mechanical Parameters · Dimensions 2382x1134x30mm]
+   Length_mm = 2382.0
+   ; ค่าสัดส่วนประสิทธิภาพด้านหลังของแผง Bifacial ...
+   ; [ไม่มีข้อมูล]
+   Bifaciality_Factor =
+
+   [LOW_LIGHT_AND_IAM]
+   ; ค่าสัมประสิทธิ์จำลองการสะท้อนแสงหน้ากระจก (Incident Angle Modifier)
+   ; [ไม่มีข้อมูล]
+   IAM_ASHRAE_b0 =

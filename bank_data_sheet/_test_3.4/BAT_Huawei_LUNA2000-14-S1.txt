@@ -1,0 +1,295 @@
+[BATTERY_ESS_STRUCTURE]
+; เวอร์ชันโครงสร้าง 3.4 (ฟิลด์ตามโครงสร้าง 3.2 · รูปแบบการกรอก 3.4) - ค่าที่บันทึกใน CAPACITY_VOLTAGE และ OPERATIONAL_LIMITS ให้เป็นระดับ System (ชุดที่ใหญ่ที่สุดในเอกสาร) ส่วนค่าต่อโมดูลให้บันทึกใน MODULE_CONFIGURATION
+; ── กติกาการกรอก 3.4 (ใช้คู่กับ PROMPT_<ชนิด>.txt ในโฟลเดอร์เดียวกัน) ──
+; ค่าที่เห็นในแม่แบบเป็นค่าเริ่มต้นเท่านั้น ไม่ใช่ค่าของรุ่นใด ต้องแทนด้วยค่าจากเอกสารทุกบรรทัด
+; ไม่พบในเอกสาร: เว้นว่างหลังเครื่องหมาย (เหลือแค่ ชื่อฟิลด์ และเครื่องหมาย) แล้วใส่บรรทัด ; [ไม่มีข้อมูล] ไว้เหนือบรรทัดค่า ห้ามเดา ห้ามคงค่าเริ่มต้น
+; ทุกค่าที่กรอกต้องมีบรรทัด ; [SRC: หน้า n · ตารางหรือหัวข้อ · ข้อความต้นฉบับ] ไว้เหนือบรรทัดค่า
+; ห้ามใส่แท็ก หน่วย หรือคอมเมนต์ต่อท้ายบรรทัดค่า · ข้อความหลายรายการคั่นด้วยจุลภาค ห้ามใช้ ; หรือ # ในค่า
+; บรรทัดคอมเมนต์ทุกบรรทัดห้ามมีเครื่องหมายเท่ากับ (เขียน : แทน)
+
+[GENERAL_INFO]
+; ชื่อผู้ผลิตแบตเตอรี่
+; [SRC: หน้า 1 · หัวเอกสาร · HUAWEI]
+Manufacturer = "Huawei"
+; ชื่อรุ่นของแบตเตอรี่ (ตารางมีหลายรุ่น ให้แยก 1 ไฟล์ต่อ 1 รุ่น ครบทุกรุ่น)
+; [SRC: หน้า 2 · Technical Specification · หัวคอลัมน์ LUNA2000-14-S1]
+Model_Name = "LUNA2000-14-S1"
+; ชื่อซีรีส์หรือตระกูลผลิตภัณฑ์ เช่น LUNA2000, SigenStor, Powerwall [ใหม่]
+; [SRC: หน้า 1 · LUNA2000-7/14/21-S1]
+Product_Series = "LUNA2000-7/14/21-S1"
+; ชนิดทางเคมีของแบตเตอรี่ เช่น LFP, NMC, Lead-Acid
+; [SRC: หน้า 2 · Technical Specification · General Specification · Cell technology Lithium iron phosphate (LiFePO4)]
+Battery_Chemistry = "LFP"
+; คลาสแรงดันของแบตเตอรี่: HV (แรงดันสูง >100V) / LV (48V) ใช้เป็นตัวกรองขั้นแรกในการจับคู่กับอินเวอร์เตอร์ [ใหม่]
+; [DERIVED: ช่วงแรงดันใช้งานมากกว่า 100 V]
+; [SRC: หน้า 2 · Technical Specification · Performance · Operating voltage range 350 – 560 V / 600 – 980 V]
+Battery_Voltage_Class = "HV"
+; รูปแบบผลิตภัณฑ์: Battery Module / Battery Pack / All-in-one ESS (มีอินเวอร์เตอร์ในตัว) / Rack [ใหม่]
+; [ไม่มีข้อมูล]
+Product_Form =
+; ชนิดของเซลล์และผู้ผลิตเซลล์ (ถ้าระบุ) เช่น "Prismatic, CATL", "Pouch" [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Cell technology Lithium iron phosphate (LiFePO4)]
+Cell_Type = "Lithium iron phosphate (LiFePO4)"
+; ระดับของค่าที่บันทึกในไฟล์นี้: System (ชุดสูงสุด) / Single Module [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Performance · คอลัมน์ LUNA2000-14-S1 (ชุด 2 โมดูล)]
+Spec_Level = "System"
+
+[MODULE_CONFIGURATION]
+; ความจุพลังงานต่อ 1 โมดูล (kWh) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Performance · Battery module energy 6.9 kWh]
+Module_Capacity_kWh = 6.9
+; แรงดันอ้างอิงต่อ 1 โมดูล (โวลต์) [ใหม่]
+; [ไม่มีข้อมูล]
+Module_Voltage_V =
+; จำนวนโมดูลในชุด System ที่บันทึกค่าในไฟล์นี้ [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Performance · Number of battery modules 2]
+Number_of_Modules_Recorded = 2
+; จำนวนโมดูลต่ำสุดต่อ 1 ชุด (Stack/Tower) [ใหม่]
+; [DERIVED: 6.9 ถึง 20.7 kWh ต่อกลุ่ม คือ 1 ถึง 3 โมดูล]
+; [SRC: หน้า 1 · Flexible Capacity · Scalable from 6.9 kWh to 20.7 kWh per Group]
+Min_Modules_Per_Stack = 1
+; จำนวนโมดูลสูงสุดต่อ 1 ชุด (Stack/Tower) [ใหม่]
+; [DERIVED: 6.9 ถึง 20.7 kWh ต่อกลุ่ม คือ 1 ถึง 3 โมดูล]
+; [SRC: หน้า 1 · Flexible Capacity · Scalable from 6.9 kWh to 20.7 kWh per Group]
+Max_Modules_Per_Stack = 3
+; จำนวนชุด (Stack) ที่ต่อขนานได้สูงสุดต่ออินเวอร์เตอร์ 1 เครื่อง [ใหม่]
+; [UNCERTAIN: เชิงอรรถ 8 ระบุเฉพาะ SUN2000-12/15/17/20/25K-MB0 ที่ต่อได้ 4 ชุด]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Scalability Max. 4 systems in parallel operation]
+Max_Parallel_Stacks = 4
+; ความจุรวมสูงสุดที่ขยายได้ในระบบเดียว (kWh) [ใหม่]
+; [SRC: หน้า 1 · Flexible Capacity · Max. 4 Groups with 82.8 kWh for an Inverter]
+Max_Expandable_Capacity_kWh = 82.8
+; ต้องมีโมดูลควบคุม/Power Module แยกต่างหากหรือไม่ เช่น LUNA2000 Power Module, SigenStor EC (True/False) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Performance · Power module LUNA2000-10KW-C1 · Number of power modules 1]
+Requires_Control_Module = True
+; รุ่นของโมดูลควบคุมที่ต้องใช้ (ถ้ามี) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Performance · Power module LUNA2000-10KW-C1]
+Control_Module_Model = "LUNA2000-10KW-C1"
+
+[CAPACITY_VOLTAGE]
+; ความจุพลังงานตามสเปกชีต (kWh) (Total / Nominal Energy)
+; [CALCULATED: Module_Capacity_kWh คูณ จำนวนโมดูล 2]
+; [SRC: หน้า 2 · Technical Specification · Performance · Battery module energy 6.9 kWh · Number of battery modules 2]
+Nominal_Capacity_kWh = 13.8
+; ความจุไฟฟ้าตามสเปกชีต (Ampere-Hour)
+; [ไม่มีข้อมูล]
+Nominal_Capacity_Ah =
+; ความจุพลังงานที่อนุญาตให้ใช้งานได้จริงโดยไม่ทำให้พังเร็ว (Usable kWh)
+; [SRC: หน้า 2 · Technical Specification · Performance · Battery usable energy 13.8 kWh (100% DoD)]
+Usable_Capacity_kWh = 13.8
+; แรงดันอ้างอิงของตัวแบตเตอรี่ (โวลต์)
+; [ไม่มีข้อมูล]
+Nominal_Voltage_V =
+; แรงดันไฟฟ้าต่ำสุดก่อนตัดการจ่ายไฟ (โวลต์)
+; [UNCERTAIN: ขึ้นกับอินเวอร์เตอร์ 1 เฟส 350-560 V หรือ 3 เฟส 600-980 V ใช้ค่า 1 เฟส]
+; [SRC: หน้า 2 · Technical Specification · Performance · Operating voltage range (single-phase system) 350 – 560 V]
+Operating_Voltage_Min_V = 350.0
+; แรงดันไฟฟ้าสูงสุดเมื่อชาร์จเต็ม (โวลต์)
+; [UNCERTAIN: ขึ้นกับอินเวอร์เตอร์ 1 เฟส 350-560 V หรือ 3 เฟส 600-980 V ใช้ค่า 1 เฟส]
+; [SRC: หน้า 2 · Technical Specification · Performance · Operating voltage range (single-phase system) 350 – 560 V]
+Operating_Voltage_Max_V = 560.0
+
+[OPERATIONAL_LIMITS]
+; กำลังไฟอัดประจุ (ชาร์จ) สูงสุดแบบต่อเนื่อง (กิโลวัตต์)
+; [SRC: หน้า 2 · Technical Specification · Performance · Max. charging & discharging power 7 kW]
+Max_Continuous_Charge_Power_kw = 7.0
+; กำลังไฟคายประจุ (ดึงไปใช้) สูงสุดแบบต่อเนื่อง (กิโลวัตต์)
+; [SRC: หน้า 2 · Technical Specification · Performance · Max. charging & discharging power 7 kW]
+Max_Continuous_Discharge_Power_kw = 7.0
+; กระแสชาร์จสูงสุดแบบต่อเนื่อง (แอมแปร์) [ใหม่]
+; [ไม่มีข้อมูล]
+Max_Continuous_Charge_Current_A =
+; กระแสคายประจุสูงสุดแบบต่อเนื่อง (แอมแปร์) [ใหม่]
+; [ไม่มีข้อมูล]
+Max_Continuous_Discharge_Current_A =
+; กำลังชาร์จสูงสุดชั่วขณะ (Peak) (กิโลวัตต์) [ใหม่]
+; [ไม่มีข้อมูล]
+Peak_Charge_Power_kW =
+; กำลังคายประจุสูงสุดชั่วขณะ (Peak) (กิโลวัตต์) [ใหม่]
+; [ไม่มีข้อมูล]
+Peak_Discharge_Power_kW =
+; ระยะเวลาที่จ่ายกำลัง Peak ได้ (วินาที) [ใหม่]
+; [ไม่มีข้อมูล]
+Peak_Power_Duration_Sec =
+; อัตราการจ่ายกระแสไฟเมื่อเทียบกับความจุ (C-Rating) เช่น "0.5C"
+; [ไม่มีข้อมูล]
+C_Rating =
+; เปอร์เซ็นต์การดึงความจุไปใช้สูงสุดที่โรงงานแนะนำ (Depth of Discharge %)
+; [SRC: หน้า 1 · More Usable Energy · 100% Depth of Discharge · เชิงอรรถ 1 หน้า 2]
+Recommended_DoD_Pct = 100.0
+; ระดับ SoC ต่ำสุดที่ BMS อนุญาตให้คายประจุถึง (%) [ใหม่]
+; [ไม่มีข้อมูล]
+Min_SoC_Pct =
+; ระดับ SoC สูงสุดที่ BMS อนุญาตให้ชาร์จถึง (%) [ใหม่]
+; [ไม่มีข้อมูล]
+Max_SoC_Pct =
+
+[EFFICIENCY_LIFECYCLE]
+; ประสิทธิภาพรวมเมื่อชาร์จไฟเข้าไปแล้วดึงกลับออกมาใช้ (%)
+; [ไม่มีข้อมูล]
+Round_Trip_Efficiency_Pct =
+; รอบอายุการใช้งานที่คาดหวัง (จำนวนครั้งการชาร์จ-คายประจุ)
+; [ไม่มีข้อมูล]
+Expected_Cycle_Life =
+; เงื่อนไขการดึงไฟไปใช้ (DoD %) ที่ใช้อ้างอิงการรับประกันรอบการใช้งาน
+; [ไม่มีข้อมูล]
+Guaranteed_DoD_Condition_Pct =
+; เงื่อนไขอุณหภูมิและ C-rate ที่ใช้ทดสอบ Cycle Life เช่น "25 C, 0.5C/0.5C" [ใหม่]
+; [ไม่มีข้อมูล]
+Cycle_Life_Test_Condition =
+
+[DEGRADATION_MODEL]
+; อัตราความจุแบตเตอรี่ที่หายไป (%) ต่อการชาร์จ-คายประจุครบ 1,000 รอบ
+; [ไม่มีข้อมูล]
+Capacity_Fade_per_1000_Cycles_Pct =
+; อายุการใช้งานตามปฏิทินของแบตเตอรี่ (ปี) แม้จะไม่ได้ใช้งานหนัก
+; [ไม่มีข้อมูล]
+Calendar_Life_Years =
+; เปอร์เซ็นต์สุขภาพแบตเตอรี่ (SoH) ที่ถือว่าหมดอายุการใช้งาน (มักกำหนดที่ 70% หรือ 80%)
+; [ไม่มีข้อมูล]
+End_of_Life_SoH_Pct =
+; ระยะเวลารับประกัน (ปี) เช่น 10, 15 [ใหม่]
+; [ไม่มีข้อมูล]
+Warranty_Years =
+; ปริมาณพลังงานสะสมที่รับประกัน (Energy Throughput) (MWh) ถ้าระบุ [ใหม่]
+; [ไม่มีข้อมูล]
+Warranty_Energy_Throughput_MWh =
+; ระดับ SoH ที่รับประกัน ณ สิ้นสุดระยะประกัน (%) เช่น 70, 80 [ใหม่]
+; [ไม่มีข้อมูล]
+Warranty_End_SoH_Pct =
+
+[THERMAL_PARAMETERS]
+; อุณหภูมิต่ำสุดที่อนุญาตให้ทำการชาร์จประจุได้ (องศาเซลเซียส)
+; [ไม่มีข้อมูล]
+Charge_Temp_Range_Min_C =
+; อุณหภูมิสูงสุดที่อนุญาตให้ทำการชาร์จประจุได้ (องศาเซลเซียส)
+; [ไม่มีข้อมูล]
+Charge_Temp_Range_Max_C =
+; อุณหภูมิต่ำสุดที่อนุญาตให้ทำการคายประจุได้ (องศาเซลเซียส)
+; [ไม่มีข้อมูล]
+Discharge_Temp_Range_Min_C =
+; อุณหภูมิสูงสุดที่อนุญาตให้ทำการคายประจุได้ (องศาเซลเซียส)
+; [ไม่มีข้อมูล]
+Discharge_Temp_Range_Max_C =
+; อุณหภูมิที่แบตเตอรี่ทำงานได้เต็มประสิทธิภาพและยืดอายุได้ดีที่สุด
+; [ไม่มีข้อมูล]
+Optimal_Operating_Temp_C =
+; อุณหภูมิเก็บรักษาต่ำสุด (องศาเซลเซียส) [ใหม่]
+; [ไม่มีข้อมูล]
+Storage_Temp_Min_C =
+; อุณหภูมิเก็บรักษาสูงสุด (องศาเซลเซียส) [ใหม่]
+; [ไม่มีข้อมูล]
+Storage_Temp_Max_C =
+; วิธีจัดการอุณหภูมิ: Natural Cooling / Forced Air / Liquid Cooling [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Cooling Natural convection]
+Thermal_Management = "Natural convection"
+; มีฮีตเตอร์ในตัวสำหรับอากาศเย็น (True/False) [ใหม่]
+; [ไม่มีข้อมูล]
+Integrated_Heater =
+; ความชื้นสัมพัทธ์สูงสุดที่ใช้งานได้ (%) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Relative humidity 5% - 95%]
+Max_Operating_Humidity_Pct = 95.0
+; ระดับความสูงจากน้ำทะเลสูงสุดที่ใช้งานได้ (เมตร) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Max. operating altitude 4,000 m (Derating above 2,000 m)]
+Max_Operating_Altitude_m = 4000
+
+[ELECTRICAL_LOSSES]
+; ความต้านทานภายใน (mOhm) ใช้คำนวณการสูญเสียพลังงานในรูปความร้อน
+; [ไม่มีข้อมูล]
+Internal_Resistance_mOhm =
+; อัตราการสูญเสียประจุด้วยตัวเองเมื่อสแตนด์บายทิ้งไว้ (% ต่อเดือน)
+; [ไม่มีข้อมูล]
+Self_Discharge_Rate_Pct_per_Month =
+; พลังงานที่ระบบ BMS ใช้หล่อเลี้ยงตัวเอง (วัตต์)
+; [ไม่มีข้อมูล]
+Standby_Power_Consumption_W =
+
+[BMS_COMMUNICATION]
+; โพรโทคอลสื่อสารของ BMS กับอินเวอร์เตอร์ เช่น CAN, RS485, Modbus RTU (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Communication RS485/FE/CAN (เชิงอรรถ 2 CAN ใช้ต่อขนานแบตเท่านั้น)]
+BMS_Communication_Protocol = "RS485, FE, CAN"
+; ชนิดพอร์ตสื่อสาร เช่น RJ45, Terminal block, Proprietary connector [ใหม่]
+; [ไม่มีข้อมูล]
+Communication_Port_Type =
+; รายชื่อยี่ห้อ/รุ่นอินเวอร์เตอร์ที่ผู้ผลิตระบุว่าใช้ร่วมกันได้ คั่นด้วยจุลภาค เช่น "SUN2000-5K-MAP0, SUN2000-10K-MAP0" (พารามิเตอร์หลักสำหรับจับคู่) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Compatible inverters SUN2000-12/15/17/20/25K-MB0, SUN2000-3/4/5/6/8/10KTL-M1 …]
+Compatible_Inverter_Models = "SUN2000-12K-MB0, SUN2000-15K-MB0, SUN2000-17K-MB0, SUN2000-20K-MB0, SUN2000-25K-MB0, SUN2000-3KTL-M1, SUN2000-4KTL-M1, SUN2000-5KTL-M1, SUN2000-6KTL-M1, SUN2000-8KTL-M1, SUN2000-10KTL-M1, SUN2000-5K-MAP0, SUN2000-6K-MAP0, SUN2000-8K-MAP0, SUN2000-10K-MAP0, SUN2000-12K-MAP0, SUN2000-8K-LC0, SUN2000-10K-LC0, SUN2000-2KTL-L1, SUN2000-3KTL-L1, SUN2000-3.68KTL-L1, SUN2000-4KTL-L1, SUN2000-4.6KTL-L1, SUN2000-5KTL-L1, SUN2000-6KTL-L1, SUN5000-8K-MAP0, SUN5000-12K-MAP0, SUN5000-17K-MB0, SUN5000-25K-MB0"
+; ลักษณะโปรโตคอล: Open (ใช้กับต่างยี่ห้อได้ เช่น Pylontech CAN) / Proprietary (ล็อกยี่ห้อตัวเอง) [ใหม่]
+; [ไม่มีข้อมูล]
+Protocol_Openness =
+; ระบบสมดุลเซลล์: Passive / Active [ใหม่]
+; [ไม่มีข้อมูล]
+Cell_Balancing_Type =
+; รองรับการอัปเดตเฟิร์มแวร์ระยะไกล (True/False) [ใหม่]
+; [ไม่มีข้อมูล]
+Remote_Firmware_Update =
+
+[PROTECTION_CERTIFICATION]
+; ระบบป้องกันที่มีใน BMS คั่นด้วยจุลภาค เช่น "OVP, UVP, OCP, OTP, Short-circuit" [ใหม่]
+; [ไม่มีข้อมูล]
+Protection_Features =
+; ระบบป้องกันไฟไหม้/ระงับความร้อนลุกลาม เช่น "Aerosol fire suppression, Thermal runaway containment" [ใหม่]
+; [ไม่มีข้อมูล]
+Fire_Protection =
+; มาตรฐานที่ผ่านการรับรอง คั่นด้วยจุลภาค เช่น "IEC 62619, IEC 63056, UN38.3, UL 9540A, UL 1973, CE" [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · Standards Compliance · Certificates]
+Certifications = "CE, RCM, CEC, VDE2510-50, IEC62619, IEC 60730, UN38.3, ISO13849, REACH, RoHS"
+; ระดับกันน้ำกันฝุ่น เช่น IP55, IP65, IP66 [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Protection rating IP 66]
+IP_Rating = "IP66"
+
+[MECHANICAL_SPEC]
+; ความกว้างของชุดที่บันทึกค่า (มิลลิเมตร) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Dimensions (W x D x H) 590 mm x 255 mm x 870 mm]
+Width_mm = 590.0
+; ความสูงของชุดที่บันทึกค่า (มิลลิเมตร) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Dimensions (W x D x H) 590 mm x 255 mm x 870 mm]
+Height_mm = 870.0
+; ความลึกของชุดที่บันทึกค่า (มิลลิเมตร) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Dimensions (W x D x H) 590 mm x 255 mm x 870 mm]
+Depth_mm = 255.0
+; น้ำหนักของชุดที่บันทึกค่า (กิโลกรัม) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Weight (Floor stand toolkit included) 148 kg]
+Weight_kg = 148.0
+; น้ำหนักต่อ 1 โมดูล (กิโลกรัม) [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Battery module weight 68 kg]
+Module_Weight_kg = 68.0
+; รูปแบบการติดตั้ง: Floor-standing / Wall-mounted / Rack-mounted / Stackable [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Installation Floor stand (standard), Wall mounting (optional)]
+Mounting_Type = "Floor stand (standard), Wall mounting (optional)"
+; สถานที่ติดตั้งที่รองรับ: Indoor / Outdoor / Both [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Environment Outdoor/Indoor]
+Installation_Location = "Outdoor/Indoor"
+; ระดับเสียงขณะทำงาน (เดซิเบล) [ใหม่]
+; [UNCERTAIN: เอกสารระบุน้อยกว่า 29 dB]
+; [SRC: หน้า 2 · Technical Specification · General Specification · Noise emission < 29 dB]
+Noise_Level_dB = 29.0
+
+[DATA_SOURCE]
+; ชื่อไฟล์ Datasheet ต้นทางที่ใช้กวาดข้อมูล [ใหม่]
+; [SRC: ชื่อไฟล์ที่แนบ]
+Source_File = "DS_Huawei_LUNA2000-7-14-21-S1_Datasheet.pdf"
+; วันที่หรือเวอร์ชันของ Datasheet ตามที่ระบุในเอกสาร [ใหม่]
+; [SRC: หน้า 1 · Version No.: 01-202406]
+Datasheet_Version = "01-202406"
+; วันที่กวาดข้อมูล รูปแบบ YYYY-MM-DD [ใหม่]
+; [SRC: วันที่ทำ]
+Extraction_Date = "2026-11-05"
+; วิธีที่ใช้กวาดข้อมูล: Text / OCR / Manual [ใหม่]
+; [SRC: PDF มี text layer]
+Extraction_Method = "Text"
+; ระดับความเชื่อมั่นของข้อมูลโดยรวม: High / Medium / Low [ใหม่]
+; [SRC: ไม่มี Nominal voltage ช่วงแรงดันขึ้นกับระบบ 1 หรือ 3 เฟส]
+Data_Confidence = "Medium"
+; จำนวนพารามิเตอร์ที่ไม่พบในเอกสาร [ใหม่]
+; [SRC: นับจากไฟล์นี้]
+Not_Found_Count = 41
+; ตัวแทนจำหน่ายหรือแหล่งที่ซื้อได้ในประเทศไทย [ใหม่ 3.2]
+; [ไม่มีข้อมูล]
+Thai_Distributor =
+; ลิงก์ datasheet ทางการของผู้ผลิต [ใหม่ 3.2]
+; [ไม่มีข้อมูล]
+Datasheet_URL =
+; หมายเหตุอื่น ๆ เช่น รุ่นอื่นในตารางเดียวกัน [ใหม่]
+; [SRC: หน้า 2 · Technical Specification · เชิงอรรถ 9]
+Notes = "ช่วงแรงดันระบบ 3 เฟส 600-980 V · ใช้กับ SUN2000 MAP0/L1/LC0 และ SUN5000 ตั้งแต่ 2024.Q3"

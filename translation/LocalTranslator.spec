@@ -15,6 +15,11 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 for pkg in ('ctranslate2', 'faster_whisper'):
     tmp_ret = collect_all(pkg)
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+# ctranslate2.converters (แปลงโมเดล ไม่ได้ใช้ตอนถอดเสียง) import transformers/torch - ถ้าเครื่องที่ build
+# มีสองตัวนี้ติดตั้งอยู่ exe จะบวมจาก ~31 MB เป็น ~100 MB และมีไฟล์เพิ่ม ~5,000 ไฟล์
+hiddenimports = [h for h in hiddenimports if not h.startswith('ctranslate2.converters')]
+HEAVY_UNUSED = ['torch', 'torchvision', 'torchaudio', 'transformers', 'accelerate', 'sklearn',
+                'tensorflow', 'keras', 'jax', 'datasets', 'safetensors', 'sentencepiece']
 
 
 a = Analysis(
@@ -26,7 +31,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['scripts'],
+    excludes=['scripts'] + HEAVY_UNUSED,
     noarchive=False,
     optimize=0,
 )

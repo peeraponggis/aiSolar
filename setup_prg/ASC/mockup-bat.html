@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตัวอย่างชุด .bat ปล่อยรุ่น/ติดตั้ง</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f4f6f5;--fg:#1d2422;--mut:#5f6b67;--line:#d9e0dd;--acc:#185fa5;--accbg:#e6f1fb;--ok:#1f6b33;--warn:#8a5a00;--warnbg:#fdf3dc;--bad:#a32d2d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 Sarabun,"Leelawadee UI",Tahoma,sans-serif}
+header{background:#16324f;color:#fff;padding:14px max(16px,env(safe-area-inset-left)) 0}
+header h1{margin:0;font-size:20px} header p{margin:2px 0 10px;opacity:.85;font-size:13.5px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{font:inherit;font-size:13.5px;border:0;border-radius:8px 8px 0 0;padding:6px 12px;background:#2a4a6d;color:#dbe7f3;cursor:pointer}
+nav button.on{background:var(--bg);color:var(--fg);font-weight:600}
+main{max-width:1100px;overflow-x:hidden;min-width:0;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+section[hidden]{display:none}
+h2{font-size:18px;margin:16px 0 6px} h3{font-size:15px;margin:14px 0 4px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0}
+.note{font-size:13.5px;color:var(--mut)}
+.warn{background:var(--warnbg);border-left:3px solid var(--warn);padding:6px 10px;border-radius:0 8px 8px 0;font-size:13.5px}
+/* terminal */
+.term{background:#0c0c0c;color:#ccc;font:13px/1.45 Consolas,"Cascadia Mono","Courier New",monospace;border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre;margin:8px 0;border:1px solid #333}
+.term .t{color:#fff;font-weight:700} .term .c{color:#3fd0ff} .term .g{color:#5fd36a} .term .y{color:#f2c94c} .term .r{color:#ff6b6b} .term .d{color:#888} .term .in{background:#1f3a5a;color:#fff;padding:0 3px}
+.term .title{background:#fff;color:#000;margin:-12px -14px 8px;padding:3px 10px;font-family:Sarabun,sans-serif;font-size:12.5px}
+.tree{font:13px/1.5 Consolas,monospace;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px;white-space:pre;overflow-x:auto}
+.grid2{display:grid;min-width:0;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:12px}
+.grid2>div{min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:#fff}
+th,td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top} th{background:#eef2f0}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.b{display:inline-block;border-radius:6px;padding:0 7px;font-size:12.5px;font-weight:600;background:var(--accbg);color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>ตัวอย่างชุด .bat — ปล่อยรุ่น · ติดตั้ง · SQL · home server</h1>
+  <p>F:\LocalAI\setup_prg\ASC · หน้าจอจำลองของแต่ละ bat (ยังไม่สร้างจริง) · ค่าที่สมมติ: ชื่อไฟล์อังกฤษ-เมนูไทย · ถามก่อน push ทุกครั้ง · bat ไม่ bump เวอร์ชัน</p>
+  <nav id="tabs">
+    <button data-t="t0" class="on">โครง + เมนูหลัก</button><button data-t="t1">01 ASCS</button><button data-t="t2">02 ASCA</button><button data-t="t3">03 Cloud · 04 CRM · 05 Translator</button><button data-t="t6">06 SQL</button><button data-t="t7">07 Home</button><button data-t="t8">08 เครื่องใหม่</button><button data-t="t9">README</button>
+  </nav>
+</header>
+<main>
+
+<section id="t0">
+<div class="grid2">
+<div><h2>โครงไฟล์</h2><div class="tree">F:\LocalAI\setup_prg\ASC\
+├─ ASC-Menu.bat              ← ไอคอนบน Desktop "ASC ปล่อยรุ่น"
+├─ 01-ascs-release.bat
+├─ 02-asca-release.bat
+├─ 03-cloud-deploy.bat
+├─ 04-crm-deploy.bat
+├─ 05-translator-build.bat
+├─ 06-sql-todo.bat
+├─ 07-home.bat
+├─ 08-new-pc.bat
+├─ lib\
+│   ├─ common.cmd          log · ถามยืนยัน · เปิดลิงก์
+│   ├─ sql-todo.ps1        เทียบ hash ไฟล์ SQL กับที่รันแล้ว
+│   └─ check-tools.ps1     ตรวจ Python/Node/git/gh/ssh/Ollama
+├─ README.md               คู่มือติดตั้งทุกโปรแกรม (ไทย)
+└─ logs\
+    ├─ 2569-11-07.txt      ทุกคำสั่งที่รัน + ผล
+    └─ sql-done.json       ไฟล์ SQL ที่รันแล้ว (hash + วันที่)</div>
+<p class="note">ไม่มีคีย์/รหัสผ่านในไฟล์ใด ๆ · อ่านจาก `apps\ASCS-release\password.txt` · `apps\ASCA-release\password.txt` · `notify\notify.json` ตอนรันเท่านั้น</p></div>
+<div><h2>ASC-Menu.bat</h2>
+<div class="term"><span class="title">ASC — เมนูปล่อยรุ่น/ติดตั้ง  (F:\LocalAI\setup_prg\ASC)</span><span class="t">══════ ASC Studio · Architect · Cloud · CRM-Pi · Translator ══════</span>
+ รุ่นตอนนี้ (laptop)         home server (ssh home)
+ ASCS   0.163.0  <span class="g">✓ push แล้ว</span>    ASCS   0.162.0  <span class="y">ตามหลัง 1 รุ่น</span>
+ ASCA   0.31.0   <span class="g">✓</span>            ASCA   0.31.0   <span class="g">✓</span>
+ CRM-Pi 1.2.2    <span class="y">มีไฟล์ค้าง 2</span>  picode 1.2.2
+ Transl 1.9.0    <span class="y">zip เก่ากว่า</span>
+ Cloud  deploy ล่าสุด 7 พ.ย. 08:48 · <span class="g">เว็บ 0.163.0</span>
+
+ <span class="c">[1]</span> ASC Studio   ปล่อยรุ่น (build · ชุดติดตั้ง · เว็บ)
+ <span class="c">[2]</span> ASC Architect ปล่อยรุ่น
+ <span class="c">[3]</span> ASC Cloud    deploy + ตรวจเว็บจริง
+ <span class="c">[4]</span> CRM-Pi       deploy (laptop เท่านั้น)
+ <span class="c">[5]</span> Local Translator build ชุดติดตั้ง
+ <span class="c">[6]</span> SQL ที่ต้องรัน          <span class="y">● ค้าง 2 ไฟล์</span>
+ <span class="c">[7]</span> Home server  ดึง/ส่งข้อมูล · ดูรุ่น
+ <span class="c">[8]</span> ติดตั้งบนเครื่องใหม่
+ <span class="c">[9]</span> เปิด README   <span class="c">[L]</span> เปิด log วันนี้   <span class="c">[0]</span> ออก
+
+เลือก: <span class="in">_</span></div>
+<p class="note">หัวเมนูอ่าน VERSION.json ของแต่ละโปรแกรม + `git status` + `ssh home` (ถ้าต่อไม่ได้แสดง "home: ไม่ตอบ") · "● ค้าง" มาจาก 06</p></div>
+</div>
+</section>
+
+<section id="t1" hidden>
+<h2>01-ascs-release.bat — ASC Studio</h2>
+<div class="term"><span class="title">01 ASC Studio ปล่อยรุ่น</span><span class="t">ASC Studio 0.163.0  (F:\LocalAI\aiSolar\design-auto)</span>
+<span class="d">[ตรวจ]</span> git asc_auto: main = origin/main <span class="g">✓</span>   ไฟล์ค้าง: out\usermanual\_pdfs.json · scripts\sync-home-gui.ps1 <span class="d">(ไม่ commit ตามกฎ)</span>
+<span class="d">[ตรวจ]</span> git asc: สะอาด <span class="g">✓</span>   dist = 0.163.0 <span class="g">✓</span>   ชุดติดตั้งล่าสุด: ASC-Studio-Setup-0.163.0.exe (7 พ.ย. 08:47)
+
+ <span class="c">[1]</span> ทำครบทุกขั้น (2→3→4→5→6 หยุดถามก่อน push)
+ <span class="c">[2]</span> build: kb:build → typecheck → test → build
+ <span class="c">[3]</span> ชุดติดตั้ง + ชุดอัปเดต (build-setup.ps1)
+ <span class="c">[4]</span> เว็บ: build-cloud → asc\docs\studio + หัวลิขสิทธิ์ + kb:sql
+ <span class="c">[5]</span> สแกนคีย์ลับใน repo asc
+ <span class="c">[6]</span> commit + push (asc_auto · asc) → รอ deploy → ตรวจเว็บจริง
+ <span class="c">[7]</span> อัปเดต PROGRAMS.md + push aiSolar
+ <span class="c">[0]</span> กลับ
+
+เลือก: <span class="in">1</span>
+
+<span class="d">── ขั้น 2/6 build ──────────────────────────────────────</span>
+npm run kb:build   <span class="g">✓ 274 ท่อน</span>
+npm run typecheck  <span class="g">✓</span>
+npm test           <span class="g">✓ 1,517 ผ่าน · 6 ข้าม</span>   (2 นาที 14 วิ)
+npm run build      <span class="g">✓ dist 0.163.0</span>
+<span class="d">── ขั้น 3/6 ชุดติดตั้ง ─────────────────────────────────</span>
+build-setup.ps1    <span class="g">✓</span> out\setup\ASC-Studio-Setup-0.163.0.exe (41.4 MB)
+                   <span class="g">✓</span> asc\docs\ascs-release\ascs-app-0.163.0.bin (19.2 MB) · latest.json
+<span class="d">── ขั้น 4/6 เว็บ ────────────────────────────────────────</span>
+build-cloud --to   <span class="g">✓</span> 28 ไฟล์ · ไม่พบตาราง วสท.   หัวลิขสิทธิ์ <span class="g">✓ 8 ไฟล์</span>   kb:sql <span class="g">✓</span> out\cloud\kb-data.sql
+<span class="d">── ขั้น 5/6 สแกนคีย์ ────────────────────────────────────</span>
+sk- AIza ghp_ gsk_ hf_ xai- sb_secret_ service_role eyJ… กุญแจ ASCS  <span class="g">✓ ไม่พบ</span>
+<span class="d">── ขั้น 6/6 push ────────────────────────────────────────</span>
+จะ commit + push:
+  asc_auto  11 ไฟล์  "ASC Studio 0.163.0: …(บรรทัดแรก CHANGELOG)… โดย ลุงพี"
+  asc       16 ไฟล์  "ASC Studio 0.163.0 (studio + ชุดอัปเดต)"
+<span class="y">push แล้วเว็บจริงเปลี่ยนทันที — ยืนยัน? [y/N]</span> <span class="in">y</span>
+push asc_auto <span class="g">✓ dba8e32</span>   push asc <span class="g">✓ 42ef75d</span>   gh run watch … <span class="g">✓ 1 นาที 52 วิ</span>
+ตรวจเว็บ: studio main.js = 0.163.0 <span class="g">✓</span> · latest.json 0.163.0 <span class="g">✓</span> · app.bin 200 <span class="g">✓</span> · sim-lab.html 200 <span class="g">✓</span>
+
+<span class="t">เสร็จ — ต่อไป:</span> <span class="y">SQL ค้าง 1 ไฟล์ (kb-data.sql) → กด [6] ในเมนูหลัก</span>
+log: logs\2569-11-07.txt   กด Enter กลับเมนู</div>
+<div class="warn">ขั้นไหนไม่ผ่าน = หยุดทันที แสดงบรรทัด error 20 บรรทัดสุดท้าย ไม่ไปขั้นถัดไป · ถ้า git มี CONFLICT = หยุด ไม่ --force · bat นี้ไม่ bump เวอร์ชัน (Claude bump ตามกฎ "โดย ลุงพี" ก่อนเรียก bat)</div>
+</section>
+
+<section id="t2" hidden>
+<h2>02-asca-release.bat — ASC Architect</h2>
+<div class="term"><span class="title">02 ASC Architect ปล่อยรุ่น</span><span class="t">ASC Architect 0.31.0  (F:\LocalAI\pee_architec · private)</span>
+<span class="d">[ตรวจ]</span> git: main = origin/main <span class="g">✓</span>   Inno Setup: F:\LocalAI\apps\InnoSetup6 <span class="g">✓</span>   รหัสชุดติดตั้ง: apps\ASCA-release\password.txt <span class="g">✓ (ไม่แสดง)</span>
+
+ <span class="c">[1]</span> ทำครบ (2→3→4)
+ <span class="c">[2]</span> ชุดติดตั้ง Inno + ชุดอัปเดต (build_installer.py) → apps\ASCA-release\0.31.0\ASCA-Setup-0.31.0.exe · asc\docs\asca-release
+ <span class="c">[3]</span> เว็บ: build_cloud.py --to asc\docs\architec
+ <span class="c">[4]</span> push pee_architec → แล้วไป 03 Cloud deploy
+ <span class="c">[0]</span> กลับ
+เลือก: <span class="in">_</span></div>
+<p class="note">ASCA ใช้ตาราง Supabase ของ ASC Cloud ไม่มี SQL ของตัวเอง · เครื่องที่ติดตั้งจาก Setup อัปเดตเองผ่าน latest.json</p>
+</section>
+
+<section id="t3" hidden>
+<h2>03-cloud-deploy.bat — ASC Cloud</h2>
+<div class="term"><span class="title">03 ASC Cloud deploy</span><span class="t">F:\LocalAI\git\asc → https://peeraponggis.github.io/asc/</span>
+git pull --rebase --autostash <span class="g">✓</span>   ไฟล์เปลี่ยน: docs\studio 16 · docs\ascs-release 3 · docs\architec 0
+sw.js SHELL เปลี่ยน? <span class="g">ไม่</span> (ไม่ต้อง bump VERSION ใน sw.js)
+สแกนคีย์ลับ 19 ไฟล์ <span class="g">✓ ไม่พบ</span>
+<span class="y">deploy เว็บที่คนใช้จริง — ยืนยัน? [y/N]</span> <span class="in">y</span>
+commit "ASC Cloud: studio 0.163.0 · ascs-release" · push <span class="g">✓</span> · gh run watch <span class="g">✓</span>
+ตรวจ: /studio 200 · /architec 200 · /ascs-release/latest.json 0.163.0 · /asca-release/latest.json 0.31.0 <span class="g">✓</span>
+rollout: docs\studio-config.js = 'all'</div>
+
+<h2>04-crm-deploy.bat — CRM-Pi (laptop เท่านั้น)</h2>
+<div class="term"><span class="title">04 CRM-Pi deploy</span><span class="t">F:\enterprise\picode\pi-system → pi-system.pages.dev</span>
+git picode: main = origin/main <span class="g">✓</span>   VERSION pi_crm_erp 1.0.0 <span class="r">≠ PROGRAMS.md 1.2.2 — ต้องแก้ให้ตรงก่อน</span>
+node pi_crm_erp/scripts/build_pages.mjs <span class="g">✓ dist_pages</span>   สแกนคีย์ใน dist_pages <span class="g">✓</span>
+<span class="y">deploy production — ยืนยัน? [y/N]</span> <span class="in">y</span>
+npx wrangler pages deploy dist_pages --project-name pi-system --branch production <span class="g">✓</span>
+SQL CRM ที่ยังไม่รัน: <span class="y">20261031_admin_users.sql</span> → กด [6]</div>
+
+<h2>05-translator-build.bat — Local Translator</h2>
+<div class="term"><span class="title">05 Local Translator build</span>Local Translator 1.9.0   dist\LocalTranslator.exe: 1.9.0 <span class="g">✓</span>   LocalTranslator-setup.zip: <span class="y">24 ก.ย. (รุ่นเก่า)</span>
+ <span class="c">[1]</span> pyinstaller LocalTranslator.spec (≈ 4 นาที)
+ <span class="c">[2]</span> zip ชุดติดตั้ง → F:\LocalAI\translation\LocalTranslator-setup-1.9.0.zip (dist + Install-LocalTranslator.bat)
+ <span class="c">[3]</span> ส่งไป home: C:\LocalAI\translation\
+เลือก: <span class="in">_</span></div>
+</section>
+
+<section id="t6" hidden>
+<h2>06-sql-todo.bat — SQL ที่ต้องรัน (ใช้บ่อยสุด)</h2>
+<div class="term"><span class="title">06 SQL ที่ต้องรัน</span><span class="t">ASC Cloud  (project rcaslesvgilknupqmwrp)</span>
+ #  ไฟล์                                                        สถานะ
+ <span class="c">1</span>  F:\LocalAI\aiSolar\design-auto\out\cloud\kb-data.sql         <span class="y">● เปลี่ยน 08:49 — ยังไม่รัน</span>
+ <span class="c">2</span>  F:\LocalAI\aiSolar\design-auto\out\cloud\ascs-release-key.sql <span class="g">รันแล้ว 7 พ.ย. (ไฟล์ไม่เปลี่ยน)</span>
+ <span class="c">3</span>  F:\LocalAI\aiSolar\design-auto\out\cloud\standards-data.sql   <span class="g">รันแล้ว 3 พ.ย.</span>
+ <span class="c">4</span>  F:\LocalAI\git\asc\supabase\ascs-release.sql                  <span class="g">รันแล้ว 7 พ.ย.</span>
+ <span class="d">…  ไฟล์ตั้งค่าครั้งแรก 14 ไฟล์ (schema → kb → ascs-studio → …) กด [F] ดูลำดับ</span>
+<span class="t">CRM-Pi  (project zloxphgxhttrtgqlafsz)</span>
+ <span class="c">5</span>  …\pi_crm_erp\supabase\20261031_admin_users.sql                <span class="y">● ยังไม่รัน</span>
+
+ กดเลข = คัดลอกไฟล์เข้า clipboard + เปิด SQL Editor ของ project นั้น
+ <span class="c">[D]</span> ทำเครื่องหมายว่ารันแล้ว   <span class="c">[F]</span> ลำดับติดตั้งครั้งแรก   <span class="c">[0]</span> กลับ
+เลือก: <span class="in">1</span>
+
+คัดลอก kb-data.sql (320 KB) เข้า clipboard <span class="g">✓</span>
+เปิด https://supabase.com/dashboard/project/rcaslesvgilknupqmwrp/sql/new <span class="g">✓</span>
+<span class="y">→ ในเบราว์เซอร์: Ctrl+V แล้วกด Run · เสร็จแล้วกลับมากด D</span>
+รันแล้ว? [D=ใช่ / Enter=ยัง] <span class="in">D</span>   บันทึก logs\sql-done.json <span class="g">✓</span></div>
+<div class="warn">ascs-release-key.sql มีกุญแจ: bat แสดงแค่ชื่อไฟล์ ไม่พิมพ์เนื้อหาบนจอ ไม่เขียนลง log · สถานะ "รันแล้ว" ใช้ hash ไฟล์ — ไฟล์ถูกสร้างใหม่แต่เนื้อหาเหมือนเดิม = ไม่ขึ้นค้าง</div>
+</section>
+
+<section id="t7" hidden>
+<h2>07-home.bat — home server (ssh home · 100.118.18.110)</h2>
+<div class="term"><span class="title">07 Home server</span>ssh home echo ok … <span class="g">✓ ตอบใน 0.4 วิ</span>   (C:\LocalAI · ไม่มี F:)
+ รุ่นบน home: ASCS 0.162.0 <span class="y">(laptop 0.163.0)</span> · ASCA 0.31.0 · picode 1.2.2 · HomeGuard 2.0
+ <span class="c">[1]</span> อัปเดต ASCS บน home: ssh → pull-home.ps1 (git pull + build + รีสตาร์ต)
+ <span class="c">[2]</span> ดึง design-auto\out จาก home (sync-home.ps1 Pull · ไม่ทับไฟล์ใหม่กว่า · ≈ 3.9 GB · -DryRun ก่อน)
+ <span class="c">[3]</span> ส่ง design-auto\out ไป home (Push)
+ <span class="c">[4]</span> ดึง HomeGuard live copy → F:\LocalAI\tools\homeguard\from-home\
+ <span class="c">[5]</span> ส่ง laptop-data (send-laptop-data.ps1)
+ <span class="c">[6]</span> เปิด GUI ซิงก์โฟลเดอร์ (sync-home-gui)
+ <span class="c">[7]</span> คัดลอกไฟล์เดียว: พิมพ์ path บน home → F:\LocalAI\from-home\
+ <span class="c">[8]</span> เปิด Remote Control (claude rc) / RDP
+ <span class="c">[0]</span> กลับ
+เลือก: <span class="in">2</span>
+sync-home.ps1 -Direction Pull -DryRun … จะคัดลอก 37 ไฟล์ (412 MB) · ข้าม 1,204 (เหมือนกัน/ใหม่กว่า)
+<span class="y">คัดลอกจริง? [y/N]</span> <span class="in">y</span>  … <span class="g">✓ 37 ไฟล์ 1 นาที 20 วิ</span></div>
+<p class="note">ไม่มีเมนูดึง server\data · AMR_Fetcher\data · cctv (ข้อมูลลูกค้า/รหัสผ่าน) — ถ้าต้องการใช้ [7] ระบุไฟล์เอง · home RAM 8 GB: [1] จะเช็กว่าไม่มี build อื่นรันอยู่ก่อน</p>
+</section>
+
+<section id="t8" hidden>
+<h2>08-new-pc.bat — ติดตั้งบนเครื่องใหม่ (คัดลอกโฟลเดอร์ setup_prg + ชุดติดตั้งไปด้วย)</h2>
+<div class="term"><span class="title">08 ติดตั้งบนเครื่องใหม่</span>ตรวจเครื่องนี้: Python 3.12 <span class="g">✓</span> · Node 22 <span class="g">✓</span> · git <span class="r">✗</span> · gh <span class="r">✗</span> · Ollama <span class="g">✓</span> · Tailscale <span class="y">✗ (ต่อ home ไม่ได้)</span> · .NET 4 <span class="g">✓</span>
+ <span class="c">[1]</span> ASC Studio   — ไม่มี git → เปิด ASC-Studio-Setup-0.163.0.exe (ใส่ update.key ให้ อัปเดตเองได้)
+                  — มี git     → git clone asc_auto + install.bat
+ <span class="c">[2]</span> ASC Architect — ASCA-Setup-0.31.0.exe (รหัสอยู่ที่ apps\ASCA-release\password.txt บน laptop ลุงพี)
+ <span class="c">[3]</span> Local Translator — แตก zip + Install-LocalTranslator.bat (ดึงโมเดล 2.5 GB)
+ <span class="c">[4]</span> ASC Cloud / CRM-Pi — เว็บ ไม่ต้องติดตั้ง · เปิดลิงก์ + วิธีขอสิทธิ์ (allow-domains / invite)
+ <span class="c">[5]</span> ติดตั้งเครื่องมือที่ขาด (winget: git · gh · Tailscale) — ถามก่อนทุกตัว
+ <span class="c">[6]</span> ไอคอน Desktop ทุกโปรแกรม (make-shortcut)
+เลือก: <span class="in">_</span></div>
+</section>
+
+<section id="t9" hidden>
+<h2>README.md (หัวข้อ)</h2>
+<div class="wrap"><table>
+<tr><th>หัวข้อ</th><th>เนื้อหา</th></tr>
+<tr><td>1. ภาพรวม</td><td>โปรแกรม 5 ตัว · อยู่ไหน · repo · พอร์ต (11437 ASCS · 11440 ASCA · 11435 gateway · 11434 Ollama) · ใครเห็นได้ (private/public)</td></tr>
+<tr><td>2. ติดตั้งครั้งแรก</td><td>ASC Cloud (Supabase: ลำดับ SQL 14 ไฟล์ · GitHub Pages) · ASCS (git / Setup.exe) · ASCA (Setup.exe) · CRM-Pi (SQL full_install → asc_studio → admin_users · wrangler) · Translator (zip + Ollama)</td></tr>
+<tr><td>3. ปล่อยรุ่นใหม่</td><td>ลำดับ: Claude bump → bat 01/02 → 03 → 06 SQL → PROGRAMS.md · กฎ: ตัวอย่างก่อน · ตรวจโค้ดค้างทุกงาน · สแกนคีย์ · ไม่ commit out/ server\data</td></tr>
+<tr><td>4. อัปเดตเครื่องที่ติดตั้งแล้ว</td><td>ASCS: แถบรุ่นใหม่ในโปรแกรม / ASC Studio Update.bat · ASCA: updater ถามเอง · เครื่องเก่าก่อน 0.162.0 ต้องติดตั้งทับครั้งเดียว</td></tr>
+<tr><td>5. กุญแจ/รหัส</td><td>ที่เก็บ (apps\ASCS-release · apps\ASCA-release · notify.json) · ห้ามขึ้น git · หายแล้วเกิดอะไร</td></tr>
+<tr><td>6. home server</td><td>ssh home · path C:\ · ข้อมูลที่ต้องคัดลอกเอง · RAM 8 GB</td></tr>
+<tr><td>7. ปัญหาที่เจอบ่อย</td><td>พอร์ตชน · ssh ไม่ตอบ · gh ไม่ login · Inno ไม่พบ · wrangler ลืม --branch production · SQL รันซ้ำได้ไหม</td></tr>
+</table></div>
+<h2>ต้องให้ลุงพีตอบ (ตัวอย่างนี้ใช้ค่าตัวแรก)</h2>
+<ol>
+<li>ชื่อไฟล์: <b>อังกฤษ + เมนูไทย</b> / ไทยทั้งหมด</li>
+<li>หลังยืนยัน y: <b>bat push เอง</b> / แค่เตรียมแล้วให้ Claude push</li>
+<li>bump เวอร์ชัน: <b>Claude ทำ</b> / bat ถามแล้ว bump ให้</li>
+<li>setup_prg ขึ้น git aiSolar: <b>ขึ้น</b> (ไม่มีคีย์) / ไม่ขึ้น</li>
+<li>ไอคอน Desktop "ASC ปล่อยรุ่น" ชี้ ASC-Menu.bat: <b>ทำ</b> / ไม่ต้อง</li>
+</ol>
+</section>
+</main>
+<script>
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==b.dataset.t);scrollTo(0,0)});
+</script>
+</body>
+</html>
