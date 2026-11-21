@@ -43,9 +43,9 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ |
 |---|---|---|
-| Local Translator | 1.11.1 | `LocalAI\translation` |
-| Lungpee AI Gateway | 1.6.0 | `LocalAI\gateway` |
-| Lungpee Agent | 1.6.0 | `LocalAI\lungpee-agent` |
+| Local Translator | 1.11.11 | `LocalAI\translation` |
+| Lungpee AI Gateway | 1.6.1 | `LocalAI\gateway` |
+| Lungpee Agent | 1.6.1 | `LocalAI\lungpee-agent` |
 | Lek Dang (Yeekee) | 1.0.0 | `LocalAI\yk` |
 | Thai-Lao Dictionary | 1.0.0 | `LocalAI\Thai-Lao` |
 | Battery & System Dashboard | 1.5.0 | `LocalAI\battery_info` |
@@ -70,7 +70,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 |---|---|---|
 | Trading | `LocalAI\Trading` | 1.0.0 |
 | HomeGuard | `LocalAI\tools\homeguard` | 2.2.0 |
-| Multi-Tools | `LocalAI\multi-tools` | – |
+| Multi-Tools | `LocalAI\multi-tools` | 0.15.3 |
 | CCTV | `LocalAI\cctv` | – |
 | Desktop-App | `LocalAI\desktop_app` | – |
 | Tune-PC | `LocalAI\tools\Tune-PC` (ต้นฉบับ J:) | – |
