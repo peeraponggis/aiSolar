@@ -286,7 +286,7 @@ def find_ollama_exe():
     return None
 
 
-def ensure_ollama(wait_s=45):
+def ensure_ollama(wait_s=25):
     """ถ้าเชื่อมต่อ Ollama ไม่ได้ ให้ลองเปิด 'ollama serve' เอง (ซ่อนหน้าต่าง) แล้วรอจนพร้อม คืน list โมเดลหรือ None"""
     models = list_models()
     if models is not None:
@@ -332,7 +332,7 @@ def stream_chat(model, messages, temperature, stop_event=None):
     body = json.dumps({
         "model": model, "messages": messages, "stream": True, "think": False,
         "keep_alive": KEEP_ALIVE,
-        "options": {"num_ctx": NUM_CTX, "temperature": temperature, "top_p": 0.9, "repeat_penalty": 1.05},
+        "options": {"num_ctx": NUM_CTX, "num_predict": 2048, "temperature": temperature, "top_p": 0.9, "repeat_penalty": 1.05},
     }).encode("utf-8")
     req = urllib.request.Request(OLLAMA_URL + "/api/chat", data=body, headers={"Content-Type": "application/json"})
     stats = {}
@@ -381,14 +381,16 @@ API_PRESETS = {
                 "เลี่ยง qwen3.6-flash (คิดยาวเงียบๆ ช้า ~8 วินาทีและเปลืองเครดิต)"},
     "OpenRouter (หลายโมเดล มีแบบฟรี)": {
         "base": "https://openrouter.ai/api/v1",
-        "models": ["google/gemma-4-26b-a4b-it:free", "google/gemma-4-31b-it:free", "qwen/qwen3.8-27b:free", "qwen/qwen3-30b-a3b-instruct-2507", "qwen/qwen3-235b-a22b-2507"],
+        "models": ["google/gemma-4-26b-a4b-it:free", "google/gemma-4-31b-it:free", "qwen/qwen3-30b-a3b-instruct-2507", "qwen/qwen3-235b-a22b-2507"],
         "signup": "https://openrouter.ai/keys",
-        "note": "ช่องทางเดียวเข้าถึงหลายโมเดล (ภาษาไทยดี: Gemma 4, Qwen3) มีโมเดลฟรี (:free) · ตรวจเมื่อ ก.ย. 2026: ไม่มีโมเดล Typhoon บน OpenRouter แล้ว ถ้าต้องการ Typhoon ให้ใช้ OpenTyphoon โดยตรง · คีย์ต้องขึ้นต้นด้วย sk-or-v1-"},
+        "key_env": "OPENROUTER_API_KEY",
+        "note": "หลายโมเดล มีฟรี (:free) แต่จำกัดโควตาหนัก (429 บ่อย) · คีย์จากตัวแปร OPENROUTER_API_KEY ของ Windows อัตโนมัติ · ตรวจ พ.ย. 2026: qwen3.8-27b:free ถูกถอดแล้ว"},
     "Google Gemini": {
         "base": "https://generativelanguage.googleapis.com/v1beta/openai",
-        "models": ["gemini-2.5-flash", "gemini-2.5-flash-lite"],
+        "models": ["gemini-3.5-flash-lite", "gemini-3.5-flash"],
         "signup": "https://aistudio.google.com/apikey",
-        "note": "ภาษาไทยดี มีโควตาฟรีใน AI Studio"},
+        "key_env": "GEMINI_API_KEY",
+        "note": "ภาษาไทยดี มีโควตาฟรีใน AI Studio · คีย์จากตัวแปร GEMINI_API_KEY ของ Windows อัตโนมัติ · พ.ย. 2026: gemini-2.5 ถูกปลดแล้ว ใช้ 3.5"},
     "Groq (เร็วมาก)": {
         "base": "https://api.groq.com/openai/v1",
         "models": ["llama-3.3-70b-versatile", "qwen/qwen3-32b"],
@@ -403,7 +405,19 @@ API_PRESETS = {
 }
 # ศูนย์ผู้ให้บริการ (ทะเบียนกลางที่ Multi Tools จัดการ — ลุงพี AI / ลุงพี Agent ใช้ไฟล์เดียวกัน) ไม่มีคีย์ในไฟล์:
 # คีย์อ่านจากตัวแปร Windows ตาม key_env · ผู้ให้บริการที่ไม่ใช้คีย์ (เช่น Pollinations) มี nokey=True
-HUB_FILE = os.environ.get("LUNGPEE_PROVIDERS") or r"F:\LocalAI\shared\providers.json"
+def _find_hub_path():
+    env = os.environ.get("LUNGPEE_PROVIDERS")
+    if env:
+        return env
+    p = os.path.dirname(BASE)
+    while p and os.path.dirname(p) != p:
+        if os.path.basename(p).lower() == "localai":
+            return os.path.join(p, "shared", "providers.json")
+        p = os.path.dirname(p)
+    return os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "LungPee", "shared", "providers.json")
+
+
+HUB_FILE = _find_hub_path()
 HUB_PREFIX = "🔗 "
 
 
@@ -493,12 +507,27 @@ def stream_chat_openai(base, key, model, messages, temperature, stop_event=None)
         raise RuntimeError(f"API {e.code} {hint}: {msg[:200]}")
     except urllib.error.URLError as e:
         raise RuntimeError(f"เชื่อมต่อ API ไม่ได้: {e.reason}")
-    n = 0; t0 = time.time()
+    n = 0; t0 = time.time(); first_line_checked = False
     with resp:
         for raw in resp:
             if stop_event is not None and stop_event.is_set():
                 break
             line = raw.decode("utf-8", "replace").strip()
+            if not line:
+                continue
+            if not first_line_checked:
+                first_line_checked = True
+                if not line.startswith("data:"):
+                    try:
+                        d = json.loads(line)
+                        if "error" in d:
+                            err = d["error"]
+                            msg = err.get("message", str(err)) if isinstance(err, dict) else str(err)
+                            code = d.get("status") or (err.get("code") if isinstance(err, dict) else "")
+                            hint = {401: "API key ไม่ถูกต้อง", 402: "เครดิตหมด", 403: "ไม่มีสิทธิ์", 429: "เกินโควตา"}.get(int(code) if code else 0, "")
+                            raise RuntimeError(f"API {code} {hint}: {msg[:200]}")
+                    except (json.JSONDecodeError, ValueError):
+                        pass
             if not line.startswith("data:"):
                 continue
             data = line[5:].strip()
@@ -548,7 +577,8 @@ def chat_stream(model, messages, temperature, stop_event=None, backend=None):
         try:
             first = next(gen)
         except StopIteration as e:
-            return e.value
+            log.warning("API %s ตอบ 0 token — ถอยไปใช้โมเดลในเครื่อง %s", b.get("model"), fallback)
+            return (yield from stream_chat(fallback, messages, temperature, stop_event))
         except Exception as e:
             log.warning("API %s ล้ม (%s) — ถอยไปใช้โมเดลในเครื่อง %s", b.get("model"), str(e)[:120], fallback)
             return (yield from stream_chat(fallback, messages, temperature, stop_event))

@@ -693,7 +693,19 @@ def _same_origin(handler):
 #   GET  /api/hub/<id>/v1/models         POST /api/hub/<id>/v1/chat/completions   (proxy ใส่คีย์ให้)
 #   /api/kku/v1/* ของเดิมยังใช้ได้ (= /api/hub/kku/v1/*)
 # ============================================================
-HUB_FILE = os.environ.get("LUNGPEE_PROVIDERS") or r"F:\LocalAI\shared\providers.json"
+def _find_hub_path():
+    env = os.environ.get("LUNGPEE_PROVIDERS")
+    if env:
+        return env
+    p = os.path.dirname(os.path.abspath(__file__))
+    while p and os.path.dirname(p) != p:
+        if os.path.basename(p).lower() == "localai":
+            return os.path.join(p, "shared", "providers.json")
+        p = os.path.dirname(p)
+    return os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "LungPee", "shared", "providers.json")
+
+
+HUB_FILE = _find_hub_path()
 HUB_PATHS = {("GET", "/v1/models"), ("POST", "/v1/chat/completions")}
 
 

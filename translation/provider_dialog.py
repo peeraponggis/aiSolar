@@ -120,8 +120,12 @@ def open_provider_dialog(root, fam, small_font, settings, save_settings, connect
         threading.Thread(target=job, daemon=True).start()
 
     def save():
+        p = API_PRESETS.get(preset_var.get(), {})
+        raw_key = key_var.get().strip()
+        if raw_key and p.get("key_env") and raw_key == env_key(p["key_env"]):
+            raw_key = ""
         settings["api"] = {"mode": mode_var.get(), "preset": preset_var.get(), "base": base_var.get().strip(),
-                           "key": key_var.get().strip(), "model": model_v.get().strip()}
+                           "key": raw_key, "model": model_v.get().strip()}
         save_settings(); dlg.destroy(); connect()
     # ---- โมเดลในเครื่อง: ดาวน์โหลดผ่าน Ollama จากในแอป (สำหรับเครื่องที่ติดตั้งแล้วยังไม่มีโมเดล)
     ttk.Separator(body).grid(row=14, column=0, columnspan=3, sticky="ew", pady=10)

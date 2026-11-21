@@ -339,12 +339,16 @@ def run_gui(minimized=False):
         level = level_var.get()
         hits = glossary_for(text, s, level, glossary, d)
         msgs = build_messages(text, s, d, level, hits, variant)
-        # ไทย/อังกฤษ→ลาว: โมเดล 4B ในเครื่องเขียนลาวผิดเพี้ยน -> ถ้ามี ⚙ ผู้ให้บริการ ให้ใช้ API เฉพาะงานนี้ ไม่งั้นเตือนที่แถบสถานะ
         route, route_note = None, ""
-        if needs_online(s, d) and st.get("backend") != "api":
+        api_mode = (settings.get("api") or {}).get("mode", "auto")
+        if needs_online(s, d) and api_mode != "local":
             route = api_backend(settings)
-            route_note = (f" · ภาษาลาวใช้โมเดลออนไลน์ {route['model']}" if route
-                          else " · ⚠ โมเดลในเครื่องแปลเป็นลาวได้ไม่ดี แนะนำตั้งค่า ⚙ ผู้ให้บริการ")
+            if route:
+                route_note = f" · ภาษาลาวใช้โมเดลออนไลน์ {route['model']}"
+            else:
+                route_note = " · ⚠ โมเดลในเครื่องแปลเป็นลาวได้ไม่ดี แนะนำตั้งค่า ⚙ ผู้ให้บริการ"
+        elif needs_online(s, d):
+            route_note = " · ⚠ โมเดลในเครื่องแปลลาวได้ไม่ดี (เลือก 'ในเครื่องเท่านั้น')"
         src_lbl.set(f"ข้อความต้นทาง ({LANGS[s]})"); dst_lbl.set(f"คำแปล ({LANGS[d]})")
         dst.delete("1.0", "end")
         speech.stop_speech()
@@ -359,7 +363,7 @@ def run_gui(minimized=False):
         used_model = route["model"] if route else st["model"]
 
         def job():
-            t0 = time.time(); buf = []; stats = {}
+            t0 = time.time(); buf = []; stats = {}; in_think = False
             try:
                 gen = chat_stream(st["model"], msgs, temp, worker["stop"], backend=route)
                 while True:
@@ -367,7 +371,14 @@ def run_gui(minimized=False):
                         piece = next(gen)
                     except StopIteration as e:
                         stats = e.value or {}; break
-                    buf.append(piece); q.put(("piece", piece))
+                    buf.append(piece)
+                    combined = "".join(buf)
+                    if "<think>" in combined and "</think>" not in combined:
+                        in_think = True
+                    elif in_think and "</think>" in combined:
+                        in_think = False; q.put(("rewrite", clean_output(combined))); continue
+                    if not in_think:
+                        q.put(("piece", piece))
                 stats = dict(stats or {}, model=used_model, note=route_note)
                 q.put(("done", "".join(buf), stats, time.time() - t0, text, level))
             except Exception as e:
@@ -377,8 +388,9 @@ def run_gui(minimized=False):
 
     def finish(result, stats, elapsed, text, level):
         result = clean_output(result)
-        if dst.get("1.0", "end-1c") != result:   # เขียนใหม่เฉพาะเมื่อต่างจริง ไม่งั้นไฮไลท์ท่อนที่กำลังอ่านจะหาย
-            dst.delete("1.0", "end"); dst.insert("1.0", result)
+        current = dst.get("1.0", "end-1c")
+        if current != result:
+            dst.replace("1.0", "end-1c", result)
         st["last_result"] = result
         if result and not worker["stop"].is_set():
             history.append({"ts": time.strftime("%Y-%m-%d %H:%M"), "level": level, "src": text, "dst": result})
@@ -435,6 +447,8 @@ def run_gui(minimized=False):
                     dst.insert("end", item[1]); dst.see("end")
                     if item[1]:
                         speech.stream_speak_piece(item[1])
+                elif kind == "rewrite":
+                    dst.replace("1.0", "end-1c", item[1]); dst.see("end")
                 elif kind == "done":
                     worker["busy"] = False; translate_btn.state(["!disabled"])
                     finish(*item[1:])

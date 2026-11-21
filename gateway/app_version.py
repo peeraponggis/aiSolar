@@ -10,11 +10,12 @@
 # -*- coding: utf-8 -*-
 """ข้อมูลเวอร์ชันของโปรแกรม — ปรับด้วย F:\\LocalAI\\bump_version.py ทุกครั้งที่แก้ไข (อย่าแก้ตัวเลขด้วยมือ)"""
 APP_NAME = "ลุงพี AI Gateway"
-VERSION = "1.6.0"
+VERSION = "1.6.1"
 CREATED = "2026-09-27"
-UPDATED = "2026-10-22"
+UPDATED = "2026-11-21"
 AUTHOR = "ลุงพี"
 CHANGELOG = [  # ใหม่สุดอยู่บน: (เวอร์ชัน, วันที่, สรุป)
+    ("1.6.1", "2026-11-21", "แก้ path ทะเบียนผู้ให้บริการไม่ hardcode ไดรฟ์: ค้นหา LocalAI จากตำแหน่งโปรแกรม + fallback %APPDATA%"),
     ("1.6.0", "2026-10-22", "ศูนย์ผู้ให้บริการ: /api/hub/providers + /api/hub/<id>/v1/* proxy ทุกผู้ให้บริการในทะเบียนกลาง F:\\LocalAI\\shared\\providers.json (คีย์จากตัวแปร Windows) · /api/kku/v1 เดิมยังใช้ได้"),
     ("1.5.0", "2026-10-21", "OCR จากหน้าจอ: /api/rag/ocr + /api/rag/ocr/status รัน ocr_knowledge.py (Typhoon/Tesseract/KKU) ตัดคำบรรยายรูปที่โมเดลแต่งเพิ่ม เก็บข้อความดิบ"),
     ("1.4.0", "2026-10-21", "คลังความรู้ใช้ผล OCR: หน้าภาพสแกนและหน้าที่ฟอนต์ไทยเก่าถอดเพี้ยน ใช้ข้อความจาก ocr_knowledge.py (Typhoon OCR/Tesseract/KKU); reindex แบบ force:false จัดเฉพาะไฟล์ที่เปลี่ยน"),
