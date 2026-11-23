@@ -34,7 +34,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
-| Design Auto (Auto Solar Co-pilot Studio) | 0.200.0 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
+| Design Auto (Auto Solar Co-pilot Studio) | 0.201.0 | `LocalAI\aiSolar\design-auto` | peeraponggis/asc_auto |
 | ASC Architect (ASCA) | 0.38.1 | `LocalAI\pee_architec` | peeraponggis/pee_architec (ห้ามปนกับ aiSolar) |
 
 ## หมวด 3 · 🌐 โค้ดเปิดเผยได้ — public · `peeraponggis`
@@ -58,7 +58,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
-| ASC Enterprise (เว็บ · ชื่อเดิม ASC Cloud) | 4.12.0 | `LocalAI\git\asc` | peeraponggis/asc · live peeraponggis.github.io/asc |
+| ASC Enterprise (เว็บ · ชื่อเดิม ASC Cloud) | 4.12.1 | `LocalAI\git\asc` | peeraponggis/asc · live peeraponggis.github.io/asc |
 | courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
 | webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.0.0 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
 | Team Chat (แชททีม Telegram Mini App + Supabase + Google Drive) | 0.1.0 | `LocalAI\teamchat` (git แยก · exclude จาก aiSolar) | lungpeepi-aisolar/team_chat (public · peeraponggis=Write) · live teamchat-eih.pages.dev · t.me/ProInventive_Chat_bot/chat · Supabase emlwnczeckucjycwjzmd |
