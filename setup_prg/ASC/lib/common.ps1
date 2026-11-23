@@ -128,9 +128,9 @@ $script:InstDir = "$LocalAI\setup_prg\installers"
 function Sync-Installers {
   New-Item -ItemType Directory -Force $InstDir | Out-Null
   $kinds = @(
-    @{ pat = 'ASC-Studio-Setup-*.exe';  src = "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe";         name = $null }
-    @{ pat = 'ASCA-Setup-*.exe';        src = "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe";            name = $null }
-    @{ pat = 'HomeGuard-Setup-*.exe';   src = "$($P.hg.dir)\dist\HomeGuard-Setup.exe";                    name = "HomeGuard-Setup-$(Ver 'hg').exe" }
+    @{ pat = 'ASC-Studio-Setup-*.exe';  src = "$($P.ascs.dir)\out\setup\ASC-Studio-Setup-*.exe";         name = $null; rar = $true }
+    @{ pat = 'ASCA-Setup-*.exe';        src = "$LocalAI\apps\ASCA-release\*\ASCA-Setup-*.exe";            name = $null; rar = $true }
+    @{ pat = 'HomeGuard-Setup-*.exe';   src = "$($P.hg.dir)\dist\HomeGuard-Setup.exe";                    name = "HomeGuard-Setup-$(Ver 'hg').exe"; rar = $true }
     @{ pat = 'LocalTranslator-setup-*.zip'; src = "$($P.tr.dir)\LocalTranslator-setup.zip";                name = "LocalTranslator-setup-$(Ver 'tr').zip" }   # ชุดแจกจ่าย (ไม่มีพูดถามด้วยเสียง)
     @{ pat = 'LocalTranslator-full-*.zip';  src = "$($P.tr.dir)\LocalTranslator-full.zip";                 name = "LocalTranslator-full-$(Ver 'tr').zip" }    # ชุดเต็ม
   )
@@ -140,9 +140,27 @@ function Sync-Installers {
     if (-not $latest) { continue }
     $dst = Join-Path $InstDir ($(if ($k.name) { $k.name } else { $latest.Name }))
     $same = (Test-Path -LiteralPath $dst) -and ((Get-Item $dst).Length -eq $latest.Length) -and ((Get-Item $dst).LastWriteTime -eq $latest.LastWriteTime)
-    if (-not $same) { try { Copy-Item $latest.FullName $dst -Force; Log "สำเนา $($latest.Name) → $dst" } catch { Warn "สำเนา $($latest.Name) ไม่ได้ (ไฟล์กำลังถูกใช้/สร้างอยู่): $($_.Exception.Message)"; continue } }   # ไฟล์ที่ session อื่นกำลัง build = ข้ามรอบนี้ ไม่หยุดทั้งขั้น
-    Get-ChildItem (Join-Path $InstDir $k.pat) -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne $dst } | ForEach-Object { Remove-Item $_.FullName -Force; Log "ลบรุ่นเก่า $($_.Name)" }
-    $out += @{ kind = $k.pat; src = $latest.FullName; dst = $dst; mb = [math]::Round($latest.Length / 1MB, 1); when = $latest.LastWriteTime.ToString('d/M HH:mm') }
+    # ชุดติดตั้ง .exe เก็บเป็น .rar (ลุงพีสั่ง 23 พ.ย. 2569) — เทียบกับไฟล์ปลายทางจริงที่จะได้
+    $final = if ($k.rar -and $Rar) { [IO.Path]::ChangeExtension($dst, '.rar') } else { $dst }
+    $same = if ($final -eq $dst) { $same } else { (Test-Path -LiteralPath $final) -and ((Get-Item $final).LastWriteTime -ge $latest.LastWriteTime) }
+    if (-not $same) {
+      try { Copy-Item $latest.FullName $dst -Force; Log "สำเนา $($latest.Name) → $dst" } catch { Warn "สำเนา $($latest.Name) ไม่ได้ (ไฟล์กำลังถูกใช้/สร้างอยู่): $($_.Exception.Message)"; continue }   # ไฟล์ที่ session อื่นกำลัง build = ข้ามรอบนี้ ไม่หยุดทั้งขั้น
+      if ($final -ne $dst) {
+        if (Test-Path -LiteralPath $final) { Remove-Item $final -Force }
+        & $Rar a -ep -m5 -idq $final $dst | Out-Null                    # -ep = เก็บแค่ชื่อไฟล์ ไม่เก็บโครงสร้างโฟลเดอร์
+        if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $final)) {
+          Remove-Item $dst -Force; Log "บีบเป็น $([IO.Path]::GetFileName($final)) แล้วเอา .exe ออก (บางเครื่องบล็อก .exe)"
+        } else { Warn "บีบ $([IO.Path]::GetFileName($dst)) เป็น .rar ไม่สำเร็จ (rar exit=$LASTEXITCODE) — คงไฟล์ .exe ไว้"; $final = $dst }
+      }
+    }
+    if ($k.rar -and -not $Rar) { Warn "ไม่พบ WinRAR (Rar.exe) — $([IO.Path]::GetFileName($dst)) ยังเป็น .exe · บางเครื่องจะดาวน์โหลด/ติดตั้งไม่ได้" }
+    # ลบรุ่นเก่าของชนิดเดียวกัน ทั้ง .exe และ .rar (รุ่นก่อนหน้าอาจเก็บไว้คนละนามสกุล)
+    $pats = @($k.pat); if ($k.rar) { $pats += [IO.Path]::ChangeExtension($k.pat, '.rar') }
+    foreach ($p in $pats) {
+      Get-ChildItem (Join-Path $InstDir $p) -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne $final } | ForEach-Object { Remove-Item $_.FullName -Force; Log "ลบรุ่นเก่า $($_.Name)" }
+    }
+    $mb = if (Test-Path -LiteralPath $final) { (Get-Item $final).Length } else { $latest.Length }
+    $out += @{ kind = $k.pat; src = $latest.FullName; dst = $final; mb = [math]::Round($mb / 1MB, 1); when = $latest.LastWriteTime.ToString('d/M HH:mm') }
   }
   $out
 }

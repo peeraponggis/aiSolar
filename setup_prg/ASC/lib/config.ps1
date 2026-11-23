@@ -18,6 +18,11 @@ $script:Programs = "$LocalAI\PROGRAMS.md"
 $script:KeyASCS  = "$LocalAI\apps\ASCS-release\password.txt"
 $script:KeyASCA  = "$LocalAI\apps\ASCA-release\password.txt"
 $script:Inno     = "$LocalAI\apps\InnoSetup6"
+# WinRAR — ชุดติดตั้ง .exe ในโฟลเดอร์ installers ถูกบีบเป็น .rar ก่อนเสมอ (ลุงพีสั่ง 23 พ.ย. 2569)
+#   เหตุผล: บางเครื่อง/อีเมล/ที่เก็บไฟล์บล็อกไฟล์ .exe ไม่ให้ดาวน์โหลดหรือติดตั้ง · .rar ผ่านได้
+#   ไม่มี WinRAR = คงไฟล์ .exe ไว้แล้วเตือน (ไม่เงียบ) เพราะยังติดตั้งได้บนเครื่องที่ไม่บล็อก
+$script:Rar = @("$env:ProgramFiles\WinRAR\Rar.exe", "${env:ProgramFiles(x86)}\WinRAR\Rar.exe") |
+  Where-Object { Test-Path $_ } | Select-Object -First 1
 $script:SshHost  = 'home'                                            # Host home ใน ~/.ssh/config (Tailscale 100.118.18.110)
 $script:HomeRoot = 'C:\LocalAI'                                       # home server ไม่มี F:
 
