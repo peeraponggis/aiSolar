@@ -105,4 +105,5 @@ envi_pi · peechat · solar-relay · 3DPVs · deepseek · fs · present · carpo
 ## การเข้าถึงข้ามเครื่อง
 - home server: Tailscale (IP ดูใน memory project_homeserver_ssh · ไม่ใส่ใน repo public) · session ศูนย์กลางเปิด Remote Control → สั่งงานจาก claude.ai/code หรือแอปมือถือ
 - laptop: `tools\git-autopull.ps1` pull อัตโนมัติตอน login (Design Auto + solar-project-complete) · home server ยังไม่มี auto-pull
+- **Git Sync 1.0.0** (`tools\git-sync\` · ไอคอน Desktop "Git Sync") — pull / push ทุก repo ใน `repos.txt` พร้อมกันในคลิกเดียว · push ถามทีละ repo + ตรวจคีย์/ไฟล์ใหญ่ก่อน commit · ไม่ใช้ --force
 - ไม่พบบัญชีบน GitLab / Bitbucket / Codeberg

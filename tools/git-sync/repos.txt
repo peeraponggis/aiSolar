@@ -1,0 +1,17 @@
+# รายชื่อ repo ที่ Git Sync จะ pull / push พร้อมกัน — 1 บรรทัดต่อ 1 repo
+# เขียน path ใต้ไดรฟ์ (ไม่ใส่ F:\ หรือ C:\) — สคริปต์หาเองทั้ง laptop (F:) และ home server (C:)
+# ขึ้นต้นด้วย # = ปิดไว้ไม่ใช้ · repo ที่ไม่มีในเครื่องนั้นจะถูกข้ามเอง
+LocalAI
+LocalAI\aiSolar
+LocalAI\aiSolar\design-auto
+LocalAI\project_plan_spa
+LocalAI\git\asc
+LocalAI\git\picode
+LocalAI\pee_architec
+LocalAI\teamchat
+LocalAI\cctv
+LocalAI\training
+enterprise\picode
+enterprise\solar-project-complete
+# enterprise\pi-system      ← สำเนาเก่า CRM-Pi เก็บสำรอง ห้าม push เพิ่ม
+# LocalAI\_tmp_wpi          ← โฟลเดอร์ชั่วคราว
