@@ -3,7 +3,7 @@
 บันทึก 24 พ.ย. 2569 · ลุงพีสั่ง "ทำเฉพาะไอคอนแท็บ งานนอกนั้นบันทึกแผนไว้ก่อน"
 
 ## สถานะตอนนี้
-- เว็บจริง: https://peeraponggis.github.io/aisolar2/Pee_survey.html = เวอร์ชัน 4.14.1 (ขึ้นเว็บ 24 พ.ย. 2569 commit 6b16275 · repo peeraponggis/aisolar2 ไฟล์อยู่ root)
+- เว็บจริง: https://peeraponggis.github.io/aisolar2/Pee_survey.html = เวอร์ชัน 4.16.0 (ขึ้นเว็บ 24 พ.ย. 2569 commit a61abe4 · repo peeraponggis/aisolar2 ไฟล์อยู่ root)
 - ต้นฉบับ: `F:\LocalAI\survey\Pee_survey.html` (= `Pee_survey_preview.html`) · สำรอง `Pee_survey_4.2.0_backup.html`, `Pee_survey_4.3.0_backup.html`, `Pee_survey_4.4.0_backup.html`, `Pee_survey_4.5.0_backup.html`, `Pee_survey_4.6.0_backup.html`, `Pee_survey_4.7.0_backup.html`, `Pee_survey_4.8.0_backup.html`, `Pee_survey_4.9.0_backup.html`, `Pee_survey_4.10.0_backup.html`, `Pee_survey_4.11.0_backup.html`
 - 4.4.0 มี: ปุ่มเสาไฟฟ้า 12 ม. / เสา+หม้อแปลง / ตู้ MDB (properties.kind = pole | pole_tx | mdb, ต้นไม้ = tree) · แก้บัควาดต้นไม้ค้าง · ระยะด้าน/ตัวเลขขนาดแสดงเฉพาะวัตถุที่เลือก
 - 4.6.0: คลิกเลือกวัตถุแล้วลากย้ายได้ทันทีทุกชนิด (Polygon เติมจางตอนเลือก · เส้นหนาขึ้น · ด้าน < 40 px ไม่แสดงป้ายระยะ) · ป้ายล็อกย้ายตาม · Undo ได้
@@ -13,7 +13,9 @@
 - 4.13.0 (c4b65f4): แก้ป้ายกำกับกระโดดตอนซูม — avoidLabelCollisions ใช้ CSS pixel offset แทน lat/lng conversion
 - 4.13.1 (c59b38c): แก้ป้ายเลื่อนเมื่อติ๊กออก checkbox — ข้าม hidden layers ใน avoidLabelCollisions + เรียก avoidLabelCollisions หลัง applyCategoryFilter/refreshAllLabels
 - 4.14.0 (f468576): แก้ป้ายเลื่อนผิดตำแหน่งเมื่อ pan แผนที่ — เพิ่ม moveend listener ให้คำนวณหลบชนใหม่ทุกครั้ง
-- 4.14.1 (6b16275): แก้ป้ายเลื่อนตอน pan จริง — ใช้ setLatLng แทน CSS margin (เริ่มจาก defaultLatLng ทุกครั้ง ไม่สะสม drift)
+- 4.16.0 (a61abe4): เขียนระบบหลบชนป้ายใหม่ทั้งหมด (Geographic-Only) — CRS projection แทน containerPointToLatLng · leader line พิกัดภูมิศาสตร์ล้วน · moveend+zoomend recalc · debounce RAF
+- 4.15.0 (33a412b): (ยกเลิก — CSS wrapper ถูก setIcon ทำลาย + leader ยังใช้ containerPointToLatLng)
+- 4.14.1 (6b16275): (ยกเลิก — setLatLng ยังมี drift จาก containerPointToLatLng)
 - 4.11.0: รายงาน PDF แสดงหน้ารายละเอียดเฉพาะวัตถุที่มีรูปภาพ (วัตถุไม่มีรูปไม่แสดง)
 - 4.10.0: ผู้สำรวจ + วันที่สำรวจ (วันที่ไทย) · ตัวกรองประเภทวัตถุ 7 ช่อง (Polygon/Line/Marker/เสาไฟฟ้า/เสา+หม้อแปลง/ตู้ MDB/ต้นไม้) · ตารางสรุป+PDF กรองตามประเภทที่เลือก
 - 4.9.0: เลือกข้อมูลบนป้ายกำกับ 6 ช่อง (ชื่อ/พื้นที่/ขนาด/ความสูง/พิกัด/ชนิดอุปกรณ์) · PDF ตามที่เลือก · ภาพรวมพื้นที่เต็มหน้า A4 · รูปวัตถุลด 50%
