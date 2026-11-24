@@ -336,6 +336,18 @@
                     <label><input type="checkbox" id="lbl-kind" onchange="refreshAllLabels()"> ชนิดอุปกรณ์</label>
                 </div>
             </details>
+            <details id="label-cat-opts" style="margin-top:4px;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:4px;padding:4px 8px;">
+                <summary style="cursor:pointer;font-weight:500;color:#2c3e50;">เลือกแสดงป้ายตามประเภท</summary>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;margin-top:4px;">
+                    <label><input type="checkbox" id="lcat-polygon" checked onchange="applyLabelCategoryFilter()"> Polygon</label>
+                    <label><input type="checkbox" id="lcat-line" checked onchange="applyLabelCategoryFilter()"> Line</label>
+                    <label><input type="checkbox" id="lcat-marker" checked onchange="applyLabelCategoryFilter()"> Marker</label>
+                    <label><input type="checkbox" id="lcat-pole" checked onchange="applyLabelCategoryFilter()"> เสาไฟฟ้า</label>
+                    <label><input type="checkbox" id="lcat-pole_tx" checked onchange="applyLabelCategoryFilter()"> เสา+หม้อแปลง</label>
+                    <label><input type="checkbox" id="lcat-mdb" checked onchange="applyLabelCategoryFilter()"> ตู้ MDB</label>
+                    <label><input type="checkbox" id="lcat-tree" checked onchange="applyLabelCategoryFilter()"> ต้นไม้</label>
+                </div>
+            </details>
             <details id="cat-opts" style="margin-top:4px;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:4px;padding:4px 8px;">
                 <summary style="cursor:pointer;font-weight:500;color:#2c3e50;">เลือกแสดงประเภทวัตถุ</summary>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;margin-top:4px;">
@@ -887,11 +899,15 @@ function downloadText(text, filename, mime) {
     downloadBlob(new Blob(['﻿' + text], { type: (mime || 'text/plain') + ';charset=utf-8' }), filename);
 }
 const TH_MONTHS_FULL = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-const APP_INFO={version:'4.14.1',created:'2026-08-02',updated:'2026-11-24',author:'ลุงพี'};
+const APP_INFO={version:'4.18.0',created:'2026-08-02',updated:'2026-11-24',author:'ลุงพี'};
 const SURVEY_ICON = (document.querySelector('link[rel="icon"]') || {}).href || ''; /* ไอคอนแท็บ (ใช้ซ้ำในหน้ารายงาน) */
 const PHOTO = { store: {}, edit: [], MAX: 1600, Q: 0.82, seq: 0 }; /* รูปประกอบวัตถุ (ดูส่วนรูปภาพ) */
 const APP_CHANGELOG=[
-  ['4.14.1','2026-11-24','แก้ป้ายเลื่อนผิดตำแหน่งเมื่อ pan แผนที่: เปลี่ยนจาก CSS margin เป็น setLatLng ตำแหน่งจริง (เริ่มจาก defaultLatLng ทุกครั้ง ไม่สะสม drift) — ป้ายอยู่กับที่ตอนเลื่อน/ซูม โดย ลุงพี'],
+  ['4.18.0','2026-11-24','เพิ่มฟีเจอร์เลือกแสดงป้ายตามประเภท (Polygon/Line/Marker/เสาไฟฟ้า/เสา+หม้อแปลง/ตู้ MDB/ต้นไม้) · แก้บั๊ก MarkerDrag error เมื่อ zoom โดย ลุงพี'],
+  ['4.17.0','2026-11-24','แก้วัตถุเลื่อนตำแหน่งเมื่อ zoom: เปลี่ยน zoomSnap เป็น integer zoom เท่านั้น (1 ขั้น) ป้องกัน tile scaling artifact ที่ fractional zoom โดย ลุงพี'],
+  ['4.16.0','2026-11-24','เขียนระบบหลบชนป้ายกำกับใหม่ทั้งหมด: ใช้ Leaflet CRS projection แทน containerPointToLatLng · leader line เป็นพิกัดภูมิศาสตร์ล้วน · คำนวณหลบชนใหม่ทุก pan/zoom · debounce ป้องกันคำนวณซ้ำ โดย ลุงพี'],
+  ['4.15.0','2026-11-24','(ยกเลิก — CSS wrapper transform ยังเลื่อน)'],
+  ['4.14.1','2026-11-24','(ยกเลิก — setLatLng ยังมี drift จาก containerPointToLatLng)'],
   ['4.14.0','2026-11-24','(ยกเลิก — moveend ไม่แก้ปัญหา)'],
   ['4.13.1','2026-11-24','แก้ป้ายเลื่อนเมื่อติ๊กออก checkbox: ป้ายที่ซ่อนไม่ผลักป้ายที่มองเห็นอีกต่อไป · applyCategoryFilter + refreshAllLabels เรียก avoidLabelCollisions ให้ป้ายเข้าที่ โดย ลุงพี'],
   ['4.13.0','2026-11-24','แก้ป้ายกำกับกระโดดตอนซูมเข้า-ออก: ระบบหลบชนป้ายใช้ pixel offset คงที่แทนการแปลง lat/lng ↔ pixel ไป-กลับ ป้ายจึงอยู่ที่เดิมทุกระดับซูม โดย ลุงพี'],
@@ -1020,8 +1036,8 @@ function angleAt(a, b, c) {
    ===================================================================== */
 const map = L.map('map', {
     maxZoom: 24, minZoom: 2,
-    zoomSnap: 0.25, zoomDelta: 0.25, wheelPxPerZoomLevel: 100,
-    preferCanvas: true, zoomControl: true, attributionControl: true
+    zoomSnap: 1, zoomDelta: 1, wheelPxPerZoomLevel: 60,
+    preferCanvas: false, zoomControl: true, attributionControl: true
 }).setView([13.7563, 100.5018], 13);
 
 L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
@@ -2711,6 +2727,31 @@ function catFilter() {
     const el = id => { const e = document.getElementById(id); return e ? e.checked : true; };
     return { Polygon: el('cat-polygon'), Line: el('cat-line'), Marker: el('cat-marker'), pole: el('cat-pole'), pole_tx: el('cat-pole_tx'), mdb: el('cat-mdb'), tree: el('cat-tree') };
 }
+function labelCatFilter() {
+    const el = id => { const e = document.getElementById(id); return e ? e.checked : true; };
+    return { Polygon: el('lcat-polygon'), Line: el('lcat-line'), Marker: el('lcat-marker'), pole: el('lcat-pole'), pole_tx: el('lcat-pole_tx'), mdb: el('lcat-mdb'), tree: el('lcat-tree') };
+}
+function isLabelCatVisible(p) {
+    const lf = labelCatFilter();
+    if (p.kind && lf[p.kind] !== undefined) return lf[p.kind];
+    return lf[p.type] !== false;
+}
+function applyLabelCategoryFilter() {
+    drawnItems.eachLayer(l => {
+        if (!l.properties || !l._annotation) return;
+        if (!map.hasLayer(l)) return;
+        const showLabel = isLabelCatVisible(l.properties);
+        const an = l._annotation;
+        if (showLabel) {
+            if (!map.hasLayer(an.marker)) { an.marker.addTo(map); an.line.addTo(map); an.arrow.addTo(map); }
+        } else {
+            if (map.hasLayer(an.marker)) map.removeLayer(an.marker);
+            if (map.hasLayer(an.line)) map.removeLayer(an.line);
+            if (map.hasLayer(an.arrow)) map.removeLayer(an.arrow);
+        }
+    });
+    avoidLabelCollisions();
+}
 function isCatVisible(p) {
     const cf = catFilter();
     if (p.kind && cf[p.kind] !== undefined) return cf[p.kind];
@@ -2723,8 +2764,9 @@ function applyCategoryFilter() {
         if (show && !map.hasLayer(l)) { drawnItems.addLayer(l); map.addLayer(l); }
         if (!show && map.hasLayer(l)) map.removeLayer(l);
         if (l._annotation) {
-            if (show && !map.hasLayer(l._annotation.marker)) { l._annotation.marker.addTo(map); l._annotation.line.addTo(map); l._annotation.arrow.addTo(map); }
-            if (!show) { if (map.hasLayer(l._annotation.marker)) map.removeLayer(l._annotation.marker); if (map.hasLayer(l._annotation.line)) map.removeLayer(l._annotation.line); if (map.hasLayer(l._annotation.arrow)) map.removeLayer(l._annotation.arrow); }
+            const showLabel = show && isLabelCatVisible(l.properties);
+            if (showLabel && !map.hasLayer(l._annotation.marker)) { l._annotation.marker.addTo(map); l._annotation.line.addTo(map); l._annotation.arrow.addTo(map); }
+            if (!showLabel) { if (map.hasLayer(l._annotation.marker)) map.removeLayer(l._annotation.marker); if (map.hasLayer(l._annotation.line)) map.removeLayer(l._annotation.line); if (map.hasLayer(l._annotation.arrow)) map.removeLayer(l._annotation.arrow); }
         }
         if (l._segmentLabels) { if (show && l === App.selected && !map.hasLayer(l._segmentLabels)) l._segmentLabels.addTo(map); if (!show && map.hasLayer(l._segmentLabels)) map.removeLayer(l._segmentLabels); }
     });
@@ -2738,6 +2780,14 @@ function refreshAllLabels() {
 }
 function updateLabelAndCalculations(layer, type) {
     const p = layer.properties; if (!p) return;
+    if (!isLabelCatVisible(p)) {
+        if (layer._annotation) {
+            if (map.hasLayer(layer._annotation.marker)) map.removeLayer(layer._annotation.marker);
+            if (map.hasLayer(layer._annotation.line)) map.removeLayer(layer._annotation.line);
+            if (map.hasLayer(layer._annotation.arrow)) map.removeLayer(layer._annotation.arrow);
+        }
+        return;
+    }
     syncPropArrays(layer);
     const lo = labelOpts();
     let labelText = '';
@@ -2823,20 +2873,33 @@ function updateLabelAndCalculations(layer, type) {
         an.marker.setLatLng(topPt);
         an.marker.setIcon(L.divIcon({ className: 'empty-div-icon', html: labelHtml, iconSize: [0, 0] }));
         
-        // ตรวจสอบและเปิดใช้งานการลาก
-        if (!an.marker.dragging) an.marker.dragging = new L.Handler.MarkerDrag(an.marker);
-        an.marker.dragging.enable();
+        // เปิดใช้งานการลาก (marker สร้างด้วย draggable:true อยู่แล้ว)
+        if (an.marker.dragging) an.marker.dragging.enable();
     }
-    avoidLabelCollisions();
+    queueCollisionAvoidance();
 }
 
-/* 4.14.1: หลบชนป้ายด้วย setLatLng — เริ่มจาก defaultLatLng ทุกครั้ง (ไม่สะสม drift)
-   ไม่ใช้ CSS margin (ขัด Leaflet internal ทำป้ายเลื่อนตอน pan) */
+/* 4.16.0: ระบบหลบชนป้ายกำกับใหม่ทั้งหมด — Geographic-Only
+   - ใช้ CRS projection (pure math) แทน containerPointToLatLng (viewport-dependent)
+   - ทุกตำแหน่งที่เก็บเป็นพิกัดภูมิศาสตร์ — pan กี่รอบก็ไม่ drift
+   - leader line = พิกัดภูมิศาสตร์ล้วน ไม่มี pixel-to-latlng conversion
+   - คำนวณหลบชนใหม่ทุก moveend + zoomend
+   - debounce ป้องกันคำนวณซ้ำ N+1 ครั้งตอน zoomend */
+var _collisionQueued = false;
+function queueCollisionAvoidance() {
+    if (_collisionQueued) return;
+    _collisionQueued = true;
+    requestAnimationFrame(function() {
+        _collisionQueued = false;
+        avoidLabelCollisions();
+    });
+}
 function avoidLabelCollisions() {
-    var labels = [];
+    var labels = [], zoom = map.getZoom(), crs = map.options.crs;
     drawnItems.eachLayer(function (l) {
         if (l._annotation && l._annotation.marker && l._annotation.defaultLatLng) {
             if (!map.hasLayer(l)) return;
+            if (!map.hasLayer(l._annotation.marker)) return;
             if (l.properties && l.properties.labelLocked) {
                 l._annotation.marker.setLatLng(l.properties.customLabelLatLng || l._annotation.defaultLatLng);
                 syncLeaderLines([l]);
@@ -2868,12 +2931,17 @@ function avoidLabelCollisions() {
         iter++;
     } while (moved && iter < 12);
     labels.forEach(function (l, i) {
-        l._annotation.marker.setLatLng(map.containerPointToLatLng(pts[i]));
+        var base = map.latLngToContainerPoint(l._annotation.defaultLatLng);
+        var pushX = pts[i].x - base.x, pushY = pts[i].y - base.y;
+        if (pushX !== 0 || pushY !== 0) {
+            var crsPt = crs.latLngToPoint(l._annotation.defaultLatLng, zoom);
+            l._annotation.marker.setLatLng(crs.pointToLatLng(L.point(crsPt.x + pushX, crsPt.y + pushY), zoom));
+        }
     });
     syncLeaderLines(labels);
 }
-function syncLeaderLines(labels) {
-    labels.forEach(function (l) {
+function syncLeaderLines(layers) {
+    (layers || []).forEach(function (l) {
         var an = l._annotation;
         var p1 = an.marker.getLatLng();
         var p3 = an.arrow.getLatLng();
@@ -2886,9 +2954,10 @@ map.on('zoomend', () => {
     let s = Math.pow(1.2, map.getZoom() - 18);
     s = Math.max(0.4, Math.min(s, 2.5));
     document.documentElement.style.setProperty('--label-scale', s);
-    drawnItems.eachLayer(l => { if (l.properties) updateLabelAndCalculations(l, l.properties.type); });
+    drawnItems.eachLayer(l => { if (l.properties) try { updateLabelAndCalculations(l, l.properties.type); } catch(e) { console.warn('label update:', e.message); } });
     avoidLabelCollisions();
 });
+map.on('moveend', avoidLabelCollisions);
 
 function updateSummaryTable() {
     const tbody = document.querySelector('#summaryTable tbody');
