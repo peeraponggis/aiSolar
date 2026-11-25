@@ -33,8 +33,11 @@ $script:Supa = [ordered]@{
   ent = @{ name = 'ASC Enterprise'; ref = 'wykoqvfysukohcafeegq'; url = 'https://supabase.com/dashboard/project/wykoqvfysukohcafeegq/sql/new' }
 }
 # ไฟล์ SQL ที่ต้องรัน "ทุกรุ่น/เมื่อเปลี่ยน" (06) · secret = มีกุญแจ ห้ามพิมพ์/ลง log
+# คลังความรู้ AI (ASCS 0.222.8): ไฟล์เดียวใหญ่เกิน SQL Editor → npm run kb:sql แบ่งเป็น out\cloud\kb-data\kb-data-NN-of-NN.sql รันตามเลขไฟล์
+$script:KbSqlParts = @(Get-ChildItem -LiteralPath "$($P.ascs.dir)\out\cloud\kb-data" -Filter 'kb-data-*-of-*.sql' -File -ErrorAction SilentlyContinue | Sort-Object Name |
+  ForEach-Object { @{ p = 'asc'; f = $_.FullName; note = 'คลังความรู้ AI รุ่นเว็บ (npm run kb:sql) — รันตามลำดับเลขไฟล์ ไฟล์สุดท้ายรวมเข้าคลัง' } })
 $script:SqlEach = @(
-  @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\kb-data.sql";          note = 'คลังความรู้ AI รุ่นเว็บ (npm run kb:sql)' }
+  $script:KbSqlParts
   @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\ascs-release-key.sql"; note = 'กุญแจชุดติดตั้ง (เมื่อกุญแจเปลี่ยน)'; secret = $true }
   @{ p = 'asc'; f = "$($P.ascs.dir)\out\cloud\standards-data.sql";   note = 'ตาราง วสท. รุ่นเว็บ (npm run standards:sql)' }
   @{ p = 'ent'; f = "$Ent\solar-project-complete\asc-enterprises\supabase\equipment-hidden-in-ascs.sql"; note = 'คลังอุปกรณ์: ช่องติ๊ก ซ่อนใน ASCS (รันก่อน deploy asc-enterprises 1.0.0)' }
