@@ -1,0 +1,166 @@
+@@NAME
+EV
+@@TITLE
+เครื่องชาร์จรถยนต์ไฟฟ้า (EV Charger · AC Wallbox / DC Charger)
+@@TEMPLATE
+EV_CHARGE_STRUCTURE.txt
+@@1
+   EV = เครื่องชาร์จรถยนต์ไฟฟ้า → EV_CHARGE_STRUCTURE.txt (หัวไฟล์ [EV_CHARGE_STRUCTURE])
+   รู้จากคำ: EV, wallbox, Type 2, OCPP, IEC 61851 (รวม DC: CCS2, CHAdeMO, GB/T, IEC 61851-23)
+@@FORMULAS
+       - Min_Surplus_Power_To_Start_W = Min_Current_to_Start_A x แรงดันเฟส x จำนวนเฟส
+         (แรงดันเฟส = แรงดันเฟส-นิวทรัล เช่น 230 V · เอกสารระบุ 400 V 3 เฟส ให้ใช้ 400 หาร 1.732)
+       - AC_Input_Power_kVA = Max_Output_Power_kW หาร (Max_Efficiency_Pct คูณ Power_Factor หาร 100)
+         (เฉพาะเอกสารไม่ระบุกำลังขาเข้าโดยตรง และมีทั้งประสิทธิภาพและ PF
+          ขาดค่าใดค่าหนึ่ง ห้ามสมมุติ ให้ว่าง + [ไม่มีข้อมูล])
+@@5
+   EV  Max_Output_Power_kW, Phase_Type, Max_Current_Per_Phase_A, Nominal_Voltage_V,
+       Charger_Type, Connector_Standard, Connector_Form, Cable_Length_m,
+       Integrated_RCD_Type, Builtin_RCD_Class, DC_Leakage_Detection_6mA   ← ตรวจชนิด RCD ที่ต้องติดเพิ่ม
+       IP_Rating                                                         ← ตรวจติดตั้งกลางแจ้ง
+       (DC Charger) DC_Output_Voltage_Min_V, DC_Output_Voltage_Max_V,
+                DC_Max_Output_Current_A, AC_Input_Power_kVA, AC_Input_Current_Max_A
+                ← คิดหม้อแปลง มิเตอร์ และรุ่นรถที่ชาร์จได้
+   ฟิลด์ที่โปรแกรมใช้เพิ่ม (ตรวจตามระเบียบ กฟภ./กฟน./มอก.):
+       Charging_Mode, Connector_List, GBT_Connector_Available, Required_External_RCD_Class,
+       Open_PEN_Protection, Integrated_SPD, Harmonic_Flicker_Standards, THDi_Pct,
+       Active_Power_Control_Support, IEC63110_Supported, OCPP_Version, Solar_Eco_Mode_Support,
+       Compatible_Inverter_EMS, Thai_Distributor, Datasheet_URL
+@@6
+   EV:
+   - Max_Output_Power_kW ใช้ค่าสูงสุดที่เครื่องทำได้ (ปรับได้ 7.4/11/22 kW ใส่ 22)
+   - AC Charger: section/ฟิลด์ที่ขึ้นต้นด้วย DC_ ให้เว้นว่าง
+     ใส่ ; [ไม่ใช้กับเครื่องชนิดนี้: AC charger] เหนือทุกฟิลด์ที่ขึ้นต้นด้วย DC_
+     DC_Architecture ว่าง · Charging_Mode = "Mode 3" (wallbox) / "Mode 2" (สายพกพา IC-CPD)
+   - DC Charger: Charging_Mode = "Mode 4"
+     DC_Architecture = "All-in-one" ถ้าตู้กำลังและหัวจ่ายอยู่ในเครื่องเดียว
+     "Split" ถ้าแยก Power unit กับ Dispenser แล้วใส่ DC_Max_Dispensers_Per_Power_Unit
+     แบบ Split ให้ Max_Output_Power_kW = กำลังของ Power unit ทั้งตู้ (ไม่ใช่ต่อหัว)
+   - Connector_List: ทุกหัวพร้อมกำลังต่อหัว คั่นด้วยจุลภาค เช่น "CCS2 200kW, CHAdeMO 62.5kW"
+     Number_of_Connectors_Total = จำนวนหัวทั้งหมด · Number_of_Outputs = จำนวนหัวที่ชาร์จพร้อมกันได้
+     พบหัว GB/T (GB/T 20234) ให้ GBT_Connector_Available = True
+   - RCD: Integrated_RCD_Type คัดข้อความตามเอกสาร แล้วแยกอีก 2 ฟิลด์
+       Builtin_RCD_Class = ชนิด RCD ที่ตัดวงจรได้เอง "None" / "Type A" / "Type F" / "Type B"
+       DC_Leakage_Detection_6mA = True เมื่อเอกสารระบุตรวจรั่ว DC 6 mA (RDC-DD, IEC 62955, 6mA DC)
+     ตัวอย่าง  "Type A + 6mA DC (RDC-DD)"    → "Type A" และ True
+               "Type B"                      → "Type B" และ False (เว้นแต่ระบุ 6 mA DC แยก)
+               "6mA DC detection" อย่างเดียว → "None" และ True
+     เอกสารไม่กล่าวถึง RCD เลย = ทั้ง 3 ฟิลด์ว่าง + [ไม่มีข้อมูล] (ห้ามใส่ "None" / False เอง)
+     Required_External_RCD_Class = ชนิด RCD ภายนอกที่คู่มือติดตั้งกำหนด ไม่ระบุ = ว่าง + [ไม่มีข้อมูล]
+   - Dynamic_Load_Balancing_Support = แบ่งกำลังกับโหลดบ้าน/อาคาร (วิธีวัด → Load_Balancing_Method)
+     Power_Sharing_Mode = แบ่งกำลังระหว่างหัวของเครื่องเดียวกัน อย่าสลับกัน
+   - Compatible_Inverter_EMS: ยี่ห้อ/ระบบที่เอกสารบอกว่าทำ Solar mode ร่วมกันได้โดยตรง
+   - [TH_LA_COMPLIANCE] และ [COMMERCIAL_TH] ส่วนใหญ่ไม่อยู่ใน Datasheet ผู้ผลิต
+     กรอกเฉพาะเมื่อมีหลักฐานแนบมา (ใบอนุญาต มอก. · ทะเบียน PEA VOLTA · ใบเสนอราคา · หน้าเว็บผู้ขาย)
+     ไม่มีหลักฐาน = ว่าง + [ไม่มีข้อมูล] ห้ามเดาราคาหรือสถานะทะเบียน
+     PEA_VOLTA_Listed = True ต้องมี PEA_VOLTA_Check_Date ด้วย · ราคาต้องมี Price_Date ทุกครั้ง
+   - ฟิลด์ใน [OPERATIONAL_PROFILE] เป็นข้อมูลการใช้งานหน้างาน ไม่อยู่ใน datasheet ให้ว่างทั้ง section
+     ใส่ ; [ไม่ใช้กับเครื่องชนิดนี้: ข้อมูลหน้างาน กรอกในแบบสำรวจ] ใต้หัว section
+   - ตรรกะทุกฟิลด์ใน EV ถ้าเอกสารไม่กล่าวถึง ให้ว่าง (โปรแกรมแสดง "ไม่มีข้อมูล" แทนการสรุปว่าไม่มี)
+@@7
+   EV:
+   - (AC 1 เฟส) Max_Output_Power_kW ประมาณ Nominal_Voltage_V x Max_Current_Per_Phase_A หาร 1000 บวกลบ 5%
+   - (AC 3 เฟส) Max_Output_Power_kW ประมาณ 1.732 x Nominal_Voltage_V (แรงดันสาย 400 V) x Max_Current_Per_Phase_A หาร 1000 บวกลบ 5%
+     (เช่น 1.732 x 400 x 32 หาร 1000 เท่ากับ 22.2 kW)
+   - Adjustable_Current_Min_A ไม่เกิน Adjustable_Current_Max_A ไม่เกิน Max_Current_Per_Phase_A
+   - (DC) DC_Output_Voltage_Min_V น้อยกว่า DC_Output_Voltage_Max_V
+   - (DC) Max_Output_Power_kW ไม่เกิน DC_Output_Voltage_Max_V x DC_Max_Output_Current_A หาร 1000
+   - (DC) AC_Input_Power_kVA ไม่น้อยกว่า Max_Output_Power_kW
+   - Number_of_Outputs ไม่เกิน Number_of_Connectors_Total
+   - Builtin_RCD_Class และ DC_Leakage_Detection_6mA ตรงกับข้อความใน Integrated_RCD_Type
+@@10
+   [EV]
+   Rated Power / Max Output Power / Charging Power / Output Power         → Max_Output_Power_kW
+   Rated Current / Max Current / Output Current / Charging Current        → Max_Current_Per_Phase_A
+   Adjustable Current / Current Setting / Configurable Current            → Adjustable_Current_Min_A, Adjustable_Current_Max_A
+   Input Voltage / Rated Voltage / Supply Voltage / AC Input              → Nominal_Voltage_V, Input_Voltage_Range_Min/Max_V
+   Phase / Power Supply / Input Phase                                     → Phase_Type
+   Connector / Plug Type / Charging Interface / Socket / Cable Type       → Connector_Standard, Connector_Form
+   Cable Length                                                           → Cable_Length_m
+   RCD / Residual Current Protection / DC Leakage Detection / RDC-DD      → Integrated_RCD_Type
+                                                                            และแยกลง Builtin_RCD_Class, DC_Leakage_Detection_6mA
+   Load Management / Dynamic Load Balancing / DLM / Home Load Balancing   → Dynamic_Load_Balancing_Support
+   Solar Charging / PV Surplus / Eco Mode / Green Mode / Excess Solar     → Solar_Eco_Mode_Support
+   Energy Meter / Metering / MID                                          → Integrated_Energy_Meter, MID_Certified_Meter
+   OCPP                                                                   → OCPP_Supported, OCPP_Version
+   Authentication / Authorization / Access Control / RFID                 → Authentication_Methods
+   Connectivity / Communication / Network / Wi-Fi / 4G / LAN              → Communication_Interfaces
+   Compatible Inverter / Works with / EMS Integration / Solar Integration → Compatible_Inverter_EMS
+   V2G / V2H / V2L / Bidirectional / Vehicle-to-Grid                      → V2G_V2H_Supported, V2L_Supported
+   Standby Power / Idle Consumption / Self-consumption                    → Idle_Power_Consumption_W
+   Standards / Certification / Compliance / IEC 61851                     → Certifications
+   Protection Rating / IP / IK / Impact Protection                        → IP_Rating, IK_Rating
+   Charging Mode / Mode 2 / Mode 3 / Mode 4                               → Charging_Mode
+   Part Number / Product Code / Order Code / SKU / Article No.            → Product_Code
+   Number of Connectors / Charging Guns / No. of Guns / Outlets           → Number_of_Connectors_Total
+   All-in-one / Integrated / Split / Power Cabinet / Power Unit / Dispenser / Satellite → DC_Architecture
+   Dispensers per Power Unit / Max Dispensers / Satellites per Cabinet    → DC_Max_Dispensers_Per_Power_Unit
+   Rated Input Power / Max Input Power / Input Apparent Power (kVA)       → AC_Input_Power_kVA
+   Rated Input Current / Max Input Current / AC Input Current             → AC_Input_Current_Max_A
+   Output Voltage Range (DC) / DC Output Voltage / Voltage Range          → DC_Output_Voltage_Min_V, DC_Output_Voltage_Max_V
+   Max Output Current (DC) / Rated Output Current / Total DC Current      → DC_Max_Output_Current_A
+   Max Current per Connector / Max Current per Gun / CCS2 Max Current     → DC_Max_Current_Per_Connector_A
+   THDi / Current Harmonic Distortion / Input Current THD                 → THDi_Pct
+   Power Module / Rectifier Module / Charging Module (kW)                 → DC_Power_Module_kW
+   Input Terminal / Max Cable Cross-section / Wire Size (mm²)             → Max_Input_Terminal_mm2
+   Cable Entry / Cable Inlet / Wiring Entry / Bottom Entry                → Cable_Entry
+   Recommended Meter Size / มิเตอร์ที่แนะนำ / ขนาดมิเตอร์                     → Recommended_Meter_Size
+   Connector Configuration / Output Configuration / Gun Type and Power    → Connector_List
+   GB/T / GB/T 20234 / China Standard Connector                           → GBT_Connector_Available
+   Liquid-cooled Cable / Liquid Cooling Cable / HPC Cable                 → DC_Liquid_Cooled_Cable
+   Power Allocation / Power Distribution between Guns / Dynamic Power Sharing / Sequential Charging → Power_Sharing_Mode
+   CT Clamp / Current Transformer / Smart Meter / Modbus Meter (Load Balancing) → Load_Balancing_Method
+   Min. Solar Charging Power / Min. PV Surplus / Solar Start Power        → Solar_Mode_Min_Power_kW
+   Scheduled Charging / Timer / Delayed Charging / Off-peak Charging      → Scheduled_Charging_Support
+   Remote Power Limit / Power Curtailment / Smart Charging Profile / Demand Response → Active_Power_Control_Support
+   IEC 63110 / ISO 15118 Backend (IEC 63110)                              → IEC63110_Supported
+   Payment / QR Payment / PromptPay / Credit Card / POS / Card Reader     → Payment_Methods, Payment_Terminal_Integrated
+   RFID ISO 14443 / Mifare / 13.56 MHz / NFC Card                         → RFID_Standard
+   External RCD Required / Upstream RCD / Install RCD Type A or B         → Required_External_RCD_Class, Requires_External_RCD
+   PEN Fault / Open PEN / O-PEN / Earth-free Installation / No Earth Rod  → Open_PEN_Protection
+   SPD / Surge Protection / Overvoltage Protection / Lightning Protection → Integrated_SPD
+   Emergency Stop / E-Stop / Emergency Button                             → Emergency_Stop_Button
+   Insulation Monitoring / IMD / Insulation Detection                     → DC_Insulation_Monitoring
+   Ventilation / Ventilation Required / Indoor Ventilation                → Ventilation_Required
+   IEC 61000-3-2 / IEC 61000-3-12 / IEC 61000-3-3 / Harmonics / Flicker   → Harmonic_Flicker_Standards
+   EMC / IEC 61851-21-2 / EN 61000-6-x / Electromagnetic Compatibility    → EMC_Standards
+   TIS / มอก. / สมอ. / TISI / Thai Industrial Standard                      → TISI_Standards, TISI_License_No
+   Test Report / CB Report / Report No. / Test Laboratory (PTEC, TUV)     → Test_Report_Lab, Test_Report_No
+   PEA VOLTA / PEA Registered / กฟภ. ขึ้นทะเบียน                             → PEA_VOLTA_Listed, PEA_Equipment_Registered
+   MEA Approved List / กฟน. ทะเบียน                                        → MEA_Listed
+   Distributor / Importer / Authorized Dealer / ผู้แทนจำหน่าย                → Thai_Distributor, Lao_Distributor, Distributor_URL
+   Local Warranty / Distributor Warranty / รับประกันในไทย                    → Local_Warranty_Years
+   Datasheet Region / Market Version (EU, AU, TH)                         → Datasheet_Region
+@@11
+   ฟิลด์ (EV)                   ค่าที่ยอมรับ                                    โปรแกรมใช้ทำอะไร
+   Charger_Type                 "AC" / "DC"                                     แยก AC/DC (มีคำว่า DC = DC)
+   Phase_Type                   "1-Phase" / "3-Phase" (ขึ้นต้นด้วยเลข 1 หรือ 3)  คิดกระแสต่อเฟส
+   Charging_Mode                "Mode 2" / "Mode 3" / "Mode 4"                  ตรวจระเบียบ
+   Connector_Form               "Socket" / "Tethered"                           ตรวจความยาวสาย
+   Builtin_RCD_Class            "None" / "Type A" / "Type F" / "Type B"         ตรวจ RCD ที่ต้องติดเพิ่ม
+   Required_External_RCD_Class  "None" / "Type A" / "Type B"                    ตรวจ RCD ที่ต้องติดเพิ่ม
+   Integrated_SPD               "Type 2" หรือข้อความตามเอกสาร · ไม่มี = "None"     ตรวจติดตั้งกลางแจ้ง
+   IP_Rating                    "IP55" (IP ตามด้วยตัวเลข 2 หลัก)                  ตรวจติดตั้งกลางแจ้ง
+   ตรรกะทุกฟิลด์                  True / False · ไม่มีในเอกสาร = ว่าง                 ว่าง = แสดงว่าไม่มีข้อมูล
+@@12
+   [ELECTRICAL_SPECIFICATIONS]
+   ; รูปแบบเฟสไฟฟ้า (1-Phase หรือ 3-Phase)
+   ; [SRC: หน้า 2 · Electrical · Power supply 3-phase 400 V AC]
+   Phase_Type = "3-Phase"
+   ; แรงดันขาออก DC ต่ำสุด ...
+   ; [ไม่ใช้กับเครื่องชนิดนี้: AC charger]
+   DC_Output_Voltage_Min_V =
+
+   [PROTECTION_SAFETY]
+   ; ชนิด RCD ในตัวตามข้อความในเอกสาร
+   ; [SRC: หน้า 2 · Safety · Integrated RCD Type A + 6 mA DC detection]
+   Integrated_RCD_Type = "Type A + 6 mA DC detection"
+   ; ชนิด RCD ที่ตัดวงจรได้เอง ...
+   ; [DERIVED: แยกจาก Integrated_RCD_Type]
+   ; [SRC: หน้า 2 · Safety · Integrated RCD Type A + 6 mA DC detection]
+   Builtin_RCD_Class = "Type A"
+
+   [TH_LA_COMPLIANCE]
+   ; ขึ้นทะเบียน PEA VOLTA ...
+   ; [ไม่มีข้อมูล]
+   PEA_VOLTA_Listed =

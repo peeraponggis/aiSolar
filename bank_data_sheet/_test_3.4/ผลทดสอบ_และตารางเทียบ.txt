@@ -1,0 +1,76 @@
+ผลทดสอบ prompt datasheet 3.4 กับ ASC Studio 0.157.0 (5 พ.ย. 2569)
+===================================================================
+
+1) ตารางเทียบ: prompt/แม่แบบเดิมในโฟลเดอร์นี้ (3.1) กับสิ่งที่ ASC Studio อ่านจริง
+-------------------------------------------------------------------
+ตัวอ่าน: src/io/import/index.ts (parseIni + deviceFromIni) · database.ts · invAdvisor.ts · wiring.ts
+         toReverseDesignInput.ts · evRules.ts · report/energy.ts · report/page.ts · report/proposal.ts
+
+ก. ฟิลด์ที่โปรแกรมใช้ แต่แม่แบบ 3.1 ในโฟลเดอร์นี้ไม่มี (ขาด) — แม่แบบ 3.4 มีครบแล้ว
+   INV 13 ค่า: Off_Grid_Mode, Grid_Export_Capable, Surge_Power_kVA, No_Load_Consumption_W,
+               AC_Coupling_Supported, AC_Coupling_Port, Max_AC_Coupled_PV_kW, AC_Coupling_Power_Control,
+               Max_AC_Charge_Current_A, Max_PV_Charge_Current_A, Generator_Port_Rated_Power_kW,
+               Thai_Distributor, Datasheet_URL
+   BAT 2 ค่า:  Thai_Distributor, Datasheet_URL
+   EV 55 ค่า:  Builtin_RCD_Class, DC_Leakage_Detection_6mA, Required_External_RCD_Class, Charging_Mode,
+               Connector_List, GBT_Connector_Available, AC_Input_Power_kVA, AC_Input_Current_Max_A,
+               THDi_Pct, Open_PEN_Protection, Integrated_SPD, Harmonic_Flicker_Standards,
+               Active_Power_Control_Support, IEC63110_Supported ฯลฯ (โครงสร้าง EV 3.3 ทั้งชุด)
+   INV 1 ค่า (ไม่มีในแม่แบบใดเลย): Derating_Curve_C_kW — report/energy.ts อ่านเส้นลดกำลัง → เพิ่มใน 3.4
+
+ข. สะกดคีย์/หน่วย/ค่าข้อความที่ไม่ตรง (prompt เดิมไม่บอก ทำให้โปรแกรมเข้าใจผิดเงียบ ๆ)
+   Phase_Type (INV/EV)     โปรแกรมหาเลข 3 → "Three phase" = 1 เฟส · 3.4 บังคับ "1-Phase"/"3-Phase"
+   Inverter_Type           คำอื่นนอก Hybrid/Off-grid/Micro/Central = String
+   Battery_Coupling_Class  ต้องขึ้นต้น HV/LV · Battery_Voltage_Class ต้องมี HV/LV
+   Off_Grid_Mode / AC_Coupling_Port  ต้องมีคำ Both/assist/stand · backup/gen/smart
+   Max_Continuous_*_Power_kw (BAT)   ตัว w เล็กตามแม่แบบ (โปรแกรมรับ _kW ด้วย)
+   ค่าข้อความที่มี " ;" หรือ " #"     โปรแกรมตัดทิ้งตั้งแต่ตรงนั้น → 3.4 ห้ามใช้ ให้คั่นด้วยจุลภาค
+   ตัวเลขที่มีหน่วย/จุลภาคหลักพัน      อ่านไม่ได้ → โปรแกรมใช้ค่าเริ่มต้นแทนเงียบ ๆ
+
+ค. ค่าที่ prompt เดิมให้ "คงค่าเริ่มต้น" ซึ่งไม่ใช่ศูนย์ → โปรแกรมเชื่อว่าเป็นค่าจริง (3.4 ให้เว้นว่าง)
+   PV  NMOT 45 · IAM_ASHRAE_b0 0.05 · LID 1.0 · เสื่อม 0.4 · Warranty 25 · Max_System_Voltage 1500 · Max_Reverse 25
+   INV Derating_Start 45 · Max_Operating_Temp 60 · Nominal_AC_Voltage 400 · ตรรกะ True ใน PROTECTION
+   BAT Chemistry LFP · DoD 90 · Cycle 6000 · Warranty 10 · ช่วงอุณหภูมิ
+   OPT Thermal_Derating_Start 70 · EV Adjustable_Current_Min 6 · Humidity 95
+
+ง. ที่มาของค่า: prompt เดิมห้ามใส่เลขหน้า (ข้อ 4.9) → 3.4 บังคับ ; [SRC: หน้า · ตาราง · ข้อความต้นฉบับ]
+   ทุกค่า (บรรทัดคอมเมนต์ โปรแกรมข้ามทิ้ง ไม่กระทบการนำเข้า)
+
+จ. ช่องว่างฝั่งโปรแกรม (แก้ด้วย prompt ไม่ได้ — อยู่ในแผนรออนุมัติ)
+   1. ค่าจำลอง/รายงาน (ประสิทธิภาพรายภาระ · derating · เสื่อม · IAM · bifacial · tolerance · รับประกัน · IP)
+      อ่านจากคลังในตัวโปรแกรม (datasheetExtras) เท่านั้น ไม่อ่านจากไฟล์ .txt ที่นำเข้า
+      ทดสอบจริง: CS6K-300MS ในไฟล์มี Warranty 25 ปี / Product 10 ปี แต่คลังในตัวเป็น null → รายงานไม่แสดง
+      รุ่นที่ไม่อยู่ในคลังในตัว = ไม่ได้ค่าพวกนี้เลย
+   2. ฟิลด์บังคับว่าง → ใช้ค่าเริ่มต้นเงียบ ๆ ไม่เตือน
+      ทดสอบจริง: LUNA2000-14-S1 ไม่มี Nominal voltage → โปรแกรมใช้ 400 V · AMCP ไม่มี Max input Voc → 0
+   4. EV: Thai_Distributor / Datasheet_URL อยู่ใน ini แต่ไม่ขึ้นเป็นข้อมูลผู้แทนจำหน่ายของอุปกรณ์ (INV/BAT ขึ้น)
+   3. Grid_Export_Capable ว่าง = โปรแกรมถือว่า "ขายคืนไม่ได้" (3.4 จึงให้ใส่ True แบบ DERIVED ไว้ก่อน)
+
+2) ผลทดสอบจริง (ใช้ prompt 3.4 สร้างไฟล์จาก datasheet จริง แล้วนำเข้าในพรีวิว design-auto)
+-------------------------------------------------------------------
+ไฟล์ (โฟลเดอร์นี้)                       datasheet ต้นทาง                         กรอก/ว่าง/ทั้งหมด  ตรวจ 7.1  เข้าโปรแกรม
+PV_Canadian_Solar_CS6K-300MS.txt          DS_CS6K-290-305MS_V5.562_EN.pdf          53/16/69          ผ่าน      69/69 ตรงทุกค่า
+INV_HYB_Huawei_SUN2000-5KTL-L1.txt        DS_SUN2000_2-6KTL-L1_EU_2024.pdf         69/64/133         ผ่าน      133/133 ตรงทุกค่า
+BAT_Huawei_LUNA2000-14-S1.txt             DS_Huawei_LUNA2000-7-14-21-S1.pdf        44/41/85          ผ่าน      85/85 ตรงทุกค่า
+OPT_AndSolar_AMCP600-750T1.txt            BRO_AndSolar_AMCP_V2.3.pdf (โบรชัวร์ภาพ)  42/14/56          ผ่าน      56/56 ตรงทุกค่า
+EV_ABB_Terra_AC_W22-G5-R-V2-0.txt         9AKK108472A2560 Rev.D (ABB ทางการ)       64/74/138         ผ่าน      138/138 ตรงทุกค่า
+  (ABB Terra AC 22 kW · ตัวแทนในไทย ABB Thailand · อยู่ในทะเบียน PEA VOLTA · PDF เก็บไว้ที่ datasheet_ต้นทาง)
+
+วิธีทดสอบ: เลือกทั้ง 4 ไฟล์พร้อมกันที่ "นำเข้าไฟล์" → บันทึกแจ้ง "เพิ่ม 4 รายการ" + datasheet pv/inverter/battery/optimizer
+แล้วเทียบทุกบรรทัดค่าในไฟล์กับ device.ini ในโปรแกรม (ค่าว่าง = "-") ตรงกันทุกฟิลด์
+ค่าที่โปรแกรมคำนวณได้: PV 300 Wp · Voc 39.7 · Tk -0.29/-0.39 · 1650x992x35 mm · 1000 V · ฟิวส์ 15 A
+                       INV Hybrid · 1 เฟส · 2 MPPT · 90-560 V · แบต HV 350-560 V 5 kW · Max eff 98.4
+                       BAT 13.8 kWh · 7 kW · HV · DoD 100 · 3 โมดูล · ขนาน 4
+                       EV  22 kW · 3 เฟส · Type 2 สาย 5 m · RCD ในตัว None + ตรวจรั่ว DC 6 mA · IP55 · PEA VOLTA
+                           ค่าตรรกะที่เว้นว่าง (RCD ภายนอก · V2G) โปรแกรมอ่านเป็น "ไม่มีข้อมูล" ไม่ใช่ False
+                       OPT 900 W · 1 แผง/ตัว · Voc สูงสุด 0 (โบรชัวร์ไม่มี → ต้องกรอกเอง)
+หลังนำเข้าอินเวอร์เตอร์ หน้าต่าง "แนบคู่มือผู้ใช้" เปิดเอง และผูก SUN2000-2-6KTL-L1.manual.json ให้อัตโนมัติ
+
+ต้องกรอกเองในโปรแกรมก่อนใช้งาน (ฟิลด์บังคับที่ datasheet ไม่มี)
+   EV_ABB_Terra_AC_W22-G5-R-V2-0: Required_External_RCD_Class (ดูคู่มือติดตั้ง Terra AC 2.0 ด้วย PROMPT_MANUAL)
+   BAT_Huawei_LUNA2000-14-S1: Nominal_Voltage_V (โปรแกรมใช้ 400 V แทน) · กระแสชาร์จ/คายต่อเนื่อง
+   OPT_AndSolar_AMCP600-750T1: Max_Input_Voltage_Voc_V · Min/Max_Optimizers_Per_String · Max_String_Power_W
+      (หาได้จากคู่มือ UM_AndSolar_AMCP_T2 ด้วย PROMPT_MANUAL.txt)
+
+แก้ prompt ระหว่างทดสอบ EV: สูตรตรวจกำลัง 3 เฟส เดิมคูณ 3 กับแรงดัน 400 V (ได้ 38.4 kW ผิด) → 1.732 x 400 x 32 = 22.2 kW
+  · ช่อง DC_ ของ AC charger กำกับ [ไม่ใช้กับเครื่องชนิดนี้] ทีละฟิลด์ · Connector_Form ใช้ Socket / Tethered ตามแม่แบบ
