@@ -60,7 +60,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 |---|---|---|---|
 | ASC Enterprise (เว็บ · ชื่อเดิม ASC Cloud) | 4.12.1 | `LocalAI\git\asc` | peeraponggis/asc · live peeraponggis.github.io/asc |
 | courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
-| webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.1.5 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
+| webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.1.6 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
 | Team Chat (แชททีม Telegram Mini App + Supabase + Google Drive) | 0.1.0 | `LocalAI\teamchat` (git แยก · exclude จาก aiSolar) | lungpeepi-aisolar/team_chat (public · peeraponggis=Write) · live teamchat-eih.pages.dev · t.me/ProInventive_Chat_bot/chat · Supabase emlwnczeckucjycwjzmd |
 | Project Plan SPA (โปรแกรมบริหารโครงการ) | 1.7.2 | `LocalAI\project_plan_spa` · home clone `LocalAI\git\aisolar2` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/plan/ · รายงาน Pi monitor (รหัส PLAN) |
 | Survey (Advanced GIS Civil & Orthophoto Workspace) | 4.19.0 | `LocalAI\survey` | peeraponggis/aisolar2 · live peeraponggis.github.io/aisolar2/Pee_survey.html |
