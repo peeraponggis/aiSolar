@@ -58,7 +58,7 @@ CRM-Pi: เว็บ `pi-system.pages.dev` (Cloudflare Pages) · **deploy จา
 
 | โปรแกรม | เวอร์ชัน | โฟลเดอร์ | repo |
 |---|---|---|---|
-| ASC Enterprise (เว็บ · ชื่อเดิม ASC Cloud) | 4.13.0 | `LocalAI\git\asc` | peeraponggis/asc · live aisolar.dev |
+| ASC Enterprise (เว็บ · ชื่อเดิม ASC Cloud) | 4.13.1 | `LocalAI\git\asc` | peeraponggis/asc · live aisolar.dev |
 | courseweb (เว็บคอร์สออนไลน์) | – | `LocalAI\courseweb` | peeraponggis/online |
 | webproinventive (เว็บ PROINVENTIVE + Pi Console) | 1.4.7 | home `C:\LocalAI\pi\webproinventive` · laptop โฟลเดอร์ Pi-web เดิม (ดู HANDOFF.md ข้อ 4) | peeraponggis/webproinventive · live peeraponggis.github.io/webproinventive (มีฉบับใน picode ด้วย) |
 | Team Chat (แชททีม Telegram Mini App + Supabase + Google Drive) | 0.1.0 | `LocalAI\teamchat` (git แยก · exclude จาก aiSolar) | lungpeepi-aisolar/team_chat (public · peeraponggis=Write) · live teamchat-eih.pages.dev · t.me/ProInventive_Chat_bot/chat · Supabase emlwnczeckucjycwjzmd |
